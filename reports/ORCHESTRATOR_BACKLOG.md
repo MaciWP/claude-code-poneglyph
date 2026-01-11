@@ -9,13 +9,13 @@
 
 ## Resumen de Estado
 
-| Categoría | P0 | P1 | P2 | P3 | Total |
-|-----------|----|----|----|----|-------|
-| Code Quality | 2 | 3 | 2 | 1 | 8 |
-| Testing | 1 | 1 | 1 | 0 | 3 |
-| DX/Tooling | 0 | 2 | 2 | 1 | 5 |
-| Docs | 0 | 0 | 1 | 2 | 3 |
-| **Total** | **3** | **6** | **6** | **4** | **19** |
+| Categoría | P0 | P1 | P2 | P3 | Total | Resueltos |
+|-----------|----|----|----|----|-------|-----------|
+| Code Quality | 1 | 3 | 2 | 1 | 7 | 1 |
+| Testing | 1 | 1 | 1 | 0 | 3 | 0 |
+| DX/Tooling | 0 | 2 | 2 | 1 | 5 | 0 |
+| Docs | 0 | 0 | 1 | 2 | 3 | 0 |
+| **Total** | **2** | **6** | **6** | **4** | **18** | **1** |
 
 ---
 
@@ -64,16 +64,20 @@ Tasa de éxito: 95.3%
 
 ### [P0-003] Web: 6 errores ESLint
 
-**Estado**: 🔴 Abierto
+**Estado**: ✅ RESUELTO
 **Componente**: `claude-code-ui/web`
 **Impacto**: CI falla en lint
+**Resuelto**: 2026-01-11
 
 **Descripción**:
-El frontend tiene 6 errores de ESLint en código existente.
+El frontend tenía 6 errores de ESLint en código existente.
 
-**Solución propuesta**:
-1. Ejecutar `bun run lint` para ver errores específicos
-2. Arreglar cada error según regla violada
+**Solución aplicada**:
+- `AgentResultView.tsx`: Arreglado regex escape y agregado flag `u` para unicode
+- `Card.tsx`: Reemplazado interface vacía con type alias
+- `useApiCall.test.ts`: Removido import no usado, prefijo `_` en param no usado
+
+**Resultado**: 0 errors, 5 warnings
 
 ---
 
@@ -263,6 +267,7 @@ Agregar templates para bugs, features, etc.
 | Fecha | Item | Acción |
 |-------|------|--------|
 | 2026-01-11 | Backlog | Creación inicial |
+| 2026-01-11 | P0-003 | ✅ RESUELTO - ESLint errors en web |
 
 ---
 
