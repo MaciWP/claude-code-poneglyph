@@ -15,7 +15,7 @@ import { logger } from '../logger'
 import { loadClaudeConfig } from './claude-config'
 import { TOOL_OUTPUT_MAX_SIZE } from '../constants'
 import { contextWindowMonitor } from '../services/context-window-monitor'
-import { autoContinuation, shouldContinue, getContinuePrompt, startContinuation, stopContinuation } from '../services/auto-continuation'
+import { autoContinuation, shouldContinue, getContinuePrompt } from '../services/auto-continuation'
 import type { ContinuationState } from '../../../shared/types'
 
 interface ActiveProcess {

@@ -2,7 +2,6 @@ import { readFile, writeFile } from 'fs/promises'
 import { existsSync } from 'fs'
 import { join } from 'path'
 import { logger } from '../../logger'
-import type { Memory } from './types'
 
 const log = logger.child('memory-graph')
 

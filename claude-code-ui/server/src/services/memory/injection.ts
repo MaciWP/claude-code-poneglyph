@@ -1,8 +1,8 @@
 import { logger } from '../../logger'
 import { memoryStore } from './store'
-import { semanticSearch, generateEmbedding, isModelLoaded, preloadModel } from './vector'
+import { semanticSearch, isModelLoaded, preloadModel } from './vector'
 import { rankMemories, getAdaptiveSimilarityFloor, type RankedMemory } from './ranker'
-import type { Memory, MemorySearchResult, MemoryLaneType } from './types'
+import type { Memory, MemorySearchResult } from './types'
 
 const log = logger.child('memory-injection')
 
@@ -125,7 +125,7 @@ async function incrementObservation(memoryId: string): Promise<void> {
 
 export async function injectMemories(
   prompt: string,
-  sessionId?: string,
+  _sessionId?: string,
   config: Partial<InjectionConfig> = {}
 ): Promise<InjectionResult> {
   const cfg = {

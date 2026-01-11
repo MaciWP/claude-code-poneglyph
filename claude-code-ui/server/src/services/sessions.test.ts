@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach, afterEach } from 'bun:test'
-import { SessionStore, type Session } from './sessions'
+import { SessionStore } from './sessions'
 import { existsSync, rmSync } from 'fs'
 import { join } from 'path'
 import { tmpdir } from 'os'

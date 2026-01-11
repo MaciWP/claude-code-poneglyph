@@ -7,7 +7,7 @@ import { ResultComparator } from '../services/result-comparator'
 import { expertStore } from '../services/expert-store'
 import { ClaudeService } from '../services/claude'
 import { logger } from '../logger'
-import { toErrorResponse, getStatusCode, NotFoundError, ValidationError } from '../errors'
+import { toErrorResponse, getStatusCode, NotFoundError } from '../errors'
 
 const log = logger.child('multi-expert-routes')
 

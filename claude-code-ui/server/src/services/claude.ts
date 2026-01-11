@@ -2,7 +2,7 @@ import { query, type SDKMessage, type SDKResultMessage, type SDKAssistantMessage
 import { logger } from '../logger'
 import { CONTEXT_WINDOW_SIZE } from '../constants'
 import { validateWorkDir, getSafeEnvForClaude } from '../utils/security'
-import type { Message, StreamChunk, TokenUsage } from '../../../shared/types'
+import type { Message, StreamChunk } from '../../../shared/types'
 
 const log = logger.child('claude')
 import { Glob } from 'bun'
@@ -557,7 +557,6 @@ Current request: ${options.prompt}`
     const queue: StreamChunk[] = []
     let resolveSignal: (() => void) | null = null
     let activeStreams = 2 // stdout + stderr
-    let waitingForUserAnswer = false
 
     const push = (chunk: StreamChunk) => {
       queue.push(chunk)
@@ -583,7 +582,6 @@ Current request: ${options.prompt}`
           currentProc.stdin.write(answerMessage + '\n')
           currentProc.stdin.flush()
         }
-        waitingForUserAnswer = false
       }
     }
 
@@ -672,7 +670,6 @@ Current request: ${options.prompt}`
 
               // If AskUserQuestion, pause and wait for user answer
               if (isAskUserQuestion && setAnswerResolver) {
-                waitingForUserAnswer = true
                 log.info('AskUserQuestion detected, waiting for user answer', { toolUseId: block.id })
 
                 // Set up resolver that will be called when user sends answer

@@ -11,11 +11,11 @@
 
 | Categoría | P0 | P1 | P2 | P3 | Total | Resueltos |
 |-----------|----|----|----|----|-------|-----------|
-| Code Quality | 1 | 3 | 2 | 1 | 7 | 1 |
-| Testing | 1 | 1 | 1 | 0 | 3 | 0 |
+| Code Quality | 0 | 3 | 2 | 1 | 6 | 2 |
+| Testing | 0 | 1 | 1 | 0 | 2 | 1 (parcial) |
 | DX/Tooling | 0 | 2 | 2 | 1 | 5 | 0 |
 | Docs | 0 | 0 | 1 | 2 | 3 | 0 |
-| **Total** | **2** | **6** | **6** | **4** | **18** | **1** |
+| **Total** | **0** | **6** | **6** | **4** | **16** | **3** |
 
 ---
 
@@ -23,42 +23,47 @@
 
 ### [P0-001] Server: 56 errores TypeScript (unused vars)
 
-**Estado**: 🔴 Abierto
+**Estado**: ✅ RESUELTO
 **Componente**: `claude-code-ui/server`
 **Impacto**: CI falla en typecheck
+**Resuelto**: 2026-01-11
 
 **Descripción**:
-El servidor tiene 56 errores de TypeScript, todos del tipo "declared but never used":
-- Variables no usadas
-- Parámetros de función no usados
-- Imports no usados
+El servidor tenía 56 errores de TypeScript, todos del tipo "declared but never used".
 
-**Solución propuesta**:
-1. Prefijo `_` para parámetros intencionalmente no usados
-2. Eliminar imports no usados
-3. Revisar variables declaradas pero no usadas
+**Solución aplicada**:
+- Eliminados imports no usados en 30+ archivos
+- Agregado prefijo `_` a parámetros no usados
+- Eliminadas variables dead code (`_waitingForUserAnswer`, `_createdSessionId`, etc.)
 
-**Archivos afectados**:
-- `src/services/*.ts`
-- `src/routes/*.ts`
-- `src/lib/*.ts`
+**Resultado**: 0 errores TypeScript
 
 ---
 
-### [P0-002] Server: 16 tests fallando
+### [P0-002] Server: Tests WebSocket fallando
 
-**Estado**: 🔴 Abierto
+**Estado**: 🟡 PARCIAL
 **Componente**: `claude-code-ui/server`
 **Impacto**: CI falla en tests
+**Resuelto parcialmente**: 2026-01-11
 
 **Descripción**:
-De 361 tests, 16 están fallando (344 pass, 1 skip).
-Tasa de éxito: 95.3%
+Tests de WebSocket con problemas de mocking/timing.
 
-**Solución propuesta**:
-1. Analizar tests fallando con `bun test --reporter=verbose`
-2. Identificar si son regresiones o tests desactualizados
-3. Arreglar o actualizar según corresponda
+**Progreso**:
+- Antes: 16 tests fallando (344/361 pass)
+- Después: 13 tests fallando (347/361 pass)
+- Tasa de éxito: 96.1%
+
+**Tests restantes** (13, todos WebSocket):
+- `sends request_id after execute-cli`
+- `streams text chunks from claude service`
+- `uses codex service when provider is codex`
+- `uses gemini service when provider is gemini`
+- `handles user_answer message`
+- Y otros relacionados con mocking de servicios
+
+**Requiere**: Investigación profunda de mocks y timing en tests WebSocket
 
 ---
 
@@ -268,6 +273,8 @@ Agregar templates para bugs, features, etc.
 |-------|------|--------|
 | 2026-01-11 | Backlog | Creación inicial |
 | 2026-01-11 | P0-003 | ✅ RESUELTO - ESLint errors en web |
+| 2026-01-11 | P0-001 | ✅ RESUELTO - 56 TypeScript errors |
+| 2026-01-11 | P0-002 | 🟡 PARCIAL - Tests 344→347 pass (13 WebSocket pendientes) |
 
 ---
 

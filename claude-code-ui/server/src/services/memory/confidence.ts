@@ -1,4 +1,4 @@
-import type { ConfidenceMetrics, Memory } from './types'
+import type { ConfidenceMetrics } from './types'
 
 const DEFAULT_DECAY_RATE = 30
 const MIN_CONFIDENCE = 0.1

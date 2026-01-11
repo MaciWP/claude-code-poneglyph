@@ -92,7 +92,7 @@ Slash commands invocables con `/nombre` o `Skill(skill="nombre")`.
 | **/load-refactoring** | Carga patrones de refactoring | Code smells, safe refactoring |
 | **/validate-claim** | Valida path/función antes de usarlo | `/validate-claim src/auth.ts validateJWT` |
 | **/generate-from-spec** | Genera tests + implementación de spec BDD | Given-When-Then specs |
-| **/advanced-planner** | Planificación avanzada con Execution Roadmap | DAG, dependencias, paralelización |
+| **/planner** | Motor de Estrategia del Orquestador v5.0 | Discovery, Deep Research, Anti-Obsolescencia, Gap Analysis, DAG, Iterative Execution, Ground Truth, Poka-yoke, TDD enforcement |
 
 ---
 

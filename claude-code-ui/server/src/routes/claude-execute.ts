@@ -65,12 +65,10 @@ export const createClaudeExecuteRoutes = (
 
     .post('/execute-cli', async ({ body }) => {
       let promptToUse = body.prompt
-      let intentMetadata = null
 
       if (body.orchestrate) {
         const enriched = await orchestrator.enrichPrompt(body.prompt)
         promptToUse = orchestrator.formatEnrichedPrompt(enriched)
-        intentMetadata = enriched.metadata
         log.info('Orchestration enabled', {
           intent: enriched.metadata.intent.primary,
           confidence: enriched.metadata.intent.confidence,

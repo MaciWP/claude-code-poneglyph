@@ -57,11 +57,6 @@ export async function abstractCluster(
   const commonTags = findCommonTags(cluster)
   const avgConfidence = cluster.reduce((sum, m) => sum + m.confidence.current, 0) / cluster.length
 
-  const sortedByConfidence = [...cluster].sort(
-    (a, b) => b.confidence.current - a.confidence.current
-  )
-  const representative = sortedByConfidence[0]
-
   const abstractContent = generateAbstractContent(cluster, commonTags)
 
   let embedding: number[] | undefined

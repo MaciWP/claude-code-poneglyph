@@ -139,7 +139,7 @@ describe('CodexService', () => {
       const killMock = mock(() => {})
       const mockProc = {
         stdout: new ReadableStream({
-          start(controller) {
+          start(_controller) {
             // Never close to simulate long-running process
           }
         }),

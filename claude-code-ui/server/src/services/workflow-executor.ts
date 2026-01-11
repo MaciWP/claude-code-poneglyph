@@ -13,7 +13,6 @@ import type {
   WorkflowDefinition,
   WorkflowRun,
   WorkflowStep,
-  WorkflowStatus,
   WorkflowStepStatus,
   WorkflowEvent,
   WorkflowLogEntry,
@@ -327,7 +326,7 @@ async function executeWorkflow(run: WorkflowRun): Promise<void> {
 async function executeStep(
   run: WorkflowRun,
   step: WorkflowStep,
-  definition: WorkflowDefinition
+  _definition: WorkflowDefinition
 ): Promise<void> {
   step.status = 'running'
   step.startedAt = new Date()

@@ -11,7 +11,7 @@ import { claudeConfigRoutes } from '../claude-config'
 import { memoryRoutes } from '../memory'
 import { SessionStore } from '../../services/sessions'
 import { agentRegistry } from '../../services/agent-registry'
-import { AppError, toErrorResponse, getStatusCode } from '../../errors'
+import { toErrorResponse, getStatusCode } from '../../errors'
 
 const createTempDir = (): string => {
   return join(tmpdir(), `integration-test-${crypto.randomUUID()}`)
@@ -76,8 +76,6 @@ describe('API Integration Tests', () => {
   })
 
   describe('Sessions API', () => {
-    let createdSessionId: string
-
     describe('GET /api/sessions', () => {
       test('returns empty array initially', async () => {
         const response = await app.handle(
@@ -109,8 +107,6 @@ describe('API Integration Tests', () => {
         expect(session.messages).toEqual([])
         expect(session.createdAt).toBeDefined()
         expect(session.updatedAt).toBeDefined()
-
-        createdSessionId = session.id
       })
 
       test('creates session with custom name', async () => {

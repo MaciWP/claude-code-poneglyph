@@ -133,7 +133,7 @@ Dashboard: `web/src/components/AgentsDashboard.tsx`
 
 | Comando | Descripcion |
 |---------|-------------|
-| /advanced-planner | Planificacion con Execution Roadmap |
+| /planner | Motor de Estrategia (Discovery, Gap Analysis, DAG) |
 | /commands | Listar comandos disponibles |
 | /dev | Iniciar servidores desarrollo |
 | /docs | Navegar documentacion |

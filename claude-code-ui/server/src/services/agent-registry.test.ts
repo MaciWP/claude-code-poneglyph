@@ -2,8 +2,6 @@ import { describe, test, expect, beforeEach, afterEach } from 'bun:test'
 import {
   agentRegistry,
   type Agent,
-  type AgentType,
-  type AgentMetrics,
 } from './agent-registry'
 
 describe('AgentRegistry', () => {

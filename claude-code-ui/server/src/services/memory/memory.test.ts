@@ -57,7 +57,7 @@ describe('Memory System', () => {
   })
 
   describe('extractFromText', () => {
-    const { extractFromText, extractTags } = require('./extractor')
+    const { extractFromText } = require('./extractor')
 
     describe('preference patterns', () => {
       test('extracts "I prefer X" pattern', () => {

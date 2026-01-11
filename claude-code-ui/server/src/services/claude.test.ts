@@ -1,5 +1,5 @@
-import { describe, test, expect, mock, beforeEach, afterEach, spyOn } from 'bun:test'
-import { ClaudeService, type CLIResult, type StreamChunk, type ExecuteResult } from './claude'
+import { describe, test, expect, mock, beforeEach } from 'bun:test'
+import { ClaudeService, type StreamChunk } from './claude'
 
 describe('ClaudeService', () => {
   let service: ClaudeService

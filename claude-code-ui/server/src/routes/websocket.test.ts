@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach, afterEach, mock, spyOn } from 'bun:test'
+import { describe, test, expect, beforeEach, afterEach, mock } from 'bun:test'
 import { Elysia } from 'elysia'
 import { createWebSocketRoutes } from './websocket'
 import type { ClaudeService } from '../services/claude'

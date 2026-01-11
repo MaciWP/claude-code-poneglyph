@@ -176,7 +176,7 @@ export const SURPRISE_PATTERNS: SurprisePattern[] = [
 export function extractSurpriseMemories(
   text: string,
   role: 'user' | 'assistant',
-  context?: string
+  _context?: string
 ): ExtractionResult[] {
   const results: ExtractionResult[] = []
 

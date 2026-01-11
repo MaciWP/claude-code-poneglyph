@@ -2,7 +2,7 @@ import { logger } from '../../logger'
 import { memoryStore } from './store'
 import { memoryGraph } from './graph'
 import { getAgentMemorySpace, getAgentPatterns } from './agent-memory'
-import type { Memory, MemorySearchResult, AgentType, MemoryPattern } from './types'
+import type { Memory, AgentType, MemoryPattern } from './types'
 
 const log = logger.child('shared-knowledge')
 

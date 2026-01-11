@@ -1,4 +1,4 @@
-import type { Memory, ConfidenceMetrics } from './types'
+import type { Memory } from './types'
 import { calculateDecay } from './confidence'
 
 export interface TemporalConfig {
@@ -19,7 +19,7 @@ const DEFAULT_CONFIG: TemporalConfig = {
 
 export function applyTemporalDecay(
   memory: Memory,
-  config: TemporalConfig = DEFAULT_CONFIG
+  _config: TemporalConfig = DEFAULT_CONFIG
 ): Memory {
   const decayedConfidence = calculateDecay(memory.confidence)
 

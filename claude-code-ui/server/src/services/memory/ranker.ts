@@ -1,4 +1,4 @@
-import type { Memory, MemorySearchResult, MemoryLaneType, MEMORY_LANE_PRIORITY } from './types'
+import type { Memory, MemorySearchResult, MemoryLaneType } from './types'
 
 export interface RankedMemory {
   memory: Memory

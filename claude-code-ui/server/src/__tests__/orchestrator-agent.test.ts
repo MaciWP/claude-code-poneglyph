@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, mock } from 'bun:test'
 import { OrchestratorAgent, createOrchestratorAgent } from '../services/orchestrator-agent'
-import { PromptClassifier, type ClassificationResult } from '../services/prompt-classifier'
+import type { ClassificationResult } from '../services/prompt-classifier'
 
 const createMockClassifier = (overrides: Partial<ClassificationResult> = {}) => {
   const defaultResult: ClassificationResult = {

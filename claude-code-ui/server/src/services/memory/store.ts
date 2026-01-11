@@ -82,10 +82,6 @@ class MemoryStore {
     this.cache.set(id, memory)
   }
 
-  private get memories(): Map<string, Memory> {
-    return this.cache
-  }
-
   private async saveIndex(): Promise<void> {
     const index: MemoryIndex = {
       version: '1.0',

@@ -9,13 +9,9 @@ import {
   startWorkflow,
   getWorkflowRun,
   cancelWorkflow,
-  loadWorkflowDefinitions,
-  onWorkflowEvent,
 } from './workflow-executor'
 import type {
   WorkflowRun,
-  WorkflowDefinition,
-  WorkflowEvent,
 } from '../../../shared/types/workflow'
 
 const log = logger.child('workflow-parallel')

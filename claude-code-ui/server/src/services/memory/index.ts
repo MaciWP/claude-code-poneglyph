@@ -21,11 +21,9 @@ const log = logger.child('Memory')
 
 import { memoryStore } from './store'
 import { memoryGraph } from './graph'
-import { semanticSearch, generateEmbedding, preloadModel } from './vector'
-import { checkForTriggers } from './active-learning'
+import { semanticSearch, preloadModel } from './vector'
 import { extractFromConversation } from './extractor'
-import { runAbstraction } from './abstractor'
-import type { Memory, MemorySearchResult, ActiveLearningTrigger, AgentType } from './types'
+import type { Memory, MemorySearchResult, AgentType } from './types'
 
 export interface MemorySystemConfig {
   enableEmbeddings: boolean

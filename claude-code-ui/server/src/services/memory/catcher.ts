@@ -7,10 +7,9 @@ import {
   getLatestTranscripts,
   watchTranscripts,
   type ParsedSession,
-  type TranscriptEntry,
   type TranscriptWatcher
 } from './transcript-parser'
-import type { Memory, MemoryLaneType } from './types'
+import type { MemoryLaneType } from './types'
 
 const log = logger.child('memory-catcher')
 

@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events'
-import { AgentSpawner, type SpawnConfig, type SpawnResult } from './agent-spawner'
+import { AgentSpawner, type SpawnConfig } from './agent-spawner'
 import { expertStore as defaultExpertStore, type ExpertStore, type Expertise } from './expert-store'
 import { logger } from '../logger'
 

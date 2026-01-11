@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, mock, spyOn } from 'bun:test'
-import { LearningLoop, type ExecutionTrace, type LearningConfig } from './learning-loop'
+import { describe, it, expect, beforeEach, mock } from 'bun:test'
+import { LearningLoop, type ExecutionTrace } from './learning-loop'
 import type { ExpertStore, Expertise } from './expert-store'
 
 const createMockExpertise = (overrides?: Partial<Expertise>): Expertise => ({

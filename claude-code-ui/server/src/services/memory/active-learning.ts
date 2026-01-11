@@ -2,7 +2,7 @@ import { logger } from '../../logger'
 import { memoryStore } from './store'
 import { memoryGraph } from './graph'
 import { shouldTriggerValidation } from './confidence'
-import type { Memory, ActiveLearningTrigger, FeedbackEvent } from './types'
+import type { ActiveLearningTrigger, FeedbackEvent } from './types'
 
 const log = logger.child('active-learning')
 
@@ -62,7 +62,7 @@ export async function checkForTriggers(
 
 async function checkLowConfidence(
   context: string,
-  config: ActiveLearningConfig
+  _config: ActiveLearningConfig
 ): Promise<ActiveLearningTrigger | null> {
   const allMemories = await memoryStore.getAll()
 

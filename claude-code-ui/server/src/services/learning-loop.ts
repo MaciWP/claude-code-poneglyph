@@ -225,9 +225,6 @@ export class LearningLoop extends EventEmitter {
       { regex: /AbortController|abort/i, name: 'Abort Handling', usage: 'Cancellation support' },
     ]
 
-    const outputLower = trace.output.toLowerCase()
-    const promptLower = trace.prompt.toLowerCase()
-
     for (const indicator of patternIndicators) {
       if (indicator.regex.test(trace.output) || indicator.regex.test(trace.prompt)) {
         if (!existingPatternNames.has(indicator.name.toLowerCase())) {
