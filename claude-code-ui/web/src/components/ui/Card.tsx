@@ -65,7 +65,7 @@ export function CardHeader({ title, action, children, className, ...props }: Car
   )
 }
 
-interface CardContentProps extends React.HTMLAttributes<HTMLDivElement> {}
+type CardContentProps = React.HTMLAttributes<HTMLDivElement>
 
 export function CardContent({ className, children, ...props }: CardContentProps) {
   return (

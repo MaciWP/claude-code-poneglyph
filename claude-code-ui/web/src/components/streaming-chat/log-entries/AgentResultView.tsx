@@ -16,8 +16,8 @@ interface AgentResultViewProps {
 export default function AgentResultView({ entry }: AgentResultViewProps) {
   const [showActivity, setShowActivity] = useState(false)
 
-  const stepMatches = entry.content.match(/(?:^|\n)(Step \d+[:\-]?.+?)(?=\n|$)/gi) || []
-  const notificationMatches = entry.content.match(/(?:^|\n)([✓✗❌⚠️🔄].+?)(?=\n|$)/gi) || []
+  const stepMatches = entry.content.match(/(?:^|\n)(Step \d+[:|-]?.+?)(?=\n|$)/gi) || []
+  const notificationMatches = entry.content.match(/(?:^|\n)([✓✗❌⚠🔄].+?)(?=\n|$)/gu) || []
   const hasActivity = stepMatches.length > 0 || notificationMatches.length > 0
   const agentTools = entry.agentTools || []
   const hasTools = agentTools.length > 0

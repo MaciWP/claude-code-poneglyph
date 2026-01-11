@@ -1,4 +1,4 @@
-import { describe, test, expect, mock, beforeEach } from 'bun:test'
+import { describe, test, expect, mock } from 'bun:test'
 import { renderHook, waitFor, act } from '@testing-library/react'
 import { useApiCall, useMutation } from './useApiCall'
 import { APIError } from '../lib/errors'
@@ -124,7 +124,7 @@ describe('useApiCall', () => {
 describe('useMutation', () => {
   test('mutate executes function with variables', async () => {
     const mockResult = { success: true }
-    const mutationFn = mock((vars: { id: number }) => Promise.resolve(mockResult))
+    const mutationFn = mock((_vars: { id: number }) => Promise.resolve(mockResult))
 
     const { result } = renderHook(() => useMutation(mutationFn))
 
