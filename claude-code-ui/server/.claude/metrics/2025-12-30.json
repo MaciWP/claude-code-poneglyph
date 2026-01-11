@@ -1,0 +1,591 @@
+[
+  {
+    "id": "exec-1767093147706-4mh5ed",
+    "timestamp": "2025-12-30T11:12:27.707Z",
+    "prompt": "/advanced-planner Busca en esta transcripción como podemos aplicar el LSP una nueva funcion de claude code busca informacion oficial de como usarlo configurarlo y como lo podemos usar en este proyecto",
+    "sessionId": "a0bc4327-72da-44ac-9082-062a45e97ca7",
+    "useOrchestrator": false,
+    "classification": {
+      "complexityScore": 15,
+      "domains": [
+        "websocket",
+        "frontend",
+        "agent",
+        "database",
+        "api",
+        "testing"
+      ],
+      "requiresDelegation": false
+    },
+    "agentsSpawned": 0,
+    "totalToolCalls": 0,
+    "durationMs": 0,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": []
+  },
+  {
+    "id": "exec-1767093725860-rdewvn",
+    "timestamp": "2025-12-30T11:22:05.860Z",
+    "prompt": "/advanced-planner Busca en esta transcripción como podemos aplicar el LSP una nueva funcion de claude code busca informacion oficial de como usarlo configurarlo y como lo podemos usar en este proyecto",
+    "sessionId": "a0bc4327-72da-44ac-9082-062a45e97ca7",
+    "useOrchestrator": false,
+    "classification": {
+      "complexityScore": 15,
+      "domains": [
+        "websocket",
+        "frontend",
+        "agent",
+        "database",
+        "api",
+        "testing"
+      ],
+      "requiresDelegation": false
+    },
+    "agentsSpawned": 0,
+    "totalToolCalls": 0,
+    "durationMs": 0,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": []
+  },
+  {
+    "id": "exec-1767094855938-erj81l",
+    "timestamp": "2025-12-30T11:40:55.939Z",
+    "prompt": "/advanced-planner Busca en esta transcripción como podemos aplicar el LSP una nueva funcion de claude code busca informacion oficial de como usarlo configurarlo y como lo podemos usar en este proyecto",
+    "sessionId": "e3cd237d-a2ae-424a-9f72-0da5b5810c72",
+    "useOrchestrator": false,
+    "classification": {
+      "complexityScore": 15,
+      "domains": [
+        "websocket",
+        "frontend",
+        "agent",
+        "database",
+        "api",
+        "testing"
+      ],
+      "requiresDelegation": false
+    },
+    "agentsSpawned": 0,
+    "totalToolCalls": 0,
+    "durationMs": 0,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": []
+  },
+  {
+    "id": "exec-1767095025683-84rm27",
+    "timestamp": "2025-12-30T11:43:45.683Z",
+    "prompt": "/advanced-planner Busca en esta transcripción como podemos aplicar el LSP una nueva funcion de claude code busca informacion oficial de como usarlo configurarlo y como lo podemos usar en este proyecto",
+    "sessionId": "da9929ec-0030-4d65-adef-80cdbbd94756",
+    "useOrchestrator": false,
+    "classification": {
+      "complexityScore": 15,
+      "domains": [
+        "websocket",
+        "frontend",
+        "agent",
+        "database",
+        "api",
+        "testing"
+      ],
+      "requiresDelegation": false
+    },
+    "agentsSpawned": 0,
+    "totalToolCalls": 0,
+    "durationMs": 0,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": []
+  },
+  {
+    "id": "exec-1767095154240-b80tsb",
+    "timestamp": "2025-12-30T11:45:54.241Z",
+    "prompt": "/advanced-planner Busca en esta transcripción como podemos aplicar el LSP una nueva funcion de claude code busca informacion oficial de como usarlo configurarlo y como lo podemos usar en este proyecto",
+    "sessionId": "e3a21004-440b-4393-ac1a-377dc7d32d33",
+    "useOrchestrator": false,
+    "classification": {
+      "complexityScore": 15,
+      "domains": [
+        "websocket",
+        "frontend",
+        "agent",
+        "database",
+        "api",
+        "testing"
+      ],
+      "requiresDelegation": false
+    },
+    "agentsSpawned": 0,
+    "totalToolCalls": 0,
+    "durationMs": 0,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": []
+  },
+  {
+    "id": "exec-1767095287270-jiwq30",
+    "timestamp": "2025-12-30T11:48:07.271Z",
+    "prompt": "/advanced-planner Busca en esta transcripción como podemos aplicar el LSP una nueva funcion de claude code busca informacion oficial de como usarlo configurarlo y como lo podemos usar en este proyecto",
+    "sessionId": "5d3d03dd-bf66-45d2-ba78-e8caf00e3c4c",
+    "useOrchestrator": false,
+    "classification": {
+      "complexityScore": 15,
+      "domains": [
+        "websocket",
+        "frontend",
+        "agent",
+        "database",
+        "api",
+        "testing"
+      ],
+      "requiresDelegation": false
+    },
+    "agentsSpawned": 0,
+    "totalToolCalls": 0,
+    "durationMs": 0,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": []
+  },
+  {
+    "id": "exec-1767095679318-bwlvyc",
+    "timestamp": "2025-12-30T11:54:39.319Z",
+    "prompt": "/advanced-planner Busca en esta transcripción como podemos aplicar el LSP una nueva funcion de claude code busca informacion oficial de como usarlo configurarlo y como lo podemos usar en este proyecto",
+    "sessionId": "8892ea42-639a-4750-b037-9b99de100bf9",
+    "useOrchestrator": false,
+    "classification": {
+      "complexityScore": 15,
+      "domains": [
+        "websocket",
+        "frontend",
+        "agent",
+        "database",
+        "api",
+        "testing"
+      ],
+      "requiresDelegation": false
+    },
+    "agentsSpawned": 0,
+    "totalToolCalls": 0,
+    "durationMs": 0,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": []
+  },
+  {
+    "id": "exec-1767096687866-0jdy8y",
+    "timestamp": "2025-12-30T12:11:27.866Z",
+    "prompt": "/advanced-planner Busca en esta transcripción como podemos aplicar el LSP una nueva funcion de claude code busca informacion oficial de como usarlo configurarlo y como lo podemos usar en este proyecto",
+    "sessionId": "d2724b0d-cc5d-427d-bbcb-72c1f85bb9e8",
+    "useOrchestrator": false,
+    "classification": {
+      "complexityScore": 15,
+      "domains": [
+        "websocket",
+        "frontend",
+        "agent",
+        "database",
+        "api",
+        "testing"
+      ],
+      "requiresDelegation": false
+    },
+    "agentsSpawned": 0,
+    "totalToolCalls": 0,
+    "durationMs": 0,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": []
+  },
+  {
+    "id": "exec-1767098558887-8q5aop",
+    "timestamp": "2025-12-30T12:42:38.888Z",
+    "prompt": "/advanced-planner Busca en esta transcripción como podemos aplicar el LSP una nueva funcion de claude code busca informacion oficial de como usarlo configurarlo y como lo podemos usar en este proyecto",
+    "sessionId": "e34829ab-5363-435f-b342-750fa23e4f18",
+    "useOrchestrator": false,
+    "classification": {
+      "complexityScore": 15,
+      "domains": [
+        "websocket",
+        "frontend",
+        "agent",
+        "database",
+        "api",
+        "testing"
+      ],
+      "requiresDelegation": false
+    },
+    "agentsSpawned": 0,
+    "totalToolCalls": 0,
+    "durationMs": 0,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": []
+  },
+  {
+    "id": "exec-1767099274195-ylkmp7",
+    "timestamp": "2025-12-30T12:54:34.195Z",
+    "prompt": "YOU\n13:42:38\n/advanced-planner Busca en esta transcripción como podemos aplicar el LSP una nueva funcion de claude code busca informacion oficial de como usarlo configurarlo y como lo podemos usar en ",
+    "sessionId": "437d1699-1241-432a-bf85-fb297b5b29a8",
+    "useOrchestrator": false,
+    "classification": {
+      "complexityScore": 15,
+      "domains": [
+        "websocket",
+        "frontend",
+        "agent",
+        "database",
+        "api",
+        "testing"
+      ],
+      "requiresDelegation": false
+    },
+    "agentsSpawned": 0,
+    "totalToolCalls": 0,
+    "durationMs": 0,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": []
+  },
+  {
+    "id": "exec-1767099926059-rtficn",
+    "timestamp": "2025-12-30T13:05:26.059Z",
+    "prompt": "/advanced-planner Busca en esta transcripción como podemos aplicar el LSP una nueva funcion de claude code busca informacion oficial de como usarlo configurarlo y como lo podemos usar en este proyecto",
+    "sessionId": "7609eb7f-5bbd-48fe-92cf-0e548488fe8c",
+    "useOrchestrator": false,
+    "classification": {
+      "complexityScore": 15,
+      "domains": [
+        "websocket",
+        "frontend",
+        "agent",
+        "database",
+        "api",
+        "testing"
+      ],
+      "requiresDelegation": false
+    },
+    "agentsSpawned": 0,
+    "totalToolCalls": 0,
+    "durationMs": 0,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": []
+  },
+  {
+    "id": "exec-1767107197308-mb7yg1",
+    "timestamp": "2025-12-30T15:06:37.308Z",
+    "prompt": "test 1",
+    "sessionId": "7609eb7f-5bbd-48fe-92cf-0e548488fe8c",
+    "useOrchestrator": false,
+    "classification": {
+      "complexityScore": 15,
+      "domains": [
+        "testing"
+      ],
+      "requiresDelegation": false
+    },
+    "agentsSpawned": 0,
+    "totalToolCalls": 0,
+    "durationMs": 0,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": []
+  },
+  {
+    "id": "exec-1767107278461-gyka8d",
+    "timestamp": "2025-12-30T15:07:58.461Z",
+    "prompt": "dime hola",
+    "sessionId": "7609eb7f-5bbd-48fe-92cf-0e548488fe8c",
+    "useOrchestrator": false,
+    "classification": {
+      "complexityScore": 15,
+      "domains": [],
+      "requiresDelegation": false
+    },
+    "agentsSpawned": 0,
+    "totalToolCalls": 0,
+    "durationMs": 0,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": []
+  },
+  {
+    "id": "exec-1767108191891-q5tnbw",
+    "timestamp": "2025-12-30T15:23:11.892Z",
+    "prompt": "test oquestador lee varios documentos con agentes y dime de que se tratan de forma resumida",
+    "sessionId": "d51c78fa-458e-4af2-bee3-143a8b26501f",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 20,
+      "domains": [
+        "frontend",
+        "agent",
+        "testing"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 0,
+    "durationMs": 3006,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-1767108194895-aioy7d",
+        "agentType": "general-purpose",
+        "toolCalls": 0,
+        "durationMs": 3004,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767108206961-txszfw",
+    "timestamp": "2025-12-30T15:23:26.962Z",
+    "prompt": "hola",
+    "sessionId": "1257663f-4da8-48a8-8f2f-528226f824af",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 15,
+      "domains": [],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 0,
+    "durationMs": 2995,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-1767108209955-hjpb7p",
+        "agentType": "general-purpose",
+        "toolCalls": 0,
+        "durationMs": 2994,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767109023942-5okeia",
+    "timestamp": "2025-12-30T15:37:03.943Z",
+    "prompt": "test oquestador lee varios documentos con agentes y dime de que se tratan de forma resumida",
+    "sessionId": "b306cdfe-35dd-4b54-9160-d114290b469f",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 20,
+      "domains": [
+        "frontend",
+        "agent",
+        "testing"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 19,
+    "durationMs": 115359,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-1767109023945-pcs80d",
+        "agentType": "general-purpose",
+        "toolCalls": 19,
+        "durationMs": 115357,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767110185146-av8u81",
+    "timestamp": "2025-12-30T15:56:25.147Z",
+    "prompt": "test oquestador lee varios documentos con agentes y dime de que se tratan de forma resumida",
+    "sessionId": "fb586c5a-6861-41f8-982b-30ea1eed34ca",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 20,
+      "domains": [
+        "frontend",
+        "agent",
+        "testing"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 38,
+    "durationMs": 113293,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-1767110185149-tphnag",
+        "agentType": "general-purpose",
+        "toolCalls": 38,
+        "durationMs": 113291,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767122013629-zs39wa",
+    "timestamp": "2025-12-30T19:13:33.630Z",
+    "prompt": "test oquestador lee varios documentos con agentes y dime de que se tratan de forma resumida",
+    "sessionId": "f72c052b-3ec1-40f8-b151-d45c5b82b9e2",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 20,
+      "domains": [
+        "frontend",
+        "agent",
+        "testing"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 37,
+    "durationMs": 114478,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-1767122013631-l5l2iq",
+        "agentType": "general-purpose",
+        "toolCalls": 37,
+        "durationMs": 114476,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767122351695-20656u",
+    "timestamp": "2025-12-30T19:19:11.696Z",
+    "prompt": "has usado el plan mode?",
+    "sessionId": "f72c052b-3ec1-40f8-b151-d45c5b82b9e2",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 15,
+      "domains": [],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 0,
+    "durationMs": 16175,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-1767122351696-0xij0e",
+        "agentType": "general-purpose",
+        "toolCalls": 0,
+        "durationMs": 16175,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767122474854-mr4gwh",
+    "timestamp": "2025-12-30T19:21:14.856Z",
+    "prompt": "Planea como mejorar las metricas, expertos, overview, learnign para que funcione bien",
+    "sessionId": "f72c052b-3ec1-40f8-b151-d45c5b82b9e2",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 0,
+      "domains": [
+        "agent"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 46,
+    "durationMs": 232012,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-1767122474856-edsome",
+        "agentType": "general-purpose",
+        "toolCalls": 46,
+        "durationMs": 232012,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767122722068-j3dhse",
+    "timestamp": "2025-12-30T19:25:22.069Z",
+    "prompt": "has usado ahora el plan mode?",
+    "sessionId": "f72c052b-3ec1-40f8-b151-d45c5b82b9e2",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 15,
+      "domains": [],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 0,
+    "durationMs": 12265,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-1767122722069-6f6v86",
+        "agentType": "general-purpose",
+        "toolCalls": 0,
+        "durationMs": 12265,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767124819595-afp1m6",
+    "timestamp": "2025-12-30T20:00:19.596Z",
+    "prompt": "Planea como mejorar las metricas, expertos, overview, learnign para que funcione bien",
+    "sessionId": "54a231e8-a778-42e3-b92f-af07b0275c7f",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 0,
+      "domains": [
+        "agent"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 43,
+    "durationMs": 214848,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-1767124819598-c59eti",
+        "agentType": "general-purpose",
+        "toolCalls": 43,
+        "durationMs": 214846,
+        "selfImproved": false
+      }
+    ]
+  }
+]

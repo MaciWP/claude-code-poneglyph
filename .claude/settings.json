@@ -1,0 +1,93 @@
+{
+  "respectGitignore": true,
+  "env": {
+    "BASH_DEFAULT_TIMEOUT_MS": "300000",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "claude-opus-4-5-20251101",
+    "ENABLE_LSP_TOOL": "1",
+    "PATH": "C:\\Program Files\\nodejs;C:\\Users\\Maci\\.bun\\bin;C:\\Users\\Maci\\AppData\\Roaming\\npm;${PATH}",
+    "CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS": "50000"
+  },
+  "attribution": {
+    "commit": "Generated with Claude Code\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "pr": "Generated with [Claude Code](https://claude.com/claude-code)"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(bun:*)",
+      "Bash(bun test:*)",
+      "Bash(eslint:*)",
+      "Bash(prettier:*)",
+      "Bash(git diff:*)",
+      "Bash(git status)",
+      "Bash(git log:*)",
+      "Bash(git checkout:*)",
+      "Bash(git merge:*)",
+      "Bash(git push:*)",
+      "Bash(npm:*)",
+      "Bash(sed:*)",
+      "Bash(chmod:*)",
+      "Bash(yq:*)",
+      "mcp__sequential-thinking__sequentialthinking",
+      "mcp__context7__*",
+      "WebSearch"
+    ],
+    "deny": [
+      "Bash(rm -rf /*)",
+      "Bash(rm -rf /)",
+      "Bash(curl * | bash)",
+      "Bash(curl * | sh)",
+      "Bash(wget * -O - | sh)",
+      "Bash(wget * -O - | bash)",
+      "Edit(.env)",
+      "Edit(*.pem)",
+      "Edit(*credentials*)",
+      "Edit(*secret*)",
+      "Write(.env)",
+      "Write(*.pem)"
+    ]
+  },
+  "model": "claude-opus-4-5-20251101",
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun .claude/hooks/memory-inject.ts"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/format-code.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": ".claude/hooks/statusline.sh",
+    "padding": 0
+  },
+  "enabledPlugins": {
+    "typescript-lsp@claude-plugins-official": false,
+    "context7@claude-plugins-official": true
+  },
+  "language": "es",
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true,
+    "excludedCommands": [
+      "git",
+      "docker",
+      "bun",
+      "node"
+    ]
+  }
+}

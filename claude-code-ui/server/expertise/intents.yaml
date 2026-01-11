@@ -1,0 +1,134 @@
+# parallelStages: Define execution stages. Agents in the same stage array run in parallel.
+# Example: [[A], [B, C], [D]] means: A first, then B+C together, then D
+
+version: "1.0"
+description: Intent classification for orchestration
+
+intents:
+  - name: exploration
+    keywords:
+      - "find"
+      - "search"
+      - "where"
+      - "how does"
+      - "what is"
+      - "show me"
+      - "list"
+      - "explore"
+    agent: Explore
+    description: Understanding codebase, finding files, answering questions
+
+  - name: implementation
+    keywords:
+      - "implement"
+      - "create"
+      - "add"
+      - "build"
+      - "make"
+      - "write"
+      - "develop"
+      - "new feature"
+    agent: general-purpose
+    workflow:
+      - Explore
+      - Plan
+      - general-purpose
+      - code-quality
+    parallelStages:
+      - [Explore]
+      - [Plan]
+      - [general-purpose]
+      - [code-quality, reviewer]
+    description: Creating new features or functionality
+
+  - name: debugging
+    keywords:
+      - "fix"
+      - "bug"
+      - "error"
+      - "broken"
+      - "not working"
+      - "issue"
+      - "problem"
+      - "crash"
+    agent: general-purpose
+    workflow:
+      - Explore
+      - general-purpose
+    parallelStages:
+      - [Explore]
+      - [general-purpose]
+      - [code-quality]
+    description: Finding and fixing bugs
+
+  - name: refactoring
+    keywords:
+      - "refactor"
+      - "improve"
+      - "clean"
+      - "simplify"
+      - "optimize"
+      - "restructure"
+    agent: refactor-agent
+    workflow:
+      - Explore
+      - Plan
+      - refactor-agent
+      - code-quality
+    parallelStages:
+      - [Explore, code-quality]
+      - [Plan]
+      - [refactor-agent]
+      - [code-quality, reviewer]
+    description: Improving existing code structure
+
+  - name: testing
+    keywords:
+      - "test"
+      - "spec"
+      - "coverage"
+      - "unit test"
+      - "integration test"
+    agent: general-purpose
+    workflow:
+      - Explore
+      - general-purpose
+    parallelStages:
+      - [Explore]
+      - [general-purpose]
+    description: Writing or running tests
+
+  - name: documentation
+    keywords:
+      - "document"
+      - "explain"
+      - "readme"
+      - "comment"
+      - "describe"
+    agent: general-purpose
+    description: Creating or updating documentation
+
+  - name: review
+    keywords:
+      - "review"
+      - "check"
+      - "audit"
+      - "analyze"
+      - "evaluate"
+    agent: code-quality
+    description: Code review and quality analysis
+
+delegation_rules:
+  - condition: "file_count > 3"
+    force_workflow: true
+    reason: "Multi-file changes need structured approach"
+
+  - condition: "complexity == high"
+    agents:
+      - Plan
+    reason: "Complex tasks need planning first"
+
+  - condition: "type == security"
+    agents:
+      - code-quality
+    reason: "Security changes need review"

@@ -1,0 +1,56 @@
+[
+  {
+    "id": "exec-1767367354310-h81lhi",
+    "timestamp": "2026-01-02T15:22:34.311Z",
+    "prompt": "Analiza el proyecto que progreso lleva?",
+    "sessionId": "21c0bfd7-dd97-43b9-9e36-e45ba0ab75bf",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 0,
+      "domains": [],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 3,
+    "durationMs": 41971,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-1767367354312-xik39y",
+        "agentType": "general-purpose",
+        "toolCalls": 3,
+        "durationMs": 41970,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767367635160-nv5n4y",
+    "timestamp": "2026-01-02T15:27:15.161Z",
+    "prompt": "Dime el estado del proyecto",
+    "sessionId": "a81aa87c-33c7-4c77-94aa-9bbcaa3caf82",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 15,
+      "domains": [],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 3,
+    "durationMs": 40119,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-1767367635161-ncr96r",
+        "agentType": "general-purpose",
+        "toolCalls": 3,
+        "durationMs": 40119,
+        "selfImproved": false
+      }
+    ]
+  }
+]

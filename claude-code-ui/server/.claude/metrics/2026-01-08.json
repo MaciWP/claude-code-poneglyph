@@ -1,0 +1,2487 @@
+[
+  {
+    "id": "exec-1767875309731-23ycg7",
+    "timestamp": "2026-01-08T12:28:29.732Z",
+    "prompt": "test1",
+    "sessionId": "fce2fb3d-1b44-411e-8cdd-c9ec709e19a0",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 15,
+      "domains": [
+        "testing"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 0,
+    "durationMs": 19174,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-1767875309734-qmqfts",
+        "agentType": "general-purpose",
+        "toolCalls": 0,
+        "durationMs": 19172,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767875486610-kdhl3p",
+    "timestamp": "2026-01-08T12:31:26.611Z",
+    "prompt": "hola",
+    "sessionId": "fce2fb3d-1b44-411e-8cdd-c9ec709e19a0",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 15,
+      "domains": [],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 0,
+    "durationMs": 12999,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-1767875486612-lq00b3",
+        "agentType": "general-purpose",
+        "toolCalls": 0,
+        "durationMs": 12998,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767875515431-ve4uwc",
+    "timestamp": "2026-01-08T12:31:55.431Z",
+    "prompt": "hola",
+    "sessionId": "fce2fb3d-1b44-411e-8cdd-c9ec709e19a0",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 15,
+      "domains": [],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 0,
+    "durationMs": 14593,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-1767875515431-3ebvxa",
+        "agentType": "general-purpose",
+        "toolCalls": 0,
+        "durationMs": 14593,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767875555919-h9ptbt",
+    "timestamp": "2026-01-08T12:32:35.920Z",
+    "prompt": "/commands",
+    "sessionId": "fce2fb3d-1b44-411e-8cdd-c9ec709e19a0",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 15,
+      "domains": [
+        "agent"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 0,
+    "durationMs": 18471,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-1767875555921-xwaqug",
+        "agentType": "general-purpose",
+        "toolCalls": 0,
+        "durationMs": 18470,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767875876152-o0mhta",
+    "timestamp": "2026-01-08T12:37:56.153Z",
+    "prompt": "busca todos los archivos .ts en el proyecto y dime cuántos hay",
+    "sessionId": "fce2fb3d-1b44-411e-8cdd-c9ec709e19a0",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 0,
+      "domains": [],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 3,
+    "durationMs": 24452,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-1767875876154-6ab3pw",
+        "agentType": "general-purpose",
+        "toolCalls": 3,
+        "durationMs": 24451,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767875921244-wlhx07",
+    "timestamp": "2026-01-08T12:38:41.245Z",
+    "prompt": "crea un plan para añadir dark mode a la aplicación",
+    "sessionId": "fce2fb3d-1b44-411e-8cdd-c9ec709e19a0",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 0,
+      "domains": [],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 10,
+    "durationMs": 59157,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-1767875921245-bt91k3",
+        "agentType": "general-purpose",
+        "toolCalls": 10,
+        "durationMs": 59157,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767876010726-0kauh0",
+    "timestamp": "2026-01-08T12:40:10.726Z",
+    "prompt": "recuerda que prefiero usar interfaces en lugar de types",
+    "sessionId": "fce2fb3d-1b44-411e-8cdd-c9ec709e19a0",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 0,
+      "domains": [
+        "frontend"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 0,
+    "durationMs": 17210,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-1767876010726-rdb3en",
+        "agentType": "general-purpose",
+        "toolCalls": 0,
+        "durationMs": 17210,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767876061293-7atifa",
+    "timestamp": "2026-01-08T12:41:01.293Z",
+    "prompt": "explica cómo funciona el websocket en este proyecto",
+    "sessionId": "fce2fb3d-1b44-411e-8cdd-c9ec709e19a0",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 0,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 8,
+    "durationMs": 65742,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": true,
+    "agentMetrics": [
+      {
+        "agentId": "agent-1767876061293-4zqjrs",
+        "agentType": "expert:websocket",
+        "toolCalls": 8,
+        "durationMs": 65741,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767876203655-4pffm9",
+    "timestamp": "2026-01-08T12:43:23.656Z",
+    "prompt": "explica cómo funciona el websocket en este proyecto",
+    "sessionId": "3dabc3a0-ffb6-4bb7-954f-351992a3b099",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 0,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 6,
+    "durationMs": 59481,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": true,
+    "agentMetrics": [
+      {
+        "agentId": "agent-1767876203656-cnxfn3",
+        "agentType": "expert:websocket",
+        "toolCalls": 6,
+        "durationMs": 59481,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767876311243-134hhs",
+    "timestamp": "2026-01-08T12:45:11.243Z",
+    "prompt": "lee 3 skills importantes",
+    "sessionId": "3dabc3a0-ffb6-4bb7-954f-351992a3b099",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 15,
+      "domains": [
+        "agent"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 5,
+    "durationMs": 29932,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-1767876311244-mygepq",
+        "agentType": "general-purpose",
+        "toolCalls": 5,
+        "durationMs": 29931,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767876346711-w7wtr5",
+    "timestamp": "2026-01-08T12:45:46.712Z",
+    "prompt": "Porque no has usado agentes para leerlas?",
+    "sessionId": "3dabc3a0-ffb6-4bb7-954f-351992a3b099",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 0,
+      "domains": [
+        "agent"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 0,
+    "durationMs": 19164,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-1767876346712-pbtd23",
+        "agentType": "general-purpose",
+        "toolCalls": 0,
+        "durationMs": 19164,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767876430286-88a328",
+    "timestamp": "2026-01-08T12:47:10.288Z",
+    "prompt": "busca en esta carpeta cuantos documentos hay dime de que trata cada 1 claude-code-ui\\server\\expertise",
+    "sessionId": "3dabc3a0-ffb6-4bb7-954f-351992a3b099",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 10,
+      "domains": [
+        "frontend",
+        "agent"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 4,
+    "durationMs": 26596,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-1767876430288-d8j4sm",
+        "agentType": "general-purpose",
+        "toolCalls": 4,
+        "durationMs": 26596,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767876525243-oyo3n0",
+    "timestamp": "2026-01-08T12:48:45.244Z",
+    "prompt": "haz lo mismo con la raiz (pero no hace falta entrar dentro de las carpetas)",
+    "sessionId": "3dabc3a0-ffb6-4bb7-954f-351992a3b099",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 0,
+      "domains": [],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 8,
+    "durationMs": 39547,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-1767876525245-33rm7n",
+        "agentType": "general-purpose",
+        "toolCalls": 8,
+        "durationMs": 39546,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767876564911-a87i1i",
+    "timestamp": "2026-01-08T12:49:24.911Z",
+    "prompt": "esta el orquestador activado?",
+    "sessionId": "3dabc3a0-ffb6-4bb7-954f-351992a3b099",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 15,
+      "domains": [],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 8,
+    "durationMs": 52501,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-1767876564911-irwrl5",
+        "agentType": "general-purpose",
+        "toolCalls": 8,
+        "durationMs": 52501,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767876666313-o6exvz",
+    "timestamp": "2026-01-08T12:51:06.314Z",
+    "prompt": "Estas todo el rato usando el read  grep.... porque no usas agentes de exploracion si tienes el orquestrate activo? No tiene mucho sentido que no intentes paralelizar el trabajo...",
+    "sessionId": "3dabc3a0-ffb6-4bb7-954f-351992a3b099",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 0,
+      "domains": [
+        "agent"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 2,
+    "durationMs": 26202,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-1767876666314-mk3g6u",
+        "agentType": "general-purpose",
+        "toolCalls": 2,
+        "durationMs": 26202,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767876771816-3627az",
+    "timestamp": "2026-01-08T12:52:51.817Z",
+    "prompt": "si te pido: crea un tipo para representar un usuario , como lo harias?",
+    "sessionId": "3dabc3a0-ffb6-4bb7-954f-351992a3b099",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 0,
+      "domains": [],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 0,
+    "durationMs": 17833,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-1767876771818-6wffho",
+        "agentType": "general-purpose",
+        "toolCalls": 0,
+        "durationMs": 17832,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767876834832-0ohac0",
+    "timestamp": "2026-01-08T12:53:54.832Z",
+    "prompt": "recuerdas que te pedi que prefiero interfaces a types?",
+    "sessionId": "3dabc3a0-ffb6-4bb7-954f-351992a3b099",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 0,
+      "domains": [
+        "frontend"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 0,
+    "durationMs": 10406,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-1767876834834-vtswtl",
+        "agentType": "general-purpose",
+        "toolCalls": 0,
+        "durationMs": 10404,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767876939220-4aqyfq",
+    "timestamp": "2026-01-08T12:55:39.220Z",
+    "prompt": "cual es tu primer msg?",
+    "sessionId": "3dabc3a0-ffb6-4bb7-954f-351992a3b099",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 15,
+      "domains": [],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 0,
+    "durationMs": 9336,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-1767876939221-1lf430",
+        "agentType": "general-purpose",
+        "toolCalls": 0,
+        "durationMs": 9335,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767876962639-0jtqms",
+    "timestamp": "2026-01-08T12:56:02.639Z",
+    "prompt": "y mios cual es mi primer msg?",
+    "sessionId": "3dabc3a0-ffb6-4bb7-954f-351992a3b099",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 15,
+      "domains": [],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 0,
+    "durationMs": 10847,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-1767876962639-q9e8z5",
+        "agentType": "general-purpose",
+        "toolCalls": 0,
+        "durationMs": 10847,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767876999014-gdopqp",
+    "timestamp": "2026-01-08T12:56:39.014Z",
+    "prompt": "que aparece en la imagen?",
+    "sessionId": "3dabc3a0-ffb6-4bb7-954f-351992a3b099",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 15,
+      "domains": [],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 0,
+    "durationMs": 7686,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-1767876999014-oj3znp",
+        "agentType": "general-purpose",
+        "toolCalls": 0,
+        "durationMs": 7686,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767883897807-0garpp",
+    "timestamp": "2026-01-08T14:51:37.807Z",
+    "prompt": "mi nombre es Carlos",
+    "sessionId": "bcbb485b-7d24-4068-a247-a69510245649",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 15,
+      "domains": [],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 0,
+    "durationMs": 11311,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-1767883897809-y7xn5c",
+        "agentType": "general-purpose",
+        "toolCalls": 0,
+        "durationMs": 11309,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767883920878-ih32pp",
+    "timestamp": "2026-01-08T14:52:00.878Z",
+    "prompt": "cómo me llamo?",
+    "sessionId": "bcbb485b-7d24-4068-a247-a69510245649",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 15,
+      "domains": [],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 0,
+    "durationMs": 11186,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-1767883920878-lssx8x",
+        "agentType": "general-purpose",
+        "toolCalls": 0,
+        "durationMs": 11186,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767884064785-kf9fsp",
+    "timestamp": "2026-01-08T14:54:24.785Z",
+    "prompt": "cómo me llamo?",
+    "sessionId": "bcbb485b-7d24-4068-a247-a69510245649",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 15,
+      "domains": [],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 0,
+    "durationMs": 8766,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-1767884064785-qgkp2e",
+        "agentType": "general-purpose",
+        "toolCalls": 0,
+        "durationMs": 8766,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767892802088-zky46r",
+    "timestamp": "2026-01-08T17:20:02.088Z",
+    "prompt": "Add feature to websocket",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 5,
+    "durationMs": 1,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": true,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "expert:websocket",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767892802096-7paidf",
+    "timestamp": "2026-01-08T17:20:02.097Z",
+    "prompt": "What is 2+2?",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 20,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": false
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 5,
+    "durationMs": 0,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": true,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "expert:websocket",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767892802105-hwwi5a",
+    "timestamp": "2026-01-08T17:20:02.105Z",
+    "prompt": "Refactor websocket module",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 5,
+    "durationMs": 1,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": true,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "expert:websocket",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767892802113-ldq92b",
+    "timestamp": "2026-01-08T17:20:02.113Z",
+    "prompt": "Complex task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 2,
+    "totalToolCalls": 10,
+    "durationMs": 1,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "scout",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "builder",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767892802119-cqtj0c",
+    "timestamp": "2026-01-08T17:20:02.119Z",
+    "prompt": "Task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 5,
+    "durationMs": 0,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": true,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "expert:websocket",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767892802125-s8zz0m",
+    "timestamp": "2026-01-08T17:20:02.125Z",
+    "prompt": "Task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 5,
+    "durationMs": 0,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": true,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "expert:websocket",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767892802132-niqksg",
+    "timestamp": "2026-01-08T17:20:02.132Z",
+    "prompt": "Task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 0,
+    "durationMs": 3000,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": true,
+    "agentMetrics": [
+      {
+        "agentId": "failed-1767892805132",
+        "agentType": "expert:websocket",
+        "toolCalls": 0,
+        "durationMs": 3000,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767892805136-wjg4d5",
+    "timestamp": "2026-01-08T17:20:05.136Z",
+    "prompt": "Complex task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 3,
+    "totalToolCalls": 15,
+    "durationMs": 1,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "scout",
+        "toolCalls": 5,
+        "durationMs": 1,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "architect",
+        "toolCalls": 5,
+        "durationMs": 1,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "builder",
+        "toolCalls": 5,
+        "durationMs": 1,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767892805143-mp1wh7",
+    "timestamp": "2026-01-08T17:20:05.143Z",
+    "prompt": "Task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 5,
+    "durationMs": 0,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": true,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "expert:websocket",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767892951449-fi84xw",
+    "timestamp": "2026-01-08T17:22:31.449Z",
+    "prompt": "Add feature to websocket",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 5,
+    "durationMs": 1,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": true,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "expert:websocket",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767892951458-kw8fup",
+    "timestamp": "2026-01-08T17:22:31.458Z",
+    "prompt": "What is 2+2?",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 20,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": false
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 5,
+    "durationMs": 1,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": true,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "expert:websocket",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767892951467-exa71g",
+    "timestamp": "2026-01-08T17:22:31.467Z",
+    "prompt": "Refactor websocket module",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 5,
+    "durationMs": 0,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": true,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "expert:websocket",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767892951473-yg6d7c",
+    "timestamp": "2026-01-08T17:22:31.473Z",
+    "prompt": "Complex task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 2,
+    "totalToolCalls": 10,
+    "durationMs": 1,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "scout",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "builder",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767892951480-rhcgnt",
+    "timestamp": "2026-01-08T17:22:31.480Z",
+    "prompt": "Task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 5,
+    "durationMs": 0,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": true,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "expert:websocket",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767892951486-zsbcgh",
+    "timestamp": "2026-01-08T17:22:31.486Z",
+    "prompt": "Task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 5,
+    "durationMs": 1,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": true,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "expert:websocket",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767892951494-b6jfmm",
+    "timestamp": "2026-01-08T17:22:31.494Z",
+    "prompt": "Task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 0,
+    "durationMs": 3003,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": true,
+    "agentMetrics": [
+      {
+        "agentId": "failed-1767892954497",
+        "agentType": "expert:websocket",
+        "toolCalls": 0,
+        "durationMs": 3003,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767892954506-zbx8yr",
+    "timestamp": "2026-01-08T17:22:34.506Z",
+    "prompt": "Complex task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 3,
+    "totalToolCalls": 15,
+    "durationMs": 0,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "scout",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "architect",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "builder",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767892954512-56wtqn",
+    "timestamp": "2026-01-08T17:22:34.512Z",
+    "prompt": "Task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 5,
+    "durationMs": 0,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": true,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "expert:websocket",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767893032416-1g4ep2",
+    "timestamp": "2026-01-08T17:23:52.416Z",
+    "prompt": "Add feature to websocket",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 2,
+    "totalToolCalls": 10,
+    "durationMs": 5,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "scout",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "builder",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767893032422-ucihgw",
+    "timestamp": "2026-01-08T17:23:52.422Z",
+    "prompt": "What is 2+2?",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 20,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": false
+    },
+    "agentsSpawned": 2,
+    "totalToolCalls": 10,
+    "durationMs": 4,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "scout",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "builder",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767893032428-dawr2r",
+    "timestamp": "2026-01-08T17:23:52.428Z",
+    "prompt": "Refactor websocket module",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 2,
+    "totalToolCalls": 10,
+    "durationMs": 2,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "scout",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "builder",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767893032432-q0767n",
+    "timestamp": "2026-01-08T17:23:52.432Z",
+    "prompt": "Complex task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 2,
+    "totalToolCalls": 10,
+    "durationMs": 3,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "scout",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "builder",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767893032437-34fd3z",
+    "timestamp": "2026-01-08T17:23:52.437Z",
+    "prompt": "Task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 2,
+    "totalToolCalls": 10,
+    "durationMs": 4,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "scout",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "builder",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767893032442-n1faga",
+    "timestamp": "2026-01-08T17:23:52.442Z",
+    "prompt": "Task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 2,
+    "totalToolCalls": 10,
+    "durationMs": 4,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "scout",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "builder",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767893032447-xw2aet",
+    "timestamp": "2026-01-08T17:23:52.447Z",
+    "prompt": "Task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 2,
+    "totalToolCalls": 0,
+    "durationMs": 2992,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "failed-1767893035439",
+        "agentType": "scout",
+        "toolCalls": 0,
+        "durationMs": 2987,
+        "selfImproved": false
+      },
+      {
+        "agentId": "failed-1767893035439",
+        "agentType": "builder",
+        "toolCalls": 0,
+        "durationMs": 2987,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767893035441-f82edz",
+    "timestamp": "2026-01-08T17:23:55.441Z",
+    "prompt": "Complex task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 3,
+    "totalToolCalls": 15,
+    "durationMs": 3,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "scout",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "architect",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "builder",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767893035446-xeisvi",
+    "timestamp": "2026-01-08T17:23:55.446Z",
+    "prompt": "Task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 2,
+    "totalToolCalls": 10,
+    "durationMs": 5,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "scout",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "builder",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767894871783-og5naf",
+    "timestamp": "2026-01-08T17:54:31.783Z",
+    "prompt": "Add feature to websocket",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 2,
+    "totalToolCalls": 10,
+    "durationMs": 4,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "scout",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "builder",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767894871789-jlnhfz",
+    "timestamp": "2026-01-08T17:54:31.789Z",
+    "prompt": "What is 2+2?",
+    "sessionId": "session-1",
+    "useOrchestrator": false,
+    "classification": {
+      "complexityScore": 20,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": false
+    },
+    "agentsSpawned": 0,
+    "totalToolCalls": 0,
+    "durationMs": 0,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": []
+  },
+  {
+    "id": "exec-1767894871796-aov3zr",
+    "timestamp": "2026-01-08T17:54:31.796Z",
+    "prompt": "Refactor websocket module",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 2,
+    "totalToolCalls": 10,
+    "durationMs": 3,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "scout",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "builder",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767894871801-a8236c",
+    "timestamp": "2026-01-08T17:54:31.801Z",
+    "prompt": "Complex task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 2,
+    "totalToolCalls": 10,
+    "durationMs": 4,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "scout",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "builder",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767894871806-ti18tg",
+    "timestamp": "2026-01-08T17:54:31.806Z",
+    "prompt": "Task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 2,
+    "totalToolCalls": 10,
+    "durationMs": 4,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "scout",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "builder",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767894871811-jl3i0p",
+    "timestamp": "2026-01-08T17:54:31.811Z",
+    "prompt": "Task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 2,
+    "totalToolCalls": 10,
+    "durationMs": 4,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "scout",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "builder",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767894871816-wtoax9",
+    "timestamp": "2026-01-08T17:54:31.816Z",
+    "prompt": "Task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 2,
+    "totalToolCalls": 0,
+    "durationMs": 3005,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "failed-1767894874821",
+        "agentType": "scout",
+        "toolCalls": 0,
+        "durationMs": 3001,
+        "selfImproved": false
+      },
+      {
+        "agentId": "failed-1767894874821",
+        "agentType": "builder",
+        "toolCalls": 0,
+        "durationMs": 3001,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767894874823-paxnid",
+    "timestamp": "2026-01-08T17:54:34.823Z",
+    "prompt": "Complex task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 3,
+    "totalToolCalls": 15,
+    "durationMs": 4,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "scout",
+        "toolCalls": 5,
+        "durationMs": 1,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "architect",
+        "toolCalls": 5,
+        "durationMs": 1,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "builder",
+        "toolCalls": 5,
+        "durationMs": 1,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767894874827-91v0db",
+    "timestamp": "2026-01-08T17:54:34.827Z",
+    "prompt": "Task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 2,
+    "totalToolCalls": 10,
+    "durationMs": 4,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "scout",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "builder",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767894936919-9jq5gy",
+    "timestamp": "2026-01-08T17:55:36.920Z",
+    "prompt": "Add feature to websocket",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 2,
+    "totalToolCalls": 10,
+    "durationMs": 17,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "scout",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "builder",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767894936940-i94wlr",
+    "timestamp": "2026-01-08T17:55:36.940Z",
+    "prompt": "What is 2+2?",
+    "sessionId": "session-1",
+    "useOrchestrator": false,
+    "classification": {
+      "complexityScore": 20,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": false
+    },
+    "agentsSpawned": 0,
+    "totalToolCalls": 0,
+    "durationMs": 0,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": []
+  },
+  {
+    "id": "exec-1767894936948-f7fhmz",
+    "timestamp": "2026-01-08T17:55:36.949Z",
+    "prompt": "Refactor websocket module",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 2,
+    "totalToolCalls": 10,
+    "durationMs": 4,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "scout",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "builder",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767894936955-6ts99h",
+    "timestamp": "2026-01-08T17:55:36.955Z",
+    "prompt": "Complex task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 2,
+    "totalToolCalls": 10,
+    "durationMs": 5,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "scout",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "builder",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767894936961-2257rw",
+    "timestamp": "2026-01-08T17:55:36.961Z",
+    "prompt": "Task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 2,
+    "totalToolCalls": 10,
+    "durationMs": 5,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "scout",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "builder",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767894936969-o22dyv",
+    "timestamp": "2026-01-08T17:55:36.969Z",
+    "prompt": "Task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 2,
+    "totalToolCalls": 10,
+    "durationMs": 2,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "scout",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "builder",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767894936974-kyerpt",
+    "timestamp": "2026-01-08T17:55:36.974Z",
+    "prompt": "Task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 2,
+    "totalToolCalls": 0,
+    "durationMs": 2998,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "failed-1767894939971",
+        "agentType": "scout",
+        "toolCalls": 0,
+        "durationMs": 2995,
+        "selfImproved": false
+      },
+      {
+        "agentId": "failed-1767894939972",
+        "agentType": "builder",
+        "toolCalls": 0,
+        "durationMs": 2996,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767894939977-omqe88",
+    "timestamp": "2026-01-08T17:55:39.977Z",
+    "prompt": "Complex task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 3,
+    "totalToolCalls": 15,
+    "durationMs": 5,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "scout",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "architect",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "builder",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767894939984-i3z8nz",
+    "timestamp": "2026-01-08T17:55:39.984Z",
+    "prompt": "Task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 2,
+    "totalToolCalls": 10,
+    "durationMs": 4,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "scout",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "builder",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767894988202-zrquuz",
+    "timestamp": "2026-01-08T17:56:28.203Z",
+    "prompt": "Add feature to websocket",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 2,
+    "totalToolCalls": 10,
+    "durationMs": 18,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "scout",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "builder",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767894988224-48j9hf",
+    "timestamp": "2026-01-08T17:56:28.224Z",
+    "prompt": "What is 2+2?",
+    "sessionId": "session-1",
+    "useOrchestrator": false,
+    "classification": {
+      "complexityScore": 20,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": false
+    },
+    "agentsSpawned": 0,
+    "totalToolCalls": 0,
+    "durationMs": 0,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": []
+  },
+  {
+    "id": "exec-1767894988231-qp1638",
+    "timestamp": "2026-01-08T17:56:28.231Z",
+    "prompt": "Refactor websocket module",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 2,
+    "totalToolCalls": 10,
+    "durationMs": 5,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "scout",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "builder",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767894988238-7myhra",
+    "timestamp": "2026-01-08T17:56:28.238Z",
+    "prompt": "Complex task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 2,
+    "totalToolCalls": 10,
+    "durationMs": 5,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "scout",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "builder",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767894988244-4vfmbq",
+    "timestamp": "2026-01-08T17:56:28.244Z",
+    "prompt": "Task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 2,
+    "totalToolCalls": 10,
+    "durationMs": 4,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "scout",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "builder",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767894988251-vsdepu",
+    "timestamp": "2026-01-08T17:56:28.251Z",
+    "prompt": "Task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 2,
+    "totalToolCalls": 10,
+    "durationMs": 2,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "scout",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "builder",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767894988256-xxgcm1",
+    "timestamp": "2026-01-08T17:56:28.256Z",
+    "prompt": "Task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 2,
+    "totalToolCalls": 0,
+    "durationMs": 3000,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "failed-1767894991255",
+        "agentType": "scout",
+        "toolCalls": 0,
+        "durationMs": 2997,
+        "selfImproved": false
+      },
+      {
+        "agentId": "failed-1767894991256",
+        "agentType": "builder",
+        "toolCalls": 0,
+        "durationMs": 2998,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767894991261-dk4kpk",
+    "timestamp": "2026-01-08T17:56:31.261Z",
+    "prompt": "Complex task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 3,
+    "totalToolCalls": 15,
+    "durationMs": 5,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "scout",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "architect",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "builder",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1767894991267-aqu77w",
+    "timestamp": "2026-01-08T17:56:31.267Z",
+    "prompt": "Task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 2,
+    "totalToolCalls": 10,
+    "durationMs": 5,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "scout",
+        "toolCalls": 5,
+        "durationMs": 1,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "builder",
+        "toolCalls": 5,
+        "durationMs": 1,
+        "selfImproved": false
+      }
+    ]
+  }
+]

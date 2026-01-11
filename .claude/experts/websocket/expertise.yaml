@@ -1,0 +1,304 @@
+domain: websocket
+version: 1.1.0
+last_updated: 2025-12-27T12:00:00Z
+last_updated_by: manual
+confidence: 0.9100000000000001
+mental_model:
+  overview: |
+    Sistema de WebSocket bidireccional usando Elysia.
+    JSON streaming individual por mensaje WebSocket (NO NDJSON entre frontend-backend).
+    NDJSON real está en claude.ts para comunicación con Claude CLI.
+    Incluye Lead Orchestrator para delegación automática de tareas complejas.
+    Soporta múltiples proveedores: claude, codex, gemini.
+  architecture:
+    type: event-driven
+    framework: Elysia
+    protocol: WebSocket + JSON (individual messages)
+    diagram: |
+      Frontend (useWebSocket) <---> Backend (websocket.ts) <---> Claude CLI (NDJSON)
+                 ↓                         ↓                          ↓
+           React State              Lead Orchestrator            claude.ts (NDJSON parser)
+                                          ↓
+                                   agent-registry (EventEmitter)
+  orchestration:
+    description: Lead Orchestrator para delegación automática de tareas
+    location: websocket.ts:124-252
+    key_events:
+      - orchestrator_event (classified, executing, completed)
+      - agent_event (created, started, completed, failed, tool_use, spawned)
+    providers:
+      - claude (default)
+      - codex
+      - gemini
+  key_files:
+    - path: src/routes/websocket.ts
+      purpose: Handler principal de WebSocket y Lead Orchestrator
+      patterns:
+        - JSON streaming over WebSocket
+        - abort handling
+        - user_answer forwarding
+        - Lead Orchestrator integration
+        - orchestrator_event streaming
+        - agent_event streaming
+      last_verified: 2025-12-27
+    - path: src/services/claude.ts
+      purpose: NDJSON parser real, abort handling, streaming con Claude CLI
+      patterns:
+        - NDJSON buffer re-accumulation
+        - SIGTERM/SIGKILL handling
+        - streamCLIWithAbort method
+      last_verified: 2025-12-27
+    - path: ../web/src/hooks/useWebSocket.ts
+      purpose: React hook para conexión WS
+      patterns:
+        - JSON message parsing
+        - connection state management
+        - exponential backoff reconnection
+        - abort handling
+      last_verified: 2025-12-27
+    - path: src/services/agent-registry.ts
+      purpose: Registry de agentes con EventEmitter
+      patterns:
+        - CRUD de agentes
+        - Event emission
+      last_verified: 2025-12-27
+  relationships:
+    - from: websocket.ts
+      to: agent-registry.ts
+      type: subscribes_to
+      description: WebSocket escucha eventos del registry (agent:created, agent:started, agent:completed, agent:failed)
+    - from: websocket.ts
+      to: claude.ts
+      type: calls
+      description: WebSocket llama streamCLIWithAbort() para ejecutar Claude CLI
+    - from: websocket.ts
+      to: orchestrator-agent.ts
+      type: uses
+      description: Lead Orchestrator para delegación de tareas complejas
+patterns:
+  - name: JSON Streaming over WebSocket
+    confidence: 0.9
+    usage: Comunicación entre backend y frontend via WebSocket
+    example: |
+      // websocket.ts - Backend envía JSON individual por mensaje
+      for await (const chunk of stream) {
+        ws.send(JSON.stringify(chunk))  // JSON individual, no NDJSON
+      }
+
+      // useWebSocket.ts - Frontend parsea cada mensaje
+      ws.onmessage = (event) => {
+        const chunk = JSON.parse(event.data)
+        // process chunk
+      }
+    gotchas:
+      - Cada mensaje WebSocket es UN objeto JSON completo
+      - NO usar split('\n') - eso es para NDJSON en claude.ts
+  - name: NDJSON Parser (claude.ts)
+    confidence: 0.85
+    usage: Parsing de output de Claude CLI en claude.ts
+    example: |
+      // claude.ts:872-954 - NDJSON con buffer re-accumulation
+      const buffer = []
+      for await (const chunk of stream) {
+        buffer.push(chunk)
+        const lines = buffer.join('').split('\n')
+        // Procesar líneas completas, guardar incompletas
+      }
+    gotchas:
+      - Chunks pueden llegar partidos, acumular en buffer
+      - Re-intentar parse si JSON está truncado
+  - name: Exponential Backoff Reconnection
+    confidence: 0.9
+    usage: Reconexión de WebSocket en useWebSocket.ts
+    example: |
+      // useWebSocket.ts:54-58
+      const delay = Math.min(
+        WS_BASE_RECONNECT_DELAY * Math.pow(2, retryCountRef.current),
+        WS_MAX_RECONNECT_DELAY
+      )
+      // WS_BASE_RECONNECT_DELAY = 1000ms
+      // WS_MAX_RECONNECT_DELAY = 30000ms
+    gotchas:
+      - No hay límite de reintentos (posible mejora)
+  - name: Abort Handling
+    confidence: 0.9
+    usage: Cancelación de operaciones en claude.ts
+    example: |
+      // claude.ts:437-450
+      proc.kill('SIGTERM')
+      setTimeout(() => {
+        Bun.spawn(['kill', '-9', String(pid)])
+      }, 500)  // 500ms timeout
+    gotchas:
+      - SIGTERM no funciona en Windows, usar SIGKILL
+      - Timeout de 500ms (no 5 segundos) antes de SIGKILL
+  - name: Error Handling
+    confidence: 0.75
+    usage: Exception management
+  - name: Exponential Backoff
+    confidence: 0.75
+    usage: Retry logic with increasing delays
+  - name: Reconnection Logic
+    confidence: 0.75
+    usage: Connection recovery
+known_issues:
+  - id: WS-001
+    symptom: Abort no funciona en Windows
+    root_cause: SIGTERM no es soportado en Windows
+    solution: Usar SIGKILL con delay de 500ms (ver claude.ts:437-450)
+    verified: true
+    date_found: 2025-12-20
+  - id: WS-002
+    symptom: Reconexión infinita si servidor está caído
+    root_cause: No hay límite de reintentos en useWebSocket.ts
+    solution: Añadir maxRetries o backoff con tope
+    verified: false
+    date_found: 2025-12-27
+  - id: WEBSOCKET-003
+    symptom: "Task failed: Task..."
+    solution: Pending investigation
+    verified: false
+    date_found: 2026-01-08
+  - id: WEBSOCKET-004
+    symptom: "Task failed: Task..."
+    solution: Pending investigation
+    verified: false
+    date_found: 2026-01-08
+changelog:
+  - date: 2026-01-08
+    type: learned
+    source: learning-loop
+    change: "Task failed: Task..."
+    confidence_delta: -0.05
+  - date: 2026-01-08
+    type: verified
+    source: learning-loop
+    change: "Task completed successfully: Task..."
+    confidence_delta: 0.02
+  - date: 2026-01-08
+    type: learned
+    source: learning-loop
+    change: "Recorded issue: WEBSOCKET-004 - Task failed: Task..."
+  - date: 2026-01-08
+    type: verified
+    source: learning-loop
+    change: "Task completed successfully: Task..."
+    confidence_delta: 0.02
+  - date: 2026-01-08
+    type: verified
+    source: learning-loop
+    change: "Task completed successfully: Task..."
+    confidence_delta: 0.02
+  - date: 2026-01-08
+    type: verified
+    source: learning-loop
+    change: "Task completed successfully: Refactor websocket module..."
+    confidence_delta: 0.02
+  - date: 2026-01-08
+    type: verified
+    source: learning-loop
+    change: "Task completed successfully: What is 2+2?..."
+    confidence_delta: 0.02
+  - date: 2026-01-08
+    type: verified
+    source: learning-loop
+    change: "Task completed successfully: Add feature to websocket..."
+    confidence_delta: 0.02
+  - date: 2026-01-08
+    type: learned
+    source: learning-loop
+    change: "Task failed: Task..."
+    confidence_delta: -0.05
+  - date: 2026-01-08
+    type: verified
+    source: learning-loop
+    change: "Task completed successfully: Task..."
+    confidence_delta: 0.02
+  - date: 2026-01-08
+    type: learned
+    source: learning-loop
+    change: "Recorded issue: WEBSOCKET-003 - Task failed: Task..."
+  - date: 2026-01-08
+    type: verified
+    source: learning-loop
+    change: "Task completed successfully: Task..."
+    confidence_delta: 0.02
+  - date: 2026-01-08
+    type: verified
+    source: learning-loop
+    change: "Task completed successfully: Task..."
+    confidence_delta: 0.02
+  - date: 2026-01-08
+    type: verified
+    source: learning-loop
+    change: "Task completed successfully: Refactor websocket module..."
+    confidence_delta: 0.02
+  - date: 2026-01-08
+    type: verified
+    source: learning-loop
+    change: "Task completed successfully: What is 2+2?..."
+    confidence_delta: 0.02
+  - date: 2026-01-08
+    type: verified
+    source: learning-loop
+    change: "Task completed successfully: Add feature to websocket..."
+    confidence_delta: 0.02
+  - date: 2026-01-08
+    type: verified
+    source: learning-loop
+    change: "Task completed successfully: explica cómo funciona el websocket en este proyect..."
+    confidence_delta: 0.02
+  - date: 2026-01-08
+    type: learned
+    source: learning-loop
+    change: "Added pattern: Reconnection Logic"
+    confidence_delta: 0.01
+  - date: 2026-01-08
+    type: learned
+    source: learning-loop
+    change: "Added pattern: Exponential Backoff"
+    confidence_delta: 0.01
+  - date: 2026-01-08
+    type: learned
+    source: learning-loop
+    change: "Added pattern: Error Handling"
+    confidence_delta: 0.01
+  - date: 2026-01-08
+    type: verified
+    source: learning-loop
+    change: "Task completed successfully: explica cómo funciona el websocket en este proyect..."
+    confidence_delta: 0.02
+  - date: 2025-12-27
+    type: corrected
+    source: ultrathink-review
+    change: |
+      ULTRATHINK Fase 4 corrections:
+      - Fixed NDJSON pattern (was incorrect - WebSocket uses JSON, NDJSON is in claude.ts)
+      - Added claude.ts to key_files
+      - Documented Lead Orchestrator (130+ lines not documented)
+      - Fixed timeout values (5s → 500ms)
+      - Fixed SIGKILL delay (100ms → 500ms)
+      - Reduced confidence (0.91 → 0.70) due to inaccuracies
+      - Added exponential backoff pattern
+      - Added WS-002 known issue
+      - Unified path format
+    confidence_delta: -0.21
+  - date: 2025-12-25
+    type: verified
+    source: learning-loop
+    change: "Task completed successfully: Refactor websocket module"
+    confidence_delta: 0.02
+  - date: 2025-12-25
+    type: learned
+    source: bootstrap
+    change: Initial expertise file created
+    confidence_delta: 0.85
+validation:
+  required_files:
+    - src/routes/websocket.ts
+    - src/services/claude.ts
+  required_patterns:
+    - file: src/routes/websocket.ts
+      pattern: ws|websocket|orchestrator
+      description: Debe manejar WebSocket y Lead Orchestrator
+    -                                                                                                                                

@@ -1,0 +1,49 @@
+# Dependencies
+node_modules/
+bun.lockb
+
+# Build output
+dist/
+build/
+
+# Session data (local only)
+data/sessions/*.jsonl
+storage/
+
+# Keep the sessions directory structure
+!data/sessions/.gitkeep
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# Logs
+*.log
+npm-debug.log*
+.devlogs/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# MCP config (contains tokens)
+.mcp.json
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Test coverage
+coverage/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/

@@ -1,0 +1,36 @@
+{
+  "name": "claude-code-poneglyph",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "UI wrapper para Claude Code | Bun + Elysia + React",
+  "scripts": {
+    "dev:server": "cd claude-code-ui/server && bun dev",
+    "dev:web": "cd claude-code-ui/web && bun dev",
+    "test": "cd claude-code-ui/server && bun test && cd ../web && bun test",
+    "lint": "cd claude-code-ui/server && bun run lint && cd ../web && bun run lint",
+    "typecheck": "cd claude-code-ui/server && bun run typecheck && cd ../web && bun run typecheck",
+    "validate": "bun run typecheck && bun run lint && bun run test",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "^9.0.0",
+    "lint-staged": "^15.0.0"
+  },
+  "lint-staged": {
+    "claude-code-ui/server/src/**/*.ts": [
+      "bunx --cwd claude-code-ui/server eslint --fix",
+      "bunx --cwd claude-code-ui/server prettier --write"
+    ],
+    "claude-code-ui/web/src/**/*.{ts,tsx}": [
+      "bunx --cwd claude-code-ui/web eslint --fix",
+      "bunx --cwd claude-code-ui/web prettier --write"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MaciWP/claude-code-poneglyph.git"
+  },
+  "author": "",
+  "license": "MIT"
+}
