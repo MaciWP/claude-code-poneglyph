@@ -1,17 +1,35 @@
 ---
-description: Cargar contexto extendido del proyecto (API, arquitectura, tools)
+description: Carga contexto extendido del proyecto (API, arquitectura, tools)
+model: opus
+version: 2.0.0 (Lean)
 ---
 
-Lee y carga el contenido de CLAUDE-reference.md para obtener contexto extendido:
+# /load-reference
 
-- Arquitectura completa con diagrama Mermaid
-- Todos los endpoints API (tabla completa)
-- Estructura del proyecto detallada
-- Proveedores soportados (Claude, Codex, Gemini)
-- Sistema de memoria y agentes
-- Tools disponibles (MCPs, Agents, Skills, Commands)
-- Response style y formatos
-- Anti-hallucination completo con thresholds
-- Cross-platform notes
+Inyecta el Contexto Extendido del Proyecto en el contexto actual.
 
-$READ_FILE:CLAUDE-reference.md
+## 1. MANIFESTO DE CARGA
+
+Se leerá el siguiente recurso (~8 KB):
+
+| # | Archivo | Contenido |
+|---|---------|-----------|
+| 1 | `CLAUDE-reference.md` | Arquitectura, API completa, tools, anti-hallucination |
+
+## 2. PROTOCOLO DE EJECUCIÓN
+
+Instrucciones para el Agente:
+
+1. **Validación Previa:**
+   Ejecuta `Glob('CLAUDE-reference.md')` para confirmar disponibilidad.
+
+2. **Inyección de Contexto:**
+   Ejecuta `Read('CLAUDE-reference.md')`.
+
+3. **Confirmación:**
+   Al finalizar, responde únicamente con:
+   > "📚 **Reference Module Loaded:** Contexto extendido activo (arquitectura, API, tools). Listo para desarrollo informado."
+
+---
+
+**Cuándo usar:** Al iniciar sesión de desarrollo o cuando necesitas visión completa del proyecto.

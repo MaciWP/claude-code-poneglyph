@@ -1,241 +1,126 @@
 ---
-description: List all available slash commands with usage examples
+description: Lista dinámica de todos los comandos instalados con categorización automática
+model: haiku
+version: 2.0.0
 ---
 
-# Available Commands
+# /commands [category]
 
-List all available slash commands in `.claude/commands/` with descriptions and usage examples.
-
-## Usage
-
-```
-/commands [category]
-```
-
-### Examples
-
-```
-/commands                    # All commands
-/commands discovery          # Discovery commands
-/commands anti-hallucination # Anti-hallucination commands
-```
+Genera un catálogo visual y dinámico de las capacidades instaladas en el Orquestador.
 
 ---
 
-## Output Format
+## 1. PROTOCOLO DE DISCOVERY (Ejecución Real)
+
+**OBLIGATORIO**: Seguir estos pasos en orden. NO usar listas hardcodeadas.
+
+### Paso 1: Scan
 
 ```
-⚡ AVAILABLE COMMANDS (10 total)
+Glob('.claude/commands/*.md')
+```
 
-═══════════════════════════════════════════════════════════════════════════════
+Obtener la lista REAL de archivos de comandos.
 
-🔍 Discovery & Navigation
-═══════════════════════════════════════════════════════════════════════════════
+### Paso 2: Parse
 
-/tools [category]
-Show all available tools (skills, agents, commands, MCP servers)
-Usage: /tools           → Show all
-       /tools skills    → Show only skills
-       /tools agents    → Show only agents
+Para cada archivo encontrado, ejecutar `Read` (primeras 15 líneas) y extraer:
 
-/skills [filter]
-List all available skills with activation examples
-Usage: /skills          → All skills
-       /skills builder  → Skills matching "builder"
+| Campo | Fuente | Ejemplo |
+|-------|--------|---------|
+| Comando | Nombre archivo | `planner.md` → `/planner` |
+| Descripción | YAML `description:` | "Motor de Estrategia..." |
+| Versión | YAML `version:` | "5.0.0" |
+| Model | YAML `model:` | "opus" |
 
-/agents [filter]
-List all available agents with usage examples
-Usage: /agents          → All agents
-       /agents bug      → Agents matching "bug"
+### Paso 3: Categorizar
 
-/commands [category]
-List all available commands (this command)
-Usage: /commands                 → All commands
-       /commands discovery       → Discovery commands
+Asignar categoría basada en nombre o descripción:
 
-/docs [topic]
-Browse available documentation in .claude/docs/
-Usage: /docs                     → List all topics
-       /docs anti-hallucination  → Browse anti-hallucination docs
+| Categoría | Keywords en nombre/descripción |
+|-----------|-------------------------------|
+| 🔍 Discovery | `commands`, `tools`, `skills`, `agents`, `docs`, `help`, `list` |
+| 🧠 Strategy | `planner`, `architect`, `plan`, `design`, `strategy` |
+| 🛡️ Quality | `check`, `validate`, `anti-hallucination`, `quality`, `test`, `security` |
+| 📚 Context | `load`, `reference`, `context`, `docs` |
+| 🛠️ Development | `generate`, `refactor`, `build`, `create` |
+| 🐛 Debug | `debug`, `fix`, `logs`, `error` |
+| ⚙️ General | (default si no encaja) |
 
-═══════════════════════════════════════════════════════════════════════════════
-
-🛡️ Anti-Hallucination & Validation
-═══════════════════════════════════════════════════════════════════════════════
-
-/load-anti-hallucination
-Load comprehensive anti-hallucination validation patterns
-When to use: Complex tasks requiring detailed validation
-Output: Loads 5 documentation files (~42 KB)
-Documentation: .claude/docs/anti-hallucination/
-
-/validate-claim <file-path> [function-name] [domain]
-Validate specific file path or function claim before using it
-Usage: /validate-claim src/auth.ts
-       /validate-claim src/auth.ts validateJWT backend
-Output: File status, function status, confidence score, action recommendation
-
-═══════════════════════════════════════════════════════════════════════════════
-
-🐛 Debugging & Development
-═══════════════════════════════════════════════════════════════════════════════
-
-/quick-debug
-Fast debugging workflow
-Usage: /quick-debug
-When to use: Quick debugging sessions
-
-═══════════════════════════════════════════════════════════════════════════════
-
-💡 HOW TO USE COMMANDS
-
-1. Basic Usage:
-   Type /command-name in chat
-
-2. With Arguments:
-   /validate-claim src/auth.ts validateJWT
-
-3. From Skills/Agents:
-   SlashCommand('/load-anti-hallucination')
-
-4. Chaining:
-   /docs
-   [See available topics]
-   /load-anti-hallucination
-   [Loads full documentation]
-
-═══════════════════════════════════════════════════════════════════════════════
-
-📊 COMMAND CATEGORIES
-
-Discovery (5 commands):
-• /tools, /skills, /agents, /commands, /docs
-→ Help you find what's available
-
-Anti-Hallucination (2 commands):
-• /load-anti-hallucination, /validate-claim
-→ Prevent false claims about files/functions
-
-Debugging (1 command):
-• /quick-debug
-→ Fast debugging workflows
-
-Development (Future):
-• /test-generate, /refactor, /security-scan
-→ Code quality and automation
-
-═══════════════════════════════════════════════════════════════════════════════
-
-🔗 COMMAND RELATIONSHIPS
-
-Discovery Flow:
-/tools                  → See everything
-  ↓
-/skills [filter]        → Explore skills in detail
-/agents [filter]        → Explore agents in detail
-/commands [category]    → Explore commands in detail
-  ↓
-/docs [topic]           → Read documentation
-
-Anti-Hallucination Flow:
-Read CLAUDE.md          → Core rules (always loaded)
-  ↓
-/load-anti-hallucination → Load detailed patterns (when needed)
-  ↓
-/validate-claim         → Validate specific claim
-
-═══════════════════════════════════════════════════════════════════════════════
-
-📚 CREATING NEW COMMANDS
-
-Commands are Markdown files in .claude/commands/
-
-Structure:
----
-description: Short description
 ---
 
-# Command Name
+## 2. FORMATO DE SALIDA
 
-[Content with instructions for Claude]
+Renderizar usando este template con datos REALES del Paso 1-3:
 
-Example:
-.claude/commands/my-command.md
-→ Accessible as /my-command
-
-See: specs-driven/06-COMMANDS/ for command patterns
+```
+⚡ AVAILABLE COMMANDS ({N} total)
 
 ═══════════════════════════════════════════════════════════════════════════════
 
-🎯 MOST USEFUL COMMANDS
+[ICONO] [CATEGORÍA]
+═══════════════════════════════════════════════════════════════════════════════
 
-For Discovery:
-• /tools        → Find all available resources
-• /skills       → Learn how to activate skills
-• /commands     → See this list again
+/[comando]
+  └─ [descripción]
+  └─ v[versión] | model: [model]
 
-For Development:
-• /load-anti-hallucination → Load validation patterns
-• /validate-claim          → Validate before claiming
-• /quick-debug             → Fast debugging
+(repetir por cada comando en la categoría)
 
 ═══════════════════════════════════════════════════════════════════════════════
+
+💡 TIP: Usa /docs para explorar documentación detallada
 ```
 
 ---
 
-## Dynamic Discovery
+## 3. FILTRADO (Argumento Opcional)
 
-Read from `.claude/commands/` directory:
+Si el usuario proporciona argumento:
 
-```typescript
-// Find all command files
-const commandFiles = await Glob({ pattern: '.claude/commands/*.md' });
+```
+/commands strategy    → Solo mostrar categoría 🧠 Strategy
+/commands planner     → Solo mostrar comandos que contengan "planner"
+/commands quality     → Solo mostrar categoría 🛡️ Quality
+```
 
-// Parse each command
-for (const file of commandFiles) {
-  const content = await Read({ file_path: file, limit: 20 });
+Lógica:
+1. Si argumento coincide con nombre de categoría → filtrar por categoría
+2. Si no → buscar en nombres de comandos que contengan el argumento
 
-  // Extract:
-  // - name (from filename: /command-name.md → /command-name)
-  // - description (from YAML frontmatter)
-  // - category (infer from content or frontmatter)
+---
 
-  // Display formatted by category
-}
+## 4. ANTI-ALUCINACIÓN
+
+| ❌ PROHIBIDO | ✅ OBLIGATORIO |
+|--------------|----------------|
+| Listar comandos de memoria | `Glob` para obtener lista real |
+| Inventar descripciones | `Read` frontmatter de cada archivo |
+| Asumir que existe `/quick-debug` | Verificar con `Glob` primero |
+| Usar lista de este archivo | Escanear `.claude/commands/` en tiempo real |
+
+---
+
+## 5. EJEMPLO DE EJECUCIÓN
+
+Cuando el usuario escribe `/commands`:
+
+```
+1. Glob('.claude/commands/*.md')
+   → Resultado: [planner.md, commands.md, docs.md, tools.md, ...]
+
+2. Para cada archivo:
+   Read(archivo, limit: 15)
+   → Extraer: description, version, model
+
+3. Categorizar según keywords
+
+4. Renderizar en formato visual
+
+5. Mostrar al usuario
 ```
 
 ---
 
-## Categories
-
-Auto-detect category from command content/frontmatter:
-
-- **discovery**: tools, skills, agents, commands, docs
-- **anti-hallucination**: load-anti-hallucination, validate-claim
-- **debugging**: quick-debug
-- **development**: (future commands)
-- **testing**: (future commands)
-- **security**: (future commands)
-
----
-
-## Filter Examples
-
-```
-/commands discovery
-→ Shows: /tools, /skills, /agents, /commands, /docs
-
-/commands anti-hallucination
-→ Shows: /load-anti-hallucination, /validate-claim
-
-/commands debug
-→ Shows: /quick-debug
-```
-
----
-
-**Version**: 1.0.0
-**Related**: `/tools`, `/skills`, `/agents`, `/docs`
-**Source**: `.claude/commands/` directory
-**Extensible**: Add new .md files to create new commands
+**Relacionado**: `/tools`, `/docs`, `/skills`
+**Source**: `.claude/commands/` directory (escaneado en tiempo real)

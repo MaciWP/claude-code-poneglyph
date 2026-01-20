@@ -180,7 +180,27 @@ mcp__sequential-thinking__sequentialthinking
 
 ---
 
-## 5. GAP ANALYSIS (OBLIGATORIO)
+## 5. CLASIFICACIÓN DE TAREAS
+
+| Símbolo | Tipo | Definición | Ejecución |
+|---------|------|------------|-----------|
+| 🔵 | **Independiente** | Sin dependencias mutuas | PARALELO - mismo mensaje |
+| 🟡 | **Dependiente** | Necesita output anterior | SECUENCIAL - esperar |
+| 🔴 | **Bloqueante** | Checkpoint humano/validación | PAUSA - aprobar antes de continuar |
+
+### Ejemplos de Clasificación
+
+| Tarea | Tipo | Razón |
+|-------|------|-------|
+| Crear types.ts + utils.ts | 🔵 | No se referencian entre sí |
+| Crear service que usa types | 🟡 | Necesita types primero |
+| Migración de DB | 🔴 | Requiere aprobación humana |
+| Deploy a producción | 🔴 | Checkpoint crítico |
+| Test + Code review | 🔵 | Pueden correr en paralelo |
+
+---
+
+## 6. GAP ANALYSIS (OBLIGATORIO)
 
 Antes de cada Execution Roadmap, completar esta tabla:
 
@@ -200,26 +220,6 @@ Antes de cada Execution Roadmap, completar esta tabla:
 | ¿Qué archivos creo? | Verificar que dir destino exista |
 | ¿Rompo API pública? | `Grep('export.*FunctionName')` |
 | ¿Requiere migración? | Verificar cambios de schema/types |
-
----
-
-## 6. CLASIFICACIÓN DE TAREAS
-
-| Símbolo | Tipo | Definición | Ejecución |
-|---------|------|------------|-----------|
-| 🔵 | **Independiente** | Sin dependencias mutuas | PARALELO - mismo mensaje |
-| 🟡 | **Dependiente** | Necesita output anterior | SECUENCIAL - esperar |
-| 🔴 | **Bloqueante** | Checkpoint humano/validación | PAUSA - aprobar antes de continuar |
-
-### Ejemplos de Clasificación
-
-| Tarea | Tipo | Razón |
-|-------|------|-------|
-| Crear types.ts + utils.ts | 🔵 | No se referencian entre sí |
-| Crear service que usa types | 🟡 | Necesita types primero |
-| Migración de DB | 🔴 | Requiere aprobación humana |
-| Deploy a producción | 🔴 | Checkpoint crítico |
-| Test + Code review | 🔵 | Pueden correr en paralelo |
 
 ---
 
@@ -352,13 +352,9 @@ Después de cada iteración:
 4. Solo si TODO pasa → continuar con siguiente iteración
 ```
 
-### Anti-Pattern
+### Anti-Patterns
 
-| ❌ No hacer | ✅ Hacer |
-|-------------|----------|
-| Planificar 20 archivos y ejecutar todos | Dividir en 4-5 iteraciones |
-| Continuar si hay errores de compilación | STOP, corregir, luego continuar |
-| Acumular cambios sin verificar | Verificar después de cada grupo |
+> Ver tabla completa en §16. Resumen: No acumular >5 archivos, STOP si hay errores, verificar después de cada grupo.
 
 ---
 
@@ -378,39 +374,14 @@ Después de cada iteración:
 - `Bash` que usa archivo recién creado
 - Nodo marcado 🔴 "Blocking"
 
-### Sintaxis en el plan
+### Sintaxis y Ejemplos
 
-```
-# PARALELO - EN MISMO MENSAJE:
-Write(types.ts) + Write(utils.ts) + Task(agent1, background:true)
-
-# SECUENCIAL - ESPERAR:
-Write(services.ts)  # Depende de types.ts
-→ ESPERAR resultado
-Write(routes.ts)    # Depende de services.ts
-```
-
-### Ejemplos Concretos
-
-**Lecturas paralelas:**
-```
-Read("/src/services/auth.ts") + Read("/src/types/user.ts") + Grep("login", "src/")
-```
-
-**Agentes paralelos independientes:**
-```
-Task(subagent_type="scout", prompt="find auth files") + Task(subagent_type="code-quality", prompt="analyze complexity", run_in_background=true)
-```
-
-**MCP servers paralelos:**
-```
-mcp__context7__query-docs(library="elysia") + WebSearch("elysia middleware best practices 2025")
-```
-
-**Writes independientes (sin dependencia mutua):**
-```
-Write("/src/types/session.ts", content1) + Write("/src/utils/validation.ts", content2)
-```
+| Tipo | Sintaxis | Ejemplo |
+|------|----------|---------|
+| 🔵 Paralelo | `A + B + C` | `Read(a) + Read(b) + Grep(c)` |
+| 🟡 Secuencial | `A → ESPERAR → B` | `Read(file) → Edit(file)` |
+| Background | `Task(..., background:true)` | `Task(reviewer, background:true)` |
+| MCP paralelo | `MCP1 + MCP2` | `Context7 + WebSearch` |
 
 ### Parallel Efficiency Score
 
@@ -477,28 +448,14 @@ graph TD
 | **Glob** | No encuentra archivos que existen | Verificar path base correcto |
 | **Grep** | Regex demasiado específico | Empezar broad, refinar |
 
-### Checklist Antes de Cada Tool
+### Checklist Pre-uso
 
-```markdown
-### Pre-Edit
-- [ ] ¿Leí el archivo con Read primero?
-- [ ] ¿El old_string es único en el archivo? (verificar con Grep)
-- [ ] ¿Tengo suficiente contexto para match único?
-
-### Pre-Write
-- [ ] ¿El directorio destino existe? (Glob)
-- [ ] ¿No estoy sobrescribiendo archivo importante sin Read previo?
-
-### Pre-Bash
-- [ ] ¿El comando tiene timeout adecuado?
-- [ ] ¿Verifico exit code además de output?
-- [ ] ¿El working directory es correcto?
-
-### Pre-Task
-- [ ] ¿El prompt es específico sobre qué quiero?
-- [ ] ¿Especifiqué el model correcto?
-- [ ] ¿Indiqué si debe correr en background?
-```
+| Tool | Verificar ANTES |
+|------|-----------------|
+| Edit | `Read` previo + `old_string` único (verificar con Grep) + contexto suficiente |
+| Write | Directorio existe (`Glob`) + no sobrescribir archivo crítico sin Read |
+| Bash | Timeout adecuado + verificar exit code + working directory correcto |
+| Task | Prompt específico + model correcto + `background` si largo |
 
 ---
 
@@ -761,43 +718,17 @@ graph TD
 
 ## 16. ANTI-PATTERNS + TDD ENFORCEMENT
 
-### ❌ No hacer
-
-| Anti-Pattern | Consecuencia |
-|--------------|--------------|
-| Ejecutar Write secuenciales sin dependencia | Desperdicio de tokens/tiempo |
-| No consultar Discovery antes de planificar | Alucinaciones, duplicados |
-| Código sin test correspondiente | Violación TDD |
-| Paso sin verificación | No se puede confirmar éxito |
-| Recovery para nodos no-blocking | Overhead innecesario |
-| Asumir archivo existe sin Glob | Errores en Edit |
-| Asumir librería sin package.json | APIs inexistentes |
-| Usar API sin consultar Context7 | APIs deprecated |
-| Continuar con errores de compilación | Errores en cascada |
-| Plan de 20 archivos sin iteraciones | Riesgo de errores catastróficos |
-
-### ✅ Hacer
-
-| Práctica | Beneficio |
-|----------|-----------|
-| Agrupar independientes en mismo mensaje | Máximo paralelismo |
-| Discovery ANTES de planificar | Base en realidad |
-| Deep Research para APIs | Evitar deprecated |
-| Cada función → su test | TDD enforcement |
-| Verificación por paso | Trazabilidad |
-| Glob antes de Edit | Anti-alucinación |
-| package.json antes de usar API | Versiones correctas |
-| Context7 antes de escribir código | APIs actualizadas |
-| Iterar en grupos de 3-5 archivos | Errores contenidos |
-| Ground truth después de cada grupo | Feedback real |
-
-### TDD Enforcement
-
-| ❌ PROHIBIDO | ✅ REQUERIDO |
-|--------------|--------------|
-| Planificar código sin test | Cada función → su test |
-| Test "después" de implementar | Test en mismo nodo o inmediatamente después |
-| Tests genéricos | Tests específicos para cada caso |
+| ❌ No hacer | ✅ Hacer | Razón |
+|-------------|----------|-------|
+| Writes secuenciales sin dep | Agrupar en 1 mensaje | Paralelismo |
+| No Discovery antes de plan | Discovery PRIMERO | Base real |
+| Código sin test | Función → test | TDD |
+| Paso sin verificación | Ground truth por paso | Trazabilidad |
+| Asumir archivo existe | `Glob` antes de Edit | Anti-alucina |
+| API sin Context7 | Consultar docs primero | Anti-deprecated |
+| Plan >5 archivos sin checkpoint | Iterar 3-5 archivos | Errores contenidos |
+| Continuar con errores | STOP, corregir, continuar | Cascada |
+| Test "después" | Test en mismo nodo | TDD strict |
 
 ---
 
@@ -813,14 +744,10 @@ Antes de considerar el plan ejecutado:
 
 ### Checklist Final
 
-- [ ] Todos los archivos creados/modificados verificados con Glob
-- [ ] Deep Research completado para APIs usadas
-- [ ] No se usaron APIs deprecated
-- [ ] Todos los tests pasan (`bun test`)
-- [ ] TypeScript compila sin errores (`bun typecheck`)
-- [ ] Linter sin errores (`bun lint`)
+- [ ] Verificaciones de Ground Truth (§11) completadas
+- [ ] Deep Research completado, no hay APIs deprecated
 - [ ] `./scripts/check.sh` exit code 0
-- [ ] Si hubo validación cruzada, agente validador aprobó
+- [ ] Si validación cruzada, agente validador aprobó
 
 ---
 
