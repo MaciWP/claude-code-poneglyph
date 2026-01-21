@@ -77,6 +77,10 @@ graph TD
 | SPEC-017 | [testing-strategy.md](./testing-strategy.md) | approved | 1.0 | high | - | 2026-01-21 |
 | SPEC-018 | [skills-implementation-catalog.md](./skills-implementation-catalog.md) | approved | 1.0 | high | SPEC-009 | 2026-01-21 |
 | SPEC-019 | [ai-friendly-logging.md](./ai-friendly-logging.md) | approved | 1.0 | high | SPEC-011 | 2026-01-21 |
+| SPEC-020 | [skills-extension-system.md](./skills-extension-system.md) | approved | 1.0 | high | SPEC-009 | 2026-01-21 |
+| SPEC-021 | [subagents-extension-system.md](./subagents-extension-system.md) | approved | 1.0 | high | SPEC-001 | 2026-01-21 |
+| SPEC-022 | [hooks-extension-system.md](./hooks-extension-system.md) | approved | 1.0 | high | SPEC-010 | 2026-01-21 |
+| SPEC-023 | [mcp-integration-system.md](./mcp-integration-system.md) | approved | 1.0 | high | - | 2026-01-21 |
 | - | [ARCHITECTURE.md](./ARCHITECTURE.md) | approved | 1.0 | critical | - | 2026-01-18 |
 <!-- SPEC_TABLE_END -->
 
@@ -110,9 +114,10 @@ graph TD
 
 ## Quick Stats
 
-- Draft: 0 | Review: 0 | Approved: 18
+- Draft: 0 | Review: 0 | Approved: 23
 - Agentes Base: 4 (builder, reviewer, planner, error-analyzer)
 - Agentes Soporte: 2 (command-loader, Explore nativo)
+- Claude Code Extensions: 4 (skills, subagents, hooks, MCP)
 
 ---
 
@@ -197,6 +202,10 @@ graph LR
 
 | Fecha | Cambio |
 |-------|--------|
+| 2026-01-21 | SPEC-023 v1.0: MCP Integration System - Protocol, servers, custom development |
+| 2026-01-21 | SPEC-022 v1.0: Hooks Extension System - Events, validators, security patterns |
+| 2026-01-21 | SPEC-021 v1.0: Subagents Extension System - Templates, permissions, delegation |
+| 2026-01-21 | SPEC-020 v1.0: Skills Extension System - SKILL.md format, activation, types |
 | 2026-01-21 | SPEC-019 v1.0: AI-Friendly Logging - Logs estructurados para debugging con IA |
 | 2026-01-21 | SPEC-018 v1.0: Skills Implementation Catalog - 10 skills faltantes detalladas |
 | 2026-01-21 | SPEC-017 v1.0: Testing Strategy - Coverage targets, patterns, CI |
