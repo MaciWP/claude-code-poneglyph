@@ -68,6 +68,15 @@ graph TD
 | SPEC-008 | [error-analyzer-agent.md](./error-analyzer-agent.md) | approved | 1.0 | high | SPEC-001 | 2026-01-18 |
 | SPEC-009 | [skills-system.md](./skills-system.md) | approved | 1.0 | high | SPEC-001, SPEC-007 | 2026-01-18 |
 | SPEC-010 | [validation-hooks-system.md](./validation-hooks-system.md) | approved | 1.0 | high | SPEC-004, SPEC-005 | 2026-01-20 |
+| SPEC-011 | [thread-metrics-observability.md](./thread-metrics-observability.md) | approved | 1.0 | medium | SPEC-001, SPEC-003, SPEC-010 | 2026-01-20 |
+| SPEC-012 | [thread-metrics-ui.md](./thread-metrics-ui.md) | approved | 1.0 | medium | SPEC-011, SPEC-014 | 2026-01-21 |
+| SPEC-013 | [validation-hooks-ui.md](./validation-hooks-ui.md) | approved | 1.0 | medium | SPEC-010, SPEC-014 | 2026-01-21 |
+| SPEC-014 | [frontend-architecture-refactor.md](./frontend-architecture-refactor.md) | approved | 1.0 | high | - | 2026-01-21 |
+| SPEC-015 | [session-management-persistence.md](./session-management-persistence.md) | approved | 1.0 | high | SPEC-014 | 2026-01-21 |
+| SPEC-016 | [error-recovery-resilience.md](./error-recovery-resilience.md) | approved | 1.0 | high | SPEC-008 | 2026-01-21 |
+| SPEC-017 | [testing-strategy.md](./testing-strategy.md) | approved | 1.0 | high | - | 2026-01-21 |
+| SPEC-018 | [skills-implementation-catalog.md](./skills-implementation-catalog.md) | approved | 1.0 | high | SPEC-009 | 2026-01-21 |
+| SPEC-019 | [ai-friendly-logging.md](./ai-friendly-logging.md) | approved | 1.0 | high | SPEC-011 | 2026-01-21 |
 | - | [ARCHITECTURE.md](./ARCHITECTURE.md) | approved | 1.0 | critical | - | 2026-01-18 |
 <!-- SPEC_TABLE_END -->
 
@@ -101,7 +110,7 @@ graph TD
 
 ## Quick Stats
 
-- Draft: 0 | Review: 0 | Approved: 11
+- Draft: 0 | Review: 0 | Approved: 18
 - Agentes Base: 4 (builder, reviewer, planner, error-analyzer)
 - Agentes Soporte: 2 (command-loader, Explore nativo)
 
@@ -188,6 +197,15 @@ graph LR
 
 | Fecha | Cambio |
 |-------|--------|
+| 2026-01-21 | SPEC-019 v1.0: AI-Friendly Logging - Logs estructurados para debugging con IA |
+| 2026-01-21 | SPEC-018 v1.0: Skills Implementation Catalog - 10 skills faltantes detalladas |
+| 2026-01-21 | SPEC-017 v1.0: Testing Strategy - Coverage targets, patterns, CI |
+| 2026-01-21 | SPEC-016 v1.0: Error Recovery & Resilience - Circuit breaker, retry, fallback |
+| 2026-01-21 | SPEC-015 v1.0: Session Management - Persistence, export/import, summarization |
+| 2026-01-21 | SPEC-014 v1.0: Frontend Architecture Refactor - Zustand + slices pattern |
+| 2026-01-21 | SPEC-013 v1.0: Validation Hooks UI - Feedback visual para SPEC-010 |
+| 2026-01-21 | SPEC-012 v1.0: Thread Metrics UI - Dashboard para SPEC-011 |
+| 2026-01-20 | SPEC-011 v1.0: Thread Metrics & Observability - Framework de métricas |
 | 2026-01-20 | SPEC-010 v1.0: Validation Hooks System - Self-validating agents |
 | 2026-01-18 | SPEC-009 v1.0: Skills System - 12 skills standalone |
 | 2026-01-18 | SPEC-001 v2.0: Lead Orchestrator con Research Summary |
