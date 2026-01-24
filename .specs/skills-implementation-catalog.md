@@ -1,6 +1,6 @@
 # SPEC-018: Skills Implementation Catalog
 
-> **Status**: approved | **Version**: 1.0 | **Updated**: 2026-01-21
+> **Status**: implemented | **Version**: 1.1 | **Updated**: 2026-01-24
 
 ## 0. Research Summary
 
@@ -8,11 +8,11 @@
 
 | Categoría | Implementadas | Faltantes |
 |-----------|---------------|-----------|
-| Builder skills | 2 | 3 |
-| Reviewer skills | 0 | 3 |
-| Error-Analyzer skills | 0 | 3 |
-| Shared skills | 0 | 1 |
-| **Total** | **2/12 (17%)** | **10** |
+| Builder skills | 5 | 0 |
+| Reviewer skills | 3 | 0 |
+| Error-Analyzer skills | 3 | 0 |
+| Shared skills | 1 | 0 |
+| **Total** | **12/12 (100%)** | **0** |
 
 ### Skills Implementadas (8 total, 2 del catálogo SPEC-009)
 
@@ -60,10 +60,10 @@ Mantener estructura actual (flat con subdirectorio por skill) pero normalizar fr
 
 ### Goals
 
-- [ ] Implementar 10 skills faltantes del catálogo SPEC-009
-- [ ] Normalizar frontmatter de skills existentes
-- [ ] Documentar cada skill con patterns, checklist y examples
-- [ ] Mantener tamaño < 10KB por skill
+- [x] Implementar 10 skills faltantes del catálogo SPEC-009
+- [x] Normalizar frontmatter de skills existentes
+- [x] Documentar cada skill con patterns, checklist y examples
+- [x] Mantener tamaño < 10KB por skill
 
 ### Non-Goals
 
@@ -650,14 +650,14 @@ Scenario: Builder puede usar security-coding
 
 ## 9. Next Steps
 
-- [ ] Crear security-coding.md
-- [ ] Crear security-review.md
-- [ ] Crear anti-hallucination.md
-- [ ] Crear refactoring-patterns.md
-- [ ] Crear websocket-patterns.md
-- [ ] Crear performance-review.md
-- [ ] Crear code-quality.md
-- [ ] Crear retry-patterns.md
-- [ ] Crear diagnostic-patterns.md
-- [ ] Crear recovery-strategies.md
-- [ ] Normalizar frontmatter de skills existentes
+- [x] Crear security-coding.md
+- [x] Crear security-review.md
+- [x] Crear anti-hallucination.md
+- [x] Crear refactoring-patterns.md
+- [x] Crear websocket-patterns.md
+- [x] Crear performance-review.md
+- [x] Crear code-quality.md
+- [x] Crear retry-patterns.md
+- [x] Crear diagnostic-patterns.md
+- [x] Crear recovery-strategies.md
+- [x] Normalizar frontmatter de skills existentes

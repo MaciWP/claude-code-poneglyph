@@ -14,6 +14,8 @@ activation:
     - arranca
     - para
     - detén
+for_agents: [builder]
+version: "1.0"
 ---
 
 # Dev Server Skill

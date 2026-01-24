@@ -13,6 +13,8 @@ activation:
     - interface
     - generic
     - error handling
+for_agents: [builder]
+version: "1.0"
 ---
 
 # TypeScript Patterns Skill

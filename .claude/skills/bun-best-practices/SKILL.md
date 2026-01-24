@@ -11,6 +11,8 @@ activation:
     - spawn
     - shell
     - websocket
+for_agents: [builder]
+version: "1.0"
 ---
 
 # Bun Best Practices Skill

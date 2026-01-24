@@ -9,6 +9,8 @@ activation:
     - zod
     - environment
     - settings
+for_agents: [builder]
+version: "1.0"
 ---
 
 # Config Validator

@@ -10,6 +10,8 @@ activation:
     - json logs
     - winston
     - pino
+for_agents: [builder]
+version: "1.0"
 ---
 
 # Logging Strategy

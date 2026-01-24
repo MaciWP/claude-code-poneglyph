@@ -14,6 +14,8 @@ activation:
     - lsp
     - go to
     - find usages
+for_agents: [builder, reviewer, error-analyzer]
+version: "1.0"
 ---
 
 # LSP Operations Skill

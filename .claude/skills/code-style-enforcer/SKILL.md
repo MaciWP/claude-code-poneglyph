@@ -10,6 +10,8 @@ activation:
     - imports
     - naming
     - conventions
+for_agents: [builder, reviewer]
+version: "1.0"
 ---
 
 # Code Style Enforcer

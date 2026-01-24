@@ -16,6 +16,8 @@ activation:
     - unclear
     - enhance prompt
     - system prompt
+for_agents: [builder, architect]
+version: "1.0"
 ---
 
 # Prompt Engineer Skill
