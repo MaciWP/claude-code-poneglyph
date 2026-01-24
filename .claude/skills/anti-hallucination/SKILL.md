@@ -2,39 +2,71 @@
 name: anti-hallucination
 description: |
   Validation patterns to prevent AI hallucinations about files, functions, and facts.
-  Use proactively when making claims about code existence or behavior.
-  Keywords: validate, verify, check, exists, hallucination, confidence, claim
-for_agents: [builder, reviewer, error-analyzer]
+  Use proactively when: making claims about code, suggesting changes, referencing files.
+  Keywords - validate, verify, check, exists, hallucination, confidence, claim, assert
+activation:
+  keywords:
+    - validate
+    - verify
+    - check
+    - exists
+    - hallucination
+    - confidence
+    - claim
+    - assert
+for_agents: [builder, reviewer, error-analyzer, scout, architect]
+version: "1.0"
 ---
 
 # Anti-Hallucination Patterns
 
-Validation patterns to ensure claims are based on verified facts.
+Validation patterns to ensure claims are based on verified facts, not assumptions.
 
 ## When to Use
 
-- Before claiming a file exists
-- Before claiming a function exists
-- Before making assertions about code behavior
-- When confidence is uncertain
-- Before suggesting code modifications
+| Situation | Action Required |
+|-----------|-----------------|
+| Claiming a file exists | Glob first |
+| Claiming a function exists | Grep or Read first |
+| Suggesting code changes | Read file first |
+| Referencing API endpoints | Grep route definitions |
+| Suggesting imports | Verify export exists |
+| Confidence < 70% | Ask, don't assert |
 
-## Core Principle
+## Core Rules
 
 > **Never assume. Always verify.**
 
-Every claim about the codebase must be backed by tool output.
+| Rule | Tool | Example |
+|------|------|---------|
+| File exists? | `Glob` | `Glob("**/helper.ts")` |
+| Symbol exists? | `Grep` | `Grep("function calculateTotal")` |
+| Content matches? | `Read` | Read then quote |
+| Type signature? | `LSP hover` | Get exact params |
 
-## File Existence Validation
+## Quick Reference
+
+### Confidence Levels
+
+| Level | Evidence | Phrasing |
+|-------|----------|----------|
+| **High** | Tool output verified | "The file contains..." |
+| **Medium** | Partial/related data | "Based on X, it appears..." |
+| **Low** | Inference only | "Could you confirm if..." |
+| **None** | No data | "Let me check..." |
+
+### Verification Tools Priority
+
+| Need | Primary | Fallback |
+|------|---------|----------|
+| File exists? | Glob | Bash ls |
+| Symbol exists? | LSP/Grep | Read + search |
+| Content? | Read | - |
+| Type info? | LSP hover | Grep |
+
+## Validation Patterns
 
 ### Before Claiming File Exists
-
-```
-❌ NEVER: "The file src/utils/helper.ts contains..."
-✅ ALWAYS: Use Glob first, then Read
-```
-
-**Validation Pattern:**
 
 ```typescript
 // Step 1: Verify existence
@@ -43,100 +75,76 @@ const files = await Glob({ pattern: "src/utils/helper.ts" })
 // Step 2: Only if found, read content
 if (files.length > 0) {
   const content = await Read({ file_path: files[0] })
-  // Now safe to make claims about content
+  // Now safe to make claims
 }
 ```
-
-### Before Creating New File
-
-```typescript
-// Step 1: Check if already exists
-const existing = await Glob({ pattern: "src/services/newService.ts" })
-
-if (existing.length > 0) {
-  // File exists - read and modify
-} else {
-  // Safe to create new file
-}
-```
-
-## Function/Symbol Validation
 
 ### Before Claiming Function Exists
 
-```
-❌ NEVER: "The calculateTotal function in order.ts..."
-✅ ALWAYS: Use Grep or Read first
-```
-
-**Validation Pattern:**
-
 ```typescript
-// Option 1: Grep for function definition
+// Option 1: Grep for definition
 const results = await Grep({
   pattern: "function calculateTotal|const calculateTotal",
   path: "src/",
   output_mode: "content"
 })
 
-// Option 2: Read file and verify
+// Option 2: Read and verify
 const content = await Read({ file_path: "src/order.ts" })
 if (content.includes("calculateTotal")) {
-  // Safe to reference function
+  // Safe to reference
 }
 ```
 
 ### Before Suggesting Import
 
 ```typescript
-// Step 1: Verify export exists
+// Verify export exists
 const exported = await Grep({
   pattern: "export (function|const|class) targetSymbol",
   path: "src/utils/"
 })
 
-// Only suggest import if export found
+// Only suggest if found
 if (exported.matches > 0) {
   // "You can import targetSymbol from utils"
 }
 ```
 
-## Confidence Levels
+## Common Hallucination Patterns
 
-### When to Ask vs Assert
+| Pattern | Problem | Solution |
+|---------|---------|----------|
+| Path guessing | `src/components/Button/index.tsx` | `Glob("**/Button*.tsx")` first |
+| Signature guessing | Assuming `(name: string, age: number)` | Read file, quote actual |
+| Import guessing | `@/utils/helpers` | Check tsconfig.json paths |
+| Endpoint guessing | `POST /api/users/create` | Grep route definitions |
 
-| Confidence | Action | Phrasing |
-|------------|--------|----------|
-| **High** (Tool verified) | Assert | "The file contains..." |
-| **Medium** (Partial info) | Hedge | "Based on X, it appears..." |
-| **Low** (Uncertain) | Ask | "Could you confirm if..." |
-| **None** (No data) | Investigate | "Let me check..." |
+## Examples
 
-### Confidence Assessment
+### Bad (Hallucination Risk)
 
-```typescript
-interface ClaimValidation {
-  claim: string
-  confidence: 'high' | 'medium' | 'low' | 'none'
-  evidence: string[]
-  verification_needed: boolean
-}
-
-function assessConfidence(claim: string): ClaimValidation {
-  // High: Direct tool output supports claim
-  // Medium: Related data but not exact match
-  // Low: Inference from context
-  // None: No supporting data
-}
+```
+"The file src/utils/helper.ts contains a function called formatDate..."
 ```
 
-## Validation Checklist
+### Good (Verified)
+
+```
+Let me verify that file exists.
+[Glob("src/utils/helper.ts")]
+Found: src/utils/helper.ts
+[Read("src/utils/helper.ts")]
+The file contains formatDate at line 45: `export function formatDate(date: Date): string`
+```
+
+## Checklist
 
 ### Before Any Code Claim
 
 - [ ] Used Glob to verify file exists
 - [ ] Used Read to verify content
-- [ ] Used Grep to find specific patterns
+- [ ] Used Grep/LSP to find specific patterns
 - [ ] Confidence level is HIGH before asserting
 
 ### Before Suggesting Changes
@@ -146,119 +154,28 @@ function assessConfidence(claim: string): ClaimValidation {
 - [ ] Verified surrounding context
 - [ ] Checked for dependencies
 
-### Before Referencing External Resources
+### Before Referencing External
 
 - [ ] Used WebSearch to verify existence
 - [ ] Checked documentation is current (2024-2025)
 - [ ] Verified API/syntax hasn't changed
 
-## Common Hallucination Patterns
-
-### File Path Guessing
-
-```
-❌ "Edit src/components/Button/index.tsx"
-   (Assuming path structure)
-
-✅ First: Glob("**/Button*.tsx")
-   Then: Reference actual found path
-```
-
-### Function Signature Guessing
-
-```
-❌ "The function takes (name: string, age: number)"
-   (Assuming parameters)
-
-✅ First: Read the file
-   Then: Quote actual signature
-```
-
-### Import Path Guessing
-
-```
-❌ "Import from '@/utils/helpers'"
-   (Assuming alias exists)
-
-✅ First: Check tsconfig.json for paths
-   Then: Verify file exists at resolved path
-```
-
-### API Endpoint Guessing
-
-```
-❌ "Call POST /api/users/create"
-   (Assuming endpoint)
-
-✅ First: Grep for route definitions
-   Then: Reference actual endpoint
-```
-
-## Verification Tools Priority
-
-| Need | Primary Tool | Fallback |
-|------|--------------|----------|
-| File exists? | Glob | Bash ls |
-| File content? | Read | - |
-| Symbol exists? | Grep | Read + search |
-| Pattern location? | Grep | Read |
-| Type definition? | Grep | Read |
-
-## Output Format for Uncertain Claims
-
-When confidence is not HIGH:
-
-```markdown
-## Observation (Unverified)
-
-⚠️ **Confidence: Medium**
-
-Based on the project structure, I believe X might be in Y.
-
-**To verify:**
-1. Check if file exists: `Glob("pattern")`
-2. Read content: `Read("path")`
-
-Would you like me to verify this?
-```
-
-## Anti-Hallucination Rules
-
-### DO
-
-- ✅ Verify file existence before referencing
-- ✅ Read file content before claiming
-- ✅ Quote exact code from Read output
-- ✅ Use line numbers from actual output
-- ✅ Say "Let me check" when uncertain
-- ✅ Ask for clarification if needed
-
-### DON'T
-
-- ❌ Assume file paths or structure
-- ❌ Guess function signatures
-- ❌ Invent import paths
-- ❌ Fabricate API endpoints
-- ❌ Make up package names
-- ❌ Claim existence without verification
-
-## Integration with Workflow
+## Integration Flow
 
 ```mermaid
 graph TD
-    A[Receive Request] --> B{Need to reference code?}
+    A[Receive Request] --> B{Need code reference?}
     B -->|Yes| C[Glob to find files]
-    C --> D{File found?}
-    D -->|Yes| E[Read file content]
-    D -->|No| F[Report: File not found]
-    E --> G{Content matches claim?}
+    C --> D{Found?}
+    D -->|Yes| E[Read content]
+    D -->|No| F[Report: Not found]
+    E --> G{Content matches?}
     G -->|Yes| H[Make verified claim]
     G -->|No| I[Correct understanding]
-    B -->|No| J[Proceed without code claim]
+    B -->|No| J[Proceed without claim]
 ```
 
 ---
 
 **Version**: 1.0.0
 **Spec**: SPEC-018
-**For**: builder, reviewer, error-analyzer agents

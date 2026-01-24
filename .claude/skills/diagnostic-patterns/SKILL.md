@@ -1,38 +1,88 @@
 ---
 name: diagnostic-patterns
 description: |
-  Error diagnosis patterns for debugging complex issues.
-  Use when analyzing errors, debugging, or investigating failures.
-  Keywords: error, debug, diagnose, investigate, trace, log, stacktrace
+  Patrones de diagnostico para debugging de errores complejos.
+  Use when: debugging, analisis de errores, investigacion de fallos, root cause.
+  Keywords - error, debug, diagnose, investigate, trace, log, stacktrace, 5 whys
+activation:
+  keywords:
+    - error
+    - debug
+    - diagnose
+    - investigate
+    - trace
+    - stacktrace
+    - root cause
 for_agents: [error-analyzer]
+version: "1.0"
 ---
 
 # Diagnostic Patterns
 
-Error diagnosis and debugging patterns for TypeScript/Bun applications.
+Patrones de diagnostico y debugging para aplicaciones TypeScript/Bun.
 
 ## When to Use
 
-- Analyzing error messages and stack traces
-- Debugging complex failures
-- Investigating intermittent issues
-- Root cause analysis
+| Situacion | Aplica |
+|-----------|--------|
+| Analizando error messages y stack traces | Si |
+| Debugging fallos complejos | Si |
+| Investigando issues intermitentes | Si |
+| Root cause analysis | Si |
+| Errores en produccion sin contexto | Si |
+| Simple validation errors | No - Fix input directamente |
+| Known transient errors | No - Usar retry-patterns |
 
-## Error Analysis Framework
+## Decision Tree
 
-### 1. Categorize the Error
+```mermaid
+flowchart TD
+    A[Error Reportado] --> B{Reproducible?}
+    B -->|Si| C[Capturar Stack Trace]
+    B -->|No| D[Habilitar Logging Detallado]
+    C --> E{Error Type?}
+    D --> F[Esperar Ocurrencia]
+    F --> C
 
-| Category | Indicators | Common Causes |
-|----------|------------|---------------|
-| **Syntax** | SyntaxError, Parse error | Typo, missing bracket |
-| **Type** | TypeError, undefined is not | Null access, wrong type |
-| **Runtime** | ReferenceError, RangeError | Logic error, boundary |
-| **Network** | ECONNREFUSED, ETIMEDOUT | Service down, network |
-| **Database** | Connection refused, constraint | DB issue, data integrity |
-| **Auth** | 401, 403 | Token, permissions |
-| **Business** | Custom error types | Application logic |
+    E -->|Syntax| G[Revisar Codigo Reciente]
+    E -->|Type| H[Analizar Null/Undefined]
+    E -->|Runtime| I[Verificar Boundaries]
+    E -->|Network| J[Check Connectivity]
+    E -->|Database| K[Verify Connection]
+    E -->|Auth| L[Check Tokens/Perms]
+    E -->|Business| M[Review Logic]
 
-### 2. Extract Key Information
+    G --> N{Fix Encontrado?}
+    H --> N
+    I --> N
+    J --> N
+    K --> N
+    L --> N
+    M --> N
+
+    N -->|Si| O[Aplicar Fix + Test]
+    N -->|No| P[Aplicar 5 Whys]
+    P --> Q[Root Cause Identificada]
+    Q --> O
+```
+
+## Error Classification
+
+| Category | Indicators | Common Causes | First Check |
+|----------|------------|---------------|-------------|
+| **Syntax** | SyntaxError, Parse error | Typo, missing bracket | Recent code changes |
+| **Type** | TypeError, undefined is not | Null access, wrong type | Optional chaining |
+| **Runtime** | ReferenceError, RangeError | Logic error, boundary | Input validation |
+| **Network** | ECONNREFUSED, ETIMEDOUT | Service down, network | `curl` / `ping` |
+| **Database** | Connection refused, constraint | DB issue, data integrity | Connection string |
+| **Auth** | 401, 403 | Token expired, permissions | Token validity |
+| **Business** | Custom error types | Application logic | Business rules |
+| **Memory** | Heap out of memory | Memory leak, large data | Memory profiling |
+| **Async** | Unhandled rejection | Missing await, race condition | Promise handling |
+
+## Core Patterns
+
+### Pattern 1: Error Diagnosis Function
 
 ```typescript
 interface ErrorDiagnosis {
@@ -40,300 +90,634 @@ interface ErrorDiagnosis {
   message: string
   code?: string
   status?: number
-  stack?: string[]
+  stack: string[]
   context: {
     file?: string
     line?: number
+    column?: number
     function?: string
     input?: unknown
   }
+  suggestions: string[]
+  severity: 'low' | 'medium' | 'high' | 'critical'
 }
 
-function diagnoseError(error: unknown): ErrorDiagnosis {
-  if (error instanceof Error) {
-    const stackLines = error.stack?.split('\n').slice(1) || []
-    const firstFrame = stackLines[0]?.match(/at (.+) \((.+):(\d+):\d+\)/)
-
+function diagnoseError(error: unknown, input?: unknown): ErrorDiagnosis {
+  if (!(error instanceof Error)) {
     return {
-      type: error.constructor.name,
-      message: error.message,
-      code: (error as any).code,
-      status: (error as any).status,
-      stack: stackLines.slice(0, 5),
-      context: {
-        function: firstFrame?.[1],
-        file: firstFrame?.[2],
-        line: firstFrame?.[3] ? parseInt(firstFrame[3]) : undefined
-      }
+      type: 'Unknown',
+      message: String(error),
+      stack: [],
+      context: { input },
+      suggestions: ['Convert to Error instance for better debugging'],
+      severity: 'medium'
     }
   }
+
+  const stackLines = error.stack?.split('\n').slice(1) || []
+  const firstFrame = stackLines[0]?.match(/at (.+?) \((.+?):(\d+):(\d+)\)/)
+
+  const diagnosis: ErrorDiagnosis = {
+    type: error.constructor.name,
+    message: error.message,
+    code: (error as any).code,
+    status: (error as any).status,
+    stack: stackLines.slice(0, 10),
+    context: {
+      function: firstFrame?.[1],
+      file: firstFrame?.[2],
+      line: firstFrame?.[3] ? parseInt(firstFrame[3]) : undefined,
+      column: firstFrame?.[4] ? parseInt(firstFrame[4]) : undefined,
+      input
+    },
+    suggestions: [],
+    severity: 'medium'
+  }
+
+  // Add type-specific suggestions
+  addSuggestions(diagnosis)
+
+  return diagnosis
+}
+
+function addSuggestions(diagnosis: ErrorDiagnosis): void {
+  const { type, message, code, status } = diagnosis
+
+  if (type === 'TypeError' && message.includes('undefined')) {
+    diagnosis.suggestions.push(
+      'Use optional chaining (?.) for nested property access',
+      'Add null checks before accessing properties',
+      'Verify data is loaded before accessing'
+    )
+    diagnosis.severity = 'high'
+  }
+
+  if (type === 'SyntaxError') {
+    diagnosis.suggestions.push(
+      'Check for missing brackets, quotes, or semicolons',
+      'Run linter to detect syntax issues',
+      'Review recent code changes'
+    )
+    diagnosis.severity = 'critical'
+  }
+
+  if (code === 'ECONNREFUSED') {
+    diagnosis.suggestions.push(
+      'Verify the target service is running',
+      'Check the port number is correct',
+      'Verify no firewall is blocking the connection'
+    )
+    diagnosis.severity = 'high'
+  }
+
+  if (status === 401) {
+    diagnosis.suggestions.push(
+      'Check if token is expired',
+      'Verify authentication credentials',
+      'Refresh the auth token'
+    )
+  }
+
+  if (status === 429) {
+    diagnosis.suggestions.push(
+      'Implement rate limiting on client side',
+      'Add exponential backoff',
+      'Check API rate limit headers'
+    )
+  }
+}
+```
+
+### Pattern 2: 5 Whys Analysis
+
+```typescript
+interface WhyAnalysis {
+  level: number
+  question: string
+  answer: string
+  evidence?: string
+}
+
+interface RootCauseAnalysis {
+  problem: string
+  whys: WhyAnalysis[]
+  rootCause: string
+  preventiveMeasures: string[]
+}
+
+function analyze5Whys(
+  problem: string,
+  answers: string[],
+  evidence?: string[]
+): RootCauseAnalysis {
+  const whys: WhyAnalysis[] = answers.map((answer, index) => ({
+    level: index + 1,
+    question: index === 0
+      ? `Why did ${problem}?`
+      : `Why ${answers[index - 1]}?`,
+    answer,
+    evidence: evidence?.[index]
+  }))
+
   return {
-    type: 'Unknown',
-    message: String(error),
-    context: {}
+    problem,
+    whys,
+    rootCause: answers[answers.length - 1],
+    preventiveMeasures: generatePreventiveMeasures(answers[answers.length - 1])
   }
+}
+
+function generatePreventiveMeasures(rootCause: string): string[] {
+  const measures: string[] = []
+
+  if (rootCause.includes('test')) {
+    measures.push('Add integration tests for edge cases')
+    measures.push('Implement test coverage requirements')
+  }
+  if (rootCause.includes('validation')) {
+    measures.push('Add input validation layer')
+    measures.push('Use TypeScript strict mode')
+  }
+  if (rootCause.includes('null') || rootCause.includes('undefined')) {
+    measures.push('Enable strict null checks in TypeScript')
+    measures.push('Use optional chaining consistently')
+  }
+  if (rootCause.includes('timeout') || rootCause.includes('network')) {
+    measures.push('Implement circuit breaker pattern')
+    measures.push('Add retry logic with backoff')
+  }
+
+  return measures.length > 0 ? measures : ['Document and monitor for recurrence']
+}
+
+// Usage example
+const analysis = analyze5Whys(
+  'API returned 500 error',
+  [
+    'Database query failed',
+    'Connection pool was exhausted',
+    'Too many concurrent requests during peak',
+    'No connection pooling limit was configured',
+    'Production config was not reviewed for scale'
+  ],
+  [
+    'Error log: "SequelizeConnectionError"',
+    'Pool stats: 100/100 connections used',
+    'Metrics: 500 req/s vs normal 50 req/s',
+    'Config file: pool.max = 100 (default)',
+    'No load testing performed before launch'
+  ]
+)
+```
+
+### Pattern 3: Stack Trace Analysis
+
+```typescript
+interface StackFrame {
+  function: string
+  file: string
+  line: number
+  column: number
+  isInternal: boolean
+  isNodeModules: boolean
+}
+
+interface StackAnalysis {
+  frames: StackFrame[]
+  originatingFrame: StackFrame | null
+  involvedFiles: string[]
+  errorPath: string[]
+}
+
+function analyzeStackTrace(stack: string): StackAnalysis {
+  const lines = stack.split('\n').slice(1) // Skip error message
+  const frames: StackFrame[] = []
+
+  for (const line of lines) {
+    const match = line.match(/at (.+?) \((.+?):(\d+):(\d+)\)/)
+    if (match) {
+      frames.push({
+        function: match[1],
+        file: match[2],
+        line: parseInt(match[3]),
+        column: parseInt(match[4]),
+        isInternal: match[2].startsWith('node:'),
+        isNodeModules: match[2].includes('node_modules')
+      })
+    }
+  }
+
+  const userFrames = frames.filter(f => !f.isInternal && !f.isNodeModules)
+  const involvedFiles = [...new Set(userFrames.map(f => f.file))]
+
+  return {
+    frames,
+    originatingFrame: userFrames[0] || null,
+    involvedFiles,
+    errorPath: userFrames.map(f => `${f.function} (${f.file}:${f.line})`).reverse()
+  }
+}
+
+function formatStackAnalysis(analysis: StackAnalysis): string {
+  const lines: string[] = ['## Stack Trace Analysis', '']
+
+  if (analysis.originatingFrame) {
+    const { file, line, function: fn } = analysis.originatingFrame
+    lines.push(`**Origin**: \`${fn}\` at \`${file}:${line}\``)
+    lines.push('')
+  }
+
+  lines.push('### Call Path')
+  for (const step of analysis.errorPath) {
+    lines.push(`- ${step}`)
+  }
+  lines.push('')
+
+  lines.push('### Involved Files')
+  for (const file of analysis.involvedFiles) {
+    lines.push(`- \`${file}\``)
+  }
+
+  return lines.join('\n')
 }
 ```
 
-## Common Error Patterns
+## Implementation
 
-### TypeError: Cannot read property 'x' of undefined
-
-**Diagnosis:**
-```typescript
-// Error
-const name = user.profile.name // profile is undefined
-
-// Investigation
-console.log('user:', user)           // Check user object
-console.log('profile:', user?.profile) // Check nested property
-
-// Fix: Optional chaining + default
-const name = user?.profile?.name ?? 'Unknown'
-```
-
-### ECONNREFUSED
-
-**Diagnosis:**
-```typescript
-// Error: connect ECONNREFUSED 127.0.0.1:5432
-
-// Investigation checklist:
-// 1. Is the service running?
-// 2. Is the port correct?
-// 3. Is there a firewall?
-// 4. Is the connection string correct?
-
-// Debug
-console.log('Database URL:', process.env.DATABASE_URL)
-console.log('Attempting connection to:', host, port)
-```
-
-### Module not found
-
-**Diagnosis:**
-```typescript
-// Error: Cannot find module './utils'
-
-// Investigation:
-// 1. Does the file exist?
-// 2. Is the path correct (case-sensitive)?
-// 3. Is the extension needed?
-// 4. Is it in node_modules?
-
-// Check
-import { existsSync } from 'fs'
-console.log('File exists:', existsSync('./utils.ts'))
-```
-
-## Debugging Strategies
-
-### Binary Search
-
-For intermittent issues, narrow down the cause:
+### Complete Diagnostic Service
 
 ```typescript
-async function debugProcess(data: Data[]) {
-  // Split data in half
-  const mid = Math.floor(data.length / 2)
-  const firstHalf = data.slice(0, mid)
-  const secondHalf = data.slice(mid)
+import { existsSync, readFileSync } from 'fs'
 
-  console.log('Testing first half...')
-  try {
-    await process(firstHalf) // If this fails, problem is here
-  } catch (e) {
-    console.log('First half failed, narrowing down...')
-    // Recurse on firstHalf
-  }
-
-  console.log('Testing second half...')
-  // Continue narrowing
-}
-```
-
-### Diff Debugging
-
-When something that worked before fails:
-
-```typescript
-// 1. Find last working commit
-// git bisect start
-// git bisect bad HEAD
-// git bisect good v1.0.0
-
-// 2. Compare configurations
-const currentConfig = loadConfig()
-const lastWorkingConfig = loadConfig('backup')
-console.log('Config diff:', diff(lastWorkingConfig, currentConfig))
-
-// 3. Check environment differences
-console.log('NODE_ENV:', process.env.NODE_ENV)
-console.log('Database:', process.env.DATABASE_URL)
-```
-
-### Rubber Duck Debugging
-
-Structured approach:
-
-```markdown
-## Problem Statement
-What is the expected behavior?
-What is the actual behavior?
-
-## Reproduction Steps
-1. Step one
-2. Step two
-3. Error occurs
-
-## What I've Tried
-- Attempt 1: [result]
-- Attempt 2: [result]
-
-## Hypotheses
-1. [ ] Hypothesis A because...
-2. [ ] Hypothesis B because...
-```
-
-## Logging for Diagnosis
-
-### Structured Error Logging
-
-```typescript
-interface ErrorLog {
-  timestamp: string
-  level: 'error' | 'warn'
-  error: {
-    type: string
-    message: string
-    code?: string
-    stack?: string
-  }
-  context: {
-    requestId?: string
-    userId?: string
-    endpoint?: string
-    input?: unknown
-  }
+interface DiagnosticContext {
+  requestId?: string
+  userId?: string
+  endpoint?: string
+  method?: string
+  input?: unknown
   environment: {
     nodeVersion: string
     bunVersion: string
     platform: string
+    memory: NodeJS.MemoryUsage
+  }
+  timestamp: string
+}
+
+interface DiagnosticReport {
+  id: string
+  error: ErrorDiagnosis
+  stackAnalysis: StackAnalysis
+  context: DiagnosticContext
+  rootCause?: RootCauseAnalysis
+  recommendations: string[]
+}
+
+class DiagnosticService {
+  private reports: Map<string, DiagnosticReport> = new Map()
+
+  diagnose(
+    error: Error,
+    context: Partial<DiagnosticContext> = {}
+  ): DiagnosticReport {
+    const id = crypto.randomUUID()
+
+    const fullContext: DiagnosticContext = {
+      ...context,
+      environment: {
+        nodeVersion: process.version,
+        bunVersion: Bun.version,
+        platform: process.platform,
+        memory: process.memoryUsage()
+      },
+      timestamp: new Date().toISOString()
+    }
+
+    const diagnosis = diagnoseError(error, context.input)
+    const stackAnalysis = analyzeStackTrace(error.stack || '')
+
+    const report: DiagnosticReport = {
+      id,
+      error: diagnosis,
+      stackAnalysis,
+      context: fullContext,
+      recommendations: this.generateRecommendations(diagnosis, stackAnalysis)
+    }
+
+    this.reports.set(id, report)
+    return report
+  }
+
+  addRootCauseAnalysis(
+    reportId: string,
+    answers: string[],
+    evidence?: string[]
+  ): DiagnosticReport | null {
+    const report = this.reports.get(reportId)
+    if (!report) return null
+
+    report.rootCause = analyze5Whys(
+      report.error.message,
+      answers,
+      evidence
+    )
+
+    return report
+  }
+
+  private generateRecommendations(
+    diagnosis: ErrorDiagnosis,
+    stackAnalysis: StackAnalysis
+  ): string[] {
+    const recommendations: string[] = [...diagnosis.suggestions]
+
+    // Add stack-based recommendations
+    if (stackAnalysis.originatingFrame) {
+      const { file, line } = stackAnalysis.originatingFrame
+      recommendations.push(`Review code at ${file}:${line}`)
+
+      // Try to read the file and add context
+      if (existsSync(file)) {
+        try {
+          const content = readFileSync(file, 'utf-8')
+          const lines = content.split('\n')
+          const contextLines = lines.slice(
+            Math.max(0, line - 3),
+            Math.min(lines.length, line + 2)
+          )
+          recommendations.push(`Relevant code context:\n${contextLines.join('\n')}`)
+        } catch {
+          // Ignore file read errors
+        }
+      }
+    }
+
+    // Add severity-based recommendations
+    if (diagnosis.severity === 'critical') {
+      recommendations.unshift('CRITICAL: Immediate attention required')
+      recommendations.push('Consider rolling back recent changes')
+    }
+
+    return recommendations
+  }
+
+  formatReport(report: DiagnosticReport): string {
+    const lines: string[] = [
+      '# Diagnostic Report',
+      '',
+      `**Report ID**: ${report.id}`,
+      `**Timestamp**: ${report.context.timestamp}`,
+      '',
+      '## Error Summary',
+      '',
+      `| Field | Value |`,
+      `|-------|-------|`,
+      `| Type | ${report.error.type} |`,
+      `| Message | ${report.error.message} |`,
+      `| Severity | ${report.error.severity} |`,
+    ]
+
+    if (report.error.code) {
+      lines.push(`| Code | ${report.error.code} |`)
+    }
+    if (report.error.status) {
+      lines.push(`| Status | ${report.error.status} |`)
+    }
+    if (report.stackAnalysis.originatingFrame) {
+      const { file, line, function: fn } = report.stackAnalysis.originatingFrame
+      lines.push(`| Location | \`${file}:${line}\` |`)
+      lines.push(`| Function | \`${fn}\` |`)
+    }
+
+    lines.push('')
+    lines.push(formatStackAnalysis(report.stackAnalysis))
+
+    if (report.context.requestId) {
+      lines.push('')
+      lines.push('## Request Context')
+      lines.push('')
+      lines.push(`- **Request ID**: ${report.context.requestId}`)
+      if (report.context.endpoint) {
+        lines.push(`- **Endpoint**: ${report.context.method || 'GET'} ${report.context.endpoint}`)
+      }
+      if (report.context.userId) {
+        lines.push(`- **User ID**: ${report.context.userId}`)
+      }
+    }
+
+    if (report.rootCause) {
+      lines.push('')
+      lines.push('## 5 Whys Analysis')
+      lines.push('')
+      for (const why of report.rootCause.whys) {
+        lines.push(`**${why.level}. ${why.question}**`)
+        lines.push(`> ${why.answer}`)
+        if (why.evidence) {
+          lines.push(`> *Evidence: ${why.evidence}*`)
+        }
+        lines.push('')
+      }
+      lines.push(`**Root Cause**: ${report.rootCause.rootCause}`)
+    }
+
+    lines.push('')
+    lines.push('## Recommendations')
+    lines.push('')
+    for (const rec of report.recommendations) {
+      lines.push(`- ${rec}`)
+    }
+
+    return lines.join('\n')
   }
 }
 
-function logError(error: Error, context: Record<string, unknown> = {}) {
-  const log: ErrorLog = {
-    timestamp: new Date().toISOString(),
-    level: 'error',
-    error: {
-      type: error.constructor.name,
-      message: error.message,
-      code: (error as any).code,
-      stack: error.stack
-    },
-    context,
-    environment: {
-      nodeVersion: process.version,
-      bunVersion: Bun.version,
-      platform: process.platform
-    }
-  }
-  console.error(JSON.stringify(log, null, 2))
-}
+export const diagnosticService = new DiagnosticService()
 ```
 
-### Request Tracing
+## Integration Examples
+
+### Elysia Error Handler
 
 ```typescript
-function createRequestContext() {
-  const requestId = crypto.randomUUID()
+import { Elysia } from 'elysia'
+import { diagnosticService } from './diagnostic-service'
 
-  return {
-    requestId,
-    log: (message: string, data?: unknown) => {
-      console.log(JSON.stringify({
-        requestId,
-        timestamp: Date.now(),
+const errorPlugin = new Elysia({ name: 'error-diagnostics' })
+  .onError(({ error, request, set }) => {
+    const report = diagnosticService.diagnose(error as Error, {
+      requestId: request.headers.get('x-request-id') || undefined,
+      endpoint: new URL(request.url).pathname,
+      method: request.method
+    })
+
+    console.error(diagnosticService.formatReport(report))
+
+    // Return user-friendly error
+    set.status = (error as any).status || 500
+    return {
+      error: report.error.type,
+      message: report.error.message,
+      reportId: report.id
+    }
+  })
+
+const app = new Elysia()
+  .use(errorPlugin)
+  .get('/test', () => {
+    throw new Error('Test error for diagnostics')
+  })
+```
+
+### Structured Logging
+
+```typescript
+interface StructuredLog {
+  level: 'debug' | 'info' | 'warn' | 'error'
+  message: string
+  timestamp: string
+  context: Record<string, unknown>
+  error?: {
+    type: string
+    message: string
+    stack?: string
+  }
+}
+
+class Logger {
+  private requestId?: string
+
+  withRequestId(requestId: string): Logger {
+    const logger = new Logger()
+    logger.requestId = requestId
+    return logger
+  }
+
+  error(message: string, error: Error, context: Record<string, unknown> = {}): void {
+    const log: StructuredLog = {
+      level: 'error',
+      message,
+      timestamp: new Date().toISOString(),
+      context: {
+        ...context,
+        requestId: this.requestId
+      },
+      error: {
+        type: error.constructor.name,
+        message: error.message,
+        stack: error.stack
+      }
+    }
+    console.error(JSON.stringify(log))
+  }
+
+  info(message: string, context: Record<string, unknown> = {}): void {
+    const log: StructuredLog = {
+      level: 'info',
+      message,
+      timestamp: new Date().toISOString(),
+      context: {
+        ...context,
+        requestId: this.requestId
+      }
+    }
+    console.log(JSON.stringify(log))
+  }
+
+  debug(message: string, context: Record<string, unknown> = {}): void {
+    if (process.env.DEBUG) {
+      const log: StructuredLog = {
+        level: 'debug',
         message,
-        data
-      }))
-    },
-    error: (error: Error, data?: unknown) => {
-      logError(error, { requestId, ...data })
+        timestamp: new Date().toISOString(),
+        context: {
+          ...context,
+          requestId: this.requestId
+        }
+      }
+      console.log(JSON.stringify(log))
     }
   }
 }
+
+export const logger = new Logger()
 ```
 
-## Investigation Checklist
+### Request Tracing Middleware
 
-### Network Errors
+```typescript
+import { Elysia } from 'elysia'
+import { logger } from './logger'
 
-- [ ] Is the target service running?
-- [ ] Is the URL/host correct?
-- [ ] Is DNS resolving correctly?
-- [ ] Are there firewall rules blocking?
-- [ ] Is there a proxy configured?
-- [ ] Is SSL/TLS certificate valid?
+const tracingPlugin = new Elysia({ name: 'tracing' })
+  .derive(({ request }) => {
+    const requestId = request.headers.get('x-request-id') || crypto.randomUUID()
+    const startTime = Date.now()
 
-### Database Errors
+    return {
+      requestId,
+      logger: logger.withRequestId(requestId),
+      timing: {
+        start: startTime,
+        elapsed: () => Date.now() - startTime
+      }
+    }
+  })
+  .onAfterHandle(({ requestId, timing, request, set }) => {
+    logger.withRequestId(requestId).info('Request completed', {
+      method: request.method,
+      path: new URL(request.url).pathname,
+      status: set.status,
+      durationMs: timing.elapsed()
+    })
+  })
 
-- [ ] Is the database server running?
-- [ ] Is the connection string correct?
-- [ ] Is the user/password valid?
-- [ ] Is there a connection pool exhaustion?
-- [ ] Is there a deadlock?
-- [ ] Is the query correct?
+export { tracingPlugin }
+```
 
-### Application Errors
+## Checklist
 
-- [ ] What is the exact error message?
-- [ ] What is the stack trace?
-- [ ] Can it be reproduced consistently?
-- [ ] What was the input that caused it?
-- [ ] What changed recently?
-- [ ] Does it happen in all environments?
+### Error Analysis
 
-## Output Format
-
-```markdown
-## Error Diagnosis
-
-### Error Summary
-| Field | Value |
-|-------|-------|
-| Type | TypeError |
-| Message | Cannot read property 'name' of undefined |
-| Location | `userService.ts:45` |
-| Function | `getUserProfile()` |
+- [ ] Identificar el tipo de error (Syntax, Type, Runtime, Network, etc.)
+- [ ] Extraer mensaje de error completo
+- [ ] Analizar stack trace para identificar origen
+- [ ] Verificar si es reproducible
+- [ ] Capturar contexto (request, user, input)
 
 ### Root Cause Analysis
-The `user.profile` object is undefined when the user has not completed
-their profile setup. The code assumes profile always exists.
 
-### Reproduction Steps
-1. Create new user account
-2. Call GET /api/profile before completing setup
-3. Error occurs at line 45
+- [ ] Aplicar metodo 5 Whys
+- [ ] Documentar evidencia para cada "Why"
+- [ ] Identificar root cause real (no sintomas)
+- [ ] Definir medidas preventivas
+- [ ] Verificar que la solucion aborda root cause
 
-### Recommended Fix
-```typescript
-// Before
-const name = user.profile.name
+### Logging
 
-// After
-const name = user.profile?.name ?? 'Anonymous'
-```
+- [ ] Logs estructurados en JSON
+- [ ] Request ID en todos los logs
+- [ ] Timestamp ISO 8601
+- [ ] Context relevante sin datos sensibles
+- [ ] Stack trace completo para errores
 
-### Prevention
-- Add null check for optional nested properties
-- Update TypeScript types to reflect optionality
-- Add integration test for new user flow
-```
+### Debugging
+
+- [ ] Reproducir en ambiente local si es posible
+- [ ] Binary search para issues intermitentes
+- [ ] Diff debugging para regresiones
+- [ ] Verificar configuracion de ambiente
+- [ ] Revisar cambios recientes (git log)
+
+### Post-Mortem
+
+- [ ] Documentar timeline del incidente
+- [ ] Identificar impacto (usuarios afectados, duracion)
+- [ ] Documentar fix aplicado
+- [ ] Agregar tests para prevenir recurrencia
+- [ ] Actualizar runbooks si aplica
 
 ---
 
-**Version**: 1.0.0
+**Version**: 1.0
 **Spec**: SPEC-018
 **For**: error-analyzer agent

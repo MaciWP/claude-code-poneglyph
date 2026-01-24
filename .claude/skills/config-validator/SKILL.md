@@ -1,6 +1,9 @@
 ---
 name: config-validator
-description: Validate environment variables and configuration with Zod, Bun.env, Pydantic. Type-safe config loading. Fail fast on missing vars. Keywords - environment variables, config validation, bun env, zod config, pydantic settings, type safe config
+description: |
+  Type-safe configuration validation with Zod and Bun.env for environment variables.
+  Use proactively when: loading env vars, setting up config, validating settings.
+  Keywords - env, config, validation, zod, environment, settings, bun env
 activation:
   keywords:
     - env
@@ -9,76 +12,50 @@ activation:
     - zod
     - environment
     - settings
+    - bun env
 for_agents: [builder]
 version: "1.0"
 ---
 
 # Config Validator
 
+Type-safe configuration and environment variable validation for Bun/Elysia projects.
+
 ## When to Use This Skill
 
-Activate when:
-- Loading environment variables from .env files
-- Need type-safe configuration validation
-- Want to fail fast on missing/invalid config
+- Loading environment variables from `.env` files
 - Setting up application configuration
-- Need default values and documentation for config
+- Need type-safe config validation
+- Want to fail fast on missing/invalid config
+- Documenting required configuration
+- Setting default values for optional config
+- Separating dev/staging/production configs
 
-## What This Skill Does
+## Patterns
 
-Validates configuration with:
-- Type-safe environment variable loading
-- Required vs optional variables
-- Default values and validation rules
-- Fail-fast on startup (missing/invalid config)
-- Auto-completion for config (TypeScript/Python types)
-- Configuration documentation
-
-## Supported Technologies
-
-**Bun (Primary)**:
-- Zod + Bun.env (recommended)
-- Native Bun.env validation
-
-**Node**:
-- Zod (recommended)
-- @t3-oss/env-nextjs
-- envalid
-
-**Python**:
-- Pydantic Settings (recommended)
-- python-decouple
-- environs
-
-## Example: Bun + Zod Config (Recommended)
+### 1. Basic Env Loading - Fail Fast
 
 ```typescript
-// config.ts - Bun native + Zod validation
+// WRONG - No validation, silent failures
+const port = process.env.PORT
+const apiKey = process.env.API_KEY
+// port could be undefined or "abc"
+// apiKey could be empty
+
+// CORRECT - Validate and fail fast
 import { z } from 'zod'
 
 const envSchema = z.object({
-  // Application
-  NODE_ENV: z.enum(['development', 'staging', 'production']).default('development'),
   PORT: z.coerce.number().int().min(1).max(65535).default(8080),
-
-  // Database
-  DATABASE_URL: z.string().url().startsWith('postgresql://'),
-
-  // Auth
-  JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
-  JWT_EXPIRES_IN: z.string().default('30m'),
-
-  // External APIs (optional)
-  ANTHROPIC_API_KEY: z.string().startsWith('sk-ant-').optional(),
-  OPENAI_API_KEY: z.string().startsWith('sk-').optional(),
+  API_KEY: z.string().min(1, 'API_KEY is required'),
+  NODE_ENV: z.enum(['development', 'staging', 'production']).default('development'),
 })
 
-// Parse and validate using Bun.env
 function loadConfig() {
   const result = envSchema.safeParse(Bun.env)
 
   if (!result.success) {
-    console.error('❌ Configuration validation failed:')
+    console.error('Configuration validation failed:')
     result.error.errors.forEach((err) => {
       console.error(`  - ${err.path.join('.')}: ${err.message}`)
     })
@@ -89,394 +66,361 @@ function loadConfig() {
 }
 
 export const config = loadConfig()
-export type Config = z.infer<typeof envSchema>
-
-// Usage
-console.log(`Starting on port ${config.PORT}`)
-console.log(`Environment: ${config.NODE_ENV}`)
 ```
 
-## Example: Bun + Elysia with Config
+### 2. Complex Validation - URLs, Patterns
 
 ```typescript
-// index.ts - Elysia app with validated config
+// WRONG - No URL validation
+const databaseUrl = Bun.env.DATABASE_URL // Could be "hello" or malformed
+
+// CORRECT - Full validation with patterns
+const envSchema = z.object({
+  // Database - must be valid PostgreSQL URL
+  DATABASE_URL: z
+    .string()
+    .url()
+    .startsWith('postgresql://', 'Must be PostgreSQL URL'),
+
+  // Redis - validate URL format
+  REDIS_URL: z
+    .string()
+    .url()
+    .startsWith('redis://')
+    .optional(),
+
+  // API Key - must have correct prefix
+  ANTHROPIC_API_KEY: z
+    .string()
+    .startsWith('sk-ant-', 'Invalid Anthropic API key format')
+    .optional(),
+
+  // JWT Secret - minimum length for security
+  JWT_SECRET: z
+    .string()
+    .min(32, 'JWT_SECRET must be at least 32 characters'),
+
+  // Port - integer in valid range
+  PORT: z.coerce.number().int().min(1).max(65535).default(8080),
+
+  // Boolean coercion
+  DEBUG: z.coerce.boolean().default(false),
+})
+```
+
+### 3. Production Refinements
+
+```typescript
+// WRONG - Same validation for all environments
+const schema = z.object({
+  JWT_SECRET: z.string().min(16),
+})
+
+// CORRECT - Stricter in production
+const envSchema = z
+  .object({
+    NODE_ENV: z.enum(['development', 'staging', 'production']),
+    JWT_SECRET: z.string().min(32),
+    DEBUG: z.coerce.boolean().default(false),
+  })
+  .refine(
+    (data) => {
+      // In production, require longer secret
+      if (data.NODE_ENV === 'production') {
+        return data.JWT_SECRET.length >= 64
+      }
+      return true
+    },
+    {
+      message: 'JWT_SECRET must be at least 64 characters in production',
+      path: ['JWT_SECRET'],
+    }
+  )
+  .refine(
+    (data) => {
+      // No debug in production
+      if (data.NODE_ENV === 'production' && data.DEBUG) {
+        return false
+      }
+      return true
+    },
+    {
+      message: 'DEBUG must be false in production',
+      path: ['DEBUG'],
+    }
+  )
+```
+
+### 4. Grouped Configuration
+
+```typescript
+// WRONG - Flat config object
+const config = {
+  dbUrl: Bun.env.DATABASE_URL,
+  dbPool: Bun.env.DATABASE_POOL_SIZE,
+  redisUrl: Bun.env.REDIS_URL,
+  redisMaxConn: Bun.env.REDIS_MAX_CONNECTIONS,
+  // ... messy flat structure
+}
+
+// CORRECT - Grouped by concern
+const envSchema = z.object({
+  NODE_ENV: z.enum(['development', 'staging', 'production']).default('development'),
+  PORT: z.coerce.number().default(8080),
+})
+
+const databaseSchema = z.object({
+  DATABASE_URL: z.string().url(),
+  DATABASE_POOL_SIZE: z.coerce.number().int().min(1).max(100).default(10),
+  DATABASE_TIMEOUT_MS: z.coerce.number().int().default(30000),
+})
+
+const redisSchema = z.object({
+  REDIS_URL: z.string().url().optional(),
+  REDIS_MAX_CONNECTIONS: z.coerce.number().int().default(50),
+})
+
+const authSchema = z.object({
+  JWT_SECRET: z.string().min(32),
+  JWT_EXPIRES_IN: z.string().default('30m'),
+  REFRESH_TOKEN_EXPIRES_IN: z.string().default('7d'),
+})
+
+// Combined config with groups
+export const config = {
+  app: envSchema.parse(Bun.env),
+  database: databaseSchema.parse(Bun.env),
+  redis: redisSchema.parse(Bun.env),
+  auth: authSchema.parse(Bun.env),
+}
+
+// Usage: config.database.DATABASE_URL
+```
+
+### 5. File-Based Config with Env Override
+
+```typescript
+// WRONG - Only env vars
+const config = loadFromEnv()
+
+// CORRECT - File + env override pattern
+interface Config {
+  port: number
+  apiKey: string
+  features: {
+    enableSignup: boolean
+    maxUsersPerOrg: number
+  }
+}
+
+async function loadConfig(): Promise<Config> {
+  // 1. Load defaults from file
+  const configFile = Bun.file('./config.json')
+  let fileConfig: Partial<Config> = {}
+
+  if (await configFile.exists()) {
+    fileConfig = await configFile.json()
+  }
+
+  // 2. Override with env vars
+  return {
+    port: Number(Bun.env.PORT) || fileConfig.port || 8080,
+    apiKey: Bun.env.API_KEY || fileConfig.apiKey || '',
+    features: {
+      enableSignup:
+        Bun.env.ENABLE_SIGNUP !== undefined
+          ? Bun.env.ENABLE_SIGNUP === 'true'
+          : fileConfig.features?.enableSignup ?? true,
+      maxUsersPerOrg:
+        Number(Bun.env.MAX_USERS_PER_ORG) ||
+        fileConfig.features?.maxUsersPerOrg ||
+        50,
+    },
+  }
+}
+```
+
+### 6. Type Export Pattern
+
+```typescript
+// config.ts
+import { z } from 'zod'
+
+const envSchema = z.object({
+  PORT: z.coerce.number().default(8080),
+  DATABASE_URL: z.string().url(),
+  JWT_SECRET: z.string().min(32),
+  NODE_ENV: z.enum(['development', 'staging', 'production']).default('development'),
+})
+
+// Export the type for use elsewhere
+export type Config = z.infer<typeof envSchema>
+
+// Validate and export config
+function loadConfig(): Config {
+  const result = envSchema.safeParse(Bun.env)
+  if (!result.success) {
+    console.error('Config validation failed:')
+    for (const error of result.error.errors) {
+      console.error(`  ${error.path}: ${error.message}`)
+    }
+    process.exit(1)
+  }
+  return result.data
+}
+
+export const config = loadConfig()
+
+// Usage in other files
+// import { config, type Config } from './config'
+```
+
+## Checklist
+
+- [ ] All env vars validated with Zod schema
+- [ ] App fails fast on startup if config invalid
+- [ ] Required vs optional vars clearly distinguished
+- [ ] Default values provided for optional vars
+- [ ] Numbers coerced with `z.coerce.number()`
+- [ ] Booleans coerced with `z.coerce.boolean()`
+- [ ] URLs validated with `z.string().url()`
+- [ ] API keys validated with prefix patterns
+- [ ] Production has stricter requirements (refine)
+- [ ] Config type exported for TypeScript
+- [ ] `.env.example` file documents all vars
+- [ ] Secrets never logged or exposed
+
+## Anti-Patterns
+
+| Anti-Pattern | Problem | Solution |
+|--------------|---------|----------|
+| `process.env.X` without check | Undefined at runtime | Use Zod validation |
+| `Number(process.env.X)` | Returns NaN silently | Use `z.coerce.number()` |
+| Same config all environments | Insecure in production | Use `.refine()` for prod |
+| Logging config values | Exposes secrets | Log only safe values |
+| Optional required vars | App crashes later | Require at startup |
+| Flat config object | Hard to organize | Group by concern |
+| No `.env.example` | Unclear requirements | Document all vars |
+| Hardcoded secrets | Security risk | Always use env vars |
+
+## Examples
+
+### Complete Elysia Config
+
+```typescript
+// server/src/config.ts
+import { z } from 'zod'
+
+const envSchema = z
+  .object({
+    // Application
+    NODE_ENV: z.enum(['development', 'staging', 'production']).default('development'),
+    PORT: z.coerce.number().int().min(1).max(65535).default(8080),
+    LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
+
+    // Database
+    DATABASE_URL: z.string().url().startsWith('postgresql://'),
+
+    // Auth
+    JWT_SECRET: z.string().min(32),
+    JWT_EXPIRES_IN: z.string().default('30m'),
+
+    // External APIs
+    ANTHROPIC_API_KEY: z.string().startsWith('sk-ant-').optional(),
+
+    // Features
+    ENABLE_SIGNUP: z.coerce.boolean().default(true),
+    ENABLE_ANALYTICS: z.coerce.boolean().default(false),
+  })
+  .refine(
+    (data) => {
+      if (data.NODE_ENV === 'production') {
+        return data.JWT_SECRET.length >= 64
+      }
+      return true
+    },
+    { message: 'JWT_SECRET must be 64+ chars in production', path: ['JWT_SECRET'] }
+  )
+
+export type Config = z.infer<typeof envSchema>
+
+function loadConfig(): Config {
+  const result = envSchema.safeParse(Bun.env)
+
+  if (!result.success) {
+    console.error('Configuration validation failed:')
+    result.error.errors.forEach((err) => {
+      console.error(`  - ${err.path.join('.')}: ${err.message}`)
+    })
+    process.exit(1)
+  }
+
+  // Log safe config values (never secrets)
+  console.log('Config loaded:', {
+    NODE_ENV: result.data.NODE_ENV,
+    PORT: result.data.PORT,
+    LOG_LEVEL: result.data.LOG_LEVEL,
+    ENABLE_SIGNUP: result.data.ENABLE_SIGNUP,
+  })
+
+  return result.data
+}
+
+export const config = loadConfig()
+```
+
+### .env.example Template
+
+```bash
+# .env.example - Copy to .env and fill values
+
+# Application
+NODE_ENV=development
+PORT=8080
+LOG_LEVEL=info
+
+# Database (required)
+DATABASE_URL=postgresql://user:password@localhost:5432/mydb
+
+# Authentication (required)
+JWT_SECRET=your-secret-key-at-least-32-characters-long
+JWT_EXPIRES_IN=30m
+
+# External APIs (optional)
+ANTHROPIC_API_KEY=sk-ant-your-key-here
+
+# Feature Flags
+ENABLE_SIGNUP=true
+ENABLE_ANALYTICS=false
+```
+
+### Using Config in Elysia
+
+```typescript
+// server/src/index.ts
 import { Elysia } from 'elysia'
 import { config } from './config'
 
 const app = new Elysia()
   .get('/health', () => ({
     status: 'ok',
-    env: config.NODE_ENV,
+    environment: config.NODE_ENV,
+    timestamp: Date.now(),
+  }))
+  .get('/config', () => ({
+    // Only expose safe values
+    environment: config.NODE_ENV,
+    features: {
+      signup: config.ENABLE_SIGNUP,
+      analytics: config.ENABLE_ANALYTICS,
+    },
   }))
   .listen(config.PORT)
 
-console.log(`🦊 Server running at http://localhost:${config.PORT}`)
+console.log(`Server running on port ${config.PORT} (${config.NODE_ENV})`)
 ```
-
-## Example: Pydantic Settings (Python)
-
-```python
-# config.py
-from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field, PostgresDsn, RedisDsn, EmailStr, validator
-from typing import Optional
-
-class Settings(BaseSettings):
-    """Application configuration with validation"""
-
-    model_config = SettingsConfigDict(
-        env_file='.env',
-        env_file_encoding='utf-8',
-        case_sensitive=False
-    )
-
-    # Application
-    app_name: str = Field(default="My App", description="Application name")
-    environment: str = Field(default="development", pattern="^(development|staging|production)$")
-    debug: bool = Field(default=False, description="Enable debug mode")
-
-    # Server
-    host: str = Field(default="0.0.0.0")
-    port: int = Field(default=8000, ge=1, le=65535)
-
-    # Database
-    database_url: PostgresDsn = Field(..., description="PostgreSQL connection string")
-    database_pool_size: int = Field(default=10, ge=1, le=100)
-
-    # Redis
-    redis_url: RedisDsn = Field(..., description="Redis connection string")
-
-    # Auth
-    secret_key: str = Field(..., min_length=32, description="Secret key for JWT")
-    algorithm: str = Field(default="HS256")
-    access_token_expire_minutes: int = Field(default=30, ge=1)
-
-    # Email
-    smtp_host: str = Field(...)
-    smtp_port: int = Field(default=587, ge=1, le=65535)
-    smtp_user: EmailStr = Field(...)
-    smtp_password: str = Field(...)
-
-    # External APIs
-    stripe_api_key: Optional[str] = Field(default=None, description="Stripe API key (optional)")
-
-    # Feature flags
-    enable_registration: bool = Field(default=True)
-    enable_email_verification: bool = Field(default=True)
-
-    @validator('environment')
-    def validate_environment(cls, v):
-        """Ensure environment is valid"""
-        allowed = ['development', 'staging', 'production']
-        if v not in allowed:
-            raise ValueError(f"environment must be one of {allowed}")
-        return v
-
-    @validator('secret_key')
-    def validate_secret_key(cls, v, values):
-        """Ensure secret key is strong in production"""
-        if values.get('environment') == 'production' and len(v) < 32:
-            raise ValueError("secret_key must be at least 32 characters in production")
-        return v
-
-# Load and validate config
-try:
-    settings = Settings()
-except Exception as e:
-    print(f"Configuration error: {e}")
-    exit(1)
-
-# Usage
-print(f"Starting {settings.app_name} on {settings.host}:{settings.port}")
-```
-
-## Example: .env File
-
-```bash
-# .env
-APP_NAME=MyApp
-ENVIRONMENT=production
-DEBUG=false
-
-HOST=0.0.0.0
-PORT=8000
-
-DATABASE_URL=postgresql://user:pass@localhost:5432/mydb
-DATABASE_POOL_SIZE=20
-
-REDIS_URL=redis://localhost:6379/0
-
-SECRET_KEY=your-super-secret-key-at-least-32-characters-long
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=noreply@example.com
-SMTP_PASSWORD=your-smtp-password
-
-STRIPE_API_KEY=sk_live_...
-
-ENABLE_REGISTRATION=true
-ENABLE_EMAIL_VERIFICATION=true
-```
-
-## Example: Zod Config Validation (TypeScript)
-
-```typescript
-// config.ts
-import { z } from 'zod';
-import dotenv from 'dotenv';
-
-dotenv.config();
-
-const envSchema = z.object({
-  // Application
-  NODE_ENV: z.enum(['development', 'staging', 'production']).default('development'),
-  APP_NAME: z.string().default('MyApp'),
-  PORT: z.coerce.number().int().min(1).max(65535).default(3000),
-
-  // Database
-  DATABASE_URL: z.string().url().startsWith('postgresql://'),
-  DATABASE_POOL_SIZE: z.coerce.number().int().min(1).max(100).default(10),
-
-  // Redis
-  REDIS_URL: z.string().url().startsWith('redis://'),
-
-  // Auth
-  JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
-  JWT_EXPIRES_IN: z.string().default('30m'),
-
-  // Email
-  SMTP_HOST: z.string(),
-  SMTP_PORT: z.coerce.number().int().default(587),
-  SMTP_USER: z.string().email(),
-  SMTP_PASSWORD: z.string(),
-
-  // External APIs
-  STRIPE_API_KEY: z.string().startsWith('sk_').optional(),
-
-  // Feature flags
-  ENABLE_REGISTRATION: z.coerce.boolean().default(true),
-  ENABLE_EMAIL_VERIFICATION: z.coerce.boolean().default(true),
-});
-
-// Custom refinement for production
-const configSchema = envSchema.refine(
-  (data) => {
-    if (data.NODE_ENV === 'production') {
-      return data.JWT_SECRET.length >= 64; // Stricter in production
-    }
-    return true;
-  },
-  {
-    message: 'JWT_SECRET must be at least 64 characters in production',
-    path: ['JWT_SECRET'],
-  }
-);
-
-// Parse and validate
-let config: z.infer<typeof configSchema>;
-
-try {
-  config = configSchema.parse(process.env);
-} catch (error) {
-  if (error instanceof z.ZodError) {
-    console.error('❌ Configuration validation failed:');
-    error.errors.forEach((err) => {
-      console.error(`  - ${err.path.join('.')}: ${err.message}`);
-    });
-    process.exit(1);
-  }
-  throw error;
-}
-
-export default config;
-
-// Usage
-console.log(`Starting ${config.APP_NAME} on port ${config.PORT}`);
-```
-
-## Example: T3 Env (Next.js/TypeScript)
-
-```typescript
-// env.mjs
-import { createEnv } from "@t3-oss/env-nextjs";
-import { z } from "zod";
-
-export const env = createEnv({
-  /**
-   * Server-side environment variables (never exposed to client)
-   */
-  server: {
-    DATABASE_URL: z.string().url(),
-    JWT_SECRET: z.string().min(32),
-    STRIPE_SECRET_KEY: z.string().startsWith("sk_"),
-    NODE_ENV: z.enum(["development", "staging", "production"]),
-  },
-
-  /**
-   * Client-side environment variables (exposed to browser)
-   * Must be prefixed with NEXT_PUBLIC_
-   */
-  client: {
-    NEXT_PUBLIC_APP_NAME: z.string().default("MyApp"),
-    NEXT_PUBLIC_API_URL: z.string().url(),
-    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().startsWith("pk_"),
-  },
-
-  /**
-   * Manual destructuring for Next.js
-   */
-  runtimeEnv: {
-    DATABASE_URL: process.env.DATABASE_URL,
-    JWT_SECRET: process.env.JWT_SECRET,
-    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
-    NODE_ENV: process.env.NODE_ENV,
-    NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
-    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
-  },
-
-  /**
-   * Skip validation during build (optional)
-   */
-  skipValidation: !!process.env.SKIP_ENV_VALIDATION,
-});
-
-// Usage
-console.log(env.DATABASE_URL); // ✅ Type-safe
-console.log(env.NEXT_PUBLIC_APP_NAME); // ✅ Type-safe
-// console.log(env.SOME_RANDOM_VAR); // ❌ TypeScript error
-```
-
-## Example: Config with Nested Objects (Python)
-
-```python
-# config/settings.py
-from pydantic import BaseModel
-from pydantic_settings import BaseSettings
-
-class DatabaseConfig(BaseModel):
-    url: str
-    pool_size: int = 10
-    echo: bool = False
-
-class RedisConfig(BaseModel):
-    url: str
-    max_connections: int = 50
-
-class EmailConfig(BaseModel):
-    smtp_host: str
-    smtp_port: int = 587
-    smtp_user: str
-    smtp_password: str
-    from_email: str = "noreply@example.com"
-
-class Settings(BaseSettings):
-    app_name: str = "MyApp"
-    debug: bool = False
-
-    database: DatabaseConfig
-    redis: RedisConfig
-    email: EmailConfig
-
-    model_config = SettingsConfigDict(env_nested_delimiter='__')
-
-# .env file
-# DATABASE__URL=postgresql://...
-# DATABASE__POOL_SIZE=20
-# REDIS__URL=redis://...
-# EMAIL__SMTP_HOST=smtp.gmail.com
-
-settings = Settings()
-print(settings.database.url)
-print(settings.redis.max_connections)
-```
-
-## Best Practices
-
-1. **Fail fast on startup** - Validate config immediately, exit if invalid
-2. **Use type-safe schemas** - Pydantic (Python), Zod (TypeScript)
-3. **Required vs optional** - Make critical vars required, provide defaults for others
-4. **Validate values** - Not just types (min/max, patterns, URLs)
-5. **Document variables** - Add descriptions for each var
-6. **Never commit .env** - Add to .gitignore, use .env.example
-7. **Different configs per environment** - .env.development, .env.production
-8. **Load early** - Before app initialization
-
-## Example: .env.example (Template)
-
-```bash
-# .env.example
-# Copy to .env and fill in values
-
-# Application
-APP_NAME=MyApp
-ENVIRONMENT=development  # development | staging | production
-DEBUG=true
-
-# Database (required)
-DATABASE_URL=postgresql://user:password@localhost:5432/mydb
-
-# Redis (required)
-REDIS_URL=redis://localhost:6379/0
-
-# Auth (required)
-SECRET_KEY=generate-a-secure-random-key-at-least-32-chars
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-
-# Email (required)
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your-email@gmail.com
-SMTP_PASSWORD=your-app-password
-
-# External APIs (optional)
-STRIPE_API_KEY=sk_test_...
-
-# Feature Flags
-ENABLE_REGISTRATION=true
-ENABLE_EMAIL_VERIFICATION=true
-```
-
-## Common Validation Patterns
-
-```python
-# URL validation
-database_url: PostgresDsn  # Must be valid PostgreSQL URL
-
-# Email validation
-smtp_user: EmailStr  # Must be valid email
-
-# Integer with range
-port: int = Field(ge=1, le=65535)  # Between 1-65535
-
-# String with pattern
-environment: str = Field(pattern="^(dev|staging|prod)$")
-
-# String with min length
-secret_key: str = Field(min_length=32)
-
-# Optional with default
-debug: bool = Field(default=False)
-
-# Custom validator
-@validator('api_key')
-def validate_api_key(cls, v):
-    if not v.startswith('sk_'):
-        raise ValueError('API key must start with sk_')
-    return v
-```
-
-## Integration with Other Skills
-
-- **api-endpoint-builder** - Load API configuration
-- **auth-flow-builder** - Validate JWT secret and expiration
-- **database-query-optimizer** - Load database connection config
-- **cache-strategy-builder** - Load Redis configuration
 
 ---
 
-**Version**: 1.0.0
-**Category**: Backend Extended
-**Complexity**: Low-Medium
+**Version**: 1.0
+**Stack**: Bun, Zod, TypeScript

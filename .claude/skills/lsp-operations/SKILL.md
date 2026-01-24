@@ -1,8 +1,9 @@
 ---
 name: lsp-operations
-description: >
+description: |
   LSP operations reference for semantic code navigation.
-  Keywords - definition, references, hover, symbols, implementation, calls.
+  Use proactively when: finding definitions, references, types, call hierarchy.
+  Keywords - definition, references, hover, symbols, implementation, calls, lsp, go to
 activation:
   keywords:
     - definition
@@ -14,24 +15,64 @@ activation:
     - lsp
     - go to
     - find usages
-for_agents: [builder, reviewer, error-analyzer]
+    - where is
+    - who calls
+for_agents: [builder, reviewer, error-analyzer, scout, architect]
 version: "1.0"
 ---
 
 # LSP Operations Skill
 
-Referencia completa de operaciones LSP para navegación semántica de código.
+Complete reference for Language Server Protocol operations for semantic code navigation.
 
-## Triggers
+## When to Use
 
-ES: definición, referencias, usos, hover, tipo, parámetros, implementación, llamadas, símbolos
-EN: definition, references, usage, hover, type, parameters, implementation, calls, symbols
+| Task | LSP Operation | Why LSP |
+|------|---------------|---------|
+| Where is X defined? | `goToDefinition` | Type-aware, exact |
+| Where is X used? | `findReferences` | Finds all usages |
+| What type is X? | `hover` | Full signature |
+| What functions in file? | `documentSymbol` | Complete list |
+| Who calls this function? | `incomingCalls` | Call graph |
+| What does this call? | `outgoingCalls` | Dependencies |
+| Who implements interface? | `goToImplementation` | Polymorphism |
 
-## Operaciones
+## Core Rules
+
+| Priority | Tool | Use Case |
+|----------|------|----------|
+| 1 | **LSP** | Semantic navigation (type-aware) |
+| 2 | Grep | Text search (fallback) |
+| 3 | Glob | File search |
+
+**Use LSP first** for TypeScript/JavaScript. Fall back to Grep only when LSP unavailable.
+
+## Quick Reference
+
+### Parameters (All Operations)
+
+| Param | Type | Description |
+|-------|------|-------------|
+| `operation` | string | Operation name |
+| `filePath` | string | Absolute or relative path |
+| `line` | number | Line number (1-based) |
+| `character` | number | Column (1-based) |
+
+### LSP vs Grep
+
+| Task | LSP | Grep |
+|------|-----|------|
+| Find definition | Exact location | May find wrong match |
+| Find usages | Type-aware | False positives |
+| Get signature | Complete types | Manual parsing |
+| Implementations | Automatic | Impossible |
+| Call hierarchy | Full graph | Not possible |
+
+## Operations
 
 ### goToDefinition
 
-**Uso**: Ir a donde se define un símbolo
+**Purpose**: Navigate to where a symbol is defined
 
 ```
 LSP({
@@ -42,11 +83,11 @@ LSP({
 })
 ```
 
-**Ejemplo**: "¿Dónde está definida la clase ClaudeService?"
+**Example**: "Where is ClaudeService defined?"
 
 ### findReferences
 
-**Uso**: Encontrar todos los lugares donde se usa un símbolo
+**Purpose**: Find all usages of a symbol
 
 ```
 LSP({
@@ -57,11 +98,11 @@ LSP({
 })
 ```
 
-**Ejemplo**: "¿Dónde se usa executeStream?"
+**Example**: "Where is executeStream used?"
 
 ### hover
 
-**Uso**: Obtener tipo y documentación de un símbolo
+**Purpose**: Get type information and documentation
 
 ```
 LSP({
@@ -72,11 +113,11 @@ LSP({
 })
 ```
 
-**Ejemplo**: "¿Qué parámetros acepta execute?"
+**Example**: "What parameters does execute() accept?"
 
 ### documentSymbol
 
-**Uso**: Listar todos los símbolos de un archivo
+**Purpose**: List all symbols in a file
 
 ```
 LSP({
@@ -87,11 +128,11 @@ LSP({
 })
 ```
 
-**Ejemplo**: "¿Qué funciones tiene claude.ts?"
+**Example**: "What functions are in claude.ts?"
 
 ### workspaceSymbol
 
-**Uso**: Buscar símbolos en todo el proyecto
+**Purpose**: Search symbols across the project
 
 ```
 LSP({
@@ -102,11 +143,11 @@ LSP({
 })
 ```
 
-**Ejemplo**: "Encontrar todas las clases *Service"
+**Example**: "Find all *Service classes"
 
 ### goToImplementation
 
-**Uso**: Encontrar implementaciones de una interface
+**Purpose**: Find implementations of an interface
 
 ```
 LSP({
@@ -117,11 +158,11 @@ LSP({
 })
 ```
 
-**Ejemplo**: "¿Quién implementa IExecutor?"
+**Example**: "Who implements IExecutor?"
 
 ### prepareCallHierarchy
 
-**Uso**: Preparar análisis de jerarquía de llamadas
+**Purpose**: Prepare for call hierarchy analysis
 
 ```
 LSP({
@@ -134,7 +175,7 @@ LSP({
 
 ### incomingCalls
 
-**Uso**: Encontrar quién llama a una función
+**Purpose**: Find what calls this function
 
 ```
 LSP({
@@ -145,11 +186,11 @@ LSP({
 })
 ```
 
-**Ejemplo**: "¿Qué funciones llaman a processMessage?"
+**Example**: "What calls processMessage?"
 
 ### outgoingCalls
 
-**Uso**: Encontrar qué llama una función
+**Purpose**: Find what this function calls
 
 ```
 LSP({
@@ -160,33 +201,64 @@ LSP({
 })
 ```
 
-**Ejemplo**: "¿Qué funciones llama orchestrate?"
+**Example**: "What does orchestrate() call?"
 
-## Parámetros
+## Examples
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| `operation` | string | Operación a ejecutar |
-| `filePath` | string | Ruta al archivo (absoluta o relativa) |
-| `line` | number | Línea (1-based, como en editor) |
-| `character` | number | Columna (1-based, como en editor) |
+### Find All Usages of a Type
 
-## LSP vs Grep
+```
+// 1. First, find where type is defined
+LSP({ operation: 'goToDefinition', filePath: 'src/api.ts', line: 15, character: 20 })
 
-| Tarea | LSP | Grep |
-|-------|-----|------|
-| Encontrar definición | `goToDefinition` → exacto | Patrón de texto → puede fallar |
-| Encontrar usos | `findReferences` → type-aware | Búsqueda texto → falsos positivos |
-| Ver firma | `hover` → completo | Leer archivo → manual |
-| Implementaciones | `goToImplementation` → automático | Manual |
-| Call hierarchy | `incomingCalls/outgoingCalls` | No posible |
+// 2. Then find all references
+LSP({ operation: 'findReferences', filePath: 'src/types.ts', line: 5, character: 10 })
+```
 
-## Archivos de Alto Valor en este Proyecto
+### Understand a Function's Dependencies
 
-| Archivo | LOC | Por qué LSP |
-|---------|-----|-------------|
-| `claude-code-ui/server/src/services/claude.ts` | ~1000 | SDK, 15+ interfaces |
-| `claude-code-ui/server/src/routes/websocket.ts` | ~650 | 10+ módulos |
-| `claude-code-ui/server/src/services/orchestrator-agent.ts` | ~560 | Events, async |
-| `claude-code-ui/web/src/components/StreamingChat.tsx` | ~400 | 15+ hooks |
-| `claude-code-ui/web/src/types/chat.ts` | ~300 | 30+ tipos |
+```
+// 1. Get function signature
+LSP({ operation: 'hover', filePath: 'src/service.ts', line: 50, character: 15 })
+
+// 2. See what it calls
+LSP({ operation: 'outgoingCalls', filePath: 'src/service.ts', line: 50, character: 15 })
+```
+
+### Parallel LSP Operations
+
+```
+// These can run in parallel (same message)
+LSP({ operation: 'goToDefinition', filePath: 'file1.ts', line: 10, character: 5 })
+LSP({ operation: 'findReferences', filePath: 'file2.ts', line: 20, character: 10 })
+LSP({ operation: 'hover', filePath: 'file3.ts', line: 30, character: 15 })
+```
+
+## High-Value Files (This Project)
+
+| File | Why LSP Helps |
+|------|---------------|
+| `server/src/services/claude.ts` | SDK, 15+ interfaces |
+| `server/src/routes/websocket.ts` | 10+ modules |
+| `server/src/services/orchestrator-agent.ts` | Events, async |
+| `web/src/components/StreamingChat.tsx` | 15+ hooks |
+| `web/src/types/chat.ts` | 30+ types |
+
+## Checklist
+
+### Before Using LSP
+
+- [ ] File is TypeScript/JavaScript (LSP supported)
+- [ ] Have exact file path
+- [ ] Know line and column of symbol
+
+### When to Fall Back to Grep
+
+- [ ] LSP not available for language
+- [ ] Searching text/comments (not code)
+- [ ] Non-code files (markdown, json)
+
+---
+
+**Version**: 1.0.0
+**Spec**: SPEC-020

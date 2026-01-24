@@ -1,6 +1,9 @@
 ---
 name: code-style-enforcer
-description: Enforces code style standards including YOLO philosophy (minimal comments) and type hints. This skill should be used when writing TypeScript/JavaScript code to ensure proper type hints, imports organization, naming conventions, and self-explanatory code without excessive comments.
+description: |
+  Enforces code style standards including YOLO philosophy and type hints.
+  Use proactively when: writing code, reviewing code, checking style compliance.
+  Keywords - style, yolo, comments, type hints, imports, naming, conventions
 activation:
   keywords:
     - style
@@ -10,138 +13,189 @@ activation:
     - imports
     - naming
     - conventions
-for_agents: [builder, reviewer]
+    - formatting
+for_agents: [builder, reviewer, code-quality, architect]
 version: "1.0"
 ---
 
 # Code Style Enforcer
 
-Enforces code style for TypeScript/Bun projects. YOLO philosophy (minimal/NO comments), type hints required, proper imports.
+Enforces code style for TypeScript/Bun projects with YOLO philosophy.
 
-**Version**: 2.0.0
+## When to Use
 
----
+| Situation | Apply Skill |
+|-----------|-------------|
+| Writing new code | All rules |
+| Reviewing PR/changes | Check compliance |
+| Refactoring | Enforce patterns |
+| Adding types | Type hint rules |
+| Organizing imports | Import rules |
 
-## Core Rules: YOLO Philosophy
+## Core Rules
 
-**#1 RULE: Code should be self-explanatory. Minimal or NO comments.**
+### Rule #1: YOLO Philosophy
 
----
+> **Code should be self-explanatory. Minimal or NO comments.**
 
-## REQUIRED Patterns
+| Comment Type | Verdict | Example |
+|--------------|---------|---------|
+| Obvious comments | FORBIDDEN | `// Return user` |
+| Complex algorithm explanation | OK | `// Using Floyd's cycle detection` |
+| Non-obvious workaround | OK | `// setTimeout(0) defers until after React state update` |
+| TODO with ticket | OK | `// TODO(#123): Implement retry` |
+| JSDoc for public API | OK (libraries) | `/** @param email User email */` |
 
-### 1. NO Obvious Comments (YOLO)
+### Rule #2: Type Hints Required
 
-```typescript
-// FORBIDDEN - Obvious comments
-function createUser(email: string): User {
-  // Create user with email  ← OBVIOUS!
-  const user = new User(email)
-  // Return user  ← OBVIOUS!
-  return user
-}
+All parameters and return types must be typed.
 
-// CORRECT - Self-explanatory
-function createUser(email: string): User {
-  return new User(email)
-}
-```
+| Pattern | Status |
+|---------|--------|
+| `function getUsers(status)` | BAD |
+| `function getUsers(status: UserStatus): Promise<User[]>` | GOOD |
+| `const x = []` | BAD |
+| `const x: User[] = []` | GOOD |
 
-### 2. Type Hints Required
+### Rule #3: Interface > Type
 
-```typescript
-// WRONG - No return type
-function getUsers(status) {
-  return db.users.filter(u => u.status === status)
-}
+| Use Case | Prefer |
+|----------|--------|
+| Object shapes | `interface` |
+| Unions, intersections | `type` |
+| Extending shapes | `interface extends` |
 
-// CORRECT - Full typing
-function getUsers(status: UserStatus): Promise<User[]> {
-  return db.users.filter(u => u.status === status)
-}
-```
+### Rule #4: Named Exports > Default
 
-### 3. Named Exports Preferred
+| Pattern | Status |
+|---------|--------|
+| `export default class UserService` | AVOID |
+| `export class UserService` | PREFERRED |
 
-```typescript
-// WRONG - Default export
-export default class UserService {}
+## Quick Reference
 
-// CORRECT - Named export
-export class UserService {}
-export function createUser() {}
-```
-
-### 4. Import Organization
+### Import Organization Order
 
 ```typescript
-// CORRECT order:
 // 1. Node/Bun built-ins
 import { join } from 'path'
 
 // 2. External packages
 import { Elysia } from 'elysia'
 
-// 3. Internal/local modules
+// 3. Internal modules
 import { UserService } from './services/user'
 import type { User } from './types'
 ```
 
-### 5. Interface vs Type
+### File Naming
+
+| Type | Convention | Example |
+|------|------------|---------|
+| Components | PascalCase | `UserCard.tsx` |
+| Utilities | camelCase | `formatDate.ts` |
+| Types | types suffix | `user.types.ts` |
+| Tests | test suffix | `user.test.ts` |
+| Constants | SCREAMING_SNAKE | `MAX_RETRIES` |
+
+### Async/Await (Required)
 
 ```typescript
-// Prefer interface for object shapes
-interface User {
-  id: string
-  email: string
-}
-
-// Use type for unions, intersections
-type Status = 'active' | 'inactive'
-type AdminUser = User & { role: 'admin' }
-```
-
-### 6. Async/Await
-
-```typescript
-// WRONG - Callback style
+// BAD - Callback style
 fetch(url).then(r => r.json()).then(data => process(data))
 
-// CORRECT - Async/await
+// GOOD - Async/await
 const response = await fetch(url)
 const data = await response.json()
 await process(data)
 ```
 
----
+## Examples
 
-## File Naming
+### Bad Code (Multiple Violations)
 
-- Components: `PascalCase.tsx`
-- Utilities: `camelCase.ts`
-- Types: `types.ts` or `*.types.ts`
-- Tests: `*.test.ts`
-- Constants: `SCREAMING_SNAKE_CASE`
+```typescript
+// WRONG: Multiple issues
+export default function getUsers(status) {  // No types, default export
+  // Get users from database  <- OBVIOUS COMMENT
+  const users = db.users.filter(u => u.status === status)
+  // Return filtered users   <- OBVIOUS COMMENT
+  return users
+}
+```
 
----
+### Good Code (YOLO Compliant)
+
+```typescript
+// CORRECT: Self-explanatory
+export function getUsers(status: UserStatus): Promise<User[]> {
+  return db.users.filter(u => u.status === status)
+}
+```
+
+### Interface vs Type
+
+```typescript
+// CORRECT: Interface for object shapes
+interface User {
+  id: string
+  email: string
+  createdAt: Date
+}
+
+// CORRECT: Type for unions/intersections
+type Status = 'active' | 'inactive' | 'pending'
+type AdminUser = User & { role: 'admin' }
+```
+
+### Acceptable Comments
+
+```typescript
+// ACCEPTABLE: Non-obvious workaround with WHY
+// Using setTimeout(0) to defer execution until after React state update
+setTimeout(() => this.validate(), 0)
+
+// ACCEPTABLE: Complex algorithm
+// Floyd's cycle detection: slow pointer moves 1, fast moves 2
+let slow = head, fast = head
+
+// ACCEPTABLE: TODO with ticket reference
+// TODO(#123): Implement retry logic for network failures
+```
+
+## Checklist
+
+### Before Committing Code
+
+- [ ] No obvious comments (YOLO)
+- [ ] All functions have parameter types
+- [ ] All functions have return types
+- [ ] Using `interface` for object shapes
+- [ ] Using named exports (not default)
+- [ ] Imports organized (built-in, external, internal)
+- [ ] Using async/await (not .then chains)
+- [ ] File naming follows conventions
+
+### During Code Review
+
+- [ ] Check for YOLO violations (obvious comments)
+- [ ] Verify all types are explicit
+- [ ] Confirm proper export style
+- [ ] Validate import organization
+- [ ] Ensure async patterns are correct
 
 ## Exceptions
 
 Comments ARE acceptable for:
-- Complex algorithms that need explanation
-- Non-obvious workarounds (with WHY, not WHAT)
-- TODO/FIXME with ticket reference
-- JSDoc for public API (libraries only)
 
-```typescript
-// ACCEPTABLE - Non-obvious workaround
-// Using setTimeout(0) to defer execution until after React state update
-setTimeout(() => this.validate(), 0)
-
-// ACCEPTABLE - With ticket
-// TODO(#123): Implement retry logic
-```
+| Exception | Requirement |
+|-----------|-------------|
+| Complex algorithms | Must explain WHY, not WHAT |
+| Non-obvious workarounds | Include the reason |
+| TODO/FIXME | Must have ticket reference |
+| JSDoc | Only for public library APIs |
 
 ---
 
-**Last Updated**: 2025-12-19
+**Version**: 2.0.0
+**Last Updated**: 2025-01-24

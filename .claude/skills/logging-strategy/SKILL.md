@@ -1,6 +1,9 @@
 ---
 name: logging-strategy
-description: Implement structured logging with context, log levels, log aggregation. Bun native, Elysia, Pino, Winston. JSON logs for production. Keywords - structured logging, json logs, bun, elysia, pino, winston, log aggregation, contextual logging
+description: |
+  Structured logging with context, log levels, and JSON output for Bun/Elysia apps.
+  Use proactively when: setting up logging, adding request tracing, debugging production.
+  Keywords - log, logging, logger, structured, json logs, pino, contextual logging
 activation:
   keywords:
     - log
@@ -8,173 +11,52 @@ activation:
     - logger
     - structured
     - json logs
-    - winston
     - pino
+    - contextual logging
 for_agents: [builder]
 version: "1.0"
 ---
 
 # Logging Strategy
 
+Structured logging patterns for Bun/Elysia applications with contextual information and production-ready output.
+
 ## When to Use This Skill
 
-Activate when:
-- Setting up application logging
-- Need structured logs (JSON) for production
-- Implementing contextual logging (request ID, user ID)
+- Setting up application logging infrastructure
+- Need structured JSON logs for production
+- Implementing request tracing (request ID, correlation ID)
+- Adding contextual logging (user ID, tenant ID)
 - Integrating with log aggregation (ELK, Datadog, CloudWatch)
-- Adding different log levels (DEBUG, INFO, WARNING, ERROR)
+- Debugging issues in production
+- Adding appropriate log levels to code
 
-## What This Skill Does
+## Patterns
 
-Implements logging with:
-- Structured logging (JSON format)
-- Contextual information (request ID, user, correlation ID)
-- Log levels (DEBUG, INFO, WARNING, ERROR, CRITICAL)
-- Log rotation and retention
-- Integration with log aggregation tools
-- Performance-optimized logging
-
-## Supported Technologies
-
-**Bun/Elysia (Primary)**:
-- Bun native logger (zero deps, recommended)
-- Elysia plugin pattern
-- pino (if external lib preferred)
-
-**Node**:
-- pino (fastest)
-- winston
-- bunyan
-
-**Python**:
-- structlog (recommended)
-- python-json-logger
-- loguru
-
-**Log Aggregation**:
-- ELK Stack, Datadog, CloudWatch, Grafana Loki
-
-## Example: Structured Logging (Python/structlog)
-
-```python
-# logging_config.py
-import structlog
-import logging
-from typing import Any
-
-def setup_logging(log_level: str = "INFO", json_logs: bool = True):
-    """Setup structured logging with structlog"""
-
-    # Processors for all logs
-    shared_processors = [
-        structlog.contextvars.merge_contextvars,
-        structlog.stdlib.add_log_level,
-        structlog.stdlib.add_logger_name,
-        structlog.processors.TimeStamper(fmt="iso"),
-        structlog.processors.StackInfoRenderer(),
-        structlog.processors.format_exc_info,
-        structlog.processors.UnicodeDecoder(),
-    ]
-
-    if json_logs:
-        # Production: JSON logs
-        shared_processors.append(structlog.processors.JSONRenderer())
-    else:
-        # Development: Pretty console logs
-        shared_processors.append(structlog.dev.ConsoleRenderer())
-
-    structlog.configure(
-        processors=shared_processors,
-        wrapper_class=structlog.stdlib.BoundLogger,
-        context_class=dict,
-        logger_factory=structlog.stdlib.LoggerFactory(),
-        cache_logger_on_first_use=True,
-    )
-
-    # Configure standard logging
-    logging.basicConfig(
-        format="%(message)s",
-        level=getattr(logging, log_level.upper()),
-    )
-
-# Initialize
-setup_logging(log_level="INFO", json_logs=True)
-
-# Get logger
-logger = structlog.get_logger(__name__)
-
-# Usage
-logger.info("User logged in", user_id=123, ip="192.168.1.1")
-logger.error("Database connection failed", error="Connection timeout", retry_count=3)
-```
-
-## Example: FastAPI Middleware with Request Logging
-
-```python
-# middleware/logging_middleware.py
-import structlog
-from fastapi import Request, Response
-from starlette.middleware.base import BaseHTTPMiddleware
-import time
-import uuid
-
-logger = structlog.get_logger(__name__)
-
-class LoggingMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        # Generate request ID
-        request_id = str(uuid.uuid4())
-
-        # Bind context (will be included in all logs)
-        structlog.contextvars.clear_contextvars()
-        structlog.contextvars.bind_contextvars(
-            request_id=request_id,
-            method=request.method,
-            path=request.url.path,
-            client_ip=request.client.host
-        )
-
-        # Log request
-        logger.info("Request started")
-
-        # Process request
-        start_time = time.time()
-        try:
-            response = await call_next(request)
-            duration = time.time() - start_time
-
-            # Log response
-            logger.info(
-                "Request completed",
-                status_code=response.status_code,
-                duration_ms=round(duration * 1000, 2)
-            )
-
-            # Add request ID to response headers
-            response.headers["X-Request-ID"] = request_id
-            return response
-
-        except Exception as exc:
-            duration = time.time() - start_time
-            logger.error(
-                "Request failed",
-                error=str(exc),
-                duration_ms=round(duration * 1000, 2),
-                exc_info=True
-            )
-            raise
-
-# Add to FastAPI app
-from fastapi import FastAPI
-app = FastAPI()
-app.add_middleware(LoggingMiddleware)
-```
-
-## Example: Bun Native Logging (Recommended for Bun projects)
+### 1. Basic Logger - Console vs Structured
 
 ```typescript
-// logger.ts - Bun native, zero dependencies
+// WRONG - Plain console.log
+console.log('User logged in')
+console.log('Error:', error)
+console.log('Processing request for user', userId)
+
+// CORRECT - Structured logger with context
+import { logger } from './logger'
+
+logger.info('User logged in', { userId: 123, ip: '192.168.1.1' })
+logger.error('Database connection failed', { error: error.message, retryCount: 3 })
+logger.debug('Processing request', { userId, action: 'update_profile' })
+```
+
+### 2. Bun Native Logger (Zero Dependencies)
+
+```typescript
+// WRONG - External logging library for simple cases
+import winston from 'winston' // Heavy, Node-focused
+
+// CORRECT - Bun native logger
+// logger.ts
 type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 
 interface LogContext {
@@ -202,20 +84,37 @@ function formatLog(level: LogLevel, message: string, context?: LogContext): stri
   const data = { timestamp, level, message, ...context }
 
   if (IS_PRODUCTION) {
+    // JSON for production (machine-readable)
     return JSON.stringify(data)
   }
 
   // Pretty print for development
-  const color = { debug: '\x1b[36m', info: '\x1b[32m', warn: '\x1b[33m', error: '\x1b[31m' }[level]
-  return `${color}[${level.toUpperCase()}]\x1b[0m ${timestamp} ${message} ${context ? JSON.stringify(context) : ''}`
+  const colors: Record<LogLevel, string> = {
+    debug: '\x1b[36m', // cyan
+    info: '\x1b[32m',  // green
+    warn: '\x1b[33m',  // yellow
+    error: '\x1b[31m', // red
+  }
+  const reset = '\x1b[0m'
+  const ctx = context ? ` ${JSON.stringify(context)}` : ''
+  return `${colors[level]}[${level.toUpperCase()}]${reset} ${timestamp} ${message}${ctx}`
 }
 
 export const logger = {
-  debug: (message: string, context?: LogContext) => shouldLog('debug') && console.log(formatLog('debug', message, context)),
-  info: (message: string, context?: LogContext) => shouldLog('info') && console.log(formatLog('info', message, context)),
-  warn: (message: string, context?: LogContext) => shouldLog('warn') && console.warn(formatLog('warn', message, context)),
-  error: (message: string, context?: LogContext) => shouldLog('error') && console.error(formatLog('error', message, context)),
+  debug: (message: string, context?: LogContext) => {
+    if (shouldLog('debug')) console.log(formatLog('debug', message, context))
+  },
+  info: (message: string, context?: LogContext) => {
+    if (shouldLog('info')) console.log(formatLog('info', message, context))
+  },
+  warn: (message: string, context?: LogContext) => {
+    if (shouldLog('warn')) console.warn(formatLog('warn', message, context))
+  },
+  error: (message: string, context?: LogContext) => {
+    if (shouldLog('error')) console.error(formatLog('error', message, context))
+  },
 
+  // Child logger with base context
   child: (baseContext: LogContext) => ({
     debug: (msg: string, ctx?: LogContext) => logger.debug(msg, { ...baseContext, ...ctx }),
     info: (msg: string, ctx?: LogContext) => logger.info(msg, { ...baseContext, ...ctx }),
@@ -223,22 +122,22 @@ export const logger = {
     error: (msg: string, ctx?: LogContext) => logger.error(msg, { ...baseContext, ...ctx }),
   }),
 }
-
-// Usage
-logger.info('Server started', { port: 8080 })
-logger.error('Database connection failed', { error: 'Connection timeout', retryCount: 3 })
-
-// With context (request-scoped)
-const reqLogger = logger.child({ requestId: 'abc-123', userId: 456 })
-reqLogger.info('Processing request')
 ```
 
-## Example: Elysia Middleware (Bun + Elysia)
+### 3. Request Context - Elysia Middleware
 
 ```typescript
-// middleware/logging.ts
+// WRONG - No request context in logs
+app.get('/users/:id', async ({ params }) => {
+  console.log('Fetching user') // No context
+  const user = await getUser(params.id)
+  console.log('Found user') // Can't trace request
+  return user
+})
+
+// CORRECT - Request-scoped logging
 import { Elysia } from 'elysia'
-import { logger } from '../logger'
+import { logger } from './logger'
 
 export const loggingPlugin = new Elysia({ name: 'logging' })
   .derive(({ request }) => {
@@ -273,226 +172,310 @@ export const loggingPlugin = new Elysia({ name: 'logging' })
     })
   })
 
-// Usage in main app
-import { Elysia } from 'elysia'
-import { loggingPlugin } from './middleware/logging'
-
+// Usage
 const app = new Elysia()
   .use(loggingPlugin)
   .get('/users/:id', ({ params, log }) => {
     log.info('Fetching user', { userId: params.id })
-    return { user: { id: params.id } }
+    // All logs include requestId automatically
+    return getUser(params.id)
   })
-  .listen(8080)
 ```
 
-## Example: Pino Logging (Node/Bun alternative)
+### 4. Log Levels - When to Use Each
 
 ```typescript
-// logger.ts - Using Pino (if you prefer external library)
-import pino from 'pino'
+// WRONG - Everything is console.log
+console.log('Starting server')
+console.log('Warning: rate limit approaching')
+console.log('Error: database connection failed')
 
-export const logger = pino({
-  level: Bun.env.LOG_LEVEL || 'info',
-  formatters: {
-    level: (label) => ({ level: label }),
-  },
-  timestamp: pino.stdTimeFunctions.isoTime,
-  transport: Bun.env.NODE_ENV === 'development' ? {
-    target: 'pino-pretty',
-    options: { colorize: true, translateTime: 'HH:MM:ss', ignore: 'pid,hostname' },
-  } : undefined,
-})
+// CORRECT - Appropriate log levels
+// DEBUG: Verbose development info, not in production
+logger.debug('Cache lookup', { key: 'user:123', hit: true, ttl: 300 })
 
-// Child logger with context
-export function createContextLogger(context: Record<string, unknown>) {
-  return logger.child(context)
+// INFO: Important events that should be logged
+logger.info('Server started', { port: 8080, env: 'production' })
+logger.info('User created', { userId: 456, email: 'user@example.com' })
+logger.info('Order placed', { orderId: 789, total: 99.99 })
+
+// WARN: Potential issues that need attention
+logger.warn('Rate limit approaching', { current: 95, limit: 100, userId: 123 })
+logger.warn('Deprecated API used', { endpoint: '/v1/users', suggestUse: '/v2/users' })
+
+// ERROR: Errors that need investigation
+logger.error('Payment failed', { orderId: 789, reason: 'Card declined' })
+logger.error('Database query failed', { query: 'SELECT...', error: error.message })
+```
+
+### 5. Sensitive Data - What NOT to Log
+
+```typescript
+// WRONG - Logging sensitive data
+logger.info('User login', { email, password }) // NEVER log passwords
+logger.info('Payment processed', { cardNumber }) // NEVER log card numbers
+logger.info('API call', { apiKey }) // NEVER log API keys
+logger.info('Token issued', { token }) // NEVER log tokens
+
+// CORRECT - Log safely
+logger.info('User login', { email, passwordProvided: !!password })
+logger.info('Payment processed', { cardLast4: cardNumber.slice(-4) })
+logger.info('API call', { apiKeyPrefix: apiKey.slice(0, 8) + '...' })
+logger.info('Token issued', { tokenId: token.split('.')[0], expiresIn: '30m' })
+```
+
+### 6. Error Logging - Include Stack Traces
+
+```typescript
+// WRONG - Losing error details
+try {
+  await riskyOperation()
+} catch (error) {
+  logger.error('Operation failed') // No details
 }
 
-// Usage
-logger.info({ userId: 123, ip: '192.168.1.1' }, 'User logged in')
-logger.error({ error: 'Connection timeout', retryCount: 3 }, 'Database connection failed')
+// CORRECT - Full error context
+try {
+  await riskyOperation()
+} catch (error) {
+  logger.error('Operation failed', {
+    error: error instanceof Error ? error.message : 'Unknown error',
+    stack: error instanceof Error ? error.stack : undefined,
+    operation: 'riskyOperation',
+    input: { id: 123 }, // Safe input data only
+  })
+  throw error // Re-throw if needed
+}
 ```
 
-## Example: Express/Hono Middleware
+### 7. Performance Logging
 
 ```typescript
-// middleware/loggingMiddleware.ts
-import { Context, Next } from 'hono';
-import { logger } from '../logger';
-import { randomUUID } from 'crypto';
+// WRONG - No timing information
+logger.info('Query completed')
 
-export async function loggingMiddleware(c: Context, next: Next) {
-  const requestId = randomUUID();
-  const startTime = Date.now();
+// CORRECT - Include duration
+const start = performance.now()
+const result = await db.query(sql)
+const duration = performance.now() - start
 
-  // Create request-scoped logger
-  const reqLogger = logger.child({
-    requestId,
-    method: c.req.method,
-    path: c.req.path,
-    ip: c.req.header('x-forwarded-for') || c.req.header('x-real-ip'),
-  });
+logger.info('Query completed', {
+  query: sql.slice(0, 100), // Truncate long queries
+  rowCount: result.length,
+  durationMs: Math.round(duration * 100) / 100,
+  slow: duration > 1000, // Flag slow queries
+})
 
-  // Store logger in context
-  c.set('logger', reqLogger);
-
-  reqLogger.info('Request started');
-
+// Helper function
+async function timed<T>(
+  operation: string,
+  fn: () => Promise<T>,
+  log = logger
+): Promise<T> {
+  const start = performance.now()
   try {
-    await next();
-
-    const duration = Date.now() - startTime;
-    reqLogger.info({
-      statusCode: c.res.status,
-      durationMs: duration,
-    }, 'Request completed');
-
+    const result = await fn()
+    log.info(`${operation} completed`, {
+      durationMs: Math.round((performance.now() - start) * 100) / 100,
+    })
+    return result
   } catch (error) {
-    const duration = Date.now() - startTime;
-    reqLogger.error({
-      error: error instanceof Error ? error.message : 'Unknown error',
-      durationMs: duration,
-    }, 'Request failed');
-    throw error;
+    log.error(`${operation} failed`, {
+      durationMs: Math.round((performance.now() - start) * 100) / 100,
+      error: error instanceof Error ? error.message : 'Unknown',
+    })
+    throw error
   }
 }
 
-// Usage in route
-app.get('/users/:id', async (c) => {
-  const logger = c.get('logger');
-  logger.info({ userId: c.req.param('id') }, 'Fetching user');
-
-  // Your logic here
-
-  return c.json({ user: {...} });
-});
+// Usage
+const users = await timed('fetchUsers', () => db.users.findMany())
 ```
 
-## Example: Log Levels Best Practices
+## Checklist
 
-```python
-# Different log levels
-logger.debug("Cache hit", key="user:123", ttl=300)  # Development only
-logger.info("User created", user_id=456, email="user@example.com")  # Important events
-logger.warning("Rate limit approaching", current=95, limit=100)  # Potential issues
-logger.error("Payment failed", order_id=789, error="Card declined")  # Errors
-logger.critical("Database unreachable", retries_exhausted=True)  # System failures
+- [ ] Using structured logger (not console.log)
+- [ ] JSON output in production
+- [ ] Pretty output in development
+- [ ] Request ID included in all request logs
+- [ ] Appropriate log level for each message
+- [ ] No sensitive data logged (passwords, tokens, cards)
+- [ ] Error stack traces included
+- [ ] Performance timing for slow operations
+- [ ] Child loggers for request context
+- [ ] LOG_LEVEL configurable via env var
+- [ ] Correlation ID for cross-service tracing
+- [ ] Log rotation configured (if file logging)
 
-# Structured context
-with structlog.contextvars.bound_contextvars(user_id=123, tenant_id=456):
-    logger.info("User action", action="update_profile")
-    # All logs in this block include user_id and tenant_id
+## Anti-Patterns
+
+| Anti-Pattern | Problem | Solution |
+|--------------|---------|----------|
+| `console.log` everywhere | No structure, levels, context | Use structured logger |
+| Logging passwords | Security breach | Never log secrets |
+| No request ID | Cannot trace requests | Add request context |
+| All logs same level | Cannot filter | Use appropriate levels |
+| No timestamps | Cannot correlate | Always include timestamp |
+| Logging full objects | Performance, secrets | Log specific fields |
+| No error stack | Cannot debug | Include error.stack |
+| String concatenation | Breaks JSON structure | Use context objects |
+
+## Examples
+
+### Complete Logger Implementation
+
+```typescript
+// server/src/logger.ts
+type LogLevel = 'debug' | 'info' | 'warn' | 'error'
+
+interface LogContext {
+  [key: string]: unknown
+}
+
+interface Logger {
+  debug(message: string, context?: LogContext): void
+  info(message: string, context?: LogContext): void
+  warn(message: string, context?: LogContext): void
+  error(message: string, context?: LogContext): void
+  child(baseContext: LogContext): Logger
+}
+
+const LOG_LEVEL = (Bun.env.LOG_LEVEL || 'info') as LogLevel
+const IS_PRODUCTION = Bun.env.NODE_ENV === 'production'
+const SERVICE_NAME = Bun.env.SERVICE_NAME || 'api'
+
+const LEVELS: Record<LogLevel, number> = { debug: 0, info: 1, warn: 2, error: 3 }
+
+function shouldLog(level: LogLevel): boolean {
+  return LEVELS[level] >= LEVELS[LOG_LEVEL]
+}
+
+function createLogEntry(
+  level: LogLevel,
+  message: string,
+  context?: LogContext
+): string {
+  const entry = {
+    timestamp: new Date().toISOString(),
+    level,
+    service: SERVICE_NAME,
+    message,
+    ...context,
+  }
+
+  if (IS_PRODUCTION) {
+    return JSON.stringify(entry)
+  }
+
+  const colors: Record<LogLevel, string> = {
+    debug: '\x1b[36m',
+    info: '\x1b[32m',
+    warn: '\x1b[33m',
+    error: '\x1b[31m',
+  }
+  const ctx = context ? ` ${JSON.stringify(context)}` : ''
+  return `${colors[level]}[${level.toUpperCase()}]\x1b[0m ${entry.timestamp} ${message}${ctx}`
+}
+
+function createLogger(baseContext: LogContext = {}): Logger {
+  return {
+    debug(message: string, context?: LogContext) {
+      if (shouldLog('debug')) {
+        console.log(createLogEntry('debug', message, { ...baseContext, ...context }))
+      }
+    },
+    info(message: string, context?: LogContext) {
+      if (shouldLog('info')) {
+        console.log(createLogEntry('info', message, { ...baseContext, ...context }))
+      }
+    },
+    warn(message: string, context?: LogContext) {
+      if (shouldLog('warn')) {
+        console.warn(createLogEntry('warn', message, { ...baseContext, ...context }))
+      }
+    },
+    error(message: string, context?: LogContext) {
+      if (shouldLog('error')) {
+        console.error(createLogEntry('error', message, { ...baseContext, ...context }))
+      }
+    },
+    child(childContext: LogContext): Logger {
+      return createLogger({ ...baseContext, ...childContext })
+    },
+  }
+}
+
+export const logger = createLogger()
 ```
 
-## Example: Log Rotation (Python)
+### Elysia Integration
 
-```python
-# logging_config.py with rotation
-from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
+```typescript
+// server/src/middleware/logging.ts
+import { Elysia } from 'elysia'
+import { logger } from '../logger'
 
-def setup_file_logging(log_file: str = "app.log"):
-    """Setup log rotation"""
+export const loggingPlugin = new Elysia({ name: 'logging' })
+  .derive(({ request }) => {
+    const requestId = crypto.randomUUID()
+    const url = new URL(request.url)
 
-    # Rotate by size (10MB per file, keep 5 backups)
-    size_handler = RotatingFileHandler(
-        log_file,
-        maxBytes=10 * 1024 * 1024,  # 10MB
-        backupCount=5
-    )
-
-    # Rotate daily (keep 7 days)
-    time_handler = TimedRotatingFileHandler(
-        log_file,
-        when='midnight',
-        interval=1,
-        backupCount=7
-    )
-
-    # Add handlers to root logger
-    logging.getLogger().addHandler(size_handler)
-    logging.getLogger().addHandler(time_handler)
+    return {
+      requestId,
+      startTime: performance.now(),
+      log: logger.child({
+        requestId,
+        method: request.method,
+        path: url.pathname,
+        query: url.search || undefined,
+      }),
+    }
+  })
+  .onBeforeHandle(({ log }) => {
+    log.info('Request started')
+  })
+  .onAfterHandle(({ log, startTime, set, response }) => {
+    const duration = performance.now() - startTime
+    log.info('Request completed', {
+      statusCode: set.status || 200,
+      durationMs: Math.round(duration * 100) / 100,
+    })
+  })
+  .onError(({ log, startTime, error, set }) => {
+    const duration = performance.now() - startTime
+    log.error('Request failed', {
+      statusCode: set.status || 500,
+      error: error.message,
+      stack: error.stack,
+      durationMs: Math.round(duration * 100) / 100,
+    })
+  })
 ```
 
-## Log Aggregation Integration
-
-```python
-# CloudWatch integration (Python)
-import watchtower
-import boto3
-
-cloudwatch_handler = watchtower.CloudWatchLogHandler(
-    boto3_client=boto3.client('logs', region_name='us-east-1'),
-    log_group='my-app',
-    stream_name='production'
-)
-logging.getLogger().addHandler(cloudwatch_handler)
-
-# Datadog integration (Python)
-from datadog import initialize, api
-from datadog.dogstatsd import DogStatsd
-
-statsd = DogStatsd(host='localhost', port=8125)
-statsd.increment('api.requests', tags=['endpoint:users', 'method:GET'])
-```
-
-## Best Practices
-
-1. **JSON logs in production** - Structured, machine-readable
-2. **Include context** - request ID, user ID, tenant ID
-3. **Use appropriate log levels**:
-   - DEBUG: Verbose development info
-   - INFO: Important events (user login, order placed)
-   - WARNING: Potential issues (rate limit approaching)
-   - ERROR: Errors that need attention
-   - CRITICAL: System failures
-4. **Never log secrets** - Passwords, tokens, credit cards
-5. **Log performance metrics** - Duration, status code, error rate
-6. **Correlation IDs** - Trace requests across services
-7. **Log rotation** - Prevent disk space issues
-8. **Sample high-volume logs** - 1% sampling for DEBUG logs
-
-## Security: What NOT to Log
-
-```python
-# ❌ BAD: Logging sensitive data
-logger.info("User login", email=email, password=password)  # NEVER
-logger.info("Payment processed", card_number=card)  # NEVER
-logger.info("API call", api_key=api_key)  # NEVER
-
-# ✅ GOOD: Log safely
-logger.info("User login", email=email, password_length=len(password))
-logger.info("Payment processed", card_last4=card[-4:])
-logger.info("API call", api_key_hash=hashlib.sha256(api_key.encode()).hexdigest()[:8])
-```
-
-## Integration with Other Skills
-
-- **api-endpoint-builder** - Log API requests and responses
-- **auth-flow-builder** - Log authentication events
-- **webhook-handler-builder** - Log webhook events
-- **background-job-scheduler** - Log job execution
-
-## Example JSON Log Output
+### JSON Output Example (Production)
 
 ```json
 {
-  "timestamp": "2025-01-17T10:30:45.123Z",
+  "timestamp": "2025-01-24T10:30:45.123Z",
   "level": "info",
-  "logger": "api.users",
+  "service": "api",
   "message": "Request completed",
-  "request_id": "abc-123-def-456",
+  "requestId": "abc-123-def-456",
   "method": "POST",
   "path": "/api/users",
-  "status_code": 201,
-  "duration_ms": 45.23,
-  "user_id": 789,
-  "ip": "192.168.1.1"
+  "statusCode": 201,
+  "durationMs": 45.23
 }
+```
+
+### Development Output Example
+
+```
+[INFO] 2025-01-24T10:30:45.123Z Request started {"requestId":"abc-123","method":"POST","path":"/api/users"}
+[INFO] 2025-01-24T10:30:45.168Z Request completed {"requestId":"abc-123","statusCode":201,"durationMs":45.23}
 ```
 
 ---
 
-**Version**: 1.0.0
-**Category**: Backend Extended
-**Complexity**: Medium
+**Version**: 1.0
+**Stack**: Bun, Elysia, TypeScript
