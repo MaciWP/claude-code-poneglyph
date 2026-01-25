@@ -1,0 +1,20 @@
+# Bun Test Configuration
+# See: https://bun.com/docs/test
+
+[test]
+# Coverage configuration
+coverage = true
+coverageReporter = ["text", "lcov"]
+coverageDir = "coverage"
+
+# Coverage thresholds (warn if below)
+# coverageThreshold = { lines = 60, functions = 60, branches = 50 }
+
+# Test patterns
+# testDir = "src"  # Not needed, Bun finds tests automatically
+
+# Timeouts
+timeout = 10000
+
+# Parallel execution (default is true)
+# smol = false

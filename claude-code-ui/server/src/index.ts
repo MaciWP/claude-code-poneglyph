@@ -86,6 +86,9 @@ const app = new Elysia()
     endpoints: {
       health: '/api/health',
       sessions: '/api/sessions',
+      sessionsExport: '/api/sessions/:id/export',
+      sessionsImport: '/api/sessions/import',
+      sessionsSummarize: '/api/sessions/:id/summarize',
       execute: '/api/execute',
       executeCli: '/api/execute-cli',
       agents: '/api/agents',

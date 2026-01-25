@@ -1,5 +1,6 @@
 ---
 description: Facilitador de Discovery y Diseño - Simula reunión colaborativa entre Producto, Desarrollo y Negocio
+model: opus
 version: 2.0.0
 ---
 

@@ -64,7 +64,7 @@ graph TD
 | SPEC-004 | [builder-agent.md](./builder-agent.md) | approved | 2.0 | high | SPEC-001, SPEC-003 | 2026-01-18 |
 | SPEC-005 | [reviewer-agent.md](./reviewer-agent.md) | approved | 3.0 | high | SPEC-001, SPEC-004 | 2026-01-18 |
 | SPEC-006 | [spec-gen-command.md](./spec-gen-command.md) | approved | 2.0 | high | - | 2026-01-18 |
-| SPEC-007 | [command-loader-agent.md](./command-loader-agent.md) | approved | 1.0 | high | SPEC-001 | 2026-01-18 |
+| SPEC-007 | [command-loader-agent.md](./command-loader-agent.md) | approved | 1.1 | high | SPEC-001, SPEC-009 | 2026-01-25 |
 | SPEC-008 | [error-analyzer-agent.md](./error-analyzer-agent.md) | approved | 1.0 | high | SPEC-001 | 2026-01-18 |
 | SPEC-009 | [skills-system.md](./skills-system.md) | approved | 1.0 | high | SPEC-001, SPEC-007 | 2026-01-18 |
 | SPEC-010 | [validation-hooks-system.md](./validation-hooks-system.md) | approved | 1.0 | high | SPEC-004, SPEC-005 | 2026-01-20 |
@@ -108,6 +108,7 @@ graph TD
 | 2026-01-18 | SPEC-005 | **v3.0** Reviewer único + skills de dominio | Elimina Two-Pass con experts separados |
 | 2026-01-18 | SPEC-006 | Research Phase obligatoria | Investigar antes de facilitar |
 | 2026-01-18 | SPEC-007 | command-loader expande @files y !bash | Lead necesita contexto completo |
+| 2026-01-25 | SPEC-007 | **v1.1** command-loader carga skills | Integración con SPEC-009 |
 | 2026-01-18 | SPEC-008 | error-analyzer solo analiza, Lead ejecuta | Separación de concerns |
 
 ---
@@ -202,6 +203,7 @@ graph LR
 
 | Fecha | Cambio |
 |-------|--------|
+| 2026-01-25 | SPEC-007 v1.1: command-loader now loads skills (SPEC-009 integration), agent file created |
 | 2026-01-21 | SPEC-023 v1.0: MCP Integration System - Protocol, servers, custom development |
 | 2026-01-21 | SPEC-022 v1.0: Hooks Extension System - Events, validators, security patterns |
 | 2026-01-21 | SPEC-021 v1.0: Subagents Extension System - Templates, permissions, delegation |

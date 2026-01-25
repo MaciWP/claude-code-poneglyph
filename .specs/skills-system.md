@@ -337,7 +337,7 @@ Feature: Skills System v1.0
 ## 7. Open Questions
 
 - [x] ~~¿Directorio plano o por agente?~~ Por agente (builder/, reviewer/, etc.)
-- [ ] ¿Deberíamos tener un comando `/skills` para listar disponibles?
+- [x] ~~¿Deberíamos tener un comando `/skills` para listar disponibles?~~ Creado en `.claude/commands/skills.md`
 - [ ] ¿Skills pueden tener ejemplos de código ejecutable (tests)?
 
 ## 8. Sources
@@ -352,16 +352,58 @@ Feature: Skills System v1.0
 
 ## 9. Next Steps
 
-1. [ ] Crear directorio `.claude/skills/` con estructura
-2. [ ] Crear 12 skills del catálogo core
-3. [ ] Actualizar SPEC-007 (command-loader) para soportar skills
+1. [x] Crear directorio `.claude/skills/` con estructura - **DONE** (20 skills creadas)
+2. [x] Crear 12 skills del catalogo core - **DONE** (superado: 20 skills)
+3. [x] Actualizar SPEC-007 (command-loader) para soportar skills - **DONE** (v1.1, 2026-01-25)
 4. [ ] Migrar load-* commands a skills equivalentes
-5. [ ] Crear comando `/skills` para listar disponibles
+5. [x] Crear comando `/skills` para listar disponibles - **DONE** (`.claude/commands/skills.md`)
+
+---
+
+## 10. Skills Inventory (Current State)
+
+### Conteo: 20 skills totales
+
+| Categoria | Skills | Status |
+|-----------|--------|--------|
+| Builder | 7 | typescript-patterns, bun-best-practices, websocket-patterns, security-coding, refactoring-patterns, config-validator, logging-strategy |
+| Reviewer | 3 | security-review, performance-review, code-quality |
+| Error-Analyzer | 3 | retry-patterns, diagnostic-patterns, recovery-strategies |
+| Shared | 2 | anti-hallucination, lsp-operations |
+| Meta/Operational | 5 | create-agent, create-skill, dev-server, code-style-enforcer, prompt-engineer |
+
+### Propuesta de Reorganizacion
+
+Estructura actual (flat) vs propuesta (por agente):
+
+```
+# Actual
+.claude/skills/
+|-- typescript-patterns/SKILL.md
+|-- security-review/SKILL.md
+|-- retry-patterns/SKILL.md
+...
+
+# Propuesta (SPEC-009 4.1)
+.claude/skills/
+|-- builder/
+|   |-- typescript-patterns.md
+|   |-- bun-best-practices.md
+|-- reviewer/
+|   |-- security-review.md
+|-- error-analyzer/
+|   |-- retry-patterns.md
+|-- shared/
+|   |-- anti-hallucination.md
+```
+
+**Nota**: Migracion pendiente. Estructura actual funcional.
 
 ---
 
 ## Changelog
 
-| Versión | Fecha | Cambios |
+| Version | Fecha | Cambios |
 |---------|-------|---------|
-| 1.0.0 | 2026-01-18 | Spec inicial. Estructura standalone, 12 skills core, formato estándar |
+| 1.0.0 | 2026-01-18 | Spec inicial. Estructura standalone, 12 skills core, formato estandar |
+| 1.1.0 | 2026-01-24 | Comando /skills creado. 20 skills implementadas. Inventario actualizado |

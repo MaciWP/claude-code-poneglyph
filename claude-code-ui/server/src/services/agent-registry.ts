@@ -5,7 +5,7 @@ import { AGENT_TTL_MS, AGENT_CLEANUP_INTERVAL_MS } from '../constants'
 const log = logger.child('agent-registry')
 
 export type AgentStatus = 'pending' | 'active' | 'completed' | 'failed' | 'deleted'
-export type AgentType = 'scout' | 'architect' | 'builder' | 'reviewer' | 'general-purpose' | 'Explore' | 'Plan' | 'code-quality' | 'refactor-agent'
+export type AgentType = 'scout' | 'architect' | 'builder' | 'reviewer' | 'general-purpose' | 'Explore' | 'Plan' | 'code-quality' | 'refactor-agent' | 'command-loader' | 'planner' | 'error-analyzer'
 
 export interface Agent {
   id: string

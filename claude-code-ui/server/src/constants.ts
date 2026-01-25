@@ -41,6 +41,22 @@ export const CONFIG_CACHE_TTL_MS = 10 * 60 * 1000
 export const LOGGER_DEDUP_WINDOW_MS = 1000
 
 // -----------------------------------------------------------------------------
+// AI LOGGER (SPEC-019)
+// -----------------------------------------------------------------------------
+
+/** Maximum prompt length before truncation in logs */
+export const AI_LOGGER_MAX_PROMPT_LENGTH = 500
+
+/** Maximum in-memory log entries before rotation */
+export const AI_LOGGER_MAX_MEMORY_ENTRIES = 10000
+
+/** Log entries to keep after rotation */
+export const AI_LOGGER_ROTATION_KEEP = 5000
+
+/** Default log directory relative to server root */
+export const AI_LOGGER_DIR = './storage/logs'
+
+// -----------------------------------------------------------------------------
 // WEBSOCKET
 // -----------------------------------------------------------------------------
 

@@ -47,14 +47,32 @@ jobs:
         run: bun run lint
         continue-on-error: true  # Existing code has lint issues
 
-      - name: Test (Server)
+      - name: Test (Server) with Coverage
         working-directory: claude-code-ui/server
-        run: bun test
+        run: bun test --coverage
         continue-on-error: true  # Some tests failing
 
-      - name: Test (Web)
+      - name: Test (Web) with Coverage
         working-directory: claude-code-ui/web
-        run: bun test
+        run: bun test --coverage
+
+      - name: Upload Server Coverage
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./claude-code-ui/server/coverage/lcov.info
+          flags: server
+          name: server-coverage
+          fail_ci_if_error: false  # Don't fail CI if upload fails
+        continue-on-error: true
+
+      - name: Upload Web Coverage
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./claude-code-ui/web/coverage/lcov.info
+          flags: web
+          name: web-coverage
+          fail_ci_if_error: false
+        continue-on-error: true
 
   build:
     name: Build

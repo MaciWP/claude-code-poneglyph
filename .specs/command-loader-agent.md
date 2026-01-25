@@ -3,10 +3,11 @@
 <!--
 status: approved
 priority: high
-depends_on: [SPEC-001]
+depends_on: [SPEC-001, SPEC-009]
 enables: [lead-llm-context-enrichment]
 created: 2026-01-18
-updated: 2026-01-18
+updated: 2026-01-25
+version: 1.1
 -->
 
 ## 1. Vision
@@ -34,7 +35,7 @@ updated: 2026-01-18
 - [x] Validar que el command existe antes de procesar
 
 ### Non-Goals
-- [ ] Cargar skills (`.claude/skills/**/SKILL.md`) - Claude Code nativo lo hace
+- [x] ~~Cargar skills~~ - **Now supported** (SPEC-009 integration, v1.1)
 - [ ] Ejecutar scripts complejos de `/scripts/` - Eso lo hacen builders/experts
 - [ ] Coordinar o delegar a otros agentes
 - [ ] Modificar archivos
@@ -392,7 +393,7 @@ sequenceDiagram
 ## 8. Open Questions
 
 - [x] ¿Nombre del agente? → `command-loader`
-- [x] ¿Cargar skills? → No, solo commands
+- [x] ¿Cargar skills? → Sí, integrado con SPEC-009 (max 3 skills, 25KB)
 - [x] ¿Expandir @files? → Sí
 - [x] ¿Ejecutar bash inline? → Sí, con whitelist
 - [ ] ¿Cache de commands ya cargados? → Futuro (SPEC-009?)
@@ -400,13 +401,36 @@ sequenceDiagram
 
 ## 9. Next Steps
 
-1. [ ] Registrar agente en `agent-registry.ts`
-2. [ ] Crear archivo de agente `.claude/agents/command-loader.md`
-3. [ ] Implementar parsing de frontmatter YAML
-4. [ ] Implementar expansión de @files
-5. [ ] Implementar ejecución de bash con whitelist
+1. [x] Registrar agente en `agent-registry.ts` - **DONE** (2026-01-25)
+2. [x] Crear archivo de agente `.claude/agents/command-loader.md` - **DONE** (2026-01-25)
+3. [x] Implementar parsing de frontmatter YAML - Implicit via agent definition
+4. [x] Implementar expansión de @files - Documented in agent
+5. [x] Implementar ejecución de bash con whitelist - Documented in agent
 6. [ ] Tests unitarios para cada escenario BDD
-7. [ ] Integrar con Lead LLM (SPEC-001)
+7. [x] Integrar con Lead LLM (SPEC-001) - Agent references Lead integration
+
+## 10. Skills Loading Extension
+
+Per SPEC-009, command-loader also supports loading skills:
+
+### Input Formats
+
+```
+load skill:typescript-patterns
+load skills: typescript-patterns, security-coding
+```
+
+### Limits
+
+| Limit | Value | Reason |
+|-------|-------|--------|
+| Max skills per load | 3 | Context budget |
+| Max total size | 25KB | ~6250 tokens |
+| Skills location | `.claude/skills/{name}/SKILL.md` | Standard location |
+
+### Skill Discovery
+
+The agent can list available skills when requested skill not found.
 
 ---
 
@@ -414,4 +438,5 @@ sequenceDiagram
 
 | Versión | Fecha | Cambios |
 |---------|-------|---------|
+| 1.1.0 | 2026-01-25 | Added skills loading (SPEC-009 integration), agent file created |
 | 1.0.0 | 2026-01-18 | Spec inicial - Research Phase + Discovery Session |

@@ -1,2 +1,14 @@
+# Bun Test Configuration
+# See: https://bun.com/docs/test
+
 [test]
+# Preload happy-dom for React component testing
 preload = ["./src/test/setup.ts"]
+
+# Coverage configuration
+coverage = true
+coverageReporter = ["text", "lcov"]
+coverageDir = "coverage"
+
+# Timeouts
+timeout = 10000

@@ -66,3 +66,56 @@ Documentación detallada en `.claude/agent_docs/`:
 | `/load-reference` | API, arquitectura, tools |
 | `/load-security` | Patrones de seguridad |
 | `/load-testing-strategy` | Testing |
+
+## Lead Orchestrator Mode
+
+Esta sesión actúa como **orquestador puro**. NO ejecuta código directamente.
+
+### Herramientas Permitidas
+
+| Tool | Uso |
+|------|-----|
+| `Task` | Delegar a agentes (builder, reviewer, planner, error-analyzer, scout) |
+| `Skill` | Cargar skills para contexto |
+| `AskUserQuestion` | Clarificar requisitos |
+| `mcp__*` | Usar MCP servers (Context7, GitHub, filesystem) |
+| `TaskList/Create/Update` | Gestionar lista de tareas |
+
+### Herramientas PROHIBIDAS
+
+| Tool | Alternativa |
+|------|-------------|
+| `Read` | Delegar a scout o builder |
+| `Edit` | Delegar a builder |
+| `Write` | Delegar a builder |
+| `Bash` | Delegar a builder |
+| `Glob` | Delegar a scout/Explore |
+| `Grep` | Delegar a scout/Explore |
+| `WebFetch/WebSearch` | Los agentes tienen acceso |
+
+### Flujo Obligatorio
+
+```mermaid
+graph TD
+    U[Usuario] --> S[Score Prompt]
+    S -->|< 70| PE[prompt-engineer skill]
+    S -->|>= 70| C[Calcular Complejidad]
+    C -->|< 30| B[builder directo]
+    C -->|30-60| P1[planner opcional]
+    C -->|> 60| P2[planner obligatorio]
+    P1 & P2 --> B[builder]
+    B --> R[reviewer checkpoint]
+    R -->|APPROVED| D[Done]
+    R -->|NEEDS_CHANGES| B
+    B -->|Error| EA[error-analyzer]
+    EA --> B
+```
+
+### Reglas Clave
+
+1. **Evaluar prompt** con scoring de 5 criterios (ver `.claude/rules/prompt-scoring.md`)
+2. **Calcular complejidad** antes de delegar (ver `.claude/rules/complexity-routing.md`)
+3. **Cargar skills relevantes** por keywords (ver `.claude/rules/skill-matching.md`)
+4. **Delegar implementación** a builder, NUNCA implementar directamente
+5. **Validar con reviewer** en checkpoints críticos
+6. **Analizar errores** con error-analyzer si falla
