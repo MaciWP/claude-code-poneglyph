@@ -9,6 +9,7 @@ import { join } from 'path'
 import { existsSync } from 'fs'
 import { logger } from '../logger'
 import { agentRegistry } from './agent-registry'
+import type { AgentSpawner, SpawnConfig } from './agent-spawner'
 import type {
   WorkflowDefinition,
   WorkflowRun,
@@ -45,6 +46,17 @@ function emitEvent(event: WorkflowEvent): void {
 // Cache de workflow definitions
 const workflowCache = new Map<string, WorkflowDefinition>()
 const activeRuns = new Map<string, WorkflowRun>()
+
+// Agent spawner instance (set via setAgentSpawner)
+let agentSpawner: AgentSpawner | null = null
+
+/**
+ * Sets the agent spawner instance for workflow execution
+ */
+export function setAgentSpawner(spawner: AgentSpawner): void {
+  agentSpawner = spawner
+  log.info('Agent spawner configured for workflow executor')
+}
 
 // Paths
 const WORKFLOWS_DIR = join(process.cwd(), '..', '..', '.claude', 'workflows')
@@ -341,9 +353,9 @@ async function executeStep(
 
   await logWorkflow(run, 'info', `Starting step: ${step.name}`, { agent: step.agent })
 
-  // Get agent
-  const agent = agentRegistry.getAgent(step.agent)
-  if (!agent) {
+  // Get agent definition for validation
+  const agentDef = agentRegistry.getAgent(step.agent)
+  if (!agentDef) {
     throw new Error(`Agent not found: ${step.agent}`)
   }
 
@@ -351,19 +363,37 @@ async function executeStep(
   const previousStep = run.steps.find(s => s.status === 'completed' && s.id !== step.id)
   const input = step.input || previousStep?.result?.output || JSON.stringify(run.context)
 
-  // Execute agent (simplified - in real impl would spawn Task)
+  // Execute agent via spawner
   const startTime = Date.now()
 
-  // Simulate agent execution for now
-  // In real implementation, this would use agent-spawner to run the agent
-  await new Promise(resolve => setTimeout(resolve, 100))
+  if (!agentSpawner) {
+    throw new Error('Agent spawner not configured. Call setAgentSpawner() before executing workflows.')
+  }
+
+  const spawnConfig: SpawnConfig = {
+    type: step.agent,
+    prompt: `## Workflow Step: ${step.name}\n\n### Input\n${input}\n\n### Task\nExecute this workflow step as the ${step.agent} agent.`,
+    sessionId: run.id,
+    parentExecutionId: run.workflowId,
+    workDir: process.cwd(),
+    timeout: 5 * 60 * 1000, // 5 minutes per step
+  }
+
+  const spawnResult = await agentSpawner.spawn(spawnConfig)
 
   const duration = Date.now() - startTime
 
+  if (!spawnResult.success) {
+    throw new Error(`Agent execution failed: ${spawnResult.output || 'Unknown error'}`)
+  }
+
   step.result = {
-    output: `[${step.agent}] Executed with input: ${input.slice(0, 100)}...`,
+    output: spawnResult.output,
     duration,
-    artifacts: {},
+    artifacts: {
+      agentId: spawnResult.agentId,
+      metrics: spawnResult.metrics,
+    },
   }
 
   step.status = 'completed'

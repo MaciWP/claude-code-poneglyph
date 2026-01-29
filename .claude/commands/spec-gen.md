@@ -55,9 +55,9 @@ Detectar si es proyecto nuevo (greenfield) o existente (brownfield):
 
 #### 1.1 Fuentes de Investigación
 
-| Prioridad | Fuente | Tool | Qué buscar |
-|-----------|--------|------|------------|
-| 1 | **Docs oficiales** | `mcp__context7__query-docs` | API, patrones recomendados |
+| Prioridad | Fuente | Acción | Qué buscar |
+|-----------|--------|--------|------------|
+| 1 | **Docs oficiales** | WebFetch docs oficiales | API, patrones recomendados |
 | 2 | **Best practices** | `WebSearch` | "[tech] best practices 2025" |
 | 3 | **Proyectos similares** | `WebSearch` | "[feature] [stack] github stars:>100" |
 | 4 | **Opiniones expertos** | `WebSearch` | "[tema] site:reddit.com OR site:news.ycombinator.com" |
@@ -68,7 +68,7 @@ Detectar si es proyecto nuevo (greenfield) o existente (brownfield):
 ```yaml
 # Ejecutar al menos 3 de estas búsquedas
 research_queries:
-  context7: "mcp__context7__query-docs({library}, {feature})"
+  official_docs: "WebFetch documentación oficial del framework"
   best_practices: "{stack} {feature} best practices 2025 production"
   similar_projects: "{stack} {feature} github example implementation"
   expert_opinions: "{feature} pros cons {stack} site:reddit.com"
@@ -82,7 +82,7 @@ Mostrar al usuario ANTES de continuar:
 ```markdown
 ## 🔍 Research Findings
 
-### Documentación Oficial (Context7)
+### Documentación Oficial
 | Fuente | Insight | Confidence |
 |--------|---------|------------|
 | [Lib docs] | Recomienda patrón X | Alta |
@@ -187,7 +187,7 @@ Añadir a cada recomendación:
 
 | Técnica | Cuándo | Ejemplo |
 |---------|--------|---------|
-| **Context7 First** | Siempre al inicio | Consultar docs oficiales |
+| **Docs First** | Siempre al inicio | Consultar docs oficiales del framework |
 | **Competitive Analysis** | Proyectos similares | "¿Cómo lo hace X?" |
 | **Community Pulse** | Opiniones | Reddit/HN sobre tecnología |
 | **Recency Check** | Siempre | "¿Esto es de 2024-2025?" |
@@ -234,7 +234,7 @@ updated: YYYY-MM-DD
 ### Fuentes Consultadas
 | Tipo | Fuente | Link | Relevancia |
 |------|--------|------|------------|
-| Docs oficial | Context7 Elysia | - | Alta |
+| Docs oficial | Elysia docs | elysiajs.com | Alta |
 | Best practice | OWASP 2024 | [link] | Alta |
 | Proyecto similar | github.com/x | [link] | Media |
 
@@ -313,7 +313,7 @@ Scenario: [Happy path]
 ## 8. Sources 🆕
 ### Links Verificados
 - [Nombre](URL) - Qué aporta
-- [Context7 Elysia] - Patrones oficiales
+- [Elysia docs](https://elysiajs.com) - Patrones oficiales
 
 ## 9. Next Steps
 - [ ] Revisar con stakeholders
@@ -364,7 +364,7 @@ Si guarda, actualizar `.specs/INDEX.md`
 |-------------|----------|
 | Saltar a solución técnica | INVESTIGAR primero |
 | Afirmar sin fuente | Citar `[Fuente]` siempre |
-| Ignorar docs oficiales | Context7 obligatorio |
+| Ignorar docs oficiales | WebFetch docs oficiales obligatorio |
 | Solo conocimiento interno | WebSearch actualizado |
 | Asumir stack/arquitectura | Detectar y preguntar |
 | Ignorar alternativas | Siempre presentar opciones |
@@ -408,7 +408,7 @@ Claude (Detección):
 Claude (Investigación):
 > 🔍 Iniciando Research Phase...
 >
-> **Context7**: Consultando docs de Elysia...
+> **Docs oficiales**: WebFetch elysiajs.com/docs...
 > ✓ Plugin oficial: `elysia-rate-limit` existe
 > ✓ Soporta Redis para distributed
 >

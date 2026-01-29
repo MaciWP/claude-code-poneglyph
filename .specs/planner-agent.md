@@ -253,8 +253,6 @@ allowed-tools:
   - Grep
   - WebSearch
   - WebFetch
-  - mcp__context7__query-docs
-  - mcp__sequential-thinking__sequentialthinking
 
 disallowedTools:
   - Edit

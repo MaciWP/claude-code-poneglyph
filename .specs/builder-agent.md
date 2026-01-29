@@ -195,7 +195,6 @@ allowed-tools:
   - Edit
   - Write
   - Bash
-  - mcp__context7__query-docs
 
 disallowedTools:
   - Task  # No puede delegar
@@ -206,7 +205,7 @@ disallowedTools:
 ### Antes de escribir código
 1. `Read` archivo si existe (para Edit)
 2. `Glob` para verificar estructura
-3. Consultar Context7 si hay duda sobre API
+3. Consultar documentación oficial si hay duda sobre API
 4. Revisar skills en contexto para aplicar patrones
 
 ### Después de escribir código

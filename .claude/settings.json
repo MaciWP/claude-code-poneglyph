@@ -19,35 +19,23 @@
       "TaskCreate",
       "TaskUpdate",
       "TaskList",
-      "TaskGet",
-      "mcp__sequential-thinking__sequentialthinking",
-      "mcp__context7__*",
-      "mcp__github__*",
-      "mcp__filesystem__*"
-    ],
-    "deny": [
-      "Read",
-      "Edit",
-      "Write",
-      "Bash",
-      "Glob",
-      "Grep",
-      "WebFetch",
-      "WebSearch",
-      "Bash(rm -rf /*)",
-      "Bash(rm -rf /)",
-      "Bash(curl * | bash)",
-      "Bash(curl * | sh)",
-      "Edit(.env)",
-      "Edit(*.pem)",
-      "Edit(*credentials*)",
-      "Edit(*secret*)",
-      "Write(.env)",
-      "Write(*.pem)"
+      "TaskGet"
     ]
   },
   "model": "claude-opus-4-5-20251101",
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read|Edit|Write|Bash|Glob|Grep",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun .claude/hooks/lead-enforcement.ts",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
     "UserPromptSubmit": [
       {
         "hooks": [
@@ -76,8 +64,7 @@
     "padding": 0
   },
   "enabledPlugins": {
-    "typescript-lsp@claude-plugins-official": false,
-    "context7@claude-plugins-official": true
+    "typescript-lsp@claude-plugins-official": false
   },
   "language": "es",
   "sandbox": {

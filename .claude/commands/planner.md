@@ -18,7 +18,7 @@ Mantener activas durante TODA la planificación y ejecución:
 |------|-------|
 | **Certeza** | Verificar con Glob/Grep/Read ANTES de afirmar. Nunca asumir. |
 | **Anti-Alucinación** | `Glob('path/file.ts')` antes de referenciarlo. Si no existe → "necesita crearse". |
-| **Calidad** | Patterns del proyecto > shortcuts. Consultar Context7 si hay duda. |
+| **Calidad** | Patterns del proyecto > shortcuts. Consultar documentación oficial si hay duda. |
 | **Paralelización** | Múltiples tools independientes en UN mensaje. Batch operations. |
 | **Tokens** | Cargar solo lo necesario, PERO gastar si mejora certeza/calidad. |
 | **Claridad** | Cada paso ejecutable sin preguntas. Tablas > prosa. |
@@ -70,30 +70,17 @@ Grep('class X', 'src/')  # ¿Ya hay implementación?
 
 | Condición | Acción OBLIGATORIA |
 |-----------|-------------------|
-| API de framework (Elysia, React, Bun) | `mcp__context7__query-docs` con versión de package.json |
+| API de framework (Elysia, React, Bun) | Consultar documentación oficial |
 | Librería poco conocida (<10k stars) | WebSearch "[library] changelog 2025 2026" |
 | Patrón de diseño/arquitectura | WebSearch + WebFetch de repo >1k stars |
-| Cualquier duda sobre sintaxis/API | Context7 ANTES de escribir código |
+| Cualquier duda sobre sintaxis/API | Documentación oficial ANTES de escribir código |
 | Breaking changes sospechados | WebSearch "[library] breaking changes [version]" |
-
-### Flujo de Validación
-
-```mermaid
-graph TD
-    A[Necesito usar API X] --> B{¿Versión en package.json?}
-    B -->|Sí| C[Context7 query-docs con esa versión]
-    B -->|No está| D[WebSearch versión actual]
-    C --> E{¿API existe en docs?}
-    D --> E
-    E -->|Sí| F[Proceder con confianza]
-    E -->|No/Deprecated| G[Buscar alternativa moderna]
-```
 
 ### Fuentes de Confianza
 
 | Tipo | Fuente | Confianza |
 |------|--------|-----------|
-| Docs oficiales | Context7, sitio oficial | Alta |
+| Docs oficiales | Sitio oficial del framework | Alta |
 | GitHub issues/discussions | Repo oficial | Media-Alta |
 | Blogs de ingeniería | Vercel, Anthropic, Google | Alta |
 | Stack Overflow | Posts recientes (2024-2026) | Media |
@@ -111,7 +98,7 @@ Antes de usar cualquier API, verificar:
 
 | Check | Cómo verificar | Acción si falla |
 |-------|----------------|-----------------|
-| ¿API deprecated? | Context7 + buscar "deprecated" en docs | Usar API de reemplazo |
+| ¿API deprecated? | Docs oficiales + buscar "deprecated" en docs | Usar API de reemplazo |
 | ¿Versión correcta? | Comparar package.json vs docs consultadas | Ajustar a versión instalada |
 | ¿Breaking changes? | WebSearch "[library] breaking changes [version]" | Aplicar migration guide |
 | ¿Patrón legacy? | Buscar "modern alternative" o "best practice 2025" | Usar patrón moderno |
@@ -152,11 +139,7 @@ Si encuentras estos patrones en docs/ejemplos, **buscar alternativa**:
 | config, env, settings | Skill: `config-validator` |
 | refactor, clean, simplify | Agent: `refactor-agent` |
 
-### Cuándo usar Sequential Thinking
-
-```
-mcp__sequential-thinking__sequentialthinking
-```
+### Cuándo usar Razonamiento Estructurado
 
 | Usar SI | NO usar |
 |---------|---------|
@@ -168,15 +151,14 @@ mcp__sequential-thinking__sequentialthinking
 
 **Config**: 10-15+ thoughts para tareas complejas. Habilitar revision si hay incertidumbre.
 
-### Referencias Externas y MCPs
+### Referencias Externas
 
-| Necesidad | Tool | Comando |
-|-----------|------|---------|
-| API desconocida | Context7 | `mcp__context7__query-docs` |
-| Docs de Elysia/Bun | Context7 | `mcp__context7__query-docs` |
-| Razonamiento complejo | Sequential Thinking | `mcp__sequential-thinking__sequentialthinking` |
-| Pattern de diseño | WebSearch | Best practices, docs oficiales |
-| Proyecto referencia | WebFetch | GitHub >1k stars |
+| Necesidad | Acción |
+|-----------|--------|
+| API desconocida | Consultar documentación oficial |
+| Docs de Elysia/Bun | Documentación oficial del framework |
+| Pattern de diseño | WebSearch best practices, docs oficiales |
+| Proyecto referencia | WebFetch GitHub >1k stars |
 
 ---
 
@@ -293,7 +275,7 @@ Antes de cada Execution Roadmap, completar esta tabla:
 
 ```
 1. Identificar APIs/frameworks que se usarán
-2. Consultar Context7 para cada framework con versión de package.json
+2. Consultar documentación oficial para cada framework con versión de package.json
 3. Verificar que no hay breaking changes recientes
 4. Documentar cualquier API deprecated encontrada
 ```
@@ -365,7 +347,7 @@ Después de cada iteración:
 - Múltiples `Read`, `Glob`, `Grep` independientes
 - Múltiples `Write` a archivos SIN dependencia entre ellos
 - Múltiples `Task` agents independientes
-- `WebSearch` + `Context7` simultáneos
+- `WebSearch` + `WebFetch` simultáneos
 
 ### ❌ SECUENCIAL (esperar resultado)
 
@@ -381,7 +363,6 @@ Después de cada iteración:
 | 🔵 Paralelo | `A + B + C` | `Read(a) + Read(b) + Grep(c)` |
 | 🟡 Secuencial | `A → ESPERAR → B` | `Read(file) → Edit(file)` |
 | Background | `Task(..., background:true)` | `Task(reviewer, background:true)` |
-| MCP paralelo | `MCP1 + MCP2` | `Context7 + WebSearch` |
 
 ### Parallel Efficiency Score
 
@@ -523,15 +504,14 @@ Afecta [N] archivos, [M] son nuevos, riesgo [BAJO/MEDIO/ALTO].
 |------|-------------|-------------------|--------|
 | Skill | [nombre] | [propósito] | Auto/Manual |
 | Agent | [nombre] | [propósito] | model, background |
-| MCP | [nombre] | [propósito] | On-demand |
 | Script | [nombre] | [propósito] | Pre/Post |
 
 ### C. Deep Research Summary
 
 | API/Framework | Versión en proyecto | Versión consultada | Breaking changes? |
 |---------------|--------------------|--------------------|-------------------|
-| Elysia | 1.2.3 | 1.2.3 (Context7) | No |
-| React | 18.2.0 | 18.2.0 (Context7) | No |
+| Elysia | 1.2.3 | 1.2.3 (docs oficiales) | No |
+| React | 18.2.0 | 18.2.0 (docs oficiales) | No |
 
 ### D. Gap Analysis
 
@@ -613,8 +593,8 @@ Afecta 4 archivos, 0 nuevos (solo ediciones), riesgo BAJO.
 
 | API/Framework | Versión proyecto | Consultado | Breaking changes? |
 |---------------|-----------------|------------|-------------------|
-| Elysia | 1.2.x | Context7 | No |
-| Bun | 1.1.x | Context7 | No |
+| Elysia | 1.2.x | Docs oficiales | No |
+| Bun | 1.1.x | Docs oficiales | No |
 
 ### Gap Analysis
 
@@ -632,7 +612,6 @@ Afecta 4 archivos, 0 nuevos (solo ediciones), riesgo BAJO.
 | Skill | typescript-patterns | Types y async | Auto |
 | Skill | bun-best-practices | Runtime Elysia | Auto |
 | Agent | reviewer | Review final | sonnet, background |
-| MCP | Context7 | Verificar API Elysia | On-demand |
 | Script | check.sh | Quality Gate | Post |
 
 ### Grafo de Dependencias
@@ -692,7 +671,7 @@ graph TD
 | 3.1 | `server/src/routes/sessions.ts` | Edit | `bun typecheck` |
 
 **Contenido**: `.get('/sessions/:id/export', ...)`
-**MCP**: `mcp__context7__query-docs(elysia)` para response headers
+**Docs**: Consultar documentación oficial de Elysia para response headers
 
 #### 🔵 PARALLEL-4: Validation
 **Deps**: SEQ-3 ✅ | **Tipo**: 🔵
@@ -725,7 +704,7 @@ graph TD
 | Código sin test | Función → test | TDD |
 | Paso sin verificación | Ground truth por paso | Trazabilidad |
 | Asumir archivo existe | `Glob` antes de Edit | Anti-alucina |
-| API sin Context7 | Consultar docs primero | Anti-deprecated |
+| API sin consultar docs | Consultar docs primero | Anti-deprecated |
 | Plan >5 archivos sin checkpoint | Iterar 3-5 archivos | Errores contenidos |
 | Continuar con errores | STOP, corregir, continuar | Cascada |
 | Test "después" | Test en mismo nodo | TDD strict |

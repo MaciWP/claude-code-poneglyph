@@ -12,6 +12,10 @@ skills:
   - code-quality
   - security-review
   - performance-review
+hooks:
+  post_tool_use:
+    - .claude/hooks/validators/security/secrets-validator.ts
+    - .claude/hooks/validators/security/injection-validator.ts
 ---
 
 # Reviewer Agent

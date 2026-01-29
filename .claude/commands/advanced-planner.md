@@ -14,7 +14,7 @@ Mantener activas durante TODA la planificación y ejecución:
 |------|-------|
 | **Certeza** | Verificar con Glob/Grep/Read ANTES de afirmar. Nunca asumir. |
 | **Anti-Alucinación** | `Glob('path/file.ts')` antes de referenciarlo. Si no existe → "necesita crearse". |
-| **Calidad** | Patterns del proyecto > shortcuts. Consultar Context7 si hay duda. |
+| **Calidad** | Patterns del proyecto > shortcuts. Consultar documentación oficial si hay duda. |
 | **Paralelización** | Múltiples tools independientes en UN mensaje. Batch operations. |
 | **Tokens** | Cargar solo lo necesario, PERO gastar si mejora certeza/calidad. |
 | **Claridad** | Cada paso ejecutable sin preguntas. Tablas > prosa. |
@@ -33,11 +33,7 @@ Mantener activas durante TODA la planificación y ejecución:
 | config, env, settings | Skill: `config-validator` |
 | refactor, clean, simplify | Agent: `refactor-agent` |
 
-### Cuándo usar Sequential Thinking
-
-```
-mcp__sequential-thinking__sequentialthinking
-```
+### Cuándo usar Razonamiento Estructurado
 
 | Usar SI | NO usar |
 |---------|---------|
@@ -49,22 +45,21 @@ mcp__sequential-thinking__sequentialthinking
 
 **Config**: 10-15+ thoughts para tareas complejas. Habilitar revision si hay incertidumbre.
 
-### Referencias Externas y MCPs
+### Referencias Externas
 
-| Necesidad | Tool | Comando |
-|-----------|------|---------|
-| API desconocida | Context7 | `mcp__context7__get-library-docs` |
-| Docs de Elysia/Bun | Context7 | `mcp__context7__get-library-docs` |
-| Razonamiento complejo | Sequential Thinking | `mcp__sequential-thinking__sequentialthinking` |
-| Pattern de diseño | WebSearch | Best practices, docs oficiales |
-| Proyecto referencia | WebFetch | GitHub >1k stars |
+| Necesidad | Acción |
+|-----------|--------|
+| API desconocida | Consultar documentación oficial |
+| Docs de Elysia/Bun | Documentación oficial del framework |
+| Pattern de diseño | WebSearch best practices, docs oficiales |
+| Proyecto referencia | WebFetch GitHub >1k stars |
 
 ### Validación Anti-Alucinación
 
 | Antes de... | Usar |
 |-------------|------|
 | Referenciar archivo/función | `Glob('path')` o `/validate-claim path/file.ts:FunctionName` |
-| Usar API de framework | `mcp__context7__get-library-docs` |
+| Usar API de framework | Documentación oficial del framework |
 | Asumir estructura de proyecto | `Glob('**/pattern')` para verificar |
 
 ---
@@ -147,7 +142,7 @@ mcp__sequential-thinking__sequentialthinking
 - Múltiples `Read`, `Glob`, `Grep` independientes
 - Múltiples `Write` a archivos SIN dependencia entre ellos
 - Múltiples `Task` agents independientes
-- `WebSearch` + `Context7` simultáneos
+- `WebSearch` + `WebFetch` simultáneos
 
 ### ❌ SECUENCIAL (esperar resultado)
 - `Edit` después de `Read` del mismo archivo
@@ -176,11 +171,6 @@ Read("/src/services/auth.ts") + Read("/src/types/user.ts") + Grep("login", "src/
 **Agentes paralelos independientes:**
 ```
 Task(subagent_type="scout", prompt="find auth files") + Task(subagent_type="code-quality", prompt="analyze complexity", run_in_background=true)
-```
-
-**MCP servers paralelos:**
-```
-mcp__context7__get-library-docs(library="elysia") + WebSearch("elysia middleware best practices 2024")
 ```
 
 **Writes independientes (sin dependencia mutua):**
@@ -216,7 +206,6 @@ Example:
 |------|-------------|-------------------|
 | Skill | [nombre] | [propósito] |
 | Agent | [nombre] | [propósito] |
-| MCP | [nombre] | [propósito] |
 
 ### Execution Roadmap
 
@@ -239,18 +228,18 @@ graph TD
 ##### 🔵 PARALLEL-1: [Nombre del grupo]
 **Deps**: Ninguna | **Paralelo**: ✅
 
-| # | Archivo | Tool | Skills | Agent | MCP |
-|---|---------|------|--------|-------|-----|
-| 1.1 | path/file.ts | Write/Edit | skill1, skill2 | - | - |
+| # | Archivo | Tool | Skills | Agent |
+|---|---------|------|--------|-------|
+| 1.1 | path/file.ts | Write/Edit | skill1, skill2 | - |
 
 **Ejecutar**: `Tool1(file1) + Tool2(file2)` EN MISMO MENSAJE
 
 ##### 🟢 SEQUENTIAL-2: [Nombre] [Blocking]
 **Deps**: PARALLEL-1 | **Paralelo**: ❌
 
-| # | Archivo | Tool | Skills | Agent | MCP |
-|---|---------|------|--------|-------|-----|
-| 2.1 | path/file.ts | Write | skill | Task:agent | Context7 |
+| # | Archivo | Tool | Skills | Agent |
+|---|---------|------|--------|-------|
+| 2.1 | path/file.ts | Write | skill | Task:agent |
 
 **Ejecutar**: DESPUÉS de PARALLEL-1
 **Recovery**: [Solo si Blocking - qué hacer si falla]
@@ -288,7 +277,6 @@ claude-code-ui/
 | Skill | bun-best-practices | Runtime Bun/Elysia | Auto |
 | Skill | code-style-enforcer | Estilo y type hints | Auto |
 | Agent | reviewer | Review final | sonnet, background: true |
-| MCP | Context7 | Verificar API Elysia | On-demand |
 | Command | /load-testing-strategy | Patterns de testing | Pre-tests |
 
 ### Execution Roadmap
@@ -349,7 +337,7 @@ graph TD
 |---|---------|------|--------|-----------|
 | 3.1 | `server/src/routes/sessions.ts` | Edit | bun-best-practices | `.get('/sessions/:id/export', ...)` |
 
-**MCP**: `mcp__context7__get-library-docs(library="elysia")` para response headers
+**Docs**: Consultar documentación oficial de Elysia para response headers
 **Ejecutar**: `Read(routes/sessions.ts) → Edit`
 
 #### 🔵 PARALLEL-4: Validation

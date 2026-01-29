@@ -5,7 +5,7 @@ description: |
   Use when: planning implementation, task decomposition, workflow design, parallel execution planning.
   Discovers available skills and assigns base agents (builder/reviewer/error-analyzer) with suggested skills.
   Keywords - plan, roadmap, decompose, workflow, parallel, tasks, assign, strategy, design, execute
-tools: Read, Glob, Grep, WebSearch, WebFetch, mcp__context7__query-docs, mcp__sequential-thinking__sequentialthinking
+tools: Read, Glob, Grep, WebSearch, WebFetch
 disallowed_tools: Edit, Write, Bash, Task
 model: opus
 permissionMode: plan
@@ -393,8 +393,6 @@ Task(
 | `Grep` | Buscar patrones, dependencias, imports |
 | `WebSearch` | Investigar best practices, patrones |
 | `WebFetch` | Obtener documentacion externa |
-| `mcp__context7__query-docs` | Consultar documentacion de librerias |
-| `mcp__sequential-thinking__sequentialthinking` | Razonamiento paso a paso para planificacion compleja |
 
 ## Constraints
 

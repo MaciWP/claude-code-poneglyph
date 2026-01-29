@@ -11,7 +11,3 @@ network_access = true
 [profiles.ci]
 approval_policy = "never"
 sandbox_mode = "read-only"
-
-[mcp_servers.context7]
-command = "npx"
-args = ["-y", "@upstash/context7-mcp"]

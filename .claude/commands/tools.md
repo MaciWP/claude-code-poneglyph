@@ -1,10 +1,10 @@
 ---
-description: Show all available tools (skills, agents, commands, MCP servers)
+description: Show all available tools (skills, agents, commands)
 ---
 
 # Available Tools
 
-Display all available tools, skills, agents, commands, and MCP servers in the project.
+Display all available tools, skills, agents, and commands in the project.
 
 ## Usage
 
@@ -28,7 +28,6 @@ Shows specific category:
 /tools skills     # Show only skills
 /tools agents     # Show only agents
 /tools commands   # Show only commands
-/tools mcp        # Show only MCP servers
 ```
 
 ---
@@ -117,17 +116,6 @@ When you run `/tools`, display:
 🐛 Debugging:
 8. /quick-debug               - Fast debugging workflow
 
----
-
-## 🔌 MCP SERVERS (2 available)
-
-1. ide (mcp__ide__*)
-   VS Code integration - diagnostics, code execution
-   Tools: getDiagnostics, executeCode
-
-2. (Other MCP servers if installed)
-   Check .claude/mcp-servers/ for available servers
-
 ═══════════════════════════════════════════════════════════════════════════════
 
 💡 TIP: Use specific commands for details:
@@ -161,12 +149,6 @@ const agents = await Glob({ pattern: '.claude/agents/*.md' });
 ```typescript
 const commands = await Glob({ pattern: '.claude/commands/*.md' });
 // Parse YAML frontmatter for description
-```
-
-**MCP Servers** (check if available):
-```typescript
-// List available mcp__* tools
-// Check .claude/mcp-servers/ if directory exists
 ```
 
 ---

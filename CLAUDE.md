@@ -78,7 +78,6 @@ Esta sesión actúa como **orquestador puro**. NO ejecuta código directamente.
 | `Task` | Delegar a agentes (builder, reviewer, planner, error-analyzer, scout) |
 | `Skill` | Cargar skills para contexto |
 | `AskUserQuestion` | Clarificar requisitos |
-| `mcp__*` | Usar MCP servers (Context7, GitHub, filesystem) |
 | `TaskList/Create/Update` | Gestionar lista de tareas |
 
 ### Herramientas PROHIBIDAS

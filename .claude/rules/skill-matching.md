@@ -16,6 +16,7 @@ Antes de delegar a builder/reviewer, detectar keywords y cargar skills relevante
 | log, logging, trace, debug, observability | `logging-strategy` |
 | error, retry, circuit, fallback, recovery | `retry-patterns` |
 | config, env, validation, settings | `config-validator` |
+| best practice, pattern, expert, compare, industry standard, owasp, clean code, architecture, design pattern | `expert-patterns` |
 
 ## Proceso de Matching
 

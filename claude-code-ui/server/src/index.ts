@@ -10,6 +10,7 @@ import { orchestrator } from './services/orchestrator'
 import { agentRegistry } from './services/agent-registry'
 import { PromptClassifier } from './services/prompt-classifier'
 import { AgentSpawner } from './services/agent-spawner'
+import { setAgentSpawner } from './services/workflow-executor'
 import { createOrchestratorAgent } from './services/orchestrator-agent'
 import { expertStore } from './services/expert-store'
 import { config } from './config'
@@ -52,6 +53,10 @@ const initializeOrchestrator = async () => {
   const experts = await expertStore.list()
   const classifier = new PromptClassifier({}, experts.map(e => e.id))
   const spawner = new AgentSpawner(claude)
+  
+  // Configure workflow executor with agent spawner
+  setAgentSpawner(spawner)
+  
   const leadOrchestrator = createOrchestratorAgent(classifier, spawner)
 
   // Update classifier with available experts

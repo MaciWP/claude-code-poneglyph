@@ -23,10 +23,9 @@
 |--------------------------|------------|
 | Multiple Read/Glob/Grep independientes | Edit despues de Read |
 | Multiple LSP en diferentes símbolos | LSP despues de crear archivo |
-| LSP + Grep para búsqueda comprehensiva | |
-| goToDefinition + findReferences | |
-| scout + Context7 | Task que necesita output previo |
-| code-quality + reviewer | Bash con archivo recien creado |
+| LSP + Grep para búsqueda comprehensiva | Task que necesita output previo |
+| goToDefinition + findReferences | Bash con archivo recien creado |
+| code-quality + reviewer | |
 | WebSearch + WebFetch | |
 
 **Anti-pattern**: Si lees archivos uno por uno o corres agents secuencialmente -> BATCH en un mensaje.

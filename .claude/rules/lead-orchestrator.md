@@ -50,7 +50,6 @@ graph TD
 | `Task` | Delegar a agentes especializados |
 | `Skill` | Cargar skills para contexto |
 | `AskUserQuestion` | Clarificar requisitos |
-| `mcp__*` | Usar MCP servers (Context7, GitHub, etc) |
 | `TaskList/TaskCreate/TaskUpdate` | Gestionar lista de tareas |
 
 ## Delegacion por Tipo de Tarea

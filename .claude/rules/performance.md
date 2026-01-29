@@ -10,7 +10,7 @@ Reglas para maximizar velocidad y eficiencia de Claude Code.
 | 2+ Glob patterns diferentes | Write dependiente de Read |
 | 2+ Task agents independientes | Task que necesita output previo |
 | LSP + Grep para búsqueda comprehensiva | Bash con archivo recién creado |
-| WebSearch + Context7 | Nodo marcado "Blocking" |
+| WebSearch + WebFetch | Nodo marcado "Blocking" |
 
 ## Anti-Patterns
 
@@ -42,13 +42,6 @@ Read("/src/services/auth.ts") + Read("/src/types/user.ts") + Grep("login", "src/
 ```
 Task(subagent_type="scout", prompt="find auth files") +
 Task(subagent_type="code-quality", prompt="analyze complexity", run_in_background=true)
-```
-
-### MCP servers paralelos
-
-```
-mcp__context7__get-library-docs(library="elysia") +
-WebSearch("elysia middleware best practices 2025")
 ```
 
 ### Writes independientes

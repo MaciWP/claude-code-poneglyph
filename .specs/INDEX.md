@@ -58,29 +58,30 @@ graph TD
 <!-- SPEC_TABLE_START -->
 | ID | File | Status | Version | Priority | Depends | Updated |
 |----|------|--------|---------|----------|---------|---------|
-| SPEC-001 | [lead-llm-orchestrator.md](./lead-llm-orchestrator.md) | approved | 2.0 | high | - | 2026-01-18 |
-| SPEC-002 | [scout-explorer-agent.md](./scout-explorer-agent.md) | approved | 1.1 | high | SPEC-001 | 2026-01-18 |
-| SPEC-003 | [planner-agent.md](./planner-agent.md) | approved | 3.0 | high | SPEC-001, SPEC-002 | 2026-01-18 |
-| SPEC-004 | [builder-agent.md](./builder-agent.md) | approved | 2.0 | high | SPEC-001, SPEC-003 | 2026-01-18 |
-| SPEC-005 | [reviewer-agent.md](./reviewer-agent.md) | approved | 3.0 | high | SPEC-001, SPEC-004 | 2026-01-18 |
-| SPEC-006 | [spec-gen-command.md](./spec-gen-command.md) | approved | 2.0 | high | - | 2026-01-18 |
-| SPEC-007 | [command-loader-agent.md](./command-loader-agent.md) | approved | 1.1 | high | SPEC-001, SPEC-009 | 2026-01-25 |
-| SPEC-008 | [error-analyzer-agent.md](./error-analyzer-agent.md) | approved | 1.0 | high | SPEC-001 | 2026-01-18 |
-| SPEC-009 | [skills-system.md](./skills-system.md) | approved | 1.0 | high | SPEC-001, SPEC-007 | 2026-01-18 |
-| SPEC-010 | [validation-hooks-system.md](./validation-hooks-system.md) | approved | 1.0 | high | SPEC-004, SPEC-005 | 2026-01-20 |
-| SPEC-011 | [thread-metrics-observability.md](./thread-metrics-observability.md) | approved | 1.0 | medium | SPEC-001, SPEC-003, SPEC-010 | 2026-01-20 |
-| SPEC-012 | [thread-metrics-ui.md](./thread-metrics-ui.md) | approved | 1.0 | medium | SPEC-011, SPEC-014 | 2026-01-21 |
-| SPEC-013 | [validation-hooks-ui.md](./validation-hooks-ui.md) | approved | 1.0 | medium | SPEC-010, SPEC-014 | 2026-01-21 |
-| SPEC-014 | [frontend-architecture-refactor.md](./frontend-architecture-refactor.md) | approved | 1.0 | high | - | 2026-01-21 |
-| SPEC-015 | [session-management-persistence.md](./session-management-persistence.md) | approved | 1.0 | high | SPEC-014 | 2026-01-21 |
-| SPEC-016 | [error-recovery-resilience.md](./error-recovery-resilience.md) | approved | 1.0 | high | SPEC-008 | 2026-01-21 |
-| SPEC-017 | [testing-strategy.md](./testing-strategy.md) | approved | 1.0 | high | - | 2026-01-21 |
-| SPEC-018 | [skills-implementation-catalog.md](./skills-implementation-catalog.md) | approved | 1.0 | high | SPEC-009 | 2026-01-21 |
-| SPEC-019 | [ai-friendly-logging.md](./ai-friendly-logging.md) | approved | 1.0 | high | SPEC-011 | 2026-01-21 |
-| SPEC-020 | [skills-extension-system.md](./skills-extension-system.md) | approved | 1.0 | high | SPEC-009 | 2026-01-21 |
-| SPEC-021 | [subagents-extension-system.md](./subagents-extension-system.md) | approved | 1.0 | high | SPEC-001 | 2026-01-21 |
-| SPEC-022 | [hooks-extension-system.md](./hooks-extension-system.md) | approved | 1.0 | high | SPEC-010 | 2026-01-21 |
-| SPEC-023 | [mcp-integration-system.md](./mcp-integration-system.md) | approved | 1.0 | high | - | 2026-01-21 |
+| SPEC-001 | [lead-llm-orchestrator.md](./lead-llm-orchestrator.md) | implemented | 2.0 | high | - | 2026-01-28 |
+| SPEC-002 | [scout-explorer-agent.md](./scout-explorer-agent.md) | implemented | 1.1 | high | SPEC-001 | 2026-01-28 |
+| SPEC-003 | [planner-agent.md](./planner-agent.md) | implemented | 3.0 | high | SPEC-001, SPEC-002 | 2026-01-28 |
+| SPEC-004 | [builder-agent.md](./builder-agent.md) | implemented | 2.0 | high | SPEC-001, SPEC-003 | 2026-01-28 |
+| SPEC-005 | [reviewer-agent.md](./reviewer-agent.md) | implemented | 3.0 | high | SPEC-001, SPEC-004 | 2026-01-28 |
+| SPEC-006 | [spec-gen-command.md](./spec-gen-command.md) | implemented | 2.0 | high | - | 2026-01-28 |
+| SPEC-007 | [command-loader-agent.md](./command-loader-agent.md) | implemented | 1.1 | high | SPEC-001, SPEC-009 | 2026-01-28 |
+| SPEC-008 | [error-analyzer-agent.md](./error-analyzer-agent.md) | implemented | 1.0 | high | SPEC-001 | 2026-01-28 |
+| SPEC-009 | [skills-system.md](./skills-system.md) | implemented | 1.0 | high | SPEC-001, SPEC-007 | 2026-01-28 |
+| SPEC-010 | [validation-hooks-system.md](./validation-hooks-system.md) | implemented | 1.0 | high | SPEC-004, SPEC-005 | 2026-01-28 |
+| SPEC-011 | [thread-metrics-observability.md](./thread-metrics-observability.md) | implemented | 1.0 | medium | SPEC-001, SPEC-003, SPEC-010 | 2026-01-28 |
+| SPEC-012 | [thread-metrics-ui.md](./thread-metrics-ui.md) | implemented | 1.0 | medium | SPEC-011, SPEC-014 | 2026-01-28 |
+| SPEC-013 | [validation-hooks-ui.md](./validation-hooks-ui.md) | partial | 1.0 | medium | SPEC-010, SPEC-014 | 2026-01-28 |
+| SPEC-014 | [frontend-architecture-refactor.md](./frontend-architecture-refactor.md) | implemented | 1.0 | high | - | 2026-01-28 |
+| SPEC-015 | [session-management-persistence.md](./session-management-persistence.md) | implemented | 1.0 | high | SPEC-014 | 2026-01-28 |
+| SPEC-016 | [error-recovery-resilience.md](./error-recovery-resilience.md) | implemented | 1.0 | high | SPEC-008 | 2026-01-28 |
+| SPEC-017 | [testing-strategy.md](./testing-strategy.md) | implemented | 1.0 | high | - | 2026-01-28 |
+| SPEC-018 | [skills-implementation-catalog.md](./skills-implementation-catalog.md) | implemented | 1.0 | high | SPEC-009 | 2026-01-28 |
+| SPEC-019 | [ai-friendly-logging.md](./ai-friendly-logging.md) | implemented | 1.0 | high | SPEC-011 | 2026-01-28 |
+| SPEC-020 | [skills-extension-system.md](./skills-extension-system.md) | implemented | 1.0 | high | SPEC-009 | 2026-01-28 |
+| SPEC-021 | [subagents-extension-system.md](./subagents-extension-system.md) | implemented | 1.0 | high | SPEC-001 | 2026-01-28 |
+| SPEC-022 | [hooks-extension-system.md](./hooks-extension-system.md) | implemented | 1.0 | high | SPEC-010 | 2026-01-28 |
+| SPEC-023 | [mcp-integration-system.md](./mcp-integration-system.md) | partial | 1.0 | high | - | 2026-01-28 |
+| SPEC-024 | - | draft | - | - | - | 2026-01-28 |
 | - | [ARCHITECTURE.md](./ARCHITECTURE.md) | approved | 1.0 | critical | - | 2026-01-18 |
 <!-- SPEC_TABLE_END -->
 
@@ -115,7 +116,7 @@ graph TD
 
 ## Quick Stats
 
-- Draft: 0 | Review: 0 | Approved: 23
+- Implemented: 21 | Partial: 2 | Approved: 0 | Draft: 1
 - Agentes Base: 4 (builder, reviewer, planner, error-analyzer)
 - Agentes Soporte: 2 (command-loader, Explore nativo)
 - Claude Code Extensions: 4 (skills, subagents, hooks, MCP)
