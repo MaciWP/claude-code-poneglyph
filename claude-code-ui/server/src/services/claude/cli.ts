@@ -7,6 +7,7 @@
 
 import { logger } from '../../logger'
 import { validateWorkDir, getSafeEnvForClaude } from '../../utils/security'
+import { getClaudeCommand } from '../../utils/claude-path'
 import { parseCLIOutput } from './parser'
 import { createProcessorState, createStreamReader } from './stream-processor'
 import type { CLIOptions, CLIResult } from './types'
@@ -30,8 +31,9 @@ export async function executeWithCLI(options: CLIOptions): Promise<CLIResult> {
     outputFormat: options.outputFormat,
   })
 
+  const claudeCmd = await getClaudeCommand()
   const args: string[] = [
-    'claude',
+    ...claudeCmd,
     '-p',
     options.prompt,
     '--output-format',
@@ -234,8 +236,9 @@ Current request: ${options.prompt}`
   }
 
   // Build CLI arguments
+  const claudeCmd = await getClaudeCommand()
   const args: string[] = [
-    'claude',
+    ...claudeCmd,
     '--output-format',
     'stream-json',
     '--verbose',

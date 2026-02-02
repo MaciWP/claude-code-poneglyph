@@ -84,10 +84,69 @@ export function getSafeEnv(options?: SafeEnvOptions): Record<string, string | un
   return env
 }
 
+/**
+ * Build an enriched PATH that includes common Node.js installation locations.
+ * This ensures spawned processes can find node/npm even when launched from
+ * environments without the full user PATH (e.g., GUI apps, launchd).
+ */
+function getEnrichedPath(): string {
+  const currentPath = process.env.PATH || ''
+  const isWindows = process.platform === 'win32'
+  const separator = isWindows ? ';' : ':'
+  const home = process.env.HOME || process.env.USERPROFILE || ''
+
+  // Known Node.js installation paths by platform
+  const additionalPaths: string[] = []
+
+  if (process.platform === 'darwin' || process.platform === 'linux') {
+    // CRITICAL: System paths must be included for Claude CLI to access Keychain
+    // via 'security' command and other system utilities
+    additionalPaths.push('/usr/bin')
+    additionalPaths.push('/bin')
+    additionalPaths.push('/usr/sbin')
+    additionalPaths.push('/sbin')
+
+    // NVM - check for active version or common versions
+    const nvmDir = process.env.NVM_DIR || `${home}/.nvm`
+    const nodeVersions = ['v20.17.0', 'v20.18.0', 'v22.0.0', 'v18.17.0']
+    for (const version of nodeVersions) {
+      additionalPaths.push(`${nvmDir}/versions/node/${version}/bin`)
+    }
+
+    // Homebrew (macOS)
+    additionalPaths.push('/opt/homebrew/bin')
+    additionalPaths.push('/usr/local/bin')
+
+    // npm global
+    additionalPaths.push(`${home}/.npm-global/bin`)
+    additionalPaths.push('/usr/local/lib/node_modules/.bin')
+  } else if (isWindows) {
+    // Windows system paths
+    additionalPaths.push(`${process.env.SYSTEMROOT}\\System32`)
+    additionalPaths.push(`${process.env.SYSTEMROOT}`)
+
+    // Windows common paths for Node.js
+    additionalPaths.push(`${process.env.APPDATA}\\npm`)
+    additionalPaths.push(`${process.env.PROGRAMFILES}\\nodejs`)
+  }
+
+  // Combine: current PATH + additional paths (deduplicated)
+  const allPaths = currentPath.split(separator).concat(additionalPaths)
+  const uniquePaths = [...new Set(allPaths.filter(Boolean))]
+
+  return uniquePaths.join(separator)
+}
+
 export function getSafeEnvForClaude(): Record<string, string | undefined> {
-  return getSafeEnv({
-    additionalPrefixes: ['ANTHROPIC_', 'CLAUDE_']
+  const env = getSafeEnv({
+    additionalPrefixes: ['ANTHROPIC_', 'CLAUDE_', 'NVM_']
   })
+
+  // Enrich PATH to ensure node AND system commands are findable
+  // Claude CLI needs access to system binaries like 'security' for Keychain access
+  env.PATH = getEnrichedPath()
+
+  return env
 }
 
 export function getSafeEnvForCodex(codexHome?: string): Record<string, string | undefined> {
