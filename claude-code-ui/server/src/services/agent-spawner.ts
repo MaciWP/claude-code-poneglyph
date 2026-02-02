@@ -3,7 +3,7 @@ import { ClaudeService, type CLIOptions } from './claude'
 import { agentRegistry as defaultAgentRegistry, type AgentType } from './agent-registry'
 import { expertStore as defaultExpertStore, type ExpertStore } from './expert-store'
 import { logger } from '../logger'
-import type { StreamChunk } from '../../../shared/types'
+import type { StreamChunk } from '@shared/types'
 
 const log = logger.child('agent-spawner')
 
@@ -99,7 +99,7 @@ export class AgentSpawner extends EventEmitter {
       workDir: config.workDir,
       outputFormat: 'stream-json',
       bypassPermissions: true,
-      allowFullPC: config.allowFullPC ?? true,
+      allowFullPC: config.allowFullPC ?? false,
     }
 
     const { stream, abort } = this.claudeService.streamCLIWithAbort(cliOptions)
@@ -306,7 +306,7 @@ export class AgentSpawner extends EventEmitter {
 ${expertise.mental_model.overview}
 
 ### Key Files
-${expertise.mental_model.key_files.map(f => `- \`${f.path}\`: ${f.purpose}`).join('\n')}
+${(expertise.mental_model?.key_files ?? []).map(f => `- \`${f.path}\`: ${f.purpose}`).join('\n')}
 
 ${expertise.patterns?.length ? `### Known Patterns
 ${expertise.patterns.map(p => `- **${p.name}** (confidence: ${p.confidence})`).join('\n')}` : ''}

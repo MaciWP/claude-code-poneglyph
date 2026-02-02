@@ -1,6 +1,6 @@
 import { describe, test, expect, mock, beforeEach, afterEach } from 'bun:test'
 import { GeminiService } from './gemini'
-import type { StreamChunk } from '../../../shared/types'
+import type { StreamChunk } from '@shared/types'
 import type { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai'
 
 // Helper para crear mocks tipados de GoogleGenerativeAI

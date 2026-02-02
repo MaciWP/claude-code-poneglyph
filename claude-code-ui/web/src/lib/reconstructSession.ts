@@ -1,4 +1,4 @@
-import type { Session, PersistedAgent } from '../../../shared/types'
+import type { Session, PersistedAgent } from '@shared/types'
 import type { LogEntry, ActiveContext, ScopedTodos, ToolUse, AgentStep, TodoItem } from '../types/chat'
 
 export interface ReconstructionResult {
@@ -51,7 +51,7 @@ export function reconstructFromSession(session: Session): ReconstructionResult {
     agentMap.set(a.id, a)
   })
 
-  for (const msg of session.messages) {
+  for (const msg of session.messages ?? []) {
     // User messages
     if (msg.role === 'user') {
       logs.push({

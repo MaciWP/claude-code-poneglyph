@@ -39,7 +39,7 @@
     "UserPromptSubmit": [
       {
         "hooks": [
-          {
+          {                                       
             "type": "command",
             "command": "bun .claude/hooks/memory-inject.ts"
           }

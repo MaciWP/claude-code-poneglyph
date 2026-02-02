@@ -6,7 +6,6 @@
 
 import { readFile, writeFile, readdir, mkdir } from 'fs/promises'
 import { join } from 'path'
-import { existsSync } from 'fs'
 import { logger } from '../logger'
 import { agentRegistry } from './agent-registry'
 import type { AgentSpawner, SpawnConfig } from './agent-spawner'
@@ -17,7 +16,7 @@ import type {
   WorkflowStepStatus,
   WorkflowEvent,
   WorkflowLogEntry,
-} from '../../../shared/types/workflow'
+} from '@shared/types/workflow'
 
 const log = logger.child('workflow-executor')
 
@@ -69,12 +68,16 @@ export async function loadWorkflowDefinitions(): Promise<WorkflowDefinition[]> {
   const definitions: WorkflowDefinition[] = []
 
   try {
-    if (!existsSync(WORKFLOWS_DIR)) {
-      log.info('Workflows directory does not exist', { path: WORKFLOWS_DIR })
-      return definitions
+    let files: string[]
+    try {
+      files = await readdir(WORKFLOWS_DIR)
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+        log.info('Workflows directory does not exist', { path: WORKFLOWS_DIR })
+        return definitions
+      }
+      throw error
     }
-
-    const files = await readdir(WORKFLOWS_DIR)
     const mdFiles = files.filter(f => f.endsWith('.md'))
 
     for (const file of mdFiles) {
@@ -434,9 +437,7 @@ async function logWorkflow(
 
   // Also write to log file
   try {
-    if (!existsSync(RUNS_DIR)) {
-      await mkdir(RUNS_DIR, { recursive: true })
-    }
+    await mkdir(RUNS_DIR, { recursive: true })
 
     const logPath = join(RUNS_DIR, `${run.id}.ndjson`)
     const line = JSON.stringify(entry) + '\n'
@@ -451,9 +452,7 @@ async function logWorkflow(
  */
 async function persistRun(run: WorkflowRun): Promise<void> {
   try {
-    if (!existsSync(RUNS_DIR)) {
-      await mkdir(RUNS_DIR, { recursive: true })
-    }
+    await mkdir(RUNS_DIR, { recursive: true })
 
     const runPath = join(RUNS_DIR, `${run.id}.json`)
     await writeFile(runPath, JSON.stringify(run, null, 2))

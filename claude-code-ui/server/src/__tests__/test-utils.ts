@@ -12,7 +12,7 @@
  */
 
 import { mock } from 'bun:test'
-import type { Session, Message, StreamChunk } from '../../../shared/types'
+import type { Session, Message, StreamChunk } from '@shared/types'
 
 // Extended Session type that includes UI-specific fields
 export interface ExtendedSession extends Session {

@@ -1,5 +1,4 @@
-import { readFile, writeFile } from 'fs/promises'
-import { existsSync } from 'fs'
+import { readFile, writeFile, access, constants } from 'fs/promises'
 import { join } from 'path'
 import { logger } from '../../logger'
 
@@ -37,6 +36,15 @@ interface GraphData {
 
 const DATA_FILE = join(import.meta.dir, '../../../storage/memories/graph.json')
 
+async function fileExists(path: string): Promise<boolean> {
+  try {
+    await access(path, constants.F_OK)
+    return true
+  } catch {
+    return false
+  }
+}
+
 class MemoryGraph {
   private nodes: Map<string, MemoryNode> = new Map()
   private edges: Map<string, MemoryEdge> = new Map()
@@ -45,7 +53,7 @@ class MemoryGraph {
   async init(): Promise<void> {
     if (this.initialized) return
 
-    if (existsSync(DATA_FILE)) {
+    if (await fileExists(DATA_FILE)) {
       try {
         const content = await readFile(DATA_FILE, 'utf-8')
         const data: GraphData = JSON.parse(content)

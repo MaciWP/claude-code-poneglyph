@@ -1,5 +1,4 @@
 import { readFile, writeFile, mkdir } from 'fs/promises'
-import { existsSync } from 'fs'
 import { join } from 'path'
 import { logger } from '../../logger'
 import type { Memory, MemorySearchResult, MemoryType, MemorySource, AgentType, MemoryLaneType } from './types'
@@ -32,10 +31,8 @@ class MemoryStore {
   }
 
   private async _doInit(): Promise<void> {
-    if (!existsSync(DATA_DIR)) {
-      await mkdir(DATA_DIR, { recursive: true })
-      log.info('Created memories data directory')
-    }
+    await mkdir(DATA_DIR, { recursive: true })
+    log.info('Ensured memories data directory exists')
 
     await this.loadIndex()
     this.initialized = true
@@ -43,23 +40,22 @@ class MemoryStore {
   }
 
   private async loadIndex(): Promise<void> {
-    if (!existsSync(INDEX_FILE)) {
-      await this.saveIndex()
-      return
-    }
-
     try {
       const indexContent = await readFile(INDEX_FILE, 'utf-8')
       const index: MemoryIndex = JSON.parse(indexContent)
       this.memoryIds = new Set(index.memoryIds)
     } catch (error) {
+      // If file doesn't exist, create new index
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+        await this.saveIndex()
+        return
+      }
       log.error('Failed to load memory index', { error })
     }
   }
 
   private async loadMemoryFromDisk(id: string): Promise<Memory | null> {
     const memoryPath = join(DATA_DIR, `${id}.json`)
-    if (!existsSync(memoryPath)) return null
 
     try {
       const content = await readFile(memoryPath, 'utf-8')
@@ -67,16 +63,21 @@ class MemoryStore {
       this.addToCache(id, memory)
       return memory
     } catch (error) {
+      // Return null if file doesn't exist
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+        return null
+      }
       log.error('Failed to load memory from disk', { id, error })
       return null
     }
   }
 
   private addToCache(id: string, memory: Memory): void {
+    // LRU eviction: Map maintains insertion order, first key is least recently used
     if (this.cache.size >= MAX_CACHE_SIZE) {
-      const oldestKey = this.cache.keys().next().value
-      if (oldestKey) {
-        this.cache.delete(oldestKey)
+      const lruKey = this.cache.keys().next().value
+      if (lruKey) {
+        this.cache.delete(lruKey)
       }
     }
     this.cache.set(id, memory)
@@ -163,7 +164,12 @@ class MemoryStore {
     await this.init()
 
     const cached = this.cache.get(id)
-    if (cached) return cached
+    if (cached) {
+      // LRU: Move to end (most recently used) by re-inserting
+      this.cache.delete(id)
+      this.cache.set(id, cached)
+      return cached
+    }
 
     if (this.memoryIds.has(id)) {
       return this.loadMemoryFromDisk(id)
@@ -210,12 +216,12 @@ class MemoryStore {
 
   async getAll(): Promise<Memory[]> {
     await this.init()
-    const results: Memory[] = []
-    for (const id of this.memoryIds) {
-      const memory = await this.get(id)
-      if (memory) results.push(memory)
-    }
-    return results
+
+    const results = await Promise.all(
+      Array.from(this.memoryIds).map(id => this.get(id))
+    )
+
+    return results.filter((m): m is Memory => m !== null)
   }
 
   async search(
@@ -230,26 +236,30 @@ class MemoryStore {
     await this.init()
 
     const queryLower = query.toLowerCase()
-    const results: MemorySearchResult[] = []
 
-    for (const id of this.memoryIds) {
-      const memory = await this.get(id)
-      if (!memory) continue
+    // Load all memories in parallel
+    const allMemories = await Promise.all(
+      Array.from(this.memoryIds).map(id => this.get(id))
+    )
 
-      if (options.type && memory.type !== options.type) continue
-      if (options.minConfidence && memory.confidence.current < options.minConfidence) continue
-      if (options.tags?.length && !options.tags.some(t => memory.metadata.tags.includes(t))) continue
-
-      const contentLower = memory.content.toLowerCase()
-      if (contentLower.includes(queryLower)) {
+    // Filter and score
+    const results: MemorySearchResult[] = allMemories
+      .filter((m): m is Memory => m !== null)
+      .filter(memory => {
+        if (options.type && memory.type !== options.type) return false
+        if (options.minConfidence && memory.confidence.current < options.minConfidence) return false
+        if (options.tags?.length && !options.tags.some(t => memory.metadata.tags.includes(t))) return false
+        return memory.content.toLowerCase().includes(queryLower)
+      })
+      .map(memory => {
+        const contentLower = memory.content.toLowerCase()
         const similarity = this.calculateTextSimilarity(queryLower, contentLower)
-        results.push({
+        return {
           memory,
           similarity,
           relevanceScore: similarity * memory.confidence.current
-        })
-      }
-    }
+        }
+      })
 
     results.sort((a, b) => b.relevanceScore - a.relevanceScore)
     return results.slice(0, options.limit ?? 10)

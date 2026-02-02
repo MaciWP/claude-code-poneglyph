@@ -1,5 +1,5 @@
 // Import shared types for internal use and re-export
-import type { TodoItem, TokenUsage, StreamChunk } from '../../../shared/types'
+import type { TodoItem, TokenUsage, StreamChunk } from '@shared/types'
 export type { TodoItem, TokenUsage, StreamChunk }
 
 export interface PastedImage {

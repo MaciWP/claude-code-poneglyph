@@ -8,20 +8,33 @@ import {
 } from '../services/memory'
 import { injectMemories, recordFeedback, warmUp } from '../services/memory/injection'
 import { memoryCatcher } from '../services/memory/catcher'
+import { logger } from '../logger'
+
+const log = logger.child('memory-routes')
 
 export const memoryRoutes = new Elysia({ prefix: '/api' })
   .get('/memory', async () => {
-    await initMemorySystem()
-    const memories = await memoryStore.getAll()
-    return { memories, count: memories.length }
+    try {
+      await initMemorySystem()
+      const memories = await memoryStore.getAll()
+      return { memories, count: memories.length }
+    } catch (error) {
+      log.error('Failed to get memories', { error })
+      return { error: 'Failed to get memories', details: error instanceof Error ? error.message : 'Unknown error' }
+    }
   })
   .post('/memory/search', async ({ body }) => {
-    await initMemorySystem()
-    const results = await searchRelevantMemories(body.query, {
-      limit: body.limit ?? 5,
-      useSemanticSearch: true
-    })
-    return { results }
+    try {
+      await initMemorySystem()
+      const results = await searchRelevantMemories(body.query, {
+        limit: body.limit ?? 5,
+        useSemanticSearch: true
+      })
+      return { results }
+    } catch (error) {
+      log.error('Memory search failed', { error, query: body.query })
+      return { error: 'Search failed', details: error instanceof Error ? error.message : 'Unknown error' }
+    }
   }, {
     body: t.Object({
       query: t.String(),
@@ -29,16 +42,21 @@ export const memoryRoutes = new Elysia({ prefix: '/api' })
     })
   })
   .post('/memory/feedback', async ({ body }) => {
-    await initMemorySystem()
-    await processFeedback({
-      memoryId: body.memoryId,
-      type: body.type as 'positive' | 'negative',
-      content: body.context,
-      sessionId: body.sessionId || '',
-      responseId: body.memoryId,
-      timestamp: new Date().toISOString()
-    })
-    return { ok: true }
+    try {
+      await initMemorySystem()
+      await processFeedback({
+        memoryId: body.memoryId,
+        type: body.type as 'positive' | 'negative',
+        content: body.context,
+        sessionId: body.sessionId || '',
+        responseId: body.memoryId,
+        timestamp: new Date().toISOString()
+      })
+      return { ok: true }
+    } catch (error) {
+      log.error('Failed to process feedback', { error, memoryId: body.memoryId })
+      return { error: 'Feedback processing failed', details: error instanceof Error ? error.message : 'Unknown error' }
+    }
   }, {
     body: t.Object({
       memoryId: t.String(),
@@ -48,18 +66,28 @@ export const memoryRoutes = new Elysia({ prefix: '/api' })
     })
   })
   .get('/memory/stats', async () => {
-    await initMemorySystem()
-    return getMemorySystemStats()
+    try {
+      await initMemorySystem()
+      return getMemorySystemStats()
+    } catch (error) {
+      log.error('Failed to get memory stats', { error })
+      return { error: 'Failed to get stats', details: error instanceof Error ? error.message : 'Unknown error' }
+    }
   })
   .post('/memory/inject', async ({ body }) => {
-    await initMemorySystem()
-    const result = await injectMemories(body.query, body.sessionId, {
-      maxMemories: body.maxMemories,
-      minSimilarity: body.minSimilarity,
-      maxTokens: body.maxTokens,
-      timeout: body.timeout
-    })
-    return result
+    try {
+      await initMemorySystem()
+      const result = await injectMemories(body.query, body.sessionId, {
+        maxMemories: body.maxMemories,
+        minSimilarity: body.minSimilarity,
+        maxTokens: body.maxTokens,
+        timeout: body.timeout
+      })
+      return result
+    } catch (error) {
+      log.error('Memory injection failed', { error, query: body.query })
+      return { error: 'Injection failed', details: error instanceof Error ? error.message : 'Unknown error' }
+    }
   }, {
     body: t.Object({
       query: t.String(),
@@ -71,8 +99,13 @@ export const memoryRoutes = new Elysia({ prefix: '/api' })
     })
   })
   .post('/memory/injection-feedback', async ({ body }) => {
-    recordFeedback(body.memoryId, body.sessionId, body.queryContext, body.isPositive)
-    return { ok: true }
+    try {
+      recordFeedback(body.memoryId, body.sessionId, body.queryContext, body.isPositive)
+      return { ok: true }
+    } catch (error) {
+      log.error('Injection feedback failed', { error, memoryId: body.memoryId })
+      return { error: 'Feedback recording failed', details: error instanceof Error ? error.message : 'Unknown error' }
+    }
   }, {
     body: t.Object({
       memoryId: t.String(),
@@ -82,24 +115,49 @@ export const memoryRoutes = new Elysia({ prefix: '/api' })
     })
   })
   .post('/memory/warmup', async () => {
-    await warmUp()
-    return { ok: true, message: 'Memory injection service warmed up' }
+    try {
+      await warmUp()
+      return { ok: true, message: 'Memory injection service warmed up' }
+    } catch (error) {
+      log.error('Memory warmup failed', { error })
+      return { error: 'Warmup failed', details: error instanceof Error ? error.message : 'Unknown error' }
+    }
   })
   .get('/memory/catcher/stats', () => {
-    return memoryCatcher.getStats()
+    try {
+      return memoryCatcher.getStats()
+    } catch (error) {
+      log.error('Failed to get catcher stats', { error })
+      return { error: 'Failed to get catcher stats', details: error instanceof Error ? error.message : 'Unknown error' }
+    }
   })
   .post('/memory/catcher/start', () => {
-    if (memoryCatcher.isRunning()) {
-      return { ok: false, message: 'Memory catcher already running' }
+    try {
+      if (memoryCatcher.isRunning()) {
+        return { ok: false, message: 'Memory catcher already running' }
+      }
+      memoryCatcher.start()
+      return { ok: true, message: 'Memory catcher started' }
+    } catch (error) {
+      log.error('Failed to start memory catcher', { error })
+      return { error: 'Failed to start catcher', details: error instanceof Error ? error.message : 'Unknown error' }
     }
-    memoryCatcher.start()
-    return { ok: true, message: 'Memory catcher started' }
   })
   .post('/memory/catcher/stop', () => {
-    memoryCatcher.stop()
-    return { ok: true, message: 'Memory catcher stopped' }
+    try {
+      memoryCatcher.stop()
+      return { ok: true, message: 'Memory catcher stopped' }
+    } catch (error) {
+      log.error('Failed to stop memory catcher', { error })
+      return { error: 'Failed to stop catcher', details: error instanceof Error ? error.message : 'Unknown error' }
+    }
   })
   .post('/memory/catcher/run', async () => {
-    await memoryCatcher.catchMemories()
-    return { ok: true, stats: memoryCatcher.getStats() }
+    try {
+      await memoryCatcher.catchMemories()
+      return { ok: true, stats: memoryCatcher.getStats() }
+    } catch (error) {
+      log.error('Failed to run memory catcher', { error })
+      return { error: 'Failed to run catcher', details: error instanceof Error ? error.message : 'Unknown error' }
+    }
   })

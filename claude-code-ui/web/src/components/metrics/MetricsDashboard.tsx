@@ -3,13 +3,13 @@ import { cn } from '../../lib/utils'
 import { IconButton, Skeleton } from '../ui'
 import { StatusDot } from '../ui/StatusBadge'
 import { useMetricsDashboard, type DashboardTab } from '../../hooks/useMetricsDashboard'
-import { OverviewTab, ExpertsTab, LearningTab } from './tabs'
+import { OverviewTab, ExpertsTab, LearningTab, LogsTab } from './tabs'
 
 interface Props {
   onClose?: () => void
 }
 
-const TABS: DashboardTab[] = ['overview', 'experts', 'learning']
+const TABS: DashboardTab[] = ['overview', 'experts', 'learning', 'logs']
 
 export default function MetricsDashboard({ onClose }: Props) {
   const {
@@ -66,6 +66,7 @@ export default function MetricsDashboard({ onClose }: Props) {
               onToggleAutoLearn={toggleAutoLearn}
             />
           )}
+          {activeTab === 'logs' && <LogsTab />}
         </div>
       </div>
     </div>

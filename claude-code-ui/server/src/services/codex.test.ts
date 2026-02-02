@@ -1,6 +1,6 @@
 import { describe, test, expect, mock, beforeEach } from 'bun:test'
 import { CodexService } from './codex'
-import type { StreamChunk } from '../../../shared/types'
+import type { StreamChunk } from '@shared/types'
 
 describe('CodexService', () => {
   let service: CodexService

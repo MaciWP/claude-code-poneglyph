@@ -26,7 +26,7 @@ export const DEFAULT_PREFERENCES: UserPreferences = {
   modes: {
     orchestrate: true,
     planMode: false,
-    bypassPermissions: true,
+    bypassPermissions: false,
   },
   toolsPanelSections: {
     commands: true,

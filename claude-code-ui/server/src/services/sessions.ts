@@ -1,7 +1,6 @@
 import { mkdir, readFile, writeFile, readdir, unlink, access, rm } from 'fs/promises'
-import { existsSync } from 'fs'
 import { join, resolve } from 'path'
-import type { Message, Session, ExecutionEvent, TokenUsage, ContextSnapshot, PersistedAgent } from '../../../shared/types'
+import type { Message, Session, ExecutionEvent, TokenUsage, ContextSnapshot, PersistedAgent } from '@shared/types'
 import { logger } from '../logger'
 
 interface RichMessageData {
@@ -20,6 +19,9 @@ export type { Message, Session }
 const IMAGE_PREFIX = 'img://'
 const BASE64_PATTERN = /^data:image\/(png|jpeg|jpg|gif|webp);base64,/
 
+// Lock timeout to prevent deadlocks
+const LOCK_TIMEOUT_MS = 10000 // 10 seconds
+
 export class SessionStore {
   private baseDir: string
   private imagesDir: string
@@ -33,8 +35,29 @@ export class SessionStore {
   }
 
   private async withLock<T>(sessionId: string, fn: () => Promise<T>): Promise<T> {
+    const startTime = Date.now()
+
+    // Wait for existing lock with timeout
     while (this.locks.has(sessionId)) {
-      await this.locks.get(sessionId)
+      const elapsed = Date.now() - startTime
+      if (elapsed >= LOCK_TIMEOUT_MS) {
+        log.error('Lock acquisition timeout', { sessionId, timeoutMs: LOCK_TIMEOUT_MS })
+        throw new Error(`Failed to acquire lock for session ${sessionId} - timeout exceeded (${LOCK_TIMEOUT_MS}ms)`)
+      }
+
+      // Race between lock release and timeout
+      const remainingTime = LOCK_TIMEOUT_MS - elapsed
+      const existingLock = this.locks.get(sessionId)
+      if (existingLock) {
+        await Promise.race([
+          existingLock,
+          new Promise<void>((_, reject) =>
+            setTimeout(() => reject(new Error('Lock timeout')), remainingTime)
+          )
+        ]).catch(() => {
+          // Timeout reached, will be handled in the next iteration
+        })
+      }
     }
 
     let resolve!: () => void
@@ -55,11 +78,13 @@ export class SessionStore {
     try {
       await access(this.baseDir)
     } catch {
+      // Directory does not exist, create it
       await mkdir(this.baseDir, { recursive: true })
     }
     try {
       await access(this.imagesDir)
     } catch {
+      // Images directory does not exist, create it
       await mkdir(this.imagesDir, { recursive: true })
     }
   }
@@ -77,9 +102,7 @@ export class SessionStore {
     const buffer = Buffer.from(base64Data, 'base64')
 
     const sessionImagesDir = this.getSessionImagesDir(sessionId)
-    if (!existsSync(sessionImagesDir)) {
-      await mkdir(sessionImagesDir, { recursive: true })
-    }
+    await mkdir(sessionImagesDir, { recursive: true })
 
     const filename = `${Date.now()}_${index}.${ext}`
     const filePath = join(sessionImagesDir, filename)
@@ -208,11 +231,12 @@ export class SessionStore {
     }
 
     const sessionImagesDir = this.getSessionImagesDir(id)
-    if (existsSync(sessionImagesDir)) {
-      try {
-        await rm(sessionImagesDir, { recursive: true })
-        log.debug('Deleted session images', { sessionId: id })
-      } catch (error) {
+    try {
+      await rm(sessionImagesDir, { recursive: true })
+      log.debug('Deleted session images', { sessionId: id })
+    } catch (error) {
+      // Ignore ENOENT (directory doesn't exist)
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
         log.warn('Failed to delete session images', { sessionId: id, error })
       }
     }
@@ -237,7 +261,8 @@ export class SessionStore {
       try {
         const data = await readFile(path, 'utf-8')
         session = JSON.parse(data)
-      } catch {
+      } catch (error) {
+        // Session file does not exist or is invalid
         throw new Error(`Session not found: ${sessionId}`)
       }
 
@@ -270,27 +295,56 @@ export class SessionStore {
     })
   }
 
-  async cleanupOldSessions(maxAgeDays: number = 30): Promise<number> {
+  async cleanupOldSessions(maxAgeDays: number = 30): Promise<{ deleted: number; failed: number }> {
     await this.initialized
 
     const cutoff = Date.now() - (maxAgeDays * 24 * 60 * 60 * 1000)
     const sessions = await this.list()
-    let deleted = 0
 
-    for (const session of sessions) {
+    // Filter sessions that are older than cutoff
+    const sessionsToDelete = sessions.filter(session => {
       const updatedAt = new Date(session.updatedAt).getTime()
-      if (updatedAt < cutoff) {
+      return updatedAt < cutoff
+    })
+
+    if (sessionsToDelete.length === 0) {
+      return { deleted: 0, failed: 0 }
+    }
+
+    // Execute deletes in parallel with Promise.allSettled
+    const results = await Promise.allSettled(
+      sessionsToDelete.map(async session => {
+        const updatedAt = new Date(session.updatedAt).getTime()
         await this.delete(session.id)
-        deleted++
-        log.info('Cleaned up old session', { sessionId: session.id, age: Math.floor((Date.now() - updatedAt) / 86400000) + ' days' })
-      }
+        log.info('Cleaned up old session', {
+          sessionId: session.id,
+          age: Math.floor((Date.now() - updatedAt) / 86400000) + ' days'
+        })
+        return session.id
+      })
+    )
+
+    const deleted = results.filter(r => r.status === 'fulfilled').length
+    const failed = results.filter(r => r.status === 'rejected').length
+
+    // Log failures for debugging
+    if (failed > 0) {
+      const failedResults = results.filter((r): r is PromiseRejectedResult => r.status === 'rejected')
+      failedResults.forEach((result, idx) => {
+        log.warn('Failed to delete session during cleanup', {
+          sessionId: sessionsToDelete[idx]?.id,
+          error: result.reason
+        })
+      })
     }
 
-    if (deleted > 0) {
-      log.info('Session cleanup completed', { deleted, remaining: sessions.length - deleted })
-    }
+    log.info('Session cleanup completed', {
+      deleted,
+      failed,
+      remaining: sessions.length - deleted
+    })
 
-    return deleted
+    return { deleted, failed }
   }
 
   // Agent persistence methods
@@ -302,7 +356,8 @@ export class SessionStore {
       try {
         const data = await readFile(path, 'utf-8')
         session = JSON.parse(data)
-      } catch {
+      } catch (error) {
+        // Session file does not exist or is invalid
         throw new Error(`Session not found: ${sessionId}`)
       }
 
@@ -327,7 +382,8 @@ export class SessionStore {
       try {
         const data = await readFile(path, 'utf-8')
         session = JSON.parse(data)
-      } catch {
+      } catch (error) {
+        // Session file does not exist or is invalid
         throw new Error(`Session not found: ${sessionId}`)
       }
 

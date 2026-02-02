@@ -66,6 +66,7 @@ interface IssueCandidate {
 }
 
 export class LearningLoop extends EventEmitter {
+  private readonly MAX_HISTORY_PER_EXPERT = 50
   private config: LearningConfig
   private expertStore: ExpertStore
   private learningHistory: Map<string, ExecutionTrace[]> = new Map()
@@ -203,8 +204,9 @@ export class LearningLoop extends EventEmitter {
     const history = this.learningHistory.get(key) || []
     history.push(trace)
 
-    if (history.length > 50) {
-      history.shift()
+    // Limitar a MAX_HISTORY_PER_EXPERT entries (FIFO)
+    if (history.length > this.MAX_HISTORY_PER_EXPERT) {
+      history.splice(0, history.length - this.MAX_HISTORY_PER_EXPERT)
     }
 
     this.learningHistory.set(key, history)
@@ -252,7 +254,7 @@ export class LearningLoop extends EventEmitter {
   }
 
   private extractNewFiles(trace: ExecutionTrace, expertise: Expertise): string[] {
-    const knownFiles = new Set(expertise.mental_model.key_files.map(f => f.path))
+    const knownFiles = new Set((expertise.mental_model?.key_files ?? []).map(f => f.path))
     const newFiles: string[] = []
 
     const fileMatches = trace.output.match(/(?:file|path|modified|created|updated):\s*[`']?([^\s`'\n]+\.[jt]sx?)[`']?/gi) || []

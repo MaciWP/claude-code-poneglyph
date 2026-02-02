@@ -36,7 +36,9 @@ export default function SessionDropdown({
     setIsOpen(false)
   }
 
-  const recentSessions = sessions.slice(0, 3)
+  // Defensive: ensure sessions is always an array
+  const safeSessions = Array.isArray(sessions) ? sessions : []
+  const recentSessions = safeSessions.slice(0, 3)
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -100,9 +102,9 @@ export default function SessionDropdown({
             >
               <Icons.folder className="w-4 h-4" />
               <span>View All Sessions</span>
-              {sessions.length > 3 && (
+              {safeSessions.length > 3 && (
                 <span className="ml-auto text-xs text-gray-600">
-                  +{sessions.length - 3} more
+                  +{safeSessions.length - 3} more
                 </span>
               )}
             </button>

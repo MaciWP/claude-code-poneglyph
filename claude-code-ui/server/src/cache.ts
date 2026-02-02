@@ -1,4 +1,4 @@
-import { CACHE_DEFAULT_TTL_MS, CONFIG_CACHE_TTL_MS } from './constants'
+import { CACHE_DEFAULT_TTL_MS, CONFIG_CACHE_TTL_MS, RULES_CACHE_TTL_MS, AGENT_PROMPT_CACHE_TTL_MS } from './constants'
 
 interface CacheEntry<T> {
   value: T
@@ -58,3 +58,9 @@ export class SimpleCache<T> {
 }
 
 export const configCache = new SimpleCache<unknown>(CONFIG_CACHE_TTL_MS)
+
+/** Cache for rules directory lookups (2 min TTL) */
+export const rulesCache = new SimpleCache<string[]>(RULES_CACHE_TTL_MS)
+
+/** Cache for agent prompts (5 min TTL) */
+export const agentPromptCache = new SimpleCache<string | null>(AGENT_PROMPT_CACHE_TTL_MS)

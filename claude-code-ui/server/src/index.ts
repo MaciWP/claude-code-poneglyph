@@ -27,6 +27,8 @@ import {
   expertsRoutes,
   learningRoutes,
   multiExpertRoutes,
+  logsRoutes,
+  stopCleanupInterval,
 } from './routes'
 
 const storageDir = join(import.meta.dir, '../storage')
@@ -40,9 +42,9 @@ const sessions = new SessionStore(config.SESSIONS_DIR)
 
 // Cleanup old sessions on startup
 try {
-  const cleaned = await sessions.cleanupOldSessions(30)
-  if (cleaned > 0) {
-    logger.info('startup', `Cleaned up ${cleaned} old sessions (>30 days)`)
+  const { deleted, failed } = await sessions.cleanupOldSessions(30)
+  if (deleted > 0 || failed > 0) {
+    logger.info('startup', `Session cleanup: ${deleted} deleted, ${failed} failed (>30 days)`)
   }
 } catch (err) {
   logger.warn('startup', `Session cleanup failed: ${err}`)
@@ -84,6 +86,7 @@ const app = new Elysia()
   .use(expertsRoutes)
   .use(learningRoutes)
   .use(multiExpertRoutes)
+  .use(logsRoutes)
   .use(createWebSocketRoutes(claude, codex, gemini, sessions, orchestrator, agentRegistry, leadOrchestrator))
   .get('/', () => ({
     name: 'Claude Code UI API',
@@ -102,6 +105,7 @@ const app = new Elysia()
       learning: '/api/learning',
       multiExpert: '/api/multi-expert',
       memory: '/api/memory',
+      logs: '/api/logs',
       websocket: '/ws',
     },
   }))
@@ -111,3 +115,14 @@ logger.info('startup', `Server running at http://${config.HOST}:${app.server?.po
   env: config.NODE_ENV,
   logLevel: config.LOG_LEVEL,
 })
+
+// Graceful shutdown
+const shutdown = () => {
+  logger.info('shutdown', 'Received shutdown signal, cleaning up...')
+  stopCleanupInterval()
+  app.stop()
+  process.exit(0)
+}
+
+process.on('SIGTERM', shutdown)
+process.on('SIGINT', shutdown)

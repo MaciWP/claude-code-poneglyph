@@ -1,4 +1,4 @@
-import type { Message, Session } from '../../../shared/types'
+import type { Message, Session } from '@shared/types'
 import type { SessionStore } from './sessions'
 import { logger } from '../logger'
 
@@ -374,7 +374,7 @@ export class SessionManager {
 
   // ==================== Cleanup ====================
 
-  async cleanupOldSessions(olderThanDays: number): Promise<number> {
+  async cleanupOldSessions(olderThanDays: number): Promise<{ deleted: number; failed: number }> {
     return this.store.cleanupOldSessions(olderThanDays)
   }
 

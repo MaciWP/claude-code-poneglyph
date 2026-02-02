@@ -9,7 +9,7 @@
 
 import { EventEmitter } from 'events'
 import { logger } from '../logger'
-import type { ContextWindowState, ContextWindowStatus, ContextWindowThresholds } from '../../../shared/types'
+import type { ContextWindowState, ContextWindowStatus, ContextWindowThresholds } from '@shared/types'
 
 const log = logger.child('context-window-monitor')
 

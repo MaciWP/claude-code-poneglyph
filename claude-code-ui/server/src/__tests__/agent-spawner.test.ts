@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, mock } from 'bun:test'
 import { AgentSpawner } from '../services/agent-spawner'
 import { agentRegistry } from '../services/agent-registry'
-import type { StreamChunk } from '../../../shared/types'
+import type { StreamChunk } from '@shared/types'
 
 const createMockClaudeService = () => {
   const mockStream = async function* (): AsyncGenerator<StreamChunk> {

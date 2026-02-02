@@ -278,7 +278,7 @@ You are the **${expertise.domain}** expert with confidence level ${(expertise.co
 ${expertise.mental_model.overview}
 
 ### Key Files You Know
-${expertise.mental_model.key_files.map(f => `- \`${f.path}\`: ${f.purpose}`).join('\n')}
+${(expertise.mental_model?.key_files ?? []).map(f => `- \`${f.path}\`: ${f.purpose}`).join('\n')}
 
 ### Known Patterns
 ${expertise.patterns?.map(p => `- **${p.name}** (${(p.confidence * 100).toFixed(0)}% confidence): ${p.usage || ''}`).join('\n') || 'None documented'}

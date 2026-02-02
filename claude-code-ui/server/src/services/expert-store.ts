@@ -2,6 +2,7 @@ import { readFile, writeFile, readdir, access, mkdir } from 'fs/promises'
 import { join } from 'path'
 import { parse as parseYaml, stringify as stringifyYaml } from 'yaml'
 import { logger } from '../logger'
+import { agentPromptCache } from '../cache'
 
 const log = logger.child('expert-store')
 
@@ -91,31 +92,42 @@ export class ExpertStore {
   }
 
   async list(): Promise<ExpertSummary[]> {
-    const experts: ExpertSummary[] = []
-
     try {
       const dirs = await readdir(this.basePath, { withFileTypes: true })
 
-      for (const dir of dirs) {
-        if (dir.isDirectory() && !dir.name.startsWith('_')) {
-          try {
-            const expertise = await this.load(dir.name)
-            experts.push({
-              id: dir.name,
-              domain: expertise.domain,
-              confidence: expertise.confidence,
-              lastUpdated: expertise.last_updated
-            })
-          } catch {
-            log.warn('Failed to load expert', { id: dir.name })
+      const expertDirs = dirs.filter(
+        dir => dir.isDirectory() && !dir.name.startsWith('_')
+      )
+
+      const results = await Promise.allSettled(
+        expertDirs.map(async dir => {
+          const expertise = await this.load(dir.name)
+          return {
+            id: dir.name,
+            domain: expertise.domain,
+            confidence: expertise.confidence,
+            lastUpdated: expertise.last_updated
           }
+        })
+      )
+
+      // Log failures for debugging
+      results.forEach((result, index) => {
+        if (result.status === 'rejected') {
+          log.warn('Failed to load expert', {
+            id: expertDirs[index].name,
+            error: String(result.reason)
+          })
         }
-      }
+      })
+
+      return results
+        .filter((r): r is PromiseFulfilledResult<ExpertSummary> => r.status === 'fulfilled')
+        .map(r => r.value)
     } catch (error) {
       log.warn('Failed to list experts', { error: String(error) })
+      return []
     }
-
-    return experts
   }
 
   async load(expertId: string): Promise<Expertise> {
@@ -206,12 +218,13 @@ export class ExpertStore {
         try {
           await access(join(process.cwd(), file))
         } catch {
+          // File access check failed - file does not exist
           errors.push(`Required file not found: ${file}`)
         }
       }
     }
 
-    for (const file of expertise.mental_model.key_files) {
+    for (const file of expertise.mental_model?.key_files ?? []) {
       if (file.last_verified) {
         const lastVerified = new Date(file.last_verified)
         const daysSince = (Date.now() - lastVerified.getTime()) / (1000 * 60 * 60 * 24)
@@ -233,12 +246,26 @@ export class ExpertStore {
   }
 
   async getAgentPrompt(expertId: string): Promise<string | null> {
+    // Check cache first (5 min TTL)
+    const cacheKey = `agent-prompt:${expertId}`
+    const cached = agentPromptCache.get(cacheKey)
+    if (cached !== undefined) {
+      log.debug('Using cached agent prompt', { expertId })
+      return cached
+    }
+
     const filePath = join(this.basePath, expertId, 'agent.md')
 
     try {
-      return await readFile(filePath, 'utf-8')
+      const prompt = await readFile(filePath, 'utf-8')
+      agentPromptCache.set(cacheKey, prompt)
+      log.debug('Cached agent prompt', { expertId })
+      return prompt
     } catch {
+      // Agent prompt file does not exist - this is expected for experts without custom prompts
       log.debug('No agent prompt found', { expertId })
+      // Cache null results too to avoid repeated lookups
+      agentPromptCache.set(cacheKey, null)
       return null
     }
   }
@@ -248,6 +275,7 @@ export class ExpertStore {
       await access(join(this.basePath, expertId, 'expertise.yaml'))
       return true
     } catch {
+      // Expert directory or file does not exist
       return false
     }
   }

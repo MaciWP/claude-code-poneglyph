@@ -1,8 +1,19 @@
 # Claude Code Poneglyph
 
+## ¿Para quién es?
+
+Este proyecto es una herramienta **personal** para **Oriol Macias**.
+No es un producto comercial ni un SaaS.
+
+El objetivo es maximizar la productividad de un programador trabajando junto a Claude Code como **co-programador**.
+
+> **Filosofía:** Claude no reemplaza al programador, lo amplifica.
+
+---
+
 ## ¿Qué es?
 
-**Claude Code Poneglyph** es una interfaz web profesional para trabajar con Claude Code (la herramienta de programación de Anthropic). Transforma la experiencia de línea de comandos en una aplicación visual moderna con capacidades avanzadas de orquestación y observabilidad.
+**Claude Code Poneglyph** es una interfaz web para trabajar con Claude Code (la herramienta de programación de Anthropic). Transforma la experiencia de línea de comandos en una aplicación visual con capacidades de orquestación y observabilidad.
 
 > **En resumen:** Es como tener un "Control de Misión" para tus agentes de IA de programación.
 

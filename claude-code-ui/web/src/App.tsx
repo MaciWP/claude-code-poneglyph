@@ -27,9 +27,9 @@ function AppContent() {
   const [provider, setProvider] = useLocalStorage<ModelProvider>(STORAGE_KEYS.PROVIDER, 'claude')
   const [orchestrate, setOrchestrate] = useLocalStorage(STORAGE_KEYS.ORCHESTRATE, true)
   const [planMode, setPlanMode] = useLocalStorage(STORAGE_KEYS.PLAN, false)
-  const [bypassPermissions, setBypassPermissions] = useLocalStorage(STORAGE_KEYS.BYPASS, true)
+  const [bypassPermissions, setBypassPermissions] = useLocalStorage(STORAGE_KEYS.BYPASS, false)
   const [workDir, setWorkDir] = useLocalStorage(STORAGE_KEYS.WORK_DIR, '')
-  const [allowFullPC, setAllowFullPC] = useLocalStorage(STORAGE_KEYS.ALLOW_FULL_PC, true)
+  const [allowFullPC, setAllowFullPC] = useLocalStorage(STORAGE_KEYS.ALLOW_FULL_PC, false)
 
   const modes = useMemo<ClaudeModes>(() => ({
     orchestrate,

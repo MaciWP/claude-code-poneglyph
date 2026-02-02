@@ -218,7 +218,7 @@ export default function StreamingChat({ session, modes, provider, onSessionUpdat
       type: 'execute-cli',
       data: {
         prompt,
-        messages: session.messages.slice(-20).map(m => ({
+        messages: (session.messages ?? []).slice(-20).map(m => ({
           role: m.role,
           content: m.content
         })),

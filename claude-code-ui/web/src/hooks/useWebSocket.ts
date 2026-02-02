@@ -2,12 +2,16 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import type { StreamChunk } from '../types/chat'
 import { WS_MAX_RECONNECT_DELAY, WS_BASE_RECONNECT_DELAY } from '../lib/constants'
 
+type WebSocketStatus = 'connecting' | 'connected' | 'disconnected' | 'error'
+
 interface UseWebSocketOptions {
   onMessage: (chunk: StreamChunk) => void
 }
 
 interface UseWebSocketReturn {
   isConnected: boolean
+  status: WebSocketStatus
+  error: string | null
   send: (data: unknown) => void
   abort: () => void
   sendUserAnswer: (answer: string) => void
@@ -15,6 +19,8 @@ interface UseWebSocketReturn {
 
 export function useWebSocket({ onMessage }: UseWebSocketOptions): UseWebSocketReturn {
   const [isConnected, setIsConnected] = useState(false)
+  const [status, setStatus] = useState<WebSocketStatus>('disconnected')
+  const [error, setError] = useState<string | null>(null)
   const wsRef = useRef<WebSocket | null>(null)
   const reconnectTimeoutRef = useRef<number | null>(null)
   const mountedRef = useRef(true)
@@ -38,11 +44,15 @@ export function useWebSocket({ onMessage }: UseWebSocketOptions): UseWebSocketRe
     // En desarrollo, conectar directamente al backend para evitar problemas con el proxy de Vite
     const host = import.meta.env.DEV ? 'localhost:8080' : window.location.host
     const wsUrl = `${protocol}//${host}/ws`
+    setStatus('connecting')
+    setError(null)
     const ws = new WebSocket(wsUrl)
 
     ws.onopen = () => {
       if (mountedRef.current) {
         setIsConnected(true)
+        setStatus('connected')
+        setError(null)
         retryCountRef.current = 0
       }
     }
@@ -50,6 +60,7 @@ export function useWebSocket({ onMessage }: UseWebSocketOptions): UseWebSocketRe
     ws.onclose = () => {
       if (mountedRef.current) {
         setIsConnected(false)
+        setStatus('disconnected')
         if (reconnectTimeoutRef.current) {
           clearTimeout(reconnectTimeoutRef.current)
         }
@@ -66,8 +77,12 @@ export function useWebSocket({ onMessage }: UseWebSocketOptions): UseWebSocketRe
       }
     }
 
-    ws.onerror = () => {
-      // Error details not useful in browser, connection will close
+    ws.onerror = (event) => {
+      console.error('WebSocket error:', event)
+      if (mountedRef.current) {
+        setError('WebSocket connection error')
+        setStatus('error')
+      }
     }
 
     ws.onmessage = (event) => {
@@ -81,8 +96,9 @@ export function useWebSocket({ onMessage }: UseWebSocketOptions): UseWebSocketRe
           currentRequestIdRef.current = null
         }
         onMessageRef.current(chunk)
-      } catch {
-        // Parse error - ignore malformed messages
+      } catch (parseError) {
+        console.error('Failed to parse WebSocket message:', parseError, 'Raw data:', event.data)
+        // No lanzar error, solo loguear - mensajes malformados se ignoran
       }
     }
 
@@ -130,5 +146,5 @@ export function useWebSocket({ onMessage }: UseWebSocketOptions): UseWebSocketRe
     }
   }, [])
 
-  return { isConnected, send, abort, sendUserAnswer }
+  return { isConnected, status, error, send, abort, sendUserAnswer }
 }

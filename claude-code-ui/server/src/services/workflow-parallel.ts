@@ -12,7 +12,7 @@ import {
 } from './workflow-executor'
 import type {
   WorkflowRun,
-} from '../../../shared/types/workflow'
+} from '@shared/types/workflow'
 
 const log = logger.child('workflow-parallel')
 

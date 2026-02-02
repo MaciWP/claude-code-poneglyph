@@ -63,7 +63,7 @@ export class MetricsStore {
         const content = await readFile(filePath, 'utf-8')
         executions = JSON.parse(content)
       } catch {
-        // File doesn't exist yet
+        // File doesn't exist yet - this is expected for new metrics files
       }
 
       executions.push(execution)
@@ -98,7 +98,7 @@ export class MetricsStore {
         const executions: ExecutionMetrics[] = JSON.parse(content)
         allExecutions.push(...executions)
       } catch {
-        // File doesn't exist for this date
+        // File doesn't exist for this date - this is expected
       }
     }
 

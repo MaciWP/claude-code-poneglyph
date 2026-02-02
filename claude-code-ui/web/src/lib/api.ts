@@ -1,4 +1,4 @@
-import type { Session, Message, ClaudeConfig, ModelProvider, PersistedAgent } from '../../../shared/types'
+import type { Session, Message, ClaudeConfig, ModelProvider, PersistedAgent } from '@shared/types'
 import { APIError, NetworkError, AbortedError } from './errors'
 
 export type { Session, Message, ClaudeConfig, ModelProvider, PersistedAgent }
@@ -111,13 +111,20 @@ export async function getClaudeConfig(signal?: AbortSignal): Promise<ClaudeConfi
   }
 }
 
+interface SessionsResponse {
+  sessions: Session[]
+  total: number
+}
+
 export async function getSessions(signal?: AbortSignal): Promise<Session[]> {
   const key = 'sessions'
   const controller = createAbortableRequest(key)
   try {
-    return await apiFetch<Session[]>('/sessions', {
+    const response = await apiFetch<SessionsResponse>('/sessions', {
       signal: signal ?? controller.signal,
     })
+    // API returns { sessions: [], total: N } - extract the array
+    return Array.isArray(response?.sessions) ? response.sessions : []
   } catch (error) {
     if (error instanceof AbortedError) return []
     if (error instanceof APIError && error.isNotFound) return []
@@ -135,13 +142,18 @@ export async function createSession(data: { name?: string; workDir?: string }): 
   })
 }
 
+interface SessionResponse {
+  session: Session
+}
+
 export async function getSession(id: string, signal?: AbortSignal): Promise<Session | null> {
   const key = `session-${id}`
   const controller = createAbortableRequest(key)
   try {
-    return await apiFetch<Session>(`/sessions/${id}`, {
+    const response = await apiFetch<SessionResponse>(`/sessions/${id}`, {
       signal: signal ?? controller.signal,
     })
+    return response.session
   } catch (error) {
     if (error instanceof AbortedError) return null
     if (error instanceof APIError && error.isNotFound) return null

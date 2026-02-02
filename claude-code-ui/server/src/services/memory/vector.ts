@@ -41,8 +41,24 @@ export async function generateEmbedding(text: string): Promise<number[]> {
     throw new Error('Embedding model not loaded')
   }
 
-  const output = await pipeline(text, { pooling: 'mean', normalize: true })
-  return Array.from(output.data as Float32Array)
+  const maxRetries = 3
+  let lastError: Error | null = null
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const output = await pipeline(text, { pooling: 'mean', normalize: true })
+      return Array.from(output.data as Float32Array)
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error('Unknown error')
+      log.warn('Embedding failed, retrying...', { attempt, maxRetries, error: lastError.message })
+      if (attempt < maxRetries) {
+        await new Promise(r => setTimeout(r, 1000 * attempt)) // exponential backoff
+      }
+    }
+  }
+
+  log.error('All embedding attempts failed', { error: lastError })
+  throw lastError || new Error('Embedding failed after all retries')
 }
 
 export function cosineSimilarity(a: number[], b: number[]): number {

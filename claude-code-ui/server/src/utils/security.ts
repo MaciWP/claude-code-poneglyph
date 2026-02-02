@@ -16,7 +16,16 @@ export function validateWorkDir(workDir?: string, options?: ValidateWorkDirOptio
   }
 
   if (options?.allowFullPC) {
-    log.info("Full PC access enabled - skipping directory validation", { targetDir })
+    // Safeguard: Prohibir en producción
+    if (config.NODE_ENV === 'production') {
+      log.error("Full PC access is disabled in production")
+      throw new Error('Full PC access is disabled in production')
+    }
+    // Safeguard: Logging de warning para awareness
+    log.warn("SECURITY WARNING: Full PC access enabled - skipping directory validation", {
+      targetDir,
+      caller: new Error().stack?.split('\n')[2]?.trim()
+    })
     return targetDir
   }
 

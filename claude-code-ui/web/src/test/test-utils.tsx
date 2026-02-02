@@ -15,7 +15,7 @@
 
 import { render, type RenderOptions } from '@testing-library/react'
 import type { ReactElement } from 'react'
-import type { Session, Message, StreamChunk } from '../../../shared/types'
+import type { Session, Message, StreamChunk } from '@shared/types'
 
 // ============================================================================
 // Custom Render

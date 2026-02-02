@@ -266,6 +266,7 @@ export class MemoryCatcher {
     try {
       embedding = await generateEmbedding(content)
     } catch {
+      // Embedding generation failed, fall back to exact string matching
       const normalizedContent = content.toLowerCase().trim()
       return allMemories.some(m =>
         m.content.toLowerCase().trim() === normalizedContent

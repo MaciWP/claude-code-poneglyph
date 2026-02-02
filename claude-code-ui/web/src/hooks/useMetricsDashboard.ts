@@ -12,7 +12,7 @@ import {
 import { DASHBOARD_REFRESH_MS } from '../lib/constants'
 import { useAutoRefresh } from './useAutoRefresh'
 
-export type DashboardTab = 'overview' | 'experts' | 'learning'
+export type DashboardTab = 'overview' | 'experts' | 'learning' | 'logs'
 
 export interface UseMetricsDashboardOptions {
   autoRefreshEnabled?: boolean

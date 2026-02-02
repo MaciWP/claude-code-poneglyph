@@ -15,6 +15,7 @@ export interface OrchestratorConfig {
   defaultTimeout: number
   maxRetries: number
   retryBaseDelayMs: number
+  allowFullPC: boolean
 }
 
 export interface TaskExecution {
@@ -54,6 +55,7 @@ const DEFAULT_CONFIG: OrchestratorConfig = {
   defaultTimeout: 5 * 60 * 1000,
   maxRetries: 2,
   retryBaseDelayMs: 1000,
+  allowFullPC: false,
 }
 
 export interface OrchestratorDependencies {
@@ -71,6 +73,14 @@ export class OrchestratorAgent extends EventEmitter {
   private config: OrchestratorConfig
   private executions: Map<string, TaskExecution> = new Map()
   private abortControllers: Map<string, AbortController> = new Map()
+  private disposed = false
+  private cleanupInterval?: Timer
+  private readonly EXECUTION_TTL_MS = 30 * 60 * 1000 // 30 minutes
+  private readonly CLEANUP_INTERVAL_MS = 5 * 60 * 1000 // 5 minutes
+
+  // Store bound handlers for cleanup
+  private readonly spawnerHandlers: Map<string, (...args: unknown[]) => void> = new Map()
+  private readonly learningLoopHandlers: Map<string, (...args: unknown[]) => void> = new Map()
 
   constructor(
     classifier: PromptClassifier,
@@ -86,16 +96,97 @@ export class OrchestratorAgent extends EventEmitter {
     this.learningLoop = deps?.learningLoop ?? defaultLearningLoop
     this.config = { ...DEFAULT_CONFIG, ...config }
 
-    this.spawner.on('tool_use', (data) => this.emit('agent:tool_use', data))
-    this.spawner.on('tool_result', (data) => this.emit('agent:tool_result', data))
-    this.spawner.on('spawned', (data) => this.emit('agent:spawned', data))
-    this.spawner.on('completed', (data) => this.emit('agent:completed', data))
-    this.spawner.on('error', (data) => this.emit('agent:error', data))
-    this.spawner.on('text', (data) => this.emit('agent:text', data))
+    // Create bound handlers and store for cleanup
+    const spawnerEvents = ['tool_use', 'tool_result', 'spawned', 'completed', 'error', 'text'] as const
+    for (const event of spawnerEvents) {
+      const handler = (data: unknown) => this.emit(`agent:${event}`, data)
+      this.spawnerHandlers.set(event, handler)
+      this.spawner.on(event, handler)
+    }
 
-    this.learningLoop.on('learning:started', (data) => this.emit('learning:started', data))
-    this.learningLoop.on('learning:completed', (data) => this.emit('learning:completed', data))
-    this.learningLoop.on('learning:failed', (data) => this.emit('learning:failed', data))
+    const learningEvents = ['learning:started', 'learning:completed', 'learning:failed'] as const
+    for (const event of learningEvents) {
+      const handler = (data: unknown) => this.emit(event, data)
+      this.learningLoopHandlers.set(event, handler)
+      this.learningLoop.on(event, handler)
+    }
+
+    // Start periodic cleanup of old executions
+    this.startCleanupInterval()
+  }
+
+  /**
+   * Starts periodic cleanup of completed/failed executions older than TTL.
+   * Runs every CLEANUP_INTERVAL_MS (5 minutes) and removes executions
+   * that have been completed/failed for more than EXECUTION_TTL_MS (30 minutes).
+   */
+  private startCleanupInterval(): void {
+    this.cleanupInterval = setInterval(() => {
+      const now = Date.now()
+      let cleaned = 0
+      for (const [id, execution] of this.executions) {
+        if (
+          (execution.status === 'complete' || execution.status === 'failed') &&
+          execution.completedAt &&
+          now - execution.completedAt.getTime() > this.EXECUTION_TTL_MS
+        ) {
+          this.executions.delete(id)
+          cleaned++
+        }
+      }
+      if (cleaned > 0) {
+        log.debug('Cleaned up old executions', { cleaned, remaining: this.executions.size })
+      }
+    }, this.CLEANUP_INTERVAL_MS)
+  }
+
+  /**
+   * Dispose of the orchestrator, cleaning up all event listeners and resources.
+   * After calling dispose(), the orchestrator should not be used.
+   */
+  public dispose(): void {
+    if (this.disposed) return
+    this.disposed = true
+
+    log.info('Disposing OrchestratorAgent')
+
+    // Clear the cleanup interval
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval)
+      this.cleanupInterval = undefined
+    }
+
+    // Remove spawner event listeners
+    for (const [event, handler] of this.spawnerHandlers) {
+      this.spawner.off(event, handler)
+    }
+    this.spawnerHandlers.clear()
+
+    // Remove learning loop event listeners
+    for (const [event, handler] of this.learningLoopHandlers) {
+      this.learningLoop.off(event, handler)
+    }
+    this.learningLoopHandlers.clear()
+
+    // Abort any active executions
+    for (const [executionId, controller] of this.abortControllers) {
+      log.debug('Aborting execution during dispose', { executionId })
+      controller.abort()
+    }
+    this.abortControllers.clear()
+
+    // Clear executions map
+    this.executions.clear()
+
+    // Remove all listeners from this EventEmitter
+    this.removeAllListeners()
+  }
+
+  /**
+   * Check if the orchestrator has been disposed.
+   */
+  public isDisposed(): boolean {
+    return this.disposed
   }
 
   abort(executionId: string): boolean {
@@ -127,6 +218,10 @@ export class OrchestratorAgent extends EventEmitter {
   }
 
   async execute(prompt: string, sessionId: string, workDir?: string): Promise<string> {
+    if (this.disposed) {
+      throw new Error('OrchestratorAgent has been disposed and cannot execute new tasks')
+    }
+
     const executionId = `exec-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
     const startTime = Date.now()
     const abortController = new AbortController()
@@ -319,7 +414,7 @@ export class OrchestratorAgent extends EventEmitter {
       timeout: this.config.defaultTimeout,
       workDir,
       expertId: agentConfig.expertId,
-      allowFullPC: true,
+      allowFullPC: this.config.allowFullPC,
     }
 
     let result: SpawnResult | undefined
@@ -492,6 +587,7 @@ ${config.expertId ? `Expert ID: ${config.expertId}` : ''}
       const experts = await this.expertStore.list()
       return experts.map((e) => e.id)
     } catch {
+      // Expert store unavailable, continue without expert capabilities
       return []
     }
   }

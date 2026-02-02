@@ -30,8 +30,14 @@ export const CONTEXT_WINDOW_SIZE = 200000
 /** Default TTL for cache entries (5 minutes in ms) */
 export const CACHE_DEFAULT_TTL_MS = 5 * 60 * 1000
 
-/** TTL for config cache entries (10 minutes in ms) */
-export const CONFIG_CACHE_TTL_MS = 10 * 60 * 1000
+/** TTL for config cache entries (5 minutes in ms) */
+export const CONFIG_CACHE_TTL_MS = 5 * 60 * 1000
+
+/** TTL for rules cache entries (2 minutes in ms) */
+export const RULES_CACHE_TTL_MS = 2 * 60 * 1000
+
+/** TTL for agent prompt cache entries (5 minutes in ms) */
+export const AGENT_PROMPT_CACHE_TTL_MS = 5 * 60 * 1000
 
 // -----------------------------------------------------------------------------
 // LOGGER

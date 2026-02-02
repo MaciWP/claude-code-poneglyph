@@ -3,7 +3,7 @@ import { join } from 'path'
 import { readdir } from 'fs/promises'
 import { logger } from '../logger'
 import { configCache } from '../cache'
-import type { ClaudeConfig } from '../../../shared/types'
+import type { ClaudeConfig } from '@shared/types'
 
 const log = logger.child('claude-config')
 
@@ -25,7 +25,8 @@ async function parseMarkdownFrontmatter(filePath: string): Promise<Record<string
       }
     }
     return frontmatter
-  } catch {
+  } catch (error) {
+    log.debug('Failed to parse frontmatter (non-critical)', { filePath, error: String(error) })
     return {}
   }
 }

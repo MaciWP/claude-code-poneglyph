@@ -301,4 +301,3 @@ validation:
     - file: src/routes/websocket.ts
       pattern: ws|websocket|orchestrator
       description: Debe manejar WebSocket y Lead Orchestrator
-    -                                                                                                                                

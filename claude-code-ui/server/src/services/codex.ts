@@ -1,8 +1,8 @@
-import { existsSync } from 'fs'
+import { access, constants } from 'node:fs/promises'
 import { dirname, resolve } from 'path'
 import { logger } from '../logger'
 import { validateWorkDir, getSafeEnvForCodex } from '../utils/security'
-import type { Message } from '../../../shared/types'
+import type { Message } from '@shared/types'
 import type { CLIOptions, CLIResult, StreamChunk } from './claude'
 
 const log = logger.child('codex')
@@ -66,11 +66,21 @@ function buildPromptWithHistory(prompt: string, messages?: Message[]): string {
   return `Previous conversation:\n\n${historyContext}\n\n---\n\nUser: ${prompt}`
 }
 
-function findCodexHome(startDir: string): string | undefined {
+async function fileExists(path: string): Promise<boolean> {
+  try {
+    await access(path, constants.F_OK)
+    return true
+  } catch {
+    // File does not exist - this is expected behavior
+    return false
+  }
+}
+
+async function findCodexHome(startDir: string): Promise<string | undefined> {
   let current = startDir
   while (true) {
     const candidate = resolve(current, '.codex')
-    if (existsSync(candidate)) return candidate
+    if (await fileExists(candidate)) return candidate
     const parent = dirname(current)
     if (parent === current) break
     current = parent
@@ -162,7 +172,7 @@ export class CodexService {
 
     const workDir = validateWorkDir(options.workDir)
     const promptToSend = buildPromptWithHistory(options.prompt, options.messages)
-    const codexHome = findCodexHome(workDir)
+    const codexHome = await findCodexHome(workDir)
 
     const args: string[] = [
       'codex',
@@ -384,6 +394,7 @@ export class CodexService {
                 const event: CodexStreamEvent = JSON.parse(line)
                 await processEvent(event)
               } catch {
+                // Non-JSON line, treat as plain text output
                 pushText(line)
               }
             }
@@ -395,6 +406,7 @@ export class CodexService {
             const event: CodexStreamEvent = JSON.parse(buffer)
             await processEvent(event)
           } catch {
+            // Remaining buffer is not valid JSON, treat as plain text
             pushText(buffer)
           }
         }
