@@ -52,7 +52,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/format-code.sh"
+            "command": "bun .claude/hooks/format-code.ts"
           }
         ]
       }
@@ -60,7 +60,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": ".claude/hooks/statusline.sh",
+    "command": "bun .claude/hooks/statusline.ts",
     "padding": 0
   },
   "enabledPlugins": {

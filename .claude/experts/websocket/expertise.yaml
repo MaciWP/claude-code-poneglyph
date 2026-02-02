@@ -2,7 +2,7 @@ domain: websocket
 version: 1.1.0
 last_updated: 2025-12-27T12:00:00Z
 last_updated_by: manual
-confidence: 0.9100000000000001
+confidence: 0.95
 mental_model:
   overview: |
     Sistema de WebSocket bidireccional usando Elysia.
@@ -164,7 +164,46 @@ known_issues:
     solution: Pending investigation
     verified: false
     date_found: 2026-01-08
+  - id: WEBSOCKET-005
+    symptom: "Task failed: Task..."
+    solution: Pending investigation
+    verified: false
+    date_found: 2026-02-02
 changelog:
+  - date: 2026-02-02
+    type: learned
+    source: learning-loop
+    change: "Task failed: Task..."
+    confidence_delta: -0.05
+  - date: 2026-02-02
+    type: verified
+    source: learning-loop
+    change: "Task completed successfully: Task..."
+    confidence_delta: 0.02
+  - date: 2026-02-02
+    type: learned
+    source: learning-loop
+    change: "Recorded issue: WEBSOCKET-005 - Task failed: Task..."
+  - date: 2026-02-02
+    type: verified
+    source: learning-loop
+    change: "Task completed successfully: Task..."
+    confidence_delta: 0.02
+  - date: 2026-02-02
+    type: verified
+    source: learning-loop
+    change: "Task completed successfully: Task..."
+    confidence_delta: 0.02
+  - date: 2026-02-02
+    type: verified
+    source: learning-loop
+    change: "Task completed successfully: Refactor websocket module..."
+    confidence_delta: 0.02
+  - date: 2026-02-02
+    type: verified
+    source: learning-loop
+    change: "Task completed successfully: Add feature to websocket..."
+    confidence_delta: 0.02
   - date: 2026-01-08
     type: learned
     source: learning-loop

@@ -1,0 +1,276 @@
+[
+  {
+    "id": "exec-1770033876260-w092cn",
+    "timestamp": "2026-02-02T12:04:36.260Z",
+    "prompt": "Add feature to websocket",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 5,
+    "durationMs": 4,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": true,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "expert:websocket",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1770033876281-ez4556",
+    "timestamp": "2026-02-02T12:04:36.281Z",
+    "prompt": "What is 2+2?",
+    "sessionId": "session-1",
+    "useOrchestrator": false,
+    "classification": {
+      "complexityScore": 20,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": false
+    },
+    "agentsSpawned": 0,
+    "totalToolCalls": 0,
+    "durationMs": 0,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": []
+  },
+  {
+    "id": "exec-1770033876296-o4fvr4",
+    "timestamp": "2026-02-02T12:04:36.296Z",
+    "prompt": "Refactor websocket module",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 5,
+    "durationMs": 0,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": true,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "expert:websocket",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1770033876304-6udk9o",
+    "timestamp": "2026-02-02T12:04:36.304Z",
+    "prompt": "Complex task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 2,
+    "totalToolCalls": 10,
+    "durationMs": 0,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "scout",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "builder",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1770033876310-im3rqx",
+    "timestamp": "2026-02-02T12:04:36.311Z",
+    "prompt": "Task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 5,
+    "durationMs": 0,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": true,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "expert:websocket",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1770033876314-5tdt3p",
+    "timestamp": "2026-02-02T12:04:36.314Z",
+    "prompt": "Task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 5,
+    "durationMs": 1,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": true,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "expert:websocket",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1770033876318-x07ojr",
+    "timestamp": "2026-02-02T12:04:36.318Z",
+    "prompt": "Task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 0,
+    "durationMs": 3004,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": true,
+    "agentMetrics": [
+      {
+        "agentId": "failed-1770033879321",
+        "agentType": "expert:websocket",
+        "toolCalls": 0,
+        "durationMs": 3003,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1770033879329-qq81rj",
+    "timestamp": "2026-02-02T12:04:39.329Z",
+    "prompt": "Complex task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 3,
+    "totalToolCalls": 15,
+    "durationMs": 1,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": false,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "scout",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "architect",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      },
+      {
+        "agentId": "agent-123",
+        "agentType": "builder",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  },
+  {
+    "id": "exec-1770033879339-bad2lv",
+    "timestamp": "2026-02-02T12:04:39.339Z",
+    "prompt": "Task",
+    "sessionId": "session-1",
+    "useOrchestrator": true,
+    "classification": {
+      "complexityScore": 50,
+      "domains": [
+        "websocket"
+      ],
+      "requiresDelegation": true
+    },
+    "agentsSpawned": 1,
+    "totalToolCalls": 5,
+    "durationMs": 0,
+    "success": true,
+    "partialSuccess": false,
+    "expertiseUsed": true,
+    "agentMetrics": [
+      {
+        "agentId": "agent-123",
+        "agentType": "expert:websocket",
+        "toolCalls": 5,
+        "durationMs": 0,
+        "selfImproved": false
+      }
+    ]
+  }
+]

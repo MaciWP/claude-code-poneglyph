@@ -9,7 +9,7 @@ const BLOCKED_TOOLS = ['Read', 'Edit', 'Write', 'Bash', 'Glob', 'Grep']
 
 async function main() {
   // Solo activar si CLAUDE_LEAD_MODE está habilitado
-  if (Bun.env.CLAUDE_LEAD_MODE !== 'true') {
+  if (process.env.CLAUDE_LEAD_MODE !== 'true') {
     process.exit(0) // ALLOW - no enforcement mode
   }
 
