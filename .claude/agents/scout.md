@@ -1,8 +1,12 @@
 ---
 name: scout
+description: |
+  Read-only exploration agent. Finds files, searches code, and gathers context.
+  Use proactively when: exploring codebase, finding files, searching patterns, pre-implementation research.
+  Keywords - explore, find, search, locate, investigate, discover, scout, context, codebase
 model: sonnet
 tools: Read, Grep, Glob, WebFetch, WebSearch
-disallowed_tools: Task, Edit, Write
+disallowedTools: Task, Edit, Write
 permissionMode: default
 ---
 # Scout Agent

@@ -16,6 +16,7 @@ hooks:
   post_tool_use:
     - .claude/hooks/validators/security/secrets-validator.ts
     - .claude/hooks/validators/security/injection-validator.ts
+memory: project
 ---
 
 # Reviewer Agent

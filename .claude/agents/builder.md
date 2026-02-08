@@ -1,8 +1,18 @@
 ---
 name: builder
-model: sonnet
+description: |
+  Implementation agent that executes roadmap steps. Writes clean, functional code.
+  Use proactively when: implementing features, creating files, modifying code, writing tests.
+  Keywords - implement, create, build, code, develop, write, modify, add, update, fix
+model: opus
 tools: Read, Glob, Grep, Edit, Write, Bash
-disallowed_tools: Task
+disallowedTools: Task
+permissionMode: acceptEdits
+skills:
+  - typescript-patterns
+  - bun-best-practices
+  - code-style-enforcer
+memory: project
 ---
 
 # Builder Agent

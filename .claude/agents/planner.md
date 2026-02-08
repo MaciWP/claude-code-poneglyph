@@ -6,10 +6,11 @@ description: |
   Discovers available skills and assigns base agents (builder/reviewer/error-analyzer) with suggested skills.
   Keywords - plan, roadmap, decompose, workflow, parallel, tasks, assign, strategy, design, execute
 tools: Read, Glob, Grep, WebSearch, WebFetch
-disallowed_tools: Edit, Write, Bash, Task
+disallowedTools: Edit, Write, Bash, Task
 model: opus
 permissionMode: plan
 skills: []
+memory: project
 ---
 
 # Planner Agent

@@ -1,4 +1,4 @@
-import { describe, test, expect, mock, beforeEach, afterEach } from 'bun:test'
+import { describe, test, expect, mock, beforeEach } from 'bun:test'
 
 // Mock logger
 const mockLogger = {
@@ -33,7 +33,7 @@ mock.module('fs', () => ({
 
 // Mock agent registry
 const mockAgentRegistry = {
-  getAgent: mock(() => ({
+  getAgent: mock((_id: string): { type: string; name: string } | null => ({
     type: 'builder',
     name: 'Builder Agent',
   })),
@@ -50,7 +50,6 @@ mock.module('./agent-registry', () => ({
 // Import after mocking
 const {
   loadWorkflowDefinitions,
-  startWorkflow,
   getWorkflowRun,
   getActiveRuns,
   pauseWorkflow,
@@ -65,7 +64,7 @@ const {
 function createMockAgentSpawner(options: { success?: boolean; output?: string } = {}) {
   const { success = true, output = 'Task completed' } = options
   return {
-    spawn: mock(() =>
+    spawn: mock((_args: Record<string, unknown>) =>
       Promise.resolve({
         success,
         output,
@@ -308,7 +307,7 @@ describe('WorkflowExecutor', () => {
     test('handles missing agent spawner error', async () => {
       // Reset the spawner to null state by creating a new mock that throws
       const throwingSpawner = {
-        spawn: mock(() => {
+        spawn: mock((_args: Record<string, unknown>) => {
           throw new Error('Agent spawner not configured')
         }),
       }
@@ -397,26 +396,31 @@ describe('WorkflowExecutor', () => {
 
   describe('Retry Mechanism', () => {
     test('respects maxRetries setting', () => {
-      const step = {
+      interface RetryStep {
+        id: string
+        retryCount: number
+        maxRetries: number
+        status: 'pending' | 'running' | 'completed' | 'failed'
+      }
+
+      const step: RetryStep = {
         id: 'step-1',
         retryCount: 0,
         maxRetries: 2,
-        status: 'running' as const,
+        status: 'running',
       }
 
       // Simulate retries
-      const attemptExecution = (
-        s: typeof step
-      ): { shouldRetry: boolean; step: typeof step } => {
+      const attemptExecution = (s: RetryStep): { shouldRetry: boolean; step: RetryStep } => {
         if (s.retryCount < s.maxRetries) {
           return {
             shouldRetry: true,
-            step: { ...s, retryCount: s.retryCount + 1, status: 'pending' as const },
+            step: { ...s, retryCount: s.retryCount + 1, status: 'pending' },
           }
         }
         return {
           shouldRetry: false,
-          step: { ...s, status: 'failed' as const },
+          step: { ...s, status: 'failed' },
         }
       }
 

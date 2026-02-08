@@ -1,4 +1,4 @@
-import { describe, test, expect, mock, beforeEach } from 'bun:test'
+import { describe, test, expect, beforeEach } from 'bun:test'
 
 /**
  * Orchestration Flow Tests
@@ -34,7 +34,9 @@ function calculateComplexity(task: TaskConfig): number {
 }
 
 // Routing decision based on complexity
-function getRoutingDecision(complexity: number): 'builder' | 'planner_optional' | 'planner_required' {
+function getRoutingDecision(
+  complexity: number
+): 'builder' | 'planner_optional' | 'planner_required' {
   if (complexity < 30) return 'builder'
   if (complexity <= 60) return 'planner_optional'
   return 'planner_required'
@@ -43,7 +45,7 @@ function getRoutingDecision(complexity: number): 'builder' | 'planner_optional' 
 // Mock agent execution
 async function executeAgent(
   agent: string,
-  prompt: string,
+  _prompt: string,
   context: OrchestrationContext
 ): Promise<AgentResult> {
   switch (agent) {
@@ -101,7 +103,7 @@ async function orchestrate(
   }
 
   // Step 2: Builder implementation
-  let builderResult = await executeAgent('builder', task.prompt, context)
+  await executeAgent('builder', task.prompt, context)
 
   // Step 3: Reviewer checkpoint
   let reviewResult = await executeAgent('reviewer', task.prompt, context)
@@ -111,7 +113,7 @@ async function orchestrate(
   const maxIterations = 3
 
   while (reviewResult.verdict === 'NEEDS_CHANGES' && iterations < maxIterations) {
-    builderResult = await executeAgent('builder', task.prompt, context)
+    await executeAgent('builder', task.prompt, context)
     reviewResult = await executeAgent('reviewer', task.prompt, context)
     iterations++
   }
@@ -245,7 +247,7 @@ describe('Orchestration Flow', () => {
 
       // Mock single-pass approval
       const singlePassOrchestrate = async (
-        task: TaskConfig
+        _task: TaskConfig
       ): Promise<{ success: boolean; iterations: number }> => {
         approveContext.builderCalls++
         approveContext.reviewerCalls++

@@ -1,4 +1,4 @@
-import { describe, test, expect, mock, beforeEach } from 'bun:test'
+import { describe, test, expect, mock } from 'bun:test'
 
 /**
  * Error Recovery Flow Tests
@@ -46,10 +46,7 @@ const DEFAULT_RETRY_CONFIG: RetryConfig = {
 /**
  * Calculate delay with exponential backoff
  */
-function calculateBackoff(
-  attempt: number,
-  config: RetryConfig = DEFAULT_RETRY_CONFIG
-): number {
+function calculateBackoff(attempt: number, config: RetryConfig = DEFAULT_RETRY_CONFIG): number {
   const delay = config.baseDelayMs * Math.pow(config.backoffMultiplier, attempt)
   return Math.min(delay, config.maxDelayMs)
 }
@@ -402,10 +399,12 @@ describe('Error Recovery Flow', () => {
         },
       })
 
-      const replanTask = mock(async (): Promise<TaskResult> => ({
-        success: true,
-        output: 'Replanned and completed',
-      }))
+      const replanTask = mock(
+        async (): Promise<TaskResult> => ({
+          success: true,
+          output: 'Replanned and completed',
+        })
+      )
 
       const config: RetryConfig = {
         maxRetries: 1,
@@ -430,9 +429,11 @@ describe('Error Recovery Flow', () => {
         },
       })
 
-      const replanTask = mock(async (): Promise<TaskResult> => ({
-        success: true,
-      }))
+      const replanTask = mock(
+        async (): Promise<TaskResult> => ({
+          success: true,
+        })
+      )
 
       const result = await executeWithErrorRecovery(fatalTask, replanTask)
 

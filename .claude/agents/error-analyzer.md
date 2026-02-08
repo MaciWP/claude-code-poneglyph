@@ -6,13 +6,14 @@ description: |
   NUNCA implementa fixes, solo analiza y recomienda. El Lead ejecuta las recomendaciones.
   Keywords - error, failure, exception, crash, debug, diagnose, analyze, root cause, recovery, retry
 tools: Read, Glob, Grep
-disallowed_tools: Edit, Write, Bash, Task
+disallowedTools: Edit, Write, Bash, Task
 permissionMode: plan
 model: sonnet
 skills:
   - retry-patterns
   - diagnostic-patterns
   - recovery-strategies
+memory: project
 ---
 
 # Error Analyzer Agent

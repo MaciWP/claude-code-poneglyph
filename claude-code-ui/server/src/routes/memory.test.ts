@@ -21,13 +21,13 @@ mock.module('../logger', () => ({
 
 // Mock memory services
 const mockMemoryStore = {
-  getAll: mock(() => Promise.resolve([])),
+  getAll: mock(() => Promise.resolve([] as Record<string, unknown>[])),
   add: mock(() => Promise.resolve({ id: 'mem-1' })),
   getStats: mock(() => ({ totalMemories: 0, byType: {} })),
 }
 
 const mockInitMemorySystem = mock(() => Promise.resolve())
-const mockSearchRelevantMemories = mock(() => Promise.resolve([]))
+const mockSearchRelevantMemories = mock(() => Promise.resolve([] as Record<string, unknown>[]))
 const mockGetMemorySystemStats = mock(() => ({
   initialized: true,
   config: { enableEmbeddings: true },
@@ -45,7 +45,9 @@ mock.module('../services/memory', () => ({
 }))
 
 // Mock memory injection
-const mockInjectMemories = mock(() => Promise.resolve({ memories: [], totalTokens: 0 }))
+const mockInjectMemories = mock(() =>
+  Promise.resolve({ memories: [] as Record<string, unknown>[], totalTokens: 0 })
+)
 const mockRecordFeedback = mock(() => {})
 const mockWarmUp = mock(() => Promise.resolve())
 
@@ -64,7 +66,7 @@ const mockMemoryCatcher = {
     sessionsProcessed: 0,
     memoriesExtracted: 0,
     memoriesDeduplicated: 0,
-    lastRun: null,
+    lastRun: null as string | null,
     errors: 0,
   })),
   catchMemories: mock(() => Promise.resolve()),
@@ -145,9 +147,7 @@ describe('Memory Routes', () => {
 
   describe('POST /api/memory/search', () => {
     test('should return search results', async () => {
-      const mockResults = [
-        { memory: { id: 'mem-1', content: 'Matching memory' }, similarity: 0.9 },
-      ]
+      const mockResults = [{ memory: { id: 'mem-1', content: 'Matching memory' }, similarity: 0.9 }]
       mockSearchRelevantMemories.mockResolvedValueOnce(mockResults)
 
       const response = await fetch(`${baseUrl}/api/memory/search`, {
@@ -368,12 +368,7 @@ describe('Memory Routes', () => {
 
       expect(response.status).toBe(200)
       expect(data.ok).toBe(true)
-      expect(mockRecordFeedback).toHaveBeenCalledWith(
-        'mem-1',
-        'session-1',
-        'original query',
-        true
-      )
+      expect(mockRecordFeedback).toHaveBeenCalledWith('mem-1', 'session-1', 'original query', true)
     })
 
     test('should handle feedback recording errors', async () => {
@@ -529,7 +524,13 @@ describe('Memory Routes', () => {
 
   describe('POST /api/memory/catcher/run', () => {
     test('should run memory catcher manually', async () => {
-      const mockStats = { sessionsProcessed: 1, memoriesExtracted: 5 }
+      const mockStats = {
+        sessionsProcessed: 1,
+        memoriesExtracted: 5,
+        memoriesDeduplicated: 0,
+        lastRun: null,
+        errors: 0,
+      }
       mockMemoryCatcher.getStats.mockReturnValueOnce(mockStats)
 
       const response = await fetch(`${baseUrl}/api/memory/catcher/run`, {

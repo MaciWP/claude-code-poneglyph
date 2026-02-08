@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach } from 'bun:test'
+import { describe, test, expect } from 'bun:test'
 import { readdir, readFile } from 'fs/promises'
 import { join } from 'path'
 
@@ -168,9 +168,7 @@ function injectSkillContext(basePrompt: string, skills: Skill[]): string {
     return basePrompt
   }
 
-  const skillSection = skills
-    .map((skill) => `### ${skill.name}\n${skill.content}`)
-    .join('\n\n')
+  const skillSection = skills.map((skill) => `### ${skill.name}\n${skill.content}`).join('\n\n')
 
   return `## Contexto de Skills\n\n${skillSection}\n\n---\n\n${basePrompt}`
 }

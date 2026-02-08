@@ -159,3 +159,16 @@ graph TD
 4. **Delegar implementación** a builder, NUNCA implementar directamente
 5. **Validar con reviewer** en checkpoints críticos
 6. **Analizar errores** con error-analyzer si falla
+7. **Paralelizar delegacion** cuando sea posible (ver `.claude/rules/lead-orchestrator.md`)
+
+### Verificacion Post-Implementacion (OBLIGATORIO)
+
+Despues de que builder complete implementacion, SIEMPRE:
+
+| Paso | Comando | Proposito |
+|------|---------|-----------|
+| 1 | `bun typecheck` | Verificar tipos TypeScript |
+| 2 | `bun test` | Ejecutar tests |
+| 3 | Revisar output | Confirmar cero errores |
+
+**NUNCA reportar "completado" sin verificar que compila y los tests pasan.**

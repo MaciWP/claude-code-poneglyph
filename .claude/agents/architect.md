@@ -4,12 +4,13 @@ description: |
   Design and planning agent that creates detailed implementation plans for complex features.
   Use proactively when: designing features, planning implementations, architecture decisions, complex refactoring.
   Keywords - design, plan, architecture, structure, strategy, approach, solution, RFC
-tools: Read, Grep, Glob, Task, LSP
+tools: Read, Grep, Glob, Task(scout), Task(builder), LSP
 model: opus
 permissionMode: plan
 skills:
   - refactoring-patterns
   - code-quality
+memory: project
 ---
 
 # Architect Agent

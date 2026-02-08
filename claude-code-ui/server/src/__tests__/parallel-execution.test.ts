@@ -1,4 +1,4 @@
-import { describe, test, expect, mock, beforeEach } from 'bun:test'
+import { describe, test, expect } from 'bun:test'
 
 /**
  * Parallel Execution Tests
@@ -42,10 +42,7 @@ interface WaveExecutionContext {
 /**
  * Execute a wave according to its type
  */
-async function executeWave(
-  wave: Wave,
-  context?: WaveExecutionContext
-): Promise<WaveResult> {
+async function executeWave(wave: Wave, context?: WaveExecutionContext): Promise<WaveResult> {
   const startTime = Date.now()
   let results: TaskResult[] = []
 
@@ -114,11 +111,7 @@ describe('Parallel Execution', () => {
     test('should execute tasks concurrently', async () => {
       const wave: Wave = {
         type: 'PARALLEL',
-        tasks: [
-          createTask('1', 100),
-          createTask('2', 100),
-          createTask('3', 100),
-        ],
+        tasks: [createTask('1', 100), createTask('2', 100), createTask('3', 100)],
       }
 
       const { results, totalTime } = await executeWave(wave)
@@ -143,11 +136,7 @@ describe('Parallel Execution', () => {
     test('should have overlapping execution times', async () => {
       const wave: Wave = {
         type: 'PARALLEL',
-        tasks: [
-          createTask('1', 100),
-          createTask('2', 100),
-          createTask('3', 100),
-        ],
+        tasks: [createTask('1', 100), createTask('2', 100), createTask('3', 100)],
       }
 
       const { results } = await executeWave(wave)
@@ -162,11 +151,7 @@ describe('Parallel Execution', () => {
     test('should complete in time of longest task', async () => {
       const wave: Wave = {
         type: 'PARALLEL',
-        tasks: [
-          createTask('fast', 30),
-          createTask('medium', 60),
-          createTask('slow', 100),
-        ],
+        tasks: [createTask('fast', 30), createTask('medium', 60), createTask('slow', 100)],
       }
 
       const { totalTime } = await executeWave(wave)
@@ -206,7 +191,7 @@ describe('Parallel Execution', () => {
         ],
       }
 
-      const { results, totalTime } = await executeWave(wave)
+      const { totalTime } = await executeWave(wave)
 
       expect(executionOrder).toEqual(['1', '2'])
       expect(totalTime).toBeGreaterThanOrEqual(100)
@@ -231,11 +216,7 @@ describe('Parallel Execution', () => {
     test('should preserve result order', async () => {
       const wave: Wave = {
         type: 'SEQUENTIAL',
-        tasks: [
-          createTask('first', 30),
-          createTask('second', 20),
-          createTask('third', 10),
-        ],
+        tasks: [createTask('first', 30), createTask('second', 20), createTask('third', 10)],
       }
 
       const { results } = await executeWave(wave)
@@ -294,11 +275,7 @@ describe('Parallel Execution', () => {
     test('should execute tasks in parallel after checkpoint clears', async () => {
       const wave: Wave = {
         type: 'CHECKPOINT',
-        tasks: [
-          createTask('cp-1', 80),
-          createTask('cp-2', 80),
-          createTask('cp-3', 80),
-        ],
+        tasks: [createTask('cp-1', 80), createTask('cp-2', 80), createTask('cp-3', 80)],
       }
 
       const context: WaveExecutionContext = {
