@@ -2,8 +2,18 @@ import { EventEmitter } from 'events'
 import { PromptClassifier, type ClassificationResult } from './prompt-classifier'
 import { AgentSpawner, type SpawnConfig, type SpawnResult } from './agent-spawner'
 import { expertStore as defaultExpertStore, type ExpertStore } from './expert-store'
-import { metricsStore as defaultMetricsStore, type MetricsStore, type ExecutionMetrics } from './metrics-store'
-import { learningLoop as defaultLearningLoop, type LearningLoop, type ExecutionTrace } from './learning-loop'
+import {
+  metricsStore as defaultMetricsStore,
+  type MetricsStore,
+  type ExecutionMetrics,
+} from './metrics-store'
+import {
+  learningLoop as defaultLearningLoop,
+  type LearningLoop,
+  type ExecutionTrace,
+} from './learning-loop'
+import { SessionStateManager, type AgentExecutionRecord } from './session-state'
+import { captureFilesystemState } from './filesystem-state'
 import { logger } from '../logger'
 
 const log = logger.child('orchestrator-agent')
@@ -39,6 +49,11 @@ export interface AgentResult {
   durationMs: number
   success: boolean
   expertId?: string
+  extractedMeta?: {
+    filesModified: string[]
+    filesRead: string[]
+    errors: string[]
+  }
 }
 
 interface AgentPlan {
@@ -50,7 +65,7 @@ interface AgentPlan {
 
 const DEFAULT_CONFIG: OrchestratorConfig = {
   maxConcurrentAgents: 3,
-  summaryMaxTokens: 500,
+  summaryMaxTokens: 2000,
   delegationThreshold: 30,
   defaultTimeout: 5 * 60 * 1000,
   maxRetries: 2,
@@ -73,6 +88,7 @@ export class OrchestratorAgent extends EventEmitter {
   private config: OrchestratorConfig
   private executions: Map<string, TaskExecution> = new Map()
   private abortControllers: Map<string, AbortController> = new Map()
+  private sessionStateManager?: SessionStateManager
   private disposed = false
   private cleanupInterval?: Timer
   private readonly EXECUTION_TTL_MS = 30 * 60 * 1000 // 30 minutes
@@ -97,7 +113,14 @@ export class OrchestratorAgent extends EventEmitter {
     this.config = { ...DEFAULT_CONFIG, ...config }
 
     // Create bound handlers and store for cleanup
-    const spawnerEvents = ['tool_use', 'tool_result', 'spawned', 'completed', 'error', 'text'] as const
+    const spawnerEvents = [
+      'tool_use',
+      'tool_result',
+      'spawned',
+      'completed',
+      'error',
+      'text',
+    ] as const
     for (const event of spawnerEvents) {
       const handler = (data: unknown) => this.emit(`agent:${event}`, data)
       this.spawnerHandlers.set(event, handler)
@@ -210,7 +233,11 @@ export class OrchestratorAgent extends EventEmitter {
 
   getActiveExecutionId(): string | undefined {
     for (const [id, execution] of Array.from(this.executions.entries())) {
-      if (execution.status === 'planning' || execution.status === 'executing' || execution.status === 'synthesizing') {
+      if (
+        execution.status === 'planning' ||
+        execution.status === 'executing' ||
+        execution.status === 'synthesizing'
+      ) {
         return id
       }
     }
@@ -227,16 +254,40 @@ export class OrchestratorAgent extends EventEmitter {
     const abortController = new AbortController()
     this.abortControllers.set(executionId, abortController)
 
-    log.info('Orchestrator execution start', { executionId, sessionId, promptLength: prompt.length })
+    log.info('Orchestrator execution start', {
+      executionId,
+      sessionId,
+      promptLength: prompt.length,
+    })
+
+    if (this.sessionStateManager && sessionId) {
+      try {
+        if (workDir) {
+          const fsState = await captureFilesystemState(workDir)
+          this.sessionStateManager.updateFilesystemState(
+            sessionId,
+            fsState.diffStat,
+            fsState.statusShort
+          )
+        }
+      } catch (err) {
+        log.warn('Failed to capture filesystem state', { error: String(err) })
+      }
+    }
 
     const classification = this.classifier.classify(prompt)
     this.emit('classified', { executionId, classification })
 
-    log.debug('Prompt classified', {
+    const sessionState = this.sessionStateManager?.getState(sessionId)
+    const turnNumber = sessionState ? sessionState.turns.length + 1 : 1
+    const isFollowUp = turnNumber > 1
+
+    log.info('Prompt classified', {
       executionId,
       complexity: classification.complexityScore,
       domains: classification.domains,
-      requiresDelegation: classification.requiresDelegation,
+      isFollowUp,
+      turnNumber,
     })
 
     const execution: TaskExecution = {
@@ -256,7 +307,7 @@ export class OrchestratorAgent extends EventEmitter {
       if (!classification.requiresDelegation) {
         log.info('Low complexity - no delegation needed', {
           executionId,
-          complexity: classification.complexityScore
+          complexity: classification.complexityScore,
         })
         execution.status = 'complete'
         execution.completedAt = new Date()
@@ -283,10 +334,10 @@ export class OrchestratorAgent extends EventEmitter {
         executionId,
         totalPlanned: agentPlan.length,
         spawning: agentsToRun.length,
-        maxConcurrent: this.config.maxConcurrentAgents
+        maxConcurrent: this.config.maxConcurrentAgents,
       })
 
-      const agentPromises = agentsToRun.map(agentConfig => {
+      const agentPromises = agentsToRun.map((agentConfig) => {
         const timeoutPromise = new Promise<never>((_, reject) => {
           const timeout = setTimeout(() => {
             reject(new Error(`Agent execution timeout after ${this.config.defaultTimeout}ms`))
@@ -299,7 +350,7 @@ export class OrchestratorAgent extends EventEmitter {
 
         return Promise.race([
           this.spawnAndWait(agentConfig, prompt, sessionId, executionId, workDir),
-          timeoutPromise
+          timeoutPromise,
         ])
       })
 
@@ -319,13 +370,32 @@ export class OrchestratorAgent extends EventEmitter {
         } else {
           log.warn('Agent promise rejected', {
             executionId,
-            reason: result.reason?.message || String(result.reason)
+            reason: result.reason?.message || String(result.reason),
           })
         }
       }
 
       execution.status = 'synthesizing'
       const synthesis = this.synthesizeResults(execution)
+
+      if (this.sessionStateManager && sessionId) {
+        const agentRecords: AgentExecutionRecord[] = execution.results.map((r) => ({
+          agentType: r.agentType,
+          summary: r.summary,
+          filesModified: r.extractedMeta?.filesModified ?? [],
+          filesRead: r.extractedMeta?.filesRead ?? [],
+          success: r.success,
+          errors: r.extractedMeta?.errors ?? [],
+          durationMs: r.durationMs,
+        }))
+
+        this.sessionStateManager.recordTurn(
+          sessionId,
+          execution.originalPrompt,
+          agentRecords,
+          synthesis
+        )
+      }
 
       execution.status = 'complete'
       execution.completedAt = new Date()
@@ -363,8 +433,8 @@ export class OrchestratorAgent extends EventEmitter {
     const plan: AgentPlan[] = []
     const availableExperts = await this.getAvailableExperts()
 
-    const matchedExperts = classification.suggestedExperts.filter(
-      (expertId) => availableExperts.includes(expertId)
+    const matchedExperts = classification.suggestedExperts.filter((expertId) =>
+      availableExperts.includes(expertId)
     )
 
     if (matchedExperts.length > 0) {
@@ -396,13 +466,16 @@ export class OrchestratorAgent extends EventEmitter {
     executionId: string,
     workDir?: string
   ): Promise<AgentResult> {
-    const enrichedPrompt = this.enrichPromptForAgent(agentConfig, originalPrompt)
+    const enrichedPrompt = this.enrichPromptForAgent(agentConfig, originalPrompt, sessionId)
     const startTime = Date.now()
 
-    log.debug('Spawning agent', {
+    const hasSessionContext = !!this.sessionStateManager?.getState(sessionId)?.turns.length
+
+    log.info('Pre-spawn agent', {
       executionId,
       agentType: agentConfig.type,
-      expertId: agentConfig.expertId,
+      promptLength: enrichedPrompt.length,
+      hasSessionContext,
     })
 
     const spawnConfig: SpawnConfig = {
@@ -476,7 +549,23 @@ export class OrchestratorAgent extends EventEmitter {
       durationMs,
       success: result.success,
       expertId: agentConfig.expertId,
+      extractedMeta: result.extractedMeta
+        ? {
+            filesModified: result.extractedMeta.filesModified,
+            filesRead: result.extractedMeta.filesRead,
+            errors: result.extractedMeta.errors,
+          }
+        : undefined,
     }
+
+    log.info('Post-spawn agent', {
+      executionId,
+      agentType: agentConfig.type,
+      success: agentResult.success,
+      outputLength: result.output.length,
+      filesModified: agentResult.extractedMeta?.filesModified ?? [],
+      truncated: result.output.length > this.config.summaryMaxTokens * 4,
+    })
 
     if (agentConfig.expertId) {
       const trace: ExecutionTrace = {
@@ -499,8 +588,16 @@ export class OrchestratorAgent extends EventEmitter {
     return agentResult
   }
 
-  private enrichPromptForAgent(config: AgentPlan, originalPrompt: string): string {
-    return `## Context
+  private enrichPromptForAgent(
+    config: AgentPlan,
+    originalPrompt: string,
+    sessionId?: string
+  ): string {
+    const sessionContext = sessionId
+      ? this.sessionStateManager?.getContextForOrchestrator(sessionId) || ''
+      : ''
+
+    const basePrompt = `## Context
 You are a specialized agent invoked by the Lead Orchestrator.
 Your task comes from the user's original request.
 
@@ -517,6 +614,20 @@ ${originalPrompt}
 Agent type: ${config.type}
 ${config.expertId ? `Expert ID: ${config.expertId}` : ''}
 `
+
+    if (sessionContext) {
+      const sessionState = sessionId ? this.sessionStateManager?.getState(sessionId) : undefined
+
+      log.info('Session context injected', {
+        sessionId,
+        turnNumber: sessionState ? sessionState.turns.length + 1 : 1,
+        messagesCount: sessionState?.turns.length ?? 0,
+      })
+
+      return `${sessionContext}\n\n---\n\n${basePrompt}`
+    }
+
+    return basePrompt
   }
 
   private synthesizeResults(execution: TaskExecution): string {
@@ -552,15 +663,11 @@ ${config.expertId ? `Expert ID: ${config.expertId}` : ''}
     return synthesis
   }
 
-
   private truncateSummary(text: string, maxTokens: number): string {
     const maxChars = maxTokens * 4
     if (text.length <= maxChars) return text
 
-    return (
-      text.substring(0, maxChars - 100) +
-      '\n\n[SUMMARY TRUNCATED - EXCEEDED TOKEN LIMIT]'
-    )
+    return text.substring(0, maxChars - 100) + '\n\n[SUMMARY TRUNCATED - EXCEEDED TOKEN LIMIT]'
   }
 
   private sleep(ms: number): Promise<void> {
@@ -610,7 +717,8 @@ ${config.expertId ? `Expert ID: ${config.expertId}` : ''}
         ? execution.completedAt.getTime() - execution.startedAt.getTime()
         : 0,
       success: execution.status === 'complete',
-      partialSuccess: execution.results.some((r) => r.success) && execution.results.some((r) => !r.success),
+      partialSuccess:
+        execution.results.some((r) => r.success) && execution.results.some((r) => !r.success),
       expertiseUsed: execution.results.some((r) => r.expertId),
       agentMetrics: execution.results.map((r) => ({
         agentId: r.agentId,
@@ -641,6 +749,10 @@ ${config.expertId ? `Expert ID: ${config.expertId}` : ''}
 
   updateClassifierExperts(experts: string[]): void {
     this.classifier.setAvailableExperts(experts)
+  }
+
+  setSessionStateManager(manager: SessionStateManager): void {
+    this.sessionStateManager = manager
   }
 }
 

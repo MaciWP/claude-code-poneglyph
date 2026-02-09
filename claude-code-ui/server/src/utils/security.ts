@@ -199,6 +199,9 @@ function getEnrichedPath(): string {
     additionalPaths.push('/opt/homebrew/bin')
     additionalPaths.push('/usr/local/bin')
 
+    // ~/.local/bin
+    additionalPaths.push(path.join(home, '.local', 'bin'))
+
     // npm global
     additionalPaths.push(path.join(home, '.npm-global', 'bin'))
     additionalPaths.push('/usr/local/lib/node_modules/.bin')
@@ -216,6 +219,9 @@ function getEnrichedPath(): string {
     const localAppData = process.env.LOCALAPPDATA || ''
     const programFiles = process.env.PROGRAMFILES || ''
     const programFilesX86 = process.env['PROGRAMFILES(X86)'] || ''
+
+    // ~/.local/bin
+    if (home) additionalPaths.push(path.join(home, '.local', 'bin'))
 
     if (appData) additionalPaths.push(path.join(appData, 'npm'))
     if (localAppData) additionalPaths.push(path.join(localAppData, 'Programs', 'nodejs'))

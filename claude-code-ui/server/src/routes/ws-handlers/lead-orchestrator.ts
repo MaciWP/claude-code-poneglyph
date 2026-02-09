@@ -3,6 +3,7 @@ import type { SessionStore } from '../../services/sessions'
 import type { ActiveProcess, WebSocketWithSend } from './types'
 import { broadcastToSession } from './session-broadcast'
 import { extractMemoriesFromConversation } from '../../services/memory'
+import { SessionStateManager } from '../../services/session-state'
 import { logger } from '../../logger'
 
 const log = logger.child('ws-lead-orchestrator')
@@ -19,6 +20,7 @@ interface LeadOrchestratorParams {
   activeProcesses: Map<string, ActiveProcess>
   wsToRequestId: Map<unknown, string>
   maxActiveProcesses: number
+  sessionStateManager?: SessionStateManager
 }
 
 /**
@@ -30,30 +32,42 @@ function setupLeadOrchestratorHandlers(
   sessionId?: string
 ) {
   const classifiedHandler = (data: { executionId: string; classification: unknown }) => {
-    ws.send(JSON.stringify({
-      type: 'orchestrator_event',
-      event: 'classified',
-      executionId: data.executionId,
-      classification: data.classification
-    }))
+    ws.send(
+      JSON.stringify({
+        type: 'orchestrator_event',
+        event: 'classified',
+        executionId: data.executionId,
+        classification: data.classification,
+      })
+    )
   }
 
   const executingHandler = (data: { executionId: string }) => {
-    ws.send(JSON.stringify({
-      type: 'orchestrator_event',
-      event: 'executing',
-      executionId: data.executionId
-    }))
+    ws.send(
+      JSON.stringify({
+        type: 'orchestrator_event',
+        event: 'executing',
+        executionId: data.executionId,
+      })
+    )
   }
 
-  const agentToolUseHandler = (data: { agentId: string; tool: string; toolCalls: number; toolUseId?: string; toolInput?: unknown }) => {
-    ws.send(JSON.stringify({
-      type: 'tool_use',
-      tool: data.tool,
-      toolUseId: data.toolUseId || `agent-${data.agentId}-${data.toolCalls}`,
-      toolInput: data.toolInput,
-      agentId: data.agentId
-    }))
+  const agentToolUseHandler = (data: {
+    agentId: string
+    tool: string
+    toolCalls: number
+    toolUseId?: string
+    toolInput?: unknown
+  }) => {
+    ws.send(
+      JSON.stringify({
+        type: 'tool_use',
+        tool: data.tool,
+        toolUseId: data.toolUseId || `agent-${data.agentId}-${data.toolCalls}`,
+        toolInput: data.toolInput,
+        agentId: data.agentId,
+      })
+    )
   }
 
   const agentSpawnedHandler = (data: { agentId: string; type: string }) => {
@@ -62,12 +76,17 @@ function setupLeadOrchestratorHandlers(
         type: 'agent_event',
         event: 'spawned',
         agentId: data.agentId,
-        agentType: data.type
+        agentType: data.type,
       })
     }
   }
 
-  const agentCompletedHandler = (data: { agentId: string; success: boolean; toolCalls: number; durationMs: number }) => {
+  const agentCompletedHandler = (data: {
+    agentId: string
+    success: boolean
+    toolCalls: number
+    durationMs: number
+  }) => {
     if (sessionId) {
       broadcastToSession(sessionId, {
         type: 'agent_event',
@@ -75,63 +94,83 @@ function setupLeadOrchestratorHandlers(
         agentId: data.agentId,
         success: data.success,
         toolCalls: data.toolCalls,
-        durationMs: data.durationMs
+        durationMs: data.durationMs,
       })
     }
   }
 
-  const completedHandler = (data: { executionId: string; execution: { status: string; results?: unknown[] } }) => {
-    ws.send(JSON.stringify({
-      type: 'orchestrator_event',
-      event: 'completed',
-      executionId: data.executionId,
-      status: data.execution.status,
-      agentsUsed: data.execution.results?.length || 0
-    }))
+  const completedHandler = (data: {
+    executionId: string
+    execution: { status: string; results?: unknown[] }
+  }) => {
+    ws.send(
+      JSON.stringify({
+        type: 'orchestrator_event',
+        event: 'completed',
+        executionId: data.executionId,
+        status: data.execution.status,
+        agentsUsed: data.execution.results?.length || 0,
+      })
+    )
   }
 
   const agentTextHandler = (data: { agentId: string; data: string }) => {
-    ws.send(JSON.stringify({
-      type: 'text',
-      data: data.data,
-      agentId: data.agentId
-    }))
+    ws.send(
+      JSON.stringify({
+        type: 'text',
+        data: data.data,
+        agentId: data.agentId,
+      })
+    )
   }
 
-  const agentToolResultHandler = (data: { agentId: string; tool: string; toolUseId?: string; toolOutput?: string }) => {
-    ws.send(JSON.stringify({
-      type: 'tool_result',
-      tool: data.tool,
-      toolUseId: data.toolUseId,
-      toolOutput: data.toolOutput,
-      agentId: data.agentId
-    }))
+  const agentToolResultHandler = (data: {
+    agentId: string
+    tool: string
+    toolUseId?: string
+    toolOutput?: string
+  }) => {
+    ws.send(
+      JSON.stringify({
+        type: 'tool_result',
+        tool: data.tool,
+        toolUseId: data.toolUseId,
+        toolOutput: data.toolOutput,
+        agentId: data.agentId,
+      })
+    )
   }
 
   const learningStartedHandler = (data: { expertId: string }) => {
-    ws.send(JSON.stringify({
-      type: 'learning_event',
-      event: 'started',
-      expertId: data.expertId
-    }))
+    ws.send(
+      JSON.stringify({
+        type: 'learning_event',
+        event: 'started',
+        expertId: data.expertId,
+      })
+    )
   }
 
   const learningCompletedHandler = (data: { expertId: string; changes: unknown[] }) => {
-    ws.send(JSON.stringify({
-      type: 'learning_event',
-      event: 'completed',
-      expertId: data.expertId,
-      changes: data.changes
-    }))
+    ws.send(
+      JSON.stringify({
+        type: 'learning_event',
+        event: 'completed',
+        expertId: data.expertId,
+        changes: data.changes,
+      })
+    )
   }
 
   const learningFailedHandler = (data: { expertId: string; error: string }) => {
-    ws.send(JSON.stringify({
-      type: 'learning_event',
-      event: 'failed',
-      expertId: data.expertId,
-      error: data.error
-    }))
+    ws.send(
+      JSON.stringify({
+        type: 'learning_event',
+        event: 'failed',
+        expertId: data.expertId,
+        error: data.error,
+      })
+    )
   }
 
   // Attach all handlers
@@ -164,22 +203,35 @@ function setupLeadOrchestratorHandlers(
 }
 
 /**
- * Build prompt with conversation history for orchestrator
+ * Build prompt with conversation history and session state for orchestrator
  */
 function buildPromptWithHistory(
   prompt: string,
-  messages?: Array<{ role: string; content: string }>
+  messages?: Array<{ role: string; content: string }>,
+  sessionContext?: string
 ): string {
-  if (!messages || messages.length === 0) {
-    return prompt
+  const parts: string[] = []
+
+  if (sessionContext) {
+    parts.push(sessionContext)
+    parts.push('---')
   }
 
-  const historyContext = messages
-    .map((msg) => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`)
-    .join('\n\n')
+  if (messages && messages.length > 0) {
+    const recent = messages.slice(-10)
+    parts.push('## Recent Conversation')
+    for (const msg of recent) {
+      const truncated = msg.content.slice(0, 500)
+      const suffix = msg.content.length > 500 ? '...' : ''
+      parts.push(`[${msg.role}]: ${truncated}${suffix}`)
+    }
+    parts.push('---')
+  }
 
-  log.info('Including conversation history for orchestrator', { messageCount: messages.length })
-  return `Previous conversation:\n\n${historyContext}\n\n---\n\nUser: ${prompt}`
+  parts.push(`## Current Request`)
+  parts.push(prompt)
+
+  return parts.join('\n')
 }
 
 /**
@@ -197,7 +249,8 @@ export async function handleLeadOrchestrator(params: LeadOrchestratorParams): Pr
     requestId,
     activeProcesses,
     wsToRequestId,
-    maxActiveProcesses
+    maxActiveProcesses,
+    sessionStateManager,
   } = params
 
   log.info('Using Lead Orchestrator', { sessionId, promptLength: prompt?.length })
@@ -208,12 +261,14 @@ export async function handleLeadOrchestrator(params: LeadOrchestratorParams): Pr
   if (activeProcesses.size >= maxActiveProcesses) {
     log.warn('Max active processes reached, rejecting new request', {
       current: activeProcesses.size,
-      max: maxActiveProcesses
+      max: maxActiveProcesses,
     })
-    ws.send(JSON.stringify({
-      type: 'error',
-      data: 'Server at capacity, please try again later'
-    }))
+    ws.send(
+      JSON.stringify({
+        type: 'error',
+        data: 'Server at capacity, please try again later',
+      })
+    )
     return
   }
 
@@ -226,7 +281,7 @@ export async function handleLeadOrchestrator(params: LeadOrchestratorParams): Pr
       }
     },
     sessionId,
-    createdAt: Date.now()
+    createdAt: Date.now(),
   })
   wsToRequestId.set(ws, requestId)
 
@@ -238,10 +293,20 @@ export async function handleLeadOrchestrator(params: LeadOrchestratorParams): Pr
       await sessions.addMessage(sessionId, 'user', prompt)
     }
 
-    const promptWithHistory = buildPromptWithHistory(prompt, messages)
+    let sessionContext = ''
+    if (sessionStateManager && sessionId) {
+      sessionStateManager.getOrCreate(sessionId, workDir || '.')
+      sessionContext = sessionStateManager.getContextForOrchestrator(sessionId)
+    }
+
+    const promptWithHistory = buildPromptWithHistory(prompt, messages, sessionContext)
 
     log.info('Calling leadOrchestrator.execute', { sessionId })
-    const result = await leadOrchestrator.execute(promptWithHistory, sessionId || requestId, workDir)
+    const result = await leadOrchestrator.execute(
+      promptWithHistory,
+      sessionId || requestId,
+      workDir
+    )
     log.info('leadOrchestrator.execute returned', { resultLength: result?.length })
 
     // Send final result
@@ -255,10 +320,13 @@ export async function handleLeadOrchestrator(params: LeadOrchestratorParams): Pr
       await sessions.addMessage(sessionId, 'assistant', result)
 
       try {
-        const memories = await extractMemoriesFromConversation([
-          { role: 'user', content: prompt },
-          { role: 'assistant', content: result }
-        ], { sessionId })
+        const memories = await extractMemoriesFromConversation(
+          [
+            { role: 'user', content: prompt },
+            { role: 'assistant', content: result },
+          ],
+          { sessionId }
+        )
 
         if (memories.length > 0) {
           log.info('Extracted memories', { count: memories.length, sessionId })
@@ -269,10 +337,12 @@ export async function handleLeadOrchestrator(params: LeadOrchestratorParams): Pr
     }
   } catch (error) {
     log.error('Lead Orchestrator failed', { error: String(error) })
-    ws.send(JSON.stringify({
-      type: 'error',
-      data: error instanceof Error ? error.message : 'Orchestration failed'
-    }))
+    ws.send(
+      JSON.stringify({
+        type: 'error',
+        data: error instanceof Error ? error.message : 'Orchestration failed',
+      })
+    )
   } finally {
     cleanupHandlers()
     activeProcesses.delete(requestId)

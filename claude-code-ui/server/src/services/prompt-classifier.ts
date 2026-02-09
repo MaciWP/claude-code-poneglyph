@@ -1,4 +1,8 @@
-import { DOMAIN_KEYWORDS, COMPLEXITY_INDICATORS, TRIVIAL_INDICATORS } from '../config/domain-keywords'
+import {
+  DOMAIN_KEYWORDS,
+  COMPLEXITY_INDICATORS,
+  TRIVIAL_INDICATORS,
+} from '../config/domain-keywords'
 import { logger } from '../logger'
 
 const log = logger.child('prompt-classifier')
@@ -20,9 +24,9 @@ export interface ClassifierConfig {
 }
 
 const DEFAULT_CONFIG: ClassifierConfig = {
-  trivialThreshold: 50,  // Subido de 30 para evitar delegación excesiva
-  complexThreshold: 70,  // Subido de 60 para mejor gradación
-  domainKeywords: DOMAIN_KEYWORDS
+  trivialThreshold: 50, // Subido de 30 para evitar delegación excesiva
+  complexThreshold: 70, // Subido de 60 para mejor gradación
+  domainKeywords: DOMAIN_KEYWORDS,
 }
 
 export class PromptClassifier {
@@ -34,21 +38,31 @@ export class PromptClassifier {
     this.availableExperts = availableExperts
   }
 
-  classify(prompt: string): ClassificationResult {
+  classify(prompt: string, sessionContext?: string): ClassificationResult {
     const domains = this.detectDomains(prompt)
-    const complexityScore = this.calculateComplexity(prompt, domains)
+    let complexityScore = this.calculateComplexity(prompt, domains)
+
+    const isFollowUp = sessionContext ? this.isFollowUpPrompt(prompt) : false
+    if (isFollowUp && complexityScore > 40) {
+      const originalScore = complexityScore
+      complexityScore = Math.max(30, complexityScore - 20)
+      log.info(`Follow-up detected, reduced complexity: ${originalScore} → ${complexityScore}`)
+    }
+
     const estimatedToolCalls = this.estimateToolCalls(complexityScore, domains)
     const requiresDelegation = complexityScore > this.config.trivialThreshold
     const suggestedExperts = this.matchExperts(domains)
     const suggestedAgents = this.suggestAgents(complexityScore, domains)
-    const reasoning = this.generateReasoning(prompt, complexityScore, domains, requiresDelegation)
+    const followUpInfo = isFollowUp ? ' [FOLLOW-UP: complexity reduced]' : ''
+    const reasoning =
+      this.generateReasoning(prompt, complexityScore, domains, requiresDelegation) + followUpInfo
 
     log.debug('Classified prompt', {
       complexityScore,
       domains,
       requiresDelegation,
       suggestedExperts,
-      suggestedAgents
+      suggestedAgents,
     })
 
     return {
@@ -58,7 +72,7 @@ export class PromptClassifier {
       requiresDelegation,
       suggestedExperts,
       suggestedAgents,
-      reasoning
+      reasoning,
     }
   }
 
@@ -67,7 +81,7 @@ export class PromptClassifier {
     const lowerPrompt = prompt.toLowerCase()
 
     for (const [domain, keywords] of Object.entries(this.config.domainKeywords)) {
-      if (keywords.some(kw => lowerPrompt.includes(kw.toLowerCase()))) {
+      if (keywords.some((kw) => lowerPrompt.includes(kw.toLowerCase()))) {
         detected.push(domain)
       }
     }
@@ -101,24 +115,27 @@ export class PromptClassifier {
   private isTrivial(prompt: string): boolean {
     // Solo considerar trivial por longitud o keywords simples
     // NO bloquear preguntas "what/how/where" - pueden requerir exploración
-    return (
-      TRIVIAL_INDICATORS.simple.test(prompt) ||
-      prompt.length < 30
-    )
+    return TRIVIAL_INDICATORS.simple.test(prompt) || prompt.length < 30
+  }
+
+  private isFollowUpPrompt(prompt: string): boolean {
+    const followUpPatterns =
+      /^(fix|update|change|also|now|next|then|continue|ejecuta|sigue|hazlo|aplica|ahora|tambien|además|modifica|cambia|corrige|arregla|haz|do it|go ahead|proceed|make it|apply)/i
+    return followUpPatterns.test(prompt.trim())
   }
 
   private estimateToolCalls(complexity: number, domains: string[]): number {
     const base = 3
     const complexityFactor = Math.floor(complexity / 10) * 2
-    const domainFactor = Math.max(0, (domains.length - 1)) * 3
+    const domainFactor = Math.max(0, domains.length - 1) * 3
 
     return base + complexityFactor + domainFactor
   }
 
   private matchExperts(domains: string[]): string[] {
-    return this.availableExperts.filter(expert => {
+    return this.availableExperts.filter((expert) => {
       const expertLower = expert.toLowerCase()
-      return domains.some(domain => {
+      return domains.some((domain) => {
         const domainLower = domain.toLowerCase()
         return (
           expertLower === domainLower ||

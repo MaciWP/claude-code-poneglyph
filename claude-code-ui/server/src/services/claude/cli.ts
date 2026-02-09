@@ -204,11 +204,11 @@ async function* streamCLIInternal(
   // Build prompt with session context
   let promptToSend = options.prompt
   if (options.sessionId && options.messages && options.messages.length > 0) {
-    const lastMessages = options.messages.slice(-5)
+    const lastMessages = options.messages.slice(-20)
     const briefContext = lastMessages
       .map(
         (msg) =>
-          `- ${msg.role}: ${msg.content.slice(0, 100)}${msg.content.length > 100 ? '...' : ''}`
+          `- ${msg.role}: ${msg.content.slice(0, 1000)}${msg.content.length > 1000 ? '...' : ''}`
       )
       .join('\n')
 

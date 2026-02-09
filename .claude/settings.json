@@ -8,48 +8,33 @@
     "CLAUDE_LEAD_MODE": "true",
     "CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD": "1"
   },
-  "attribution": {
-    "commit": "Generated with Claude Code\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "pr": "Generated with [Claude Code](https://claude.com/claude-code)"
-  },
   "permissions": {
     "allow": [
+      "Bash",
+      "Read",
+      "Edit",
+      "Write",
+      "Glob",
+      "Grep",
+      "WebFetch",
+      "WebSearch",
       "Task",
       "Skill",
       "AskUserQuestion",
       "TaskCreate",
       "TaskUpdate",
       "TaskList",
-      "TaskGet"
+      "TaskGet",
+      "LSP",
+      "NotebookEdit"
     ],
-    "deny": [
-      "Read",
-      "Edit",
-      "Write",
-      "Bash",
-      "Glob",
-      "Grep",
-      "WebFetch",
-      "WebSearch"
-    ]
+    "deny": []
   },
   "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Read|Edit|Write|Bash|Glob|Grep",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bun .claude/hooks/lead-enforcement.ts",
-            "timeout": 5000
-          }
-        ]
-      }
-    ],
     "UserPromptSubmit": [
       {
         "hooks": [
-          {                                       
+          {
             "type": "command",
             "command": "bun .claude/hooks/memory-inject.ts"
           }
@@ -68,6 +53,18 @@
             "type": "command",
             "command": "bun .claude/hooks/typecheck-guard.ts",
             "timeout": 30000
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Read|Edit|Write|Bash|Glob|Grep",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun .claude/hooks/lead-enforcement.ts",
+            "timeout": 5000
           }
         ]
       }

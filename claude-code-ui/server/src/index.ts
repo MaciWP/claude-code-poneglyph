@@ -12,6 +12,7 @@ import { PromptClassifier } from './services/prompt-classifier'
 import { AgentSpawner } from './services/agent-spawner'
 import { setAgentSpawner } from './services/workflow-executor'
 import { createOrchestratorAgent } from './services/orchestrator-agent'
+import { SessionStateManager } from './services/session-state'
 import { expertStore } from './services/expert-store'
 import { config } from './config'
 import { logger } from './logger'
@@ -53,26 +54,32 @@ try {
 // Initialize Lead Orchestrator components
 const initializeOrchestrator = async () => {
   const experts = await expertStore.list()
-  const classifier = new PromptClassifier({}, experts.map(e => e.id))
+  const classifier = new PromptClassifier(
+    {},
+    experts.map((e) => e.id)
+  )
   const spawner = new AgentSpawner(claude)
-  
+
   // Configure workflow executor with agent spawner
   setAgentSpawner(spawner)
-  
+
   const leadOrchestrator = createOrchestratorAgent(classifier, spawner)
 
   // Update classifier with available experts
-  leadOrchestrator.updateClassifierExperts(experts.map(e => e.id))
+  leadOrchestrator.updateClassifierExperts(experts.map((e) => e.id))
 
   logger.info('orchestrator', 'Lead Orchestrator initialized', {
     expertsLoaded: experts.length,
-    experts: experts.map(e => e.id)
+    experts: experts.map((e) => e.id),
   })
 
   return leadOrchestrator
 }
 
 const leadOrchestrator = await initializeOrchestrator()
+
+const sessionStateManager = new SessionStateManager()
+leadOrchestrator.setSessionStateManager(sessionStateManager)
 
 const app = new Elysia()
   .use(cors())
@@ -87,7 +94,18 @@ const app = new Elysia()
   .use(learningRoutes)
   .use(multiExpertRoutes)
   .use(logsRoutes)
-  .use(createWebSocketRoutes(claude, codex, gemini, sessions, orchestrator, agentRegistry, leadOrchestrator))
+  .use(
+    createWebSocketRoutes(
+      claude,
+      codex,
+      gemini,
+      sessions,
+      orchestrator,
+      agentRegistry,
+      leadOrchestrator,
+      sessionStateManager
+    )
+  )
   .get('/', () => ({
     name: 'Claude Code UI API',
     version: '1.0.0',

@@ -24,16 +24,21 @@ export interface SpawnConfig {
 export interface SpawnResult {
   agentId: string
   output: string
-  fullOutput?: string  // Output completo si fue truncado
+  fullOutput?: string // Output completo si fue truncado
   success: boolean
   metrics: {
     toolCalls: number
     durationMs: number
     tokensUsed: number
   }
+  extractedMeta?: {
+    filesModified: string[]
+    filesRead: string[]
+    errors: string[]
+  }
 }
 
-const MAX_OUTPUT_LENGTH = 2000
+const MAX_OUTPUT_LENGTH = 50000
 const TRUNCATE_MESSAGE = '\n\n[Output truncado - resultado completo disponible]'
 
 interface ActiveSpawn {
@@ -58,10 +63,7 @@ export class AgentSpawner extends EventEmitter {
   private defaultTimeout: number
   private defaultMaxTokens: number
 
-  constructor(
-    claudeService: ClaudeService,
-    options?: AgentSpawnerOptions
-  ) {
+  constructor(claudeService: ClaudeService, options?: AgentSpawnerOptions) {
     super()
     this.claudeService = claudeService
     this.agentRegistry = options?.agentRegistry ?? defaultAgentRegistry
@@ -88,7 +90,7 @@ export class AgentSpawner extends EventEmitter {
       type: config.type,
       sessionId: config.sessionId,
       timeout,
-      hasExpert: !!config.expertId
+      hasExpert: !!config.expertId,
     })
 
     const enrichedPrompt = await this.buildEnrichedPrompt(config, maxTokens)
@@ -148,9 +150,10 @@ export class AgentSpawner extends EventEmitter {
       })
 
       // Truncar output si es muy largo
-      const truncatedOutput = result.output.length > MAX_OUTPUT_LENGTH
-        ? result.output.substring(0, MAX_OUTPUT_LENGTH) + TRUNCATE_MESSAGE
-        : result.output
+      const truncatedOutput =
+        result.output.length > MAX_OUTPUT_LENGTH
+          ? result.output.substring(0, MAX_OUTPUT_LENGTH) + TRUNCATE_MESSAGE
+          : result.output
 
       return {
         agentId: agent.id,
@@ -162,6 +165,7 @@ export class AgentSpawner extends EventEmitter {
           durationMs,
           tokensUsed: result.tokensUsed,
         },
+        extractedMeta: result.extractedMeta,
       }
     } catch (error) {
       clearTimeout(timeoutHandle)
@@ -242,10 +246,19 @@ export class AgentSpawner extends EventEmitter {
   private async consumeStream(
     agentId: string,
     stream: AsyncGenerator<StreamChunk>
-  ): Promise<{ output: string; toolCalls: number; tokensUsed: number }> {
+  ): Promise<{
+    output: string
+    toolCalls: number
+    tokensUsed: number
+    extractedMeta: { filesModified: string[]; filesRead: string[]; errors: string[] }
+  }> {
     let output = ''
     let toolCalls = 0
     let tokensUsed = 0
+
+    const filesModified: string[] = []
+    const filesRead: string[] = []
+    const extractedErrors: string[] = []
 
     for await (const chunk of stream) {
       if (chunk.type === 'tool_use') {
@@ -258,6 +271,22 @@ export class AgentSpawner extends EventEmitter {
           toolUseId: chunk.toolUseId,
           toolInput: chunk.toolInput,
         })
+
+        const toolName = chunk.tool ?? ''
+        const input = chunk.toolInput as Record<string, unknown> | undefined
+        const filePath = typeof input?.file_path === 'string' ? input.file_path : undefined
+
+        if (filePath) {
+          if (toolName === 'Edit' || toolName === 'Write') {
+            if (!filesModified.includes(filePath)) {
+              filesModified.push(filePath)
+            }
+          } else if (toolName === 'Read') {
+            if (!filesRead.includes(filePath)) {
+              filesRead.push(filePath)
+            }
+          }
+        }
       }
 
       if (chunk.type === 'text' && chunk.data) {
@@ -284,11 +313,17 @@ export class AgentSpawner extends EventEmitter {
       }
 
       if (chunk.type === 'error') {
+        extractedErrors.push(chunk.data || 'Unknown stream error')
         throw new Error(chunk.data || 'Unknown stream error')
       }
     }
 
-    return { output, toolCalls, tokensUsed }
+    return {
+      output,
+      toolCalls,
+      tokensUsed,
+      extractedMeta: { filesModified, filesRead, errors: extractedErrors },
+    }
   }
 
   private async buildEnrichedPrompt(config: SpawnConfig, maxTokens: number): Promise<string> {
@@ -306,16 +341,27 @@ export class AgentSpawner extends EventEmitter {
 ${expertise.mental_model.overview}
 
 ### Key Files
-${(expertise.mental_model?.key_files ?? []).map(f => `- \`${f.path}\`: ${f.purpose}`).join('\n')}
+${(expertise.mental_model?.key_files ?? []).map((f) => `- \`${f.path}\`: ${f.purpose}`).join('\n')}
 
-${expertise.patterns?.length ? `### Known Patterns
-${expertise.patterns.map(p => `- **${p.name}** (confidence: ${p.confidence})`).join('\n')}` : ''}
+${
+  expertise.patterns?.length
+    ? `### Known Patterns
+${expertise.patterns.map((p) => `- **${p.name}** (confidence: ${p.confidence})`).join('\n')}`
+    : ''
+}
 
-${agentPrompt ? `### Agent Instructions
-${agentPrompt}` : ''}
+${
+  agentPrompt
+    ? `### Agent Instructions
+${agentPrompt}`
+    : ''
+}
 ---
 `
-        log.debug('Loaded expert context', { expertId: config.expertId, confidence: expertise.confidence })
+        log.debug('Loaded expert context', {
+          expertId: config.expertId,
+          confidence: expertise.confidence,
+        })
       } catch (error) {
         log.warn('Failed to load expert', { expertId: config.expertId, error: String(error) })
       }
@@ -351,8 +397,15 @@ ${config.prompt}
 
   private normalizeAgentType(type: string): AgentType {
     const validTypes: AgentType[] = [
-      'scout', 'architect', 'builder', 'reviewer',
-      'general-purpose', 'Explore', 'Plan', 'code-quality', 'refactor-agent'
+      'scout',
+      'architect',
+      'builder',
+      'reviewer',
+      'general-purpose',
+      'Explore',
+      'Plan',
+      'code-quality',
+      'refactor-agent',
     ]
 
     if (type.startsWith('expert:')) {

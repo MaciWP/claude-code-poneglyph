@@ -170,6 +170,7 @@ function getStaticPaths(executable: string): string[] {
 
   if (platform === 'darwin') {
     return [
+      join(home, '.local', 'bin', executable),
       '/opt/homebrew/bin/' + executable,
       '/usr/local/bin/' + executable,
       join(home, '.npm-global', 'bin', executable),
@@ -179,6 +180,7 @@ function getStaticPaths(executable: string): string[] {
 
   if (platform === 'linux') {
     return [
+      join(home, '.local', 'bin', executable),
       '/usr/local/bin/' + executable,
       '/usr/bin/' + executable,
       join(home, '.npm-global', 'bin', executable),
@@ -195,6 +197,8 @@ function getStaticPaths(executable: string): string[] {
     const winExe = executable + ext
 
     return [
+      join(home, '.local', 'bin', executable + '.exe'),
+      join(home, '.local', 'bin', executable + '.cmd'),
       join(appData, 'npm', winExe),
       join(localAppData, 'Programs', 'nodejs', winExe),
       join(home, '.npm-global', winExe),
