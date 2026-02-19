@@ -1,4 +1,20 @@
 import { describe, test, expect, mock, beforeEach } from 'bun:test'
+
+// Mock claude-path to prevent Bun.spawn inside getClaudeCommand/findViaWhich
+// which would consume the mock ReadableStream before the actual test code
+mock.module('../utils/claude-path', () => ({
+  getClaudePath: async () => '/mock/claude',
+  getClaudeCommand: async () => ['/mock/claude'],
+  getNodePath: () => 'node',
+  clearClaudePathCache: () => {},
+  diagnoseClaudePath: async () => ({
+    resolved: '/mock/claude',
+    inPath: true,
+    knownPaths: [],
+    env: {},
+  }),
+}))
+
 import { ClaudeService, type StreamChunk } from './claude'
 
 describe('ClaudeService', () => {
@@ -13,7 +29,7 @@ describe('ClaudeService', () => {
       const mockStdout = JSON.stringify({
         type: 'result',
         result: 'Hello from Claude',
-        session_id: 'test-session-123'
+        session_id: 'test-session-123',
       })
 
       const mockProc = {
@@ -21,14 +37,14 @@ describe('ClaudeService', () => {
           start(controller) {
             controller.enqueue(new TextEncoder().encode(mockStdout))
             controller.close()
-          }
+          },
         }),
         stderr: new ReadableStream({
           start(controller) {
             controller.close()
-          }
+          },
         }),
-        exited: Promise.resolve(0)
+        exited: Promise.resolve(0),
       }
 
       const originalSpawn = Bun.spawn
@@ -37,12 +53,12 @@ describe('ClaudeService', () => {
       try {
         const result = await service.executeCLI({
           prompt: 'Hello',
-          workDir: '/test/dir'
+          workDir: '/test/dir',
         })
 
         expect(Bun.spawn).toHaveBeenCalled()
         const callArgs = (Bun.spawn as ReturnType<typeof mock>).mock.calls[0][0]
-        expect(callArgs).toContain('claude')
+        expect(callArgs).toContain('/mock/claude')
         expect(callArgs).toContain('-p')
         expect(callArgs).toContain('Hello')
         expect(callArgs).toContain('--output-format')
@@ -65,14 +81,14 @@ describe('ClaudeService', () => {
           start(controller) {
             controller.enqueue(new TextEncoder().encode(mockStdout))
             controller.close()
-          }
+          },
         }),
         stderr: new ReadableStream({
           start(controller) {
             controller.close()
-          }
+          },
         }),
-        exited: Promise.resolve(0)
+        exited: Promise.resolve(0),
       }
 
       const originalSpawn = Bun.spawn
@@ -81,7 +97,7 @@ describe('ClaudeService', () => {
       try {
         await service.executeCLI({
           prompt: 'Continue',
-          resume: 'previous-session-id'
+          resume: 'previous-session-id',
         })
 
         const callArgs = (Bun.spawn as ReturnType<typeof mock>).mock.calls[0][0]
@@ -97,22 +113,24 @@ describe('ClaudeService', () => {
         stdout: new ReadableStream({
           start(controller) {
             controller.close()
-          }
+          },
         }),
         stderr: new ReadableStream({
           start(controller) {
             controller.enqueue(new TextEncoder().encode('Error: Something went wrong'))
             controller.close()
-          }
+          },
         }),
-        exited: Promise.resolve(1)
+        exited: Promise.resolve(1),
       }
 
       const originalSpawn = Bun.spawn
       Bun.spawn = mock(() => mockProc as ReturnType<typeof Bun.spawn>)
 
       try {
-        await expect(service.executeCLI({ prompt: 'Fail' })).rejects.toThrow('Error: Something went wrong')
+        await expect(service.executeCLI({ prompt: 'Fail' })).rejects.toThrow(
+          'Error: Something went wrong'
+        )
       } finally {
         Bun.spawn = originalSpawn
       }
@@ -122,7 +140,7 @@ describe('ClaudeService', () => {
       const mockStdout = [
         JSON.stringify({ type: 'tool_use', tool_name: 'Read' }),
         JSON.stringify({ type: 'tool_use', tool_name: 'Write' }),
-        JSON.stringify({ type: 'result', result: 'Done', session_id: 'sess-1' })
+        JSON.stringify({ type: 'result', result: 'Done', session_id: 'sess-1' }),
       ].join('\n')
 
       const mockProc = {
@@ -130,14 +148,14 @@ describe('ClaudeService', () => {
           start(controller) {
             controller.enqueue(new TextEncoder().encode(mockStdout))
             controller.close()
-          }
+          },
         }),
         stderr: new ReadableStream({
           start(controller) {
             controller.close()
-          }
+          },
         }),
-        exited: Promise.resolve(0)
+        exited: Promise.resolve(0),
       }
 
       const originalSpawn = Bun.spawn
@@ -161,14 +179,14 @@ describe('ClaudeService', () => {
           start(controller) {
             controller.enqueue(new TextEncoder().encode(mockStdout))
             controller.close()
-          }
+          },
         }),
         stderr: new ReadableStream({
           start(controller) {
             controller.close()
-          }
+          },
         }),
-        exited: Promise.resolve(0)
+        exited: Promise.resolve(0),
       }
 
       const originalSpawn = Bun.spawn
@@ -177,7 +195,7 @@ describe('ClaudeService', () => {
       try {
         const result = await service.executeCLI({
           prompt: 'Test',
-          outputFormat: 'text'
+          outputFormat: 'text',
         })
 
         expect(result.response).toBe('Plain text response without JSON')
@@ -193,7 +211,7 @@ describe('ClaudeService', () => {
         result: 'Done',
         session_id: 'sess-1',
         cost_usd: 0.015,
-        duration_ms: 1500
+        duration_ms: 1500,
       })
 
       const mockProc = {
@@ -201,14 +219,14 @@ describe('ClaudeService', () => {
           start(controller) {
             controller.enqueue(new TextEncoder().encode(mockStdout))
             controller.close()
-          }
+          },
         }),
         stderr: new ReadableStream({
           start(controller) {
             controller.close()
-          }
+          },
         }),
-        exited: Promise.resolve(0)
+        exited: Promise.resolve(0),
       }
 
       const originalSpawn = Bun.spawn
@@ -227,10 +245,16 @@ describe('ClaudeService', () => {
 
   describe('streamCLI()', () => {
     test('yields init chunk on system init event', async () => {
-      const events = [
-        JSON.stringify({ type: 'system', subtype: 'init', session_id: 'stream-sess', cwd: '/test' }),
-        JSON.stringify({ type: 'result', result: 'Done' })
-      ].join('\n') + '\n'
+      const events =
+        [
+          JSON.stringify({
+            type: 'system',
+            subtype: 'init',
+            session_id: 'stream-sess',
+            cwd: '/test',
+          }),
+          JSON.stringify({ type: 'result', result: 'Done' }),
+        ].join('\n') + '\n'
 
       const mockProc = {
         pid: 12345,
@@ -244,13 +268,17 @@ describe('ClaudeService', () => {
                   return { done: false, value: new TextEncoder().encode(events) }
                 }
                 return { done: true, value: undefined }
-              }
+              },
             }
-          }
+          },
         },
-        stderr: new ReadableStream({ start(c) { c.close() } }),
+        stderr: new ReadableStream({
+          start(c) {
+            c.close()
+          },
+        }),
         stdin: null,
-        exitCode: 0
+        exitCode: 0,
       }
 
       const originalSpawn = Bun.spawn
@@ -262,7 +290,7 @@ describe('ClaudeService', () => {
           chunks.push(chunk)
         }
 
-        const initChunk = chunks.find(c => c.type === 'init')
+        const initChunk = chunks.find((c) => c.type === 'init')
         expect(initChunk).toBeDefined()
         expect(initChunk?.sessionId).toBe('stream-sess')
       } finally {
@@ -271,14 +299,15 @@ describe('ClaudeService', () => {
     })
 
     test('yields text chunks from assistant messages', async () => {
-      const events = [
-        JSON.stringify({
-          type: 'assistant',
-          session_id: 'sess-1',
-          message: { content: [{ type: 'text', text: 'Hello from assistant' }] }
-        }),
-        JSON.stringify({ type: 'result', result: 'Done' })
-      ].join('\n') + '\n'
+      const events =
+        [
+          JSON.stringify({
+            type: 'assistant',
+            session_id: 'sess-1',
+            message: { content: [{ type: 'text', text: 'Hello from assistant' }] },
+          }),
+          JSON.stringify({ type: 'result', result: 'Done' }),
+        ].join('\n') + '\n'
 
       const mockProc = {
         pid: 12345,
@@ -292,13 +321,17 @@ describe('ClaudeService', () => {
                   return { done: false, value: new TextEncoder().encode(events) }
                 }
                 return { done: true, value: undefined }
-              }
+              },
             }
-          }
+          },
         },
-        stderr: new ReadableStream({ start(c) { c.close() } }),
+        stderr: new ReadableStream({
+          start(c) {
+            c.close()
+          },
+        }),
         stdin: null,
-        exitCode: 0
+        exitCode: 0,
       }
 
       const originalSpawn = Bun.spawn
@@ -310,7 +343,7 @@ describe('ClaudeService', () => {
           chunks.push(chunk)
         }
 
-        const textChunk = chunks.find(c => c.type === 'text')
+        const textChunk = chunks.find((c) => c.type === 'text')
         expect(textChunk).toBeDefined()
         expect(textChunk?.data).toBe('Hello from assistant')
       } finally {
@@ -319,20 +352,23 @@ describe('ClaudeService', () => {
     })
 
     test('yields tool_use chunks', async () => {
-      const events = [
-        JSON.stringify({
-          type: 'assistant',
-          session_id: 'sess-1',
-          message: {
-            content: [{
-              type: 'tool_use',
-              name: 'Read',
-              input: { file_path: '/test.txt' }
-            }]
-          }
-        }),
-        JSON.stringify({ type: 'result', result: 'Done' })
-      ].join('\n') + '\n'
+      const events =
+        [
+          JSON.stringify({
+            type: 'assistant',
+            session_id: 'sess-1',
+            message: {
+              content: [
+                {
+                  type: 'tool_use',
+                  name: 'Read',
+                  input: { file_path: '/test.txt' },
+                },
+              ],
+            },
+          }),
+          JSON.stringify({ type: 'result', result: 'Done' }),
+        ].join('\n') + '\n'
 
       const mockProc = {
         pid: 12345,
@@ -346,13 +382,17 @@ describe('ClaudeService', () => {
                   return { done: false, value: new TextEncoder().encode(events) }
                 }
                 return { done: true, value: undefined }
-              }
+              },
             }
-          }
+          },
         },
-        stderr: new ReadableStream({ start(c) { c.close() } }),
+        stderr: new ReadableStream({
+          start(c) {
+            c.close()
+          },
+        }),
         stdin: null,
-        exitCode: 0
+        exitCode: 0,
       }
 
       const originalSpawn = Bun.spawn
@@ -364,7 +404,7 @@ describe('ClaudeService', () => {
           chunks.push(chunk)
         }
 
-        const toolChunk = chunks.find(c => c.type === 'tool_use')
+        const toolChunk = chunks.find((c) => c.type === 'tool_use')
         expect(toolChunk).toBeDefined()
         expect(toolChunk?.tool).toBe('Read')
         expect(toolChunk?.toolInput).toEqual({ file_path: '/test.txt' })
@@ -388,13 +428,17 @@ describe('ClaudeService', () => {
                   return { done: false, value: new TextEncoder().encode(events) }
                 }
                 return { done: true, value: undefined }
-              }
+              },
             }
-          }
+          },
         },
-        stderr: new ReadableStream({ start(c) { c.close() } }),
+        stderr: new ReadableStream({
+          start(c) {
+            c.close()
+          },
+        }),
         stdin: null,
-        exitCode: 0
+        exitCode: 0,
       }
 
       const originalSpawn = Bun.spawn

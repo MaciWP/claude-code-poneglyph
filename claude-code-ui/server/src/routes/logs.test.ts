@@ -1,11 +1,16 @@
-import { describe, test, expect, beforeEach, afterEach, mock } from 'bun:test'
+import { describe, test, expect, beforeEach, afterEach, spyOn } from 'bun:test'
 import { Elysia } from 'elysia'
+import { logger } from '../services/logger'
+import type { LogEntry } from '../services/logger'
 
 // =============================================================================
-// MOCK LOGGER
+// MOCK LOGGER VIA SPYON
 // =============================================================================
+// Using spyOn instead of mock.module to avoid polluting the global module cache.
+// Bun's mock.module is process-global and leaks to other test files, breaking
+// tests that import the real StructuredLogger class.
 
-const mockLogs = [
+const mockLogs: LogEntry[] = [
   {
     id: 'log-1',
     timestamp: '2024-01-01T00:00:00.000Z',
@@ -31,8 +36,8 @@ const mockLogs = [
 
 let currentMockLogs = [...mockLogs]
 
-const mockLogger = {
-  getLogs: mock((filters?: Record<string, unknown>) => {
+const getLogsSpy = spyOn(logger, 'getLogs').mockImplementation(
+  (filters?: Record<string, unknown>) => {
     let result = [...currentMockLogs]
 
     if (filters?.level) {
@@ -43,9 +48,7 @@ const mockLogger = {
         error: 3,
       }
       const minPriority = levelPriority[filters.level as string]
-      result = result.filter(
-        (entry) => levelPriority[entry.level] >= minPriority
-      )
+      result = result.filter((entry) => levelPriority[entry.level] >= minPriority)
     }
 
     if (filters?.source) {
@@ -60,31 +63,30 @@ const mockLogger = {
       result = result.slice(0, filters.limit)
     }
 
-    return result
-  }),
-  getLogCount: mock(() => currentMockLogs.length),
-  clear: mock(() => {
-    currentMockLogs = []
-  }),
-  exportLogs: mock((format: 'json' | 'text') => {
-    if (format === 'json') {
-      return JSON.stringify(currentMockLogs, null, 2)
-    }
-    return currentMockLogs
-      .map(
-        (entry) =>
-          `[${entry.timestamp}] [${entry.level.toUpperCase()}] [${entry.source}] ${entry.message}`
-      )
-      .join('\n')
-  }),
-}
+    return result as LogEntry[]
+  }
+)
 
-mock.module('../services/logger', () => ({
-  logger: mockLogger,
-}))
+const getLogCountSpy = spyOn(logger, 'getLogCount').mockImplementation(() => currentMockLogs.length)
 
-// Import after mocking
-const { logsRoutes } = require('./logs')
+const clearSpy = spyOn(logger, 'clear').mockImplementation(() => {
+  currentMockLogs = []
+})
+
+const exportLogsSpy = spyOn(logger, 'exportLogs').mockImplementation((format: 'json' | 'text') => {
+  if (format === 'json') {
+    return JSON.stringify(currentMockLogs, null, 2)
+  }
+  return currentMockLogs
+    .map(
+      (entry) =>
+        `[${entry.timestamp}] [${entry.level.toUpperCase()}] [${entry.source}] ${entry.message}`
+    )
+    .join('\n')
+})
+
+// Import route after spying
+import { logsRoutes } from './logs'
 
 // =============================================================================
 // TEST UTILITIES
@@ -107,11 +109,11 @@ describe('Logs Routes', () => {
     // Reset mock logs
     currentMockLogs = [...mockLogs]
 
-    // Reset all mocks
-    mockLogger.getLogs.mockClear()
-    mockLogger.getLogCount.mockClear()
-    mockLogger.clear.mockClear()
-    mockLogger.exportLogs.mockClear()
+    // Reset all spies
+    getLogsSpy.mockClear()
+    getLogCountSpy.mockClear()
+    clearSpy.mockClear()
+    exportLogsSpy.mockClear()
 
     app = createTestApp()
     server = app.listen({ port: 0 })
@@ -135,7 +137,7 @@ describe('Logs Routes', () => {
       expect(data.logs).toBeInstanceOf(Array)
       expect(data.logs.length).toBe(3)
       expect(data.count).toBe(3)
-      expect(mockLogger.getLogs).toHaveBeenCalled()
+      expect(getLogsSpy).toHaveBeenCalled()
     })
 
     test('should accept level filter', async () => {
@@ -143,7 +145,7 @@ describe('Logs Routes', () => {
       const data = await response.json()
 
       expect(response.status).toBe(200)
-      expect(mockLogger.getLogs).toHaveBeenCalled()
+      expect(getLogsSpy).toHaveBeenCalled()
       // Filter should only return error level logs
       expect(data.logs.every((log: { level: string }) => log.level === 'error')).toBe(true)
     })
@@ -153,7 +155,7 @@ describe('Logs Routes', () => {
       const data = await response.json()
 
       expect(response.status).toBe(200)
-      expect(mockLogger.getLogs).toHaveBeenCalled()
+      expect(getLogsSpy).toHaveBeenCalled()
       expect(data.logs.every((log: { source: string }) => log.source === 'agent')).toBe(true)
     })
 
@@ -163,7 +165,7 @@ describe('Logs Routes', () => {
 
       expect(response.status).toBe(200)
       expect(data.logs.length).toBe(2)
-      expect(mockLogger.getLogs).toHaveBeenCalled()
+      expect(getLogsSpy).toHaveBeenCalled()
     })
 
     test('should accept offset filter', async () => {
@@ -172,7 +174,7 @@ describe('Logs Routes', () => {
 
       expect(response.status).toBe(200)
       expect(data.logs.length).toBe(2)
-      expect(mockLogger.getLogs).toHaveBeenCalled()
+      expect(getLogsSpy).toHaveBeenCalled()
     })
 
     test('should return empty array when no logs', async () => {
@@ -191,12 +193,12 @@ describe('Logs Routes', () => {
       const data = await response.json()
 
       expect(response.status).toBe(200)
-      expect(mockLogger.getLogs).toHaveBeenCalled()
+      expect(getLogsSpy).toHaveBeenCalled()
       expect(data.logs.length).toBeLessThanOrEqual(1)
     })
 
     test('should handle getLogs errors gracefully', async () => {
-      mockLogger.getLogs.mockImplementationOnce(() => {
+      getLogsSpy.mockImplementationOnce(() => {
         throw new Error('Database error')
       })
 
@@ -219,11 +221,11 @@ describe('Logs Routes', () => {
 
       expect(response.status).toBe(200)
       expect(data.count).toBe(3)
-      expect(mockLogger.getLogCount).toHaveBeenCalled()
+      expect(getLogCountSpy).toHaveBeenCalled()
     })
 
     test('should return 0 when empty', async () => {
-      mockLogger.getLogCount.mockReturnValueOnce(0)
+      getLogCountSpy.mockReturnValueOnce(0)
 
       const response = await fetch(`${baseUrl}/api/logs/count`)
       const data = await response.json()
@@ -233,7 +235,7 @@ describe('Logs Routes', () => {
     })
 
     test('should handle getLogCount errors gracefully', async () => {
-      mockLogger.getLogCount.mockImplementationOnce(() => {
+      getLogCountSpy.mockImplementationOnce(() => {
         throw new Error('Count error')
       })
 
@@ -261,7 +263,7 @@ describe('Logs Routes', () => {
       expect(response.status).toBe(400)
       expect(data.error).toBe('Confirmation required')
       expect(data.details).toContain('confirm: true')
-      expect(mockLogger.clear).not.toHaveBeenCalled()
+      expect(clearSpy).not.toHaveBeenCalled()
     })
 
     test('should fail with 422 if confirm is missing', async () => {
@@ -272,7 +274,7 @@ describe('Logs Routes', () => {
       })
 
       expect(response.status).toBe(422)
-      expect(mockLogger.clear).not.toHaveBeenCalled()
+      expect(clearSpy).not.toHaveBeenCalled()
     })
 
     test('should clear logs successfully with confirm: true', async () => {
@@ -286,11 +288,11 @@ describe('Logs Routes', () => {
       expect(response.status).toBe(200)
       expect(data.ok).toBe(true)
       expect(data.message).toContain('cleared')
-      expect(mockLogger.clear).toHaveBeenCalled()
+      expect(clearSpy).toHaveBeenCalled()
     })
 
     test('should handle clear errors gracefully', async () => {
-      mockLogger.clear.mockImplementationOnce(() => {
+      clearSpy.mockImplementationOnce(() => {
         throw new Error('Clear failed')
       })
 
@@ -315,7 +317,7 @@ describe('Logs Routes', () => {
       const response = await fetch(`${baseUrl}/api/logs/export`)
 
       expect(response.status).toBe(200)
-      expect(mockLogger.exportLogs).toHaveBeenCalledWith('json')
+      expect(exportLogsSpy).toHaveBeenCalledWith('json')
 
       const contentType = response.headers.get('Content-Type')
       expect(contentType).toContain('application/json')
@@ -329,7 +331,7 @@ describe('Logs Routes', () => {
       const response = await fetch(`${baseUrl}/api/logs/export?format=json`)
 
       expect(response.status).toBe(200)
-      expect(mockLogger.exportLogs).toHaveBeenCalledWith('json')
+      expect(exportLogsSpy).toHaveBeenCalledWith('json')
 
       const contentType = response.headers.get('Content-Type')
       expect(contentType).toContain('application/json')
@@ -339,7 +341,7 @@ describe('Logs Routes', () => {
       const response = await fetch(`${baseUrl}/api/logs/export?format=text`)
 
       expect(response.status).toBe(200)
-      expect(mockLogger.exportLogs).toHaveBeenCalledWith('text')
+      expect(exportLogsSpy).toHaveBeenCalledWith('text')
 
       const contentType = response.headers.get('Content-Type')
       expect(contentType).toContain('text/plain')
@@ -358,7 +360,7 @@ describe('Logs Routes', () => {
     })
 
     test('should handle export errors gracefully', async () => {
-      mockLogger.exportLogs.mockImplementationOnce(() => {
+      exportLogsSpy.mockImplementationOnce(() => {
         throw new Error('Export failed')
       })
 

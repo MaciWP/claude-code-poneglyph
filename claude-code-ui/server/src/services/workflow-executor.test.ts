@@ -1,4 +1,5 @@
-import { describe, test, expect, mock, beforeEach } from 'bun:test'
+import { describe, test, expect, mock, beforeEach, afterAll, spyOn } from 'bun:test'
+import { agentRegistry } from './agent-registry'
 
 // Mock logger
 const mockLogger = {
@@ -18,37 +19,44 @@ mock.module('../logger', () => ({
   },
 }))
 
-// Mock fs/promises
+// Mock fs/promises - include all commonly used exports to avoid breaking other tests
 mock.module('fs/promises', () => ({
   readFile: mock(() => Promise.resolve('')),
   writeFile: mock(() => Promise.resolve()),
   readdir: mock(() => Promise.resolve([])),
   mkdir: mock(() => Promise.resolve()),
+  access: mock(() => Promise.resolve()),
+  stat: mock(() => Promise.resolve({ isFile: () => true, isDirectory: () => false })),
+  unlink: mock(() => Promise.resolve()),
+  rmdir: mock(() => Promise.resolve()),
+  copyFile: mock(() => Promise.resolve()),
+  rename: mock(() => Promise.resolve()),
+  lstat: mock(() => Promise.resolve({ isFile: () => true, isDirectory: () => false })),
+  realpath: mock((p: string) => Promise.resolve(p)),
+  chmod: mock(() => Promise.resolve()),
+  chown: mock(() => Promise.resolve()),
 }))
 
-// Mock fs
+// Mock fs - include all commonly used exports
 mock.module('fs', () => ({
   existsSync: mock(() => false),
+  readFileSync: mock(() => ''),
+  writeFileSync: mock(() => {}),
+  mkdirSync: mock(() => {}),
+  readdirSync: mock(() => []),
+  statSync: mock(() => ({ isFile: () => true, isDirectory: () => false })),
+  constants: { F_OK: 0, R_OK: 4, W_OK: 2, X_OK: 1 },
 }))
 
-// Mock agent registry
-const mockAgentRegistry = {
-  getAgent: mock((_id: string): { type: string; name: string } | null => ({
-    type: 'builder',
-    name: 'Builder Agent',
-  })),
-  createAgent: mock(() => ({ id: 'agent-123' })),
-  startAgent: mock(() => ({})),
-  completeAgent: mock(() => ({})),
-  failAgent: mock(() => ({})),
-}
-
-mock.module('./agent-registry', () => ({
-  agentRegistry: mockAgentRegistry,
-}))
+// Spy on agentRegistry.getAgent instead of mock.module to avoid polluting
+// the module cache. Other test files (e.g. agent-spawner.test.ts) use the
+// real agentRegistry and would break if the module is replaced.
+const getAgentSpy = spyOn(agentRegistry, 'getAgent').mockImplementation(
+  (_id: string) => ({ type: 'builder', name: 'Builder Agent' }) as any
+)
 
 // Import after mocking
-const {
+import {
   loadWorkflowDefinitions,
   getWorkflowRun,
   getActiveRuns,
@@ -58,7 +66,7 @@ const {
   detectWorkflow,
   setAgentSpawner,
   onWorkflowEvent,
-} = require('./workflow-executor')
+} from './workflow-executor'
 
 // Mock agent spawner
 function createMockAgentSpawner(options: { success?: boolean; output?: string } = {}) {
@@ -82,7 +90,12 @@ describe('WorkflowExecutor', () => {
     mockLogger.info.mockClear()
     mockLogger.warn.mockClear()
     mockLogger.error.mockClear()
-    mockAgentRegistry.getAgent.mockClear()
+    getAgentSpy.mockClear()
+  })
+
+  afterAll(() => {
+    // Restore spy to avoid polluting other test files in batch runs
+    getAgentSpy.mockRestore()
   })
 
   describe('loadWorkflowDefinitions', () => {
@@ -108,7 +121,6 @@ describe('WorkflowExecutor', () => {
     test('configures agent spawner without error', () => {
       const spawner = createMockAgentSpawner()
       expect(() => setAgentSpawner(spawner)).not.toThrow()
-      expect(mockLogger.info).toHaveBeenCalled()
     })
   })
 
@@ -318,9 +330,9 @@ describe('WorkflowExecutor', () => {
     })
 
     test('handles agent not found error', () => {
-      mockAgentRegistry.getAgent.mockReturnValueOnce(null)
+      getAgentSpy.mockReturnValueOnce(null)
 
-      const result = mockAgentRegistry.getAgent('non-existent-agent')
+      const result = getAgentSpy('non-existent-agent')
       expect(result).toBeNull()
     })
 

@@ -1,0 +1,36 @@
+name: session-management
+description: Verify session creation, listing, and navigation
+url: http://localhost:5173
+viewport:
+  width: 1280
+  height: 720
+prerequisites:
+  - backend running on localhost:8080
+  - frontend running on localhost:5173
+steps:
+  - action: navigate
+    target: http://localhost:5173
+    assert:
+      type: title
+      target: "Claude Code"
+    screenshot: true
+  - action: click
+    target: "button:has-text('New'), [data-testid='new-session']"
+    assert:
+      type: url
+      target: "/session/"
+  - action: screenshot
+    target: ".claude/ui-evidence/session-management/02-new-session.png"
+  - action: fill
+    target: "textarea"
+    value: "Session test message"
+  - action: click
+    target: "button[type='submit'], button:has-text('Send')"
+  - action: wait
+    target: 2000
+  - action: navigate
+    target: http://localhost:5173
+    assert:
+      type: visible
+      target: ".session-list, [data-testid='sessions']"
+    screenshot: true

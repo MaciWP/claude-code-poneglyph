@@ -19,12 +19,12 @@
   },
   "lint-staged": {
     "claude-code-ui/server/src/**/*.ts": [
-      "bunx --cwd claude-code-ui/server eslint --fix",
-      "bunx --cwd claude-code-ui/server prettier --write"
+      "bash -c 'cd claude-code-ui/server && bunx eslint --fix \"$@\"' _",
+      "bash -c 'cd claude-code-ui/server && bunx prettier --write \"$@\"' _"
     ],
     "claude-code-ui/web/src/**/*.{ts,tsx}": [
-      "bunx --cwd claude-code-ui/web eslint --fix",
-      "bunx --cwd claude-code-ui/web prettier --write"
+      "bash -c 'cd claude-code-ui/web && bunx eslint --fix \"$@\"' _",
+      "bash -c 'cd claude-code-ui/web && bunx prettier --write \"$@\"' _"
     ]
   },
   "repository": {

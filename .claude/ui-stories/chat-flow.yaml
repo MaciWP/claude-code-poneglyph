@@ -1,0 +1,35 @@
+name: chat-flow
+description: Verify basic chat interaction flow - send message and receive response
+url: http://localhost:5173
+viewport:
+  width: 1280
+  height: 720
+prerequisites:
+  - backend running on localhost:8080
+  - frontend running on localhost:5173
+steps:
+  - action: navigate
+    target: http://localhost:5173
+    assert:
+      type: visible
+      target: "textarea"
+    screenshot: true
+  - action: fill
+    target: "textarea"
+    value: "Hello, this is a test message"
+  - action: screenshot
+    target: ".claude/ui-evidence/chat-flow/02-typed.png"
+  - action: click
+    target: "button[type='submit'], button:has-text('Send')"
+    assert:
+      type: visible
+      target: ".message, [data-testid='message']"
+  - action: wait
+    target: 3000
+  - action: screenshot
+    target: ".claude/ui-evidence/chat-flow/04-response.png"
+  - action: scroll
+    target: "bottom"
+    assert:
+      type: visible
+      target: ".message:last-child, [data-testid='message']:last-of-type"

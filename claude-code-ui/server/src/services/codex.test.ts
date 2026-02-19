@@ -1,4 +1,25 @@
 import { describe, test, expect, mock, beforeEach } from 'bun:test'
+
+mock.module('../logger', () => ({
+  logger: {
+    debug: () => {},
+    info: () => {},
+    warn: () => {},
+    error: () => {},
+    child: () => ({
+      debug: () => {},
+      info: () => {},
+      warn: () => {},
+      error: () => {},
+    }),
+  },
+}))
+
+mock.module('../utils/security', () => ({
+  validateWorkDir: (dir?: string) => dir || process.cwd(),
+  getSafeEnvForCodex: () => ({}),
+}))
+
 import { CodexService } from './codex'
 import type { StreamChunk } from '@shared/types'
 
@@ -17,29 +38,32 @@ describe('CodexService', () => {
 
   describe('executeCLI()', () => {
     test('spawns codex with correct arguments', async () => {
-      const mockStdout = JSON.stringify({
-        type: 'message.delta',
-        delta: 'Hello from Codex'
-      }) + '\n' + JSON.stringify({
-        type: 'response.done',
-        session_id: 'codex-session-123'
-      })
+      const mockStdout =
+        JSON.stringify({
+          type: 'message.delta',
+          delta: 'Hello from Codex',
+        }) +
+        '\n' +
+        JSON.stringify({
+          type: 'response.done',
+          session_id: 'codex-session-123',
+        })
 
       const mockProc = {
         stdout: new ReadableStream({
           start(controller) {
             controller.enqueue(new TextEncoder().encode(mockStdout))
             controller.close()
-          }
+          },
         }),
         stderr: new ReadableStream({
           start(controller) {
             controller.close()
-          }
+          },
         }),
         exited: Promise.resolve(0),
         pid: 12345,
-        kill: mock(() => {})
+        kill: mock(() => {}),
       }
 
       const originalSpawn = Bun.spawn
@@ -48,7 +72,7 @@ describe('CodexService', () => {
       try {
         const result = await service.executeCLI({
           prompt: 'Hello',
-          workDir: '/test/dir'
+          workDir: '/test/dir',
         })
 
         expect(Bun.spawn).toHaveBeenCalled()
@@ -66,26 +90,26 @@ describe('CodexService', () => {
       const events = [
         { type: 'message.delta', delta: 'Hello ' },
         { type: 'message.delta', delta: 'World' },
-        { type: 'response.done', session_id: 'test-session' }
+        { type: 'response.done', session_id: 'test-session' },
       ]
 
-      const mockStdout = events.map(e => JSON.stringify(e)).join('\n')
+      const mockStdout = events.map((e) => JSON.stringify(e)).join('\n')
 
       const mockProc = {
         stdout: new ReadableStream({
           start(controller) {
             controller.enqueue(new TextEncoder().encode(mockStdout))
             controller.close()
-          }
+          },
         }),
         stderr: new ReadableStream({
           start(controller) {
             controller.close()
-          }
+          },
         }),
         exited: Promise.resolve(0),
         pid: 12345,
-        kill: mock(() => {})
+        kill: mock(() => {}),
       }
 
       const originalSpawn = Bun.spawn
@@ -110,16 +134,16 @@ describe('CodexService', () => {
         stdout: new ReadableStream({
           start(controller) {
             controller.close()
-          }
+          },
         }),
         stderr: new ReadableStream({
           start(controller) {
             controller.close()
-          }
+          },
         }),
         exited: Promise.resolve(0),
         pid: 12345,
-        kill: mock(() => {})
+        kill: mock(() => {}),
       }
 
       const originalSpawn = Bun.spawn
@@ -137,27 +161,36 @@ describe('CodexService', () => {
 
     test('abort kills the process', async () => {
       const killMock = mock(() => {})
+      let stdoutController: ReadableStreamDefaultController | null = null
       const mockProc = {
         stdout: new ReadableStream({
-          start(_controller) {
-            // Never close to simulate long-running process
-          }
+          start(controller) {
+            stdoutController = controller
+          },
         }),
         stderr: new ReadableStream({
           start(controller) {
             controller.close()
-          }
+          },
         }),
         exited: new Promise(() => {}), // Never resolves
         pid: 12345,
-        kill: killMock
+        kill: killMock,
       }
 
       const originalSpawn = Bun.spawn
       Bun.spawn = mock(() => mockProc as unknown as ReturnType<typeof Bun.spawn>)
 
       try {
-        const { abort } = service.streamCLIWithAbort({ prompt: 'test' })
+        const { stream, abort } = service.streamCLIWithAbort({ prompt: 'test' })
+
+        // Enqueue data so the first next() resolves, triggering proc creation
+        const line = JSON.stringify({ type: 'message.delta', delta: 'hi' }) + '\n'
+        stdoutController!.enqueue(new TextEncoder().encode(line))
+
+        const iterator = stream[Symbol.asyncIterator]()
+        await iterator.next()
+
         abort()
 
         expect(killMock).toHaveBeenCalled()

@@ -1,6 +1,78 @@
 import { describe, test, expect, beforeEach, afterEach, mock } from 'bun:test'
+
+// Mock heavy/side-effect modules before importing websocket
+mock.module('../services/context-window-monitor', () => {
+  const noop = () => {}
+  return {
+    contextWindowMonitor: {
+      on: noop,
+      off: noop,
+      getState: () => ({
+        maxTokens: 200000,
+        usedTokens: 0,
+        remainingTokens: 200000,
+        usagePercent: 0,
+        status: 'ok' as const,
+      }),
+      setMaxListeners: noop,
+    },
+  }
+})
+
+mock.module('../services/memory', () => ({
+  extractMemoriesFromConversation: mock(() => Promise.resolve([])),
+  searchRelevantMemories: mock(() => Promise.resolve([])),
+  initMemorySystem: mock(() => Promise.resolve()),
+  memoryStore: {
+    init: mock(() => Promise.resolve()),
+    getAll: mock(() => Promise.resolve([])),
+    search: mock(() => []),
+    getStats: () => ({}),
+  },
+  generateEmbedding: mock(() => Promise.resolve([])),
+  semanticSearch: mock(() => Promise.resolve([])),
+  cosineSimilarity: mock(() => 0),
+  preloadModel: mock(() => Promise.resolve()),
+  isModelLoaded: mock(() => false),
+  memoryGraph: { init: mock(() => Promise.resolve()), getStats: () => ({}) },
+  extractFromConversation: mock(() => Promise.resolve([])),
+  extractFromText: mock(() => Promise.resolve([])),
+  extractTags: mock(() => []),
+  extractExplicitMemory: mock(() => null),
+  runAbstraction: mock(() => Promise.resolve()),
+  findSimilarMemories: mock(() => Promise.resolve([])),
+  abstractCluster: mock(() => Promise.resolve()),
+  detectPatterns: mock(() => Promise.resolve([])),
+  checkForTriggers: mock(() => Promise.resolve([])),
+  processFeedback: mock(() => Promise.resolve()),
+  handleActiveLearningResponse: mock(() => Promise.resolve()),
+  resetSessionState: mock(() => {}),
+  getSessionStats: mock(() => ({})),
+}))
+
+mock.module('../services/memory/injection', () => ({
+  injectMemories: mock(() =>
+    Promise.resolve({ context: '', memories: [], metadata: { queryTimeMs: 0 } })
+  ),
+}))
+
+mock.module('../services/auto-continuation', () => ({
+  autoContinuation: {
+    recordIteration: mock(() => {}),
+    getState: mock(() => ({
+      isActive: false,
+      currentIteration: 0,
+      maxIterations: 5,
+      startedAt: null,
+      sessionId: null,
+    })),
+  },
+  shouldContinue: mock(() => ({ should: false, reason: 'completed' })),
+  getContinuePrompt: mock(() => ''),
+}))
+
 import { Elysia } from 'elysia'
-import { createWebSocketRoutes } from './websocket'
+import { createWebSocketRoutes, stopCleanupInterval } from './websocket'
 import type { ClaudeService } from '../services/claude'
 import type { CodexService } from '../services/codex'
 import type { GeminiService } from '../services/gemini'
@@ -16,18 +88,36 @@ interface MockStreamChunk {
 
 function createMockClaudeService(): ClaudeService {
   return {
-    execute: mock(() => Promise.resolve({ response: '', messages: [], sessionId: '', toolsUsed: [], mode: 'sdk' as const })),
-    executeCLI: mock(() => Promise.resolve({ response: '', sessionId: '', toolsUsed: [], mode: 'cli' as const })),
-    stream: mock(() => (async function* () { yield { type: 'done', data: '' } })()),
-    streamCLI: mock(() => (async function* () { yield { type: 'done', data: '' } })()),
+    execute: mock(() =>
+      Promise.resolve({
+        response: '',
+        messages: [],
+        sessionId: '',
+        toolsUsed: [],
+        mode: 'sdk' as const,
+      })
+    ),
+    executeCLI: mock(() =>
+      Promise.resolve({ response: '', sessionId: '', toolsUsed: [], mode: 'cli' as const })
+    ),
+    stream: mock(() =>
+      (async function* () {
+        yield { type: 'done', data: '' }
+      })()
+    ),
+    streamCLI: mock(() =>
+      (async function* () {
+        yield { type: 'done', data: '' }
+      })()
+    ),
     streamCLIWithAbort: mock(() => ({
       stream: (async function* (): AsyncGenerator<MockStreamChunk> {
         yield { type: 'text', data: 'Hello' }
         yield { type: 'done', data: '' }
       })(),
       abort: mock(() => {}),
-      sendUserAnswer: mock(() => {})
-    }))
+      sendUserAnswer: mock(() => {}),
+    })),
   } as unknown as ClaudeService
 }
 
@@ -38,8 +128,8 @@ function createMockCodexService(): CodexService {
         yield { type: 'done', data: '' }
       })(),
       abort: mock(() => {}),
-      sendUserAnswer: mock(() => {})
-    }))
+      sendUserAnswer: mock(() => {}),
+    })),
   } as unknown as CodexService
 }
 
@@ -50,17 +140,35 @@ function createMockGeminiService(): GeminiService {
         yield { type: 'done', data: '' }
       })(),
       abort: mock(() => {}),
-      sendUserAnswer: mock(() => {})
-    }))
+      sendUserAnswer: mock(() => {}),
+    })),
   } as unknown as GeminiService
 }
 
 function createMockSessionStore(): SessionStore {
   return {
-    get: mock(() => Promise.resolve({ id: 'test-session', messages: [], name: '', createdAt: '', updatedAt: '', workDir: '' })),
+    get: mock(() =>
+      Promise.resolve({
+        id: 'test-session',
+        messages: [],
+        name: '',
+        createdAt: '',
+        updatedAt: '',
+        workDir: '',
+      })
+    ),
     addMessage: mock(() => Promise.resolve()),
     addAgent: mock(() => Promise.resolve()),
-    create: mock(() => Promise.resolve({ id: 'new-session', messages: [], name: '', createdAt: '', updatedAt: '', workDir: '' })),
+    create: mock(() =>
+      Promise.resolve({
+        id: 'new-session',
+        messages: [],
+        name: '',
+        createdAt: '',
+        updatedAt: '',
+        workDir: '',
+      })
+    ),
     list: mock(() => Promise.resolve([])),
     save: mock(() => Promise.resolve()),
     delete: mock(() => Promise.resolve()),
@@ -71,17 +179,19 @@ function createMockSessionStore(): SessionStore {
 
 function createMockOrchestrator() {
   return {
-    enrichPrompt: mock(() => Promise.resolve({
-      systemContext: '',
-      enhancedPrompt: 'test prompt',
-      metadata: {
-        intent: { primary: 'code', confidence: 0.9, workflow: [] },
-        injectedRules: [],
-        injectedSkills: [],
-        promptEngineerActive: false
-      }
-    })),
-    formatEnrichedPrompt: mock((enriched: { enhancedPrompt: string }) => enriched.enhancedPrompt)
+    enrichPrompt: mock(() =>
+      Promise.resolve({
+        systemContext: '',
+        enhancedPrompt: 'test prompt',
+        metadata: {
+          intent: { primary: 'code', confidence: 0.9, workflow: [] },
+          injectedRules: [],
+          injectedSkills: [],
+          promptEngineerActive: false,
+        },
+      })
+    ),
+    formatEnrichedPrompt: mock((enriched: { enhancedPrompt: string }) => enriched.enhancedPrompt),
   }
 }
 
@@ -96,8 +206,8 @@ function createMockAgentRegistry() {
       handlers.get(event)?.delete(handler)
     }),
     emit: (event: string, ...args: unknown[]) => {
-      handlers.get(event)?.forEach(h => h(...args))
-    }
+      handlers.get(event)?.forEach((h) => h(...args))
+    },
   }
 }
 
@@ -110,15 +220,16 @@ function createWsTestApp(
   orchestrator: ReturnType<typeof createMockOrchestrator>,
   agentRegistry: ReturnType<typeof createMockAgentRegistry>
 ) {
-  return new Elysia()
-    .use(createWebSocketRoutes(
+  return new Elysia().use(
+    createWebSocketRoutes(
       claude,
       codex,
       gemini,
       sessions,
       orchestrator as unknown as typeof import('../services/orchestrator').orchestrator,
       agentRegistry as unknown as typeof import('../services/agent-registry').agentRegistry
-    ))
+    )
+  )
 }
 
 type WsTestApp = ReturnType<typeof createWsTestApp>
@@ -158,6 +269,7 @@ describe('WebSocket Routes', () => {
   afterEach(() => {
     server?.stop()
     server = null
+    stopCleanupInterval()
   })
 
   describe('Connection lifecycle', () => {
@@ -213,9 +325,10 @@ describe('WebSocket Routes', () => {
 
       await Bun.sleep(100)
 
-      const resultMsg = messages.find((m: unknown) =>
-        (m as { type: string }).type === 'result' &&
-        (m as { data: string }).data.includes('No active process')
+      const resultMsg = messages.find(
+        (m: unknown) =>
+          (m as { type: string }).type === 'result' &&
+          (m as { data: string }).data.includes('No active process')
       )
       expect(resultMsg).toBeDefined()
 
@@ -236,17 +349,21 @@ describe('WebSocket Routes', () => {
         messages.push(JSON.parse(e.data))
       }
 
-      ws.send(JSON.stringify({
-        type: 'execute-cli',
-        data: {
-          prompt: 'Hello',
-          sessionId: 'test-session'
-        }
-      }))
+      ws.send(
+        JSON.stringify({
+          type: 'execute-cli',
+          data: {
+            prompt: 'Hello',
+            sessionId: 'test-session',
+          },
+        })
+      )
 
       await Bun.sleep(200)
 
-      const requestIdMsg = messages.find((m: unknown) => (m as { type: string }).type === 'request_id')
+      const requestIdMsg = messages.find(
+        (m: unknown) => (m as { type: string }).type === 'request_id'
+      )
       expect(requestIdMsg).toBeDefined()
       expect((requestIdMsg as { data: string }).data).toBeTruthy()
 
@@ -265,13 +382,15 @@ describe('WebSocket Routes', () => {
         messages.push(JSON.parse(e.data))
       }
 
-      ws.send(JSON.stringify({
-        type: 'execute-cli',
-        data: {
-          prompt: 'Test prompt',
-          sessionId: 'test-session'
-        }
-      }))
+      ws.send(
+        JSON.stringify({
+          type: 'execute-cli',
+          data: {
+            prompt: 'Test prompt',
+            sessionId: 'test-session',
+          },
+        })
+      )
 
       await Bun.sleep(200)
 
@@ -292,13 +411,15 @@ describe('WebSocket Routes', () => {
         ws.onopen = () => resolve()
       })
 
-      ws.send(JSON.stringify({
-        type: 'execute-cli',
-        data: {
-          prompt: 'Test prompt',
-          sessionId: 'test-session'
-        }
-      }))
+      ws.send(
+        JSON.stringify({
+          type: 'execute-cli',
+          data: {
+            prompt: 'Test prompt',
+            sessionId: 'test-session',
+          },
+        })
+      )
 
       await Bun.sleep(200)
 
@@ -314,13 +435,15 @@ describe('WebSocket Routes', () => {
         ws.onopen = () => resolve()
       })
 
-      ws.send(JSON.stringify({
-        type: 'execute-cli',
-        data: {
-          prompt: 'Test',
-          provider: 'codex'
-        }
-      }))
+      ws.send(
+        JSON.stringify({
+          type: 'execute-cli',
+          data: {
+            prompt: 'Test',
+            provider: 'codex',
+          },
+        })
+      )
 
       await Bun.sleep(200)
 
@@ -336,13 +459,15 @@ describe('WebSocket Routes', () => {
         ws.onopen = () => resolve()
       })
 
-      ws.send(JSON.stringify({
-        type: 'execute-cli',
-        data: {
-          prompt: 'Test',
-          provider: 'gemini'
-        }
-      }))
+      ws.send(
+        JSON.stringify({
+          type: 'execute-cli',
+          data: {
+            prompt: 'Test',
+            provider: 'gemini',
+          },
+        })
+      )
 
       await Bun.sleep(200)
 
@@ -367,20 +492,21 @@ describe('WebSocket Routes', () => {
               yield { type: 'done', data: '' }
             })(),
             abort: mock(() => {}),
-            sendUserAnswer
+            sendUserAnswer,
           }
-        })
+        }),
       } as unknown as ClaudeService
 
-      const customApp = new Elysia()
-        .use(createWebSocketRoutes(
+      const customApp = new Elysia().use(
+        createWebSocketRoutes(
           customMockClaude,
           mockCodex,
           mockGemini,
           mockSessions,
           mockOrchestrator as unknown as typeof import('../services/orchestrator').orchestrator,
           mockAgentRegistry as unknown as typeof import('../services/agent-registry').agentRegistry
-        ))
+        )
+      )
 
       const customServer = customApp.listen({ port: 0 })
       const customBaseUrl = `ws://localhost:${customServer.server?.port}`
@@ -400,18 +526,22 @@ describe('WebSocket Routes', () => {
           }
         }
 
-        ws.send(JSON.stringify({
-          type: 'execute-cli',
-          data: { prompt: 'Test' }
-        }))
+        ws.send(
+          JSON.stringify({
+            type: 'execute-cli',
+            data: { prompt: 'Test' },
+          })
+        )
 
         await Bun.sleep(100)
         expect(requestId).toBeTruthy()
 
-        ws.send(JSON.stringify({
-          type: 'user_answer',
-          data: { requestId, answer: 'yes' }
-        }))
+        ws.send(
+          JSON.stringify({
+            type: 'user_answer',
+            data: { requestId, answer: 'yes' },
+          })
+        )
 
         await Bun.sleep(100)
 
@@ -437,22 +567,25 @@ describe('WebSocket Routes', () => {
         messages.push(JSON.parse(e.data))
       }
 
-      ws.send(JSON.stringify({
-        type: 'execute-cli',
-        data: {
-          prompt: 'Test',
-          orchestrate: true
-        }
-      }))
+      ws.send(
+        JSON.stringify({
+          type: 'execute-cli',
+          data: {
+            prompt: 'Test',
+            orchestrate: true,
+          },
+        })
+      )
 
       await Bun.sleep(200)
 
       expect(mockOrchestrator.enrichPrompt).toHaveBeenCalled()
       expect(mockOrchestrator.formatEnrichedPrompt).toHaveBeenCalled()
 
-      const contextMsg = messages.find((m: unknown) =>
-        (m as { type: string }).type === 'context' &&
-        (m as { contextType: string }).contextType === 'rule'
+      const contextMsg = messages.find(
+        (m: unknown) =>
+          (m as { type: string }).type === 'context' &&
+          (m as { contextType: string }).contextType === 'rule'
       )
       expect(contextMsg).toBeDefined()
 
@@ -468,10 +601,12 @@ describe('WebSocket Routes', () => {
         ws.onopen = () => resolve()
       })
 
-      ws.send(JSON.stringify({
-        type: 'execute-cli',
-        data: { prompt: 'Test' }
-      }))
+      ws.send(
+        JSON.stringify({
+          type: 'execute-cli',
+          data: { prompt: 'Test' },
+        })
+      )
 
       await Bun.sleep(200)
 
@@ -490,10 +625,12 @@ describe('WebSocket Routes', () => {
         ws.onopen = () => resolve()
       })
 
-      ws.send(JSON.stringify({
-        type: 'execute-cli',
-        data: { prompt: 'Test' }
-      }))
+      ws.send(
+        JSON.stringify({
+          type: 'execute-cli',
+          data: { prompt: 'Test' },
+        })
+      )
 
       await Bun.sleep(300)
 
@@ -512,18 +649,19 @@ describe('WebSocket Routes', () => {
         ...mockClaude,
         streamCLIWithAbort: mock(() => {
           throw new Error('Test error')
-        })
+        }),
       } as unknown as ClaudeService
 
-      const errorApp = new Elysia()
-        .use(createWebSocketRoutes(
+      const errorApp = new Elysia().use(
+        createWebSocketRoutes(
           errorMockClaude,
           mockCodex,
           mockGemini,
           mockSessions,
           mockOrchestrator as unknown as typeof import('../services/orchestrator').orchestrator,
           mockAgentRegistry as unknown as typeof import('../services/agent-registry').agentRegistry
-        ))
+        )
+      )
 
       const errorServer = errorApp.listen({ port: 0 })
       const errorBaseUrl = `ws://localhost:${errorServer.server?.port}`
@@ -540,10 +678,12 @@ describe('WebSocket Routes', () => {
           messages.push(JSON.parse(e.data))
         }
 
-        ws.send(JSON.stringify({
-          type: 'execute-cli',
-          data: { prompt: 'Test' }
-        }))
+        ws.send(
+          JSON.stringify({
+            type: 'execute-cli',
+            data: { prompt: 'Test' },
+          })
+        )
 
         await Bun.sleep(200)
 
@@ -568,20 +708,23 @@ describe('WebSocket Routes', () => {
             await Bun.sleep(1000)
             yield { type: 'done', data: '' }
           })(),
-          abort: mock(() => { abortCalled = true }),
-          sendUserAnswer: mock(() => {})
-        }))
+          abort: mock(() => {
+            abortCalled = true
+          }),
+          sendUserAnswer: mock(() => {}),
+        })),
       } as unknown as ClaudeService
 
-      const abortApp = new Elysia()
-        .use(createWebSocketRoutes(
+      const abortApp = new Elysia().use(
+        createWebSocketRoutes(
           longRunningMockClaude,
           mockCodex,
           mockGemini,
           mockSessions,
           mockOrchestrator as unknown as typeof import('../services/orchestrator').orchestrator,
           mockAgentRegistry as unknown as typeof import('../services/agent-registry').agentRegistry
-        ))
+        )
+      )
 
       const abortServer = abortApp.listen({ port: 0 })
       const abortBaseUrl = `ws://localhost:${abortServer.server?.port}`
@@ -603,26 +746,31 @@ describe('WebSocket Routes', () => {
           }
         }
 
-        ws.send(JSON.stringify({
-          type: 'execute-cli',
-          data: { prompt: 'Long running task' }
-        }))
+        ws.send(
+          JSON.stringify({
+            type: 'execute-cli',
+            data: { prompt: 'Long running task' },
+          })
+        )
 
         await Bun.sleep(100)
         expect(requestId).toBeTruthy()
 
-        ws.send(JSON.stringify({
-          type: 'abort',
-          data: { requestId }
-        }))
+        ws.send(
+          JSON.stringify({
+            type: 'abort',
+            data: { requestId },
+          })
+        )
 
         await Bun.sleep(200)
 
         expect(abortCalled).toBe(true)
 
-        const abortedMsg = messages.find((m: unknown) =>
-          (m as { type: string }).type === 'result' &&
-          (m as { aborted?: boolean }).aborted === true
+        const abortedMsg = messages.find(
+          (m: unknown) =>
+            (m as { type: string }).type === 'result' &&
+            (m as { aborted?: boolean }).aborted === true
         )
         expect(abortedMsg).toBeDefined()
 

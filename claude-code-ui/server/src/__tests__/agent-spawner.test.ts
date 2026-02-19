@@ -1,4 +1,59 @@
 import { describe, it, expect, beforeEach, mock } from 'bun:test'
+
+const noopLog = {
+  debug: () => {},
+  info: () => {},
+  warn: () => {},
+  error: () => {},
+}
+
+mock.module('../logger', () => ({
+  logger: {
+    ...noopLog,
+    child: () => ({ ...noopLog }),
+  },
+}))
+
+mock.module('../services/expert-store', () => ({
+  expertStore: {
+    list: mock(() => Promise.resolve([])),
+    load: mock(() => Promise.resolve({})),
+    save: mock(() => Promise.resolve()),
+    update: mock(() => Promise.resolve({})),
+    exists: mock(() => Promise.resolve(false)),
+    addChangelogEntry: mock(() => Promise.resolve()),
+    validate: mock(() => Promise.resolve({ valid: true, errors: [], warnings: [] })),
+    getAgentPrompt: mock(() => Promise.resolve('')),
+    clearCache: mock(() => {}),
+  },
+  ExpertStore: class {},
+}))
+
+mock.module('../cache', () => ({
+  agentPromptCache: {
+    get: () => undefined,
+    set: () => {},
+    clear: () => {},
+  },
+  configCache: {
+    get: () => undefined,
+    set: () => {},
+    clear: () => {},
+  },
+  rulesCache: {
+    get: () => undefined,
+    set: () => {},
+    clear: () => {},
+  },
+  SimpleCache: class {
+    get() {
+      return undefined
+    }
+    set() {}
+    clear() {}
+  },
+}))
+
 import { AgentSpawner } from '../services/agent-spawner'
 import { agentRegistry } from '../services/agent-registry'
 import type { StreamChunk } from '@shared/types'
@@ -18,8 +73,8 @@ const createMockClaudeService = () => {
         cacheCreationTokens: 0,
         cacheReadTokens: 0,
         totalTokens: 100,
-        contextPercent: 5
-      }
+        contextPercent: 5,
+      },
     }
   }
 
@@ -27,8 +82,8 @@ const createMockClaudeService = () => {
     streamCLIWithAbort: mock(() => ({
       stream: mockStream(),
       abort: mock(() => {}),
-      sendUserAnswer: mock(() => {})
-    }))
+      sendUserAnswer: mock(() => {}),
+    })),
   }
 }
 
@@ -47,7 +102,7 @@ describe('AgentSpawner', () => {
       const result = await spawner.spawn({
         type: 'builder',
         prompt: 'Build a new feature',
-        sessionId: 'test-session'
+        sessionId: 'test-session',
       })
 
       expect(result.success).toBe(true)
@@ -60,7 +115,7 @@ describe('AgentSpawner', () => {
       const result = await spawner.spawn({
         type: 'scout',
         prompt: 'Explore codebase',
-        sessionId: 'test-session'
+        sessionId: 'test-session',
       })
 
       const agent = agentRegistry.getAgent(result.agentId)
@@ -75,7 +130,7 @@ describe('AgentSpawner', () => {
       await spawner.spawn({
         type: 'builder',
         prompt: 'Test',
-        sessionId: 'test-session'
+        sessionId: 'test-session',
       })
 
       expect(events).toContain('spawned')
@@ -88,7 +143,7 @@ describe('AgentSpawner', () => {
       await spawner.spawn({
         type: 'builder',
         prompt: 'Test',
-        sessionId: 'test-session'
+        sessionId: 'test-session',
       })
 
       expect(events.length).toBe(1)
@@ -100,7 +155,7 @@ describe('AgentSpawner', () => {
         type: 'expert:websocket',
         prompt: 'WebSocket task',
         sessionId: 'test-session',
-        expertId: 'websocket'
+        expertId: 'websocket',
       })
 
       expect(mockClaudeService.streamCLIWithAbort).toHaveBeenCalled()
@@ -111,7 +166,7 @@ describe('AgentSpawner', () => {
         type: 'builder',
         prompt: 'Task',
         sessionId: 'test-session',
-        expertId: 'websocket'
+        expertId: 'websocket',
       })
 
       const call = mockClaudeService.streamCLIWithAbort.mock.calls[0]

@@ -42,6 +42,25 @@ mock.module('../services/memory', () => ({
   getMemorySystemStats: mockGetMemorySystemStats,
   processFeedback: mockProcessFeedback,
   memoryStore: mockMemoryStore,
+  extractMemoriesFromConversation: mock(() => Promise.resolve([])),
+  generateEmbedding: mock(() => Promise.resolve([])),
+  semanticSearch: mock(() => Promise.resolve([])),
+  cosineSimilarity: mock(() => 0),
+  preloadModel: mock(() => Promise.resolve()),
+  isModelLoaded: mock(() => false),
+  memoryGraph: { init: mock(() => Promise.resolve()), getStats: () => ({}) },
+  extractFromConversation: mock(() => Promise.resolve([])),
+  extractFromText: mock(() => Promise.resolve([])),
+  extractTags: mock(() => []),
+  extractExplicitMemory: mock(() => null),
+  runAbstraction: mock(() => Promise.resolve()),
+  findSimilarMemories: mock(() => Promise.resolve([])),
+  abstractCluster: mock(() => Promise.resolve()),
+  detectPatterns: mock(() => Promise.resolve([])),
+  checkForTriggers: mock(() => Promise.resolve([])),
+  handleActiveLearningResponse: mock(() => Promise.resolve()),
+  resetSessionState: mock(() => {}),
+  getSessionStats: mock(() => ({})),
 }))
 
 // Mock memory injection
@@ -76,7 +95,8 @@ mock.module('../services/memory/catcher', () => ({
   memoryCatcher: mockMemoryCatcher,
 }))
 
-// Import after mocking
+// Import after mocking (dynamic import to avoid hoisting above mock.module)
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { memoryRoutes } = require('./memory')
 
 function createTestApp() {

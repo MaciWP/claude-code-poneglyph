@@ -1,12 +1,42 @@
 import { describe, test, expect, mock, beforeEach, afterEach } from 'bun:test'
+
+mock.module('../logger', () => ({
+  logger: {
+    debug: () => {},
+    info: () => {},
+    warn: () => {},
+    error: () => {},
+    child: () => ({
+      debug: () => {},
+      info: () => {},
+      warn: () => {},
+      error: () => {},
+    }),
+  },
+}))
+
 import { GeminiService } from './gemini'
 import type { StreamChunk } from '@shared/types'
 import type { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai'
 
+function createMockChatSession(
+  sendMessageResponse: unknown = { response: { text: () => 'test response' } },
+  streamResponse: unknown = {
+    stream: (async function* () {
+      yield { text: () => 'chunk' }
+    })(),
+  }
+) {
+  return {
+    sendMessage: mock(() => Promise.resolve(sendMessageResponse)),
+    sendMessageStream: mock(() => Promise.resolve(streamResponse)),
+  }
+}
+
 // Helper para crear mocks tipados de GoogleGenerativeAI
 function createMockGenAI(mockModel: Partial<GenerativeModel>): GoogleGenerativeAI {
   return {
-    getGenerativeModel: mock(() => mockModel as GenerativeModel)
+    getGenerativeModel: mock(() => mockModel as GenerativeModel),
   } as unknown as GoogleGenerativeAI
 }
 
@@ -41,37 +71,48 @@ describe('GeminiService', () => {
 
   describe('execute()', () => {
     test('returns CLI result structure', async () => {
-      const mockGenerateContent = mock(() => Promise.resolve({
-        response: {
-          text: () => 'Hello from Gemini'
-        }
-      }))
+      const mockGenerateContent = mock(() =>
+        Promise.resolve({
+          response: {
+            text: () => 'Hello from Gemini',
+          },
+        })
+      )
 
       const mockModel = {
         generateContent: mockGenerateContent,
-        generateContentStream: mock(() => Promise.resolve({
-          stream: (async function* () {
-            yield { text: () => 'chunk' }
-          })()
-        }))
+        generateContentStream: mock(() =>
+          Promise.resolve({
+            stream: (async function* () {
+              yield { text: () => 'chunk' }
+            })(),
+          })
+        ),
+        startChat: mock(() =>
+          createMockChatSession({ response: { text: () => 'Hello from Gemini' } })
+        ),
       }
 
       // @ts-expect-error - mocking private property
       service.genAI = createMockGenAI(mockModel)
 
       const result = await service.execute({
-        prompt: 'Hello'
+        prompt: 'Hello',
       })
 
       expect(result.mode).toBe('cli')
       expect(result.response).toBe('Hello from Gemini')
-      expect(mockGenerateContent).toHaveBeenCalled()
+      expect(mockModel.startChat).toHaveBeenCalled()
     })
 
     test('handles errors gracefully', async () => {
       const mockModel = {
         generateContent: mock(() => Promise.reject(new Error('API Error'))),
-        generateContentStream: mock(() => Promise.reject(new Error('API Error')))
+        generateContentStream: mock(() => Promise.reject(new Error('API Error'))),
+        startChat: mock(() => ({
+          sendMessage: mock(() => Promise.reject(new Error('API Error'))),
+          sendMessageStream: mock(() => Promise.reject(new Error('API Error'))),
+        })),
       }
 
       // @ts-expect-error - mocking private property
@@ -90,7 +131,11 @@ describe('GeminiService', () => {
 
       const mockModel = {
         generateContent: mock(() => Promise.resolve({ response: { text: () => '' } })),
-        generateContentStream: mock(() => Promise.resolve({ stream: mockStream }))
+        generateContentStream: mock(() => Promise.resolve({ stream: mockStream })),
+        startChat: mock(() => ({
+          sendMessage: mock(() => Promise.resolve({ response: { text: () => '' } })),
+          sendMessageStream: mock(() => Promise.resolve({ stream: mockStream })),
+        })),
       }
 
       // @ts-expect-error - mocking private property
@@ -114,7 +159,11 @@ describe('GeminiService', () => {
 
       const mockModel = {
         generateContent: mock(() => Promise.resolve({ response: { text: () => '' } })),
-        generateContentStream: mock(() => Promise.resolve({ stream: mockStream }))
+        generateContentStream: mock(() => Promise.resolve({ stream: mockStream })),
+        startChat: mock(() => ({
+          sendMessage: mock(() => Promise.resolve({ response: { text: () => '' } })),
+          sendMessageStream: mock(() => Promise.resolve({ stream: mockStream })),
+        })),
       }
 
       // @ts-expect-error - mocking private property
@@ -133,7 +182,11 @@ describe('GeminiService', () => {
 
       const mockModel = {
         generateContent: mock(() => Promise.resolve({ response: { text: () => '' } })),
-        generateContentStream: mock(() => Promise.resolve({ stream: mockStream }))
+        generateContentStream: mock(() => Promise.resolve({ stream: mockStream })),
+        startChat: mock(() => ({
+          sendMessage: mock(() => Promise.resolve({ response: { text: () => '' } })),
+          sendMessageStream: mock(() => Promise.resolve({ stream: mockStream })),
+        })),
       }
 
       // @ts-expect-error - mocking private property
