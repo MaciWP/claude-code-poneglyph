@@ -107,8 +107,8 @@ Task(reviewer, "revisar modulo auth", run_in_background=true) + Task(reviewer, "
 
 | Score | Calificacion |
 |-------|--------------|
-| >70% | Excelente |
-| 50-70% | Revisar oportunidades |
+| >80% | Excelente |
+| 50-80% | Revisar oportunidades |
 | <50% | Re-planificar delegacion |
 
 Calculo: (Tasks en paralelo / Total Tasks) x 100

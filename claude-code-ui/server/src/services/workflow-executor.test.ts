@@ -1,5 +1,6 @@
 import { describe, test, expect, mock, beforeEach, afterAll, spyOn } from 'bun:test'
 import { agentRegistry } from './agent-registry'
+import type { AgentSpawner } from './agent-spawner'
 
 // Mock logger
 const mockLogger = {
@@ -120,7 +121,7 @@ describe('WorkflowExecutor', () => {
   describe('setAgentSpawner', () => {
     test('configures agent spawner without error', () => {
       const spawner = createMockAgentSpawner()
-      expect(() => setAgentSpawner(spawner)).not.toThrow()
+      expect(() => setAgentSpawner(spawner as unknown as AgentSpawner)).not.toThrow()
     })
   })
 

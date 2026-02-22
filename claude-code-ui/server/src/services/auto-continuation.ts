@@ -52,13 +52,7 @@ const DEFAULT_CONFIG: ContinuationConfig = {
     '✅ Done',
     '✅ Completed',
   ],
-  truncationIndicators: [
-    '...',
-    '[TRUNCATED]',
-    '[CONTINUE]',
-    '[TO BE CONTINUED]',
-    '(continued)',
-  ],
+  truncationIndicators: ['...', '[TRUNCATED]', '[CONTINUE]', '[TO BE CONTINUED]', '(continued)'],
   continuePrompt: 'Continue from where you left off. Complete the remaining work.',
   cooldownMs: 1000,
 }
@@ -145,12 +139,14 @@ export class AutoContinuation extends EventEmitter {
 
     // Remove code blocks for sentence analysis
     const withoutCode = trimmed.replace(CODE_BLOCK_PATTERN, '')
-    const lastLine = withoutCode.split('\n').filter(l => l.trim()).pop() || ''
+    const lastLine =
+      withoutCode
+        .split('\n')
+        .filter((l) => l.trim())
+        .pop() || ''
 
     // Check if last line ends with proper sentence ending
-    const hasProperEnding = SENTENCE_ENDINGS.some(ending =>
-      lastLine.trimEnd().endsWith(ending)
-    )
+    const hasProperEnding = SENTENCE_ENDINGS.some((ending) => lastLine.trimEnd().endsWith(ending))
 
     if (!hasProperEnding && lastLine.length > 20) {
       // Long line without proper ending suggests truncation
@@ -160,8 +156,8 @@ export class AutoContinuation extends EventEmitter {
 
     // Check for incomplete markdown lists
     const lines = trimmed.split('\n')
-    const lastNonEmptyLine = lines.filter(l => l.trim()).pop() || ''
-    if (/^[-*\d+\.]\s*$/.test(lastNonEmptyLine)) {
+    const lastNonEmptyLine = lines.filter((l) => l.trim()).pop() || ''
+    if (/^[-*\d+.]\s*$/.test(lastNonEmptyLine)) {
       log.debug('Truncation detected: incomplete list item')
       return true
     }

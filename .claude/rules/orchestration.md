@@ -12,7 +12,7 @@
 
 | Trigger | Tool/Agent |
 |---------|------------|
-| >3 subtasks o complejidad >40 | task-decomposer |
+| >3 subtasks o complejidad >60 | task-decomposer |
 | Prompt vago | prompt-engineer |
 | Feature design | architect |
 | Pre-implementacion | scout |

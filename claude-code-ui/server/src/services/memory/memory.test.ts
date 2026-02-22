@@ -2,6 +2,32 @@ import { describe, test, expect, beforeEach, afterEach, mock } from 'bun:test'
 import { rm, mkdir } from 'fs/promises'
 import { existsSync } from 'fs'
 import { join } from 'path'
+import { cosineSimilarity, searchByEmbedding } from './vector'
+import { extractFromText, extractTags } from './extractor'
+import * as graphModule from './graph'
+import {
+  createConfidenceMetrics,
+  calculateDecay,
+  applyReinforcement,
+  applyContradiction,
+  calculateReliabilityScore,
+  shouldTriggerValidation,
+  getConfidenceLevel,
+  mergeConfidence,
+  refreshAccess,
+} from './confidence'
+import {
+  applyTemporalDecay,
+  shouldCleanup,
+  calculateOptimalHalfLife,
+  getMemoryAge,
+  getDaysSinceAccess,
+  isStale,
+  sortByRecency,
+  filterByTimeRange,
+  getLifecycleStage,
+} from './temporal'
+import type { Memory } from './types'
 
 const TEST_DATA_DIR = join(import.meta.dir, '../../../storage/memories-test')
 
@@ -24,8 +50,6 @@ mock.module('../../logger', () => ({
 
 describe('Memory System', () => {
   describe('cosineSimilarity', () => {
-    const { cosineSimilarity } = require('./vector')
-
     test('returns 1 for identical vectors', () => {
       const v = [0.5, 0.5, 0.5]
       expect(cosineSimilarity(v, v)).toBeCloseTo(1, 5)
@@ -57,8 +81,6 @@ describe('Memory System', () => {
   })
 
   describe('extractFromText', () => {
-    const { extractFromText } = require('./extractor')
-
     describe('preference patterns', () => {
       test('extracts "I prefer X" pattern', () => {
         const results = extractFromText('I prefer TypeScript.', 'user')
@@ -173,8 +195,6 @@ describe('Memory System', () => {
   })
 
   describe('extractTags', () => {
-    const { extractTags } = require('./extractor')
-
     test('extracts language tags', () => {
       const tags = extractTags('We use TypeScript and Python in this project.')
       expect(tags).toContain('typescript')
@@ -217,7 +237,6 @@ describe('Memory System', () => {
   })
 
   describe('MemoryGraph', () => {
-    const graphModule = require('./graph')
     const memoryGraph = graphModule.memoryGraph
 
     const resetGraph = () => {
@@ -275,8 +294,8 @@ describe('Memory System', () => {
 
       test('updates node degrees', async () => {
         await memoryGraph.addEdge('mem_a', 'mem_b', 'extends')
-        const source = memoryGraph['nodes'].get('mem_a')
-        const target = memoryGraph['nodes'].get('mem_b')
+        const source = memoryGraph['nodes'].get('mem_a')!
+        const target = memoryGraph['nodes'].get('mem_b')!
         expect(source.outDegree).toBe(1)
         expect(target.inDegree).toBe(1)
       })
@@ -371,7 +390,7 @@ describe('Memory System', () => {
         await memoryGraph.addEdge('a', 'b', 'reinforces')
         await memoryGraph.removeNode('b')
 
-        const nodeA = memoryGraph['nodes'].get('a')
+        const nodeA = memoryGraph['nodes'].get('a')!
         expect(nodeA.edges.length).toBe(0)
       })
     })
@@ -425,16 +444,15 @@ describe('Memory System', () => {
   })
 
   describe('searchByEmbedding', () => {
-    const { searchByEmbedding } = require('./vector')
-
-    const createMemory = (id: string, embedding: number[], confidence = 0.8) => ({
-      id,
-      type: 'semantic',
-      content: `Memory ${id}`,
-      embedding,
-      confidence: { current: confidence },
-      metadata: { tags: [], source: 'test', createdAt: '', updatedAt: '' },
-    })
+    const createMemory = (id: string, embedding: number[], confidence = 0.8) =>
+      ({
+        id,
+        type: 'semantic' as const,
+        content: `Memory ${id}`,
+        embedding,
+        confidence: { current: confidence },
+        metadata: { tags: [] as string[], source: 'test', createdAt: '', updatedAt: '' },
+      }) as unknown as Memory
 
     test('returns memories sorted by relevance score', async () => {
       const memories = [
@@ -450,10 +468,7 @@ describe('Memory System', () => {
     })
 
     test('filters by minimum similarity', async () => {
-      const memories = [
-        createMemory('m1', [1, 0, 0], 0.8),
-        createMemory('m2', [0, 1, 0], 0.8),
-      ]
+      const memories = [createMemory('m1', [1, 0, 0], 0.8), createMemory('m2', [0, 1, 0], 0.8)]
 
       const results = await searchByEmbedding([1, 0, 0], memories, { minSimilarity: 0.5 })
 
@@ -491,18 +506,6 @@ describe('Memory System', () => {
   })
 
   describe('Confidence Module', () => {
-    const {
-      createConfidenceMetrics,
-      calculateDecay,
-      applyReinforcement,
-      applyContradiction,
-      calculateReliabilityScore,
-      shouldTriggerValidation,
-      getConfidenceLevel,
-      mergeConfidence,
-      refreshAccess,
-    } = require('./confidence')
-
     describe('createConfidenceMetrics', () => {
       test('creates metrics with default values', () => {
         const metrics = createConfidenceMetrics()
@@ -565,7 +568,7 @@ describe('Memory System', () => {
       })
 
       test('diminishing returns for repeated reinforcements', () => {
-        let metrics = createConfidenceMetrics(0.5)
+        const metrics = createConfidenceMetrics(0.5)
         const first = applyReinforcement(metrics)
         const second = applyReinforcement(first)
         const boost1 = first.current - 0.5
@@ -683,26 +686,16 @@ describe('Memory System', () => {
         const oldDate = new Date(Date.now() - 10000).toISOString()
         const metrics = { ...createConfidenceMetrics(0.5), lastAccessed: oldDate }
         const refreshed = refreshAccess(metrics)
-        expect(new Date(refreshed.lastAccessed).getTime()).toBeGreaterThan(new Date(oldDate).getTime())
+        expect(new Date(refreshed.lastAccessed).getTime()).toBeGreaterThan(
+          new Date(oldDate).getTime()
+        )
       })
     })
   })
 
   describe('Temporal Module', () => {
-    const {
-      applyTemporalDecay,
-      shouldCleanup,
-      calculateOptimalHalfLife,
-      getMemoryAge,
-      getDaysSinceAccess,
-      isStale,
-      sortByRecency,
-      filterByTimeRange,
-      getLifecycleStage,
-    } = require('./temporal')
-    const { createConfidenceMetrics } = require('./confidence')
-
-    const createTestMemory = (overrides: Partial<any> = {}) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const createTestMemory = (overrides: Record<string, any> = {}): Memory => {
       const now = new Date().toISOString()
       return {
         id: 'test_mem',
@@ -716,7 +709,7 @@ describe('Memory System', () => {
           updatedAt: now,
         },
         ...overrides,
-      }
+      } as unknown as Memory
     }
 
     describe('applyTemporalDecay', () => {
@@ -827,8 +820,14 @@ describe('Memory System', () => {
         const recent = new Date().toISOString()
 
         const memories = [
-          createTestMemory({ id: 'old', confidence: { ...createConfidenceMetrics(0.5), lastAccessed: older } }),
-          createTestMemory({ id: 'new', confidence: { ...createConfidenceMetrics(0.5), lastAccessed: recent } }),
+          createTestMemory({
+            id: 'old',
+            confidence: { ...createConfidenceMetrics(0.5), lastAccessed: older },
+          }),
+          createTestMemory({
+            id: 'new',
+            confidence: { ...createConfidenceMetrics(0.5), lastAccessed: recent },
+          }),
         ]
 
         const sorted = sortByRecency(memories)

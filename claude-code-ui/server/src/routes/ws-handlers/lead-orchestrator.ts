@@ -18,7 +18,7 @@ interface LeadOrchestratorParams {
   workDir?: string
   requestId: string
   activeProcesses: Map<string, ActiveProcess>
-  wsToRequestId: Map<unknown, string>
+  wsToRequestId: Map<object, string>
   maxActiveProcesses: number
   sessionStateManager?: SessionStateManager
 }

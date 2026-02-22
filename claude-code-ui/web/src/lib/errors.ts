@@ -1,12 +1,36 @@
+interface ParsedErrorBody {
+  code: string
+  message: string
+  fields?: Record<string, string>
+}
+
+function parseErrorBody(body: string): ParsedErrorBody | null {
+  try {
+    const parsed = JSON.parse(body)
+    if (parsed?.error?.code && parsed?.error?.message) {
+      return parsed.error as ParsedErrorBody
+    }
+  } catch {
+    // Not JSON or not structured error
+  }
+  return null
+}
+
 export class APIError extends Error {
   readonly name = 'APIError'
+  readonly errorCode: string | null
+  readonly fields: Record<string, string> | undefined
 
   constructor(
     public readonly status: number,
     public readonly endpoint: string,
     public readonly originalMessage: string
   ) {
-    super(`API Error ${status}: ${originalMessage}`)
+    const parsed = parseErrorBody(originalMessage)
+    const displayMsg = parsed?.message ?? originalMessage
+    super(`API Error ${status}: ${displayMsg}`)
+    this.errorCode = parsed?.code ?? null
+    this.fields = parsed?.fields
   }
 
   get isNotFound(): boolean {
@@ -25,11 +49,24 @@ export class APIError extends Error {
     return this.status >= 400 && this.status < 500
   }
 
+  get isValidationError(): boolean {
+    return this.status === 400 && this.errorCode === 'VALIDATION_ERROR'
+  }
+
+  get isSessionError(): boolean {
+    return this.errorCode === 'SESSION_ERROR'
+  }
+
   toUserMessage(): string {
     if (this.isNotFound) return 'Resource not found'
     if (this.isUnauthorized) return 'Authentication required'
+    if (this.isValidationError && this.fields) {
+      const fieldErrors = Object.values(this.fields).join(', ')
+      return `Validation failed: ${fieldErrors}`
+    }
     if (this.isServerError) return 'Server error. Please try again.'
-    return this.originalMessage || 'An error occurred'
+    const parsed = parseErrorBody(this.originalMessage)
+    return (parsed?.message ?? this.originalMessage) || 'An error occurred'
   }
 }
 

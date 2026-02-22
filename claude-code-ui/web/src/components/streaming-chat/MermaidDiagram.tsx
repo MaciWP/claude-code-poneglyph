@@ -49,9 +49,9 @@ mermaid.initialize({
     activationBorderColor: '#60a5fa',
     sequenceNumberColor: '#f1f5f9',
   },
-  securityLevel: 'loose',
+  securityLevel: 'antiscript',
   flowchart: {
-    htmlLabels: true,
+    htmlLabels: false,
     curve: 'basis',
     padding: 15,
     nodeSpacing: 50,
@@ -87,21 +87,29 @@ mermaid.initialize({
   suppressErrorRendering: true,
 })
 
-function cleanupMermaidErrors() {
-  document.querySelectorAll('#d').forEach(el => el.remove())
+function sanitizeSvg(svg: string): string {
+  return svg
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/\s*on\w+\s*=\s*["'][^"']*["']/gi, '')
+    .replace(/javascript:/gi, '')
+    .replace(/<foreignObject[^>]*>[\s\S]*?<\/foreignObject>/gi, '')
+}
 
-  document.querySelectorAll('div, svg').forEach(el => {
+function cleanupMermaidErrors() {
+  document.querySelectorAll('#d').forEach((el) => el.remove())
+
+  document.querySelectorAll('body > [id^="mermaid-"], body > [id^="d"]').forEach((el) => {
     const text = el.textContent || ''
     if (
       text.includes('Syntax error in text') ||
       text.includes('mermaid version') ||
-      (el.id?.startsWith('mermaid-') && el.classList.contains('error'))
+      el.classList.contains('error')
     ) {
       el.remove()
     }
   })
 
-  document.querySelectorAll('body > div:not(#root)').forEach(el => {
+  document.querySelectorAll('body > div:not(#root)').forEach((el) => {
     if (el.textContent?.includes('Syntax error')) {
       el.remove()
     }
@@ -109,9 +117,24 @@ function cleanupMermaidErrors() {
 }
 
 const VALID_DIAGRAM_TYPES = [
-  'graph', 'flowchart', 'sequenceDiagram', 'classDiagram', 'stateDiagram',
-  'erDiagram', 'journey', 'gantt', 'pie', 'quadrantChart', 'requirementDiagram',
-  'gitGraph', 'mindmap', 'timeline', 'zenuml', 'sankey', 'xychart', 'block'
+  'graph',
+  'flowchart',
+  'sequenceDiagram',
+  'classDiagram',
+  'stateDiagram',
+  'erDiagram',
+  'journey',
+  'gantt',
+  'pie',
+  'quadrantChart',
+  'requirementDiagram',
+  'gitGraph',
+  'mindmap',
+  'timeline',
+  'zenuml',
+  'sankey',
+  'xychart',
+  'block',
 ]
 
 const EMOJI_MAP: Record<string, string> = {
@@ -178,10 +201,7 @@ function sanitizeMermaidCode(code: string): string {
   sanitized = sanitized.replace(/\|"([^"]+)"\|/g, '|$1|')
 
   sanitized = sanitized.replace(/\[([^\]]+)\]/g, (_match, content) => {
-    const cleaned = content
-      .replace(/\//g, '-')
-      .replace(/:/g, ' ')
-      .trim()
+    const cleaned = content.replace(/\//g, '-').replace(/:/g, ' ').trim()
     return `[${cleaned}]`
   })
 
@@ -215,7 +235,7 @@ function sanitizeMermaidCode(code: string): string {
     '#f5f5f5': '#252525',
     '#eeeeee': '#303030',
     '#e0e0e0': '#353535',
-    'white': '#1e293b',
+    white: '#1e293b',
     '#ffffff': '#1e293b',
   }
 
@@ -229,7 +249,7 @@ function sanitizeMermaidCode(code: string): string {
 function isValidMermaidSyntax(code: string): boolean {
   const trimmed = code.trim()
   const firstLine = trimmed.split('\n')[0].toLowerCase()
-  return VALID_DIAGRAM_TYPES.some(type => firstLine.startsWith(type.toLowerCase()))
+  return VALID_DIAGRAM_TYPES.some((type) => firstLine.startsWith(type.toLowerCase()))
 }
 
 function isDiagramComplete(code: string): boolean {
@@ -243,7 +263,7 @@ function isDiagramComplete(code: string): boolean {
   const closeBrackets = (trimmed.match(/\]/g) || []).length
   if (openBrackets > closeBrackets) return false
 
-  const lines = trimmed.split('\n').filter(l => l.trim())
+  const lines = trimmed.split('\n').filter((l) => l.trim())
   if (lines.length < 2) return false
 
   return true
@@ -276,11 +296,13 @@ export default memo(function MermaidDiagram({ code }: Props) {
     const id = `mermaid-${crypto.randomUUID().slice(0, 8)}`
     const sanitizedCode = sanitizeMermaidCode(code)
 
-    mermaid.render(id, sanitizedCode)
+    mermaid
+      .render(id, sanitizedCode)
       .then(({ svg }) => {
         if (containerRef.current) {
-          containerRef.current.innerHTML = svg
-          setSvgContent(svg)
+          const cleanSvg = sanitizeSvg(svg)
+          containerRef.current.innerHTML = cleanSvg
+          setSvgContent(cleanSvg)
           setRendered(true)
         }
       })
@@ -376,10 +398,7 @@ export default memo(function MermaidDiagram({ code }: Props) {
       {/* Fullscreen modal */}
       {isFullscreen && svgContent && (
         <Suspense fallback={null}>
-          <MermaidModal
-            svgContent={svgContent}
-            onClose={() => setIsFullscreen(false)}
-          />
+          <MermaidModal svgContent={svgContent} onClose={() => setIsFullscreen(false)} />
         </Suspense>
       )}
     </>

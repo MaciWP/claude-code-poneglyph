@@ -6,7 +6,13 @@ import type { GeminiService } from '../../services/gemini'
 import type { SessionStore } from '../../services/sessions'
 import type { orchestrator as OrchestratorType } from '../../services/orchestrator'
 import type { agentRegistry as AgentRegistryType } from '../../services/agent-registry'
-import type { ExecutionEvent, TokenUsage, ContextSnapshot, PersistedAgent, ContinuationState } from '@shared/types'
+import type {
+  ExecutionEvent,
+  TokenUsage,
+  ContextSnapshot,
+  PersistedAgent,
+  ContinuationState,
+} from '@shared/types'
 import type { ActiveProcess, ExecuteCliData, TaskToolInfo, WebSocketWithSend } from './types'
 import { WS_CONSTANTS } from './types'
 import type { Message } from '@shared/types'
@@ -15,7 +21,11 @@ import { extractMemoriesFromConversation } from '../../services/memory'
 import { injectMemories } from '../../services/memory/injection'
 import { loadClaudeConfig } from '../claude-config'
 import { TOOL_OUTPUT_MAX_SIZE } from '../../constants'
-import { autoContinuation, shouldContinue, getContinuePrompt } from '../../services/auto-continuation'
+import {
+  autoContinuation,
+  shouldContinue,
+  getContinuePrompt,
+} from '../../services/auto-continuation'
 import { logger } from '../../logger'
 
 const log = logger.child('ws-execute-cli')
@@ -23,7 +33,9 @@ const log = logger.child('ws-execute-cli')
 /**
  * Convert simple message format to full Message type
  */
-function convertToMessages(messages?: Array<{ role: string; content: string }>): Message[] | undefined {
+function convertToMessages(
+  messages?: Array<{ role: string; content: string }>
+): Message[] | undefined {
   if (!messages || messages.length === 0) return undefined
 
   return messages.map((msg) => ({
@@ -43,7 +55,7 @@ interface ExecuteCliParams {
   orchestrator: typeof OrchestratorType
   agentRegistry: typeof AgentRegistryType
   activeProcesses: Map<string, ActiveProcess>
-  wsToRequestId: Map<unknown, string>
+  wsToRequestId: Map<object, string>
 }
 
 /**
@@ -60,24 +72,26 @@ async function injectMemoriesIntoPrompt(
       log.info('Memories injected', {
         count: memoryResult.memories.length,
         queryTimeMs: memoryResult.metadata.queryTimeMs,
-        sessionId
+        sessionId,
       })
 
-      const memorySummaries = memoryResult.memories.map(m => ({
+      const memorySummaries = memoryResult.memories.map((m) => ({
         id: m.memory.id,
         title: m.memory.title || m.memory.content.slice(0, 50) + '...',
         type: m.memory.laneType || m.memory.type,
         similarity: Math.round(m.similarity * 100),
-        confidence: Math.round(m.memory.confidence.current * 100)
+        confidence: Math.round(m.memory.confidence.current * 100),
       }))
 
-      ws.send(JSON.stringify({
-        type: 'context',
-        contextType: 'memory',
-        name: 'memory-injection',
-        detail: `${memoryResult.memories.length} relevant memories injected`,
-        memories: memorySummaries
-      }))
+      ws.send(
+        JSON.stringify({
+          type: 'context',
+          contextType: 'memory',
+          name: 'memory-injection',
+          detail: `${memoryResult.memories.length} relevant memories injected`,
+          memories: memorySummaries,
+        })
+      )
 
       return `${memoryResult.context}\n\n---\n\n${prompt}`
     }
@@ -100,23 +114,27 @@ async function handleOrchestration(
 
   log.info('WS Orchestration enabled', {
     intent: enriched.metadata.intent.primary,
-    workflow: enriched.metadata.intent.workflow
+    workflow: enriched.metadata.intent.workflow,
   })
 
-  ws.send(JSON.stringify({
-    type: 'context',
-    contextType: 'rule',
-    name: 'orchestration-rules',
-    detail: `Intent: ${enriched.metadata.intent.primary} (${Math.round(enriched.metadata.intent.confidence * 100)}%)`
-  }))
+  ws.send(
+    JSON.stringify({
+      type: 'context',
+      contextType: 'rule',
+      name: 'orchestration-rules',
+      detail: `Intent: ${enriched.metadata.intent.primary} (${Math.round(enriched.metadata.intent.confidence * 100)}%)`,
+    })
+  )
 
   if (enriched.metadata.promptEngineerActive) {
-    ws.send(JSON.stringify({
-      type: 'context',
-      contextType: 'skill',
-      name: 'prompt-engineer',
-      detail: `Auto-activated: workflow requires ${enriched.metadata.intent.workflow?.length || 0} agents`
-    }))
+    ws.send(
+      JSON.stringify({
+        type: 'context',
+        contextType: 'skill',
+        name: 'prompt-engineer',
+        detail: `Auto-activated: workflow requires ${enriched.metadata.intent.workflow?.length || 0} agents`,
+      })
+    )
   }
 
   const claudeConfig = await loadClaudeConfig()
@@ -124,36 +142,42 @@ async function handleOrchestration(
   // Check for command matches
   for (const command of claudeConfig.commands) {
     if (prompt.toLowerCase().includes(command.name.toLowerCase())) {
-      ws.send(JSON.stringify({
-        type: 'context',
-        contextType: 'command',
-        name: command.name,
-        detail: command.description || 'Executing command'
-      }))
+      ws.send(
+        JSON.stringify({
+          type: 'context',
+          contextType: 'command',
+          name: command.name,
+          detail: command.description || 'Executing command',
+        })
+      )
       break
     }
   }
 
   // Check for skill matches by keyword triggers
   for (const skill of claudeConfig.skills) {
-    if (skill.triggers?.some(t => prompt.toLowerCase().includes(t.toLowerCase()))) {
-      ws.send(JSON.stringify({
-        type: 'context',
-        contextType: 'skill',
-        name: skill.name,
-        detail: `Triggered by keyword match`
-      }))
+    if (skill.triggers?.some((t) => prompt.toLowerCase().includes(t.toLowerCase()))) {
+      ws.send(
+        JSON.stringify({
+          type: 'context',
+          contextType: 'skill',
+          name: skill.name,
+          detail: `Triggered by keyword match`,
+        })
+      )
       break
     }
   }
 
   if (enriched.systemContext.includes('Relevant Context from Memory')) {
-    ws.send(JSON.stringify({
-      type: 'context',
-      contextType: 'memory',
-      name: 'context-recall',
-      detail: 'Relevant memories injected into context'
-    }))
+    ws.send(
+      JSON.stringify({
+        type: 'context',
+        contextType: 'memory',
+        name: 'context-recall',
+        detail: 'Relevant memories injected into context',
+      })
+    )
   }
 
   return promptToUse
@@ -173,7 +197,10 @@ async function saveImagesToTemp(images?: Array<{ dataUrl: string }>): Promise<st
     try {
       const base64Data = img.dataUrl.replace(/^data:image\/\w+;base64,/, '')
       const buffer = Buffer.from(base64Data, 'base64')
-      const tempPath = join(import.meta.dir, `../../../storage/temp/temp-${crypto.randomUUID()}.png`)
+      const tempPath = join(
+        import.meta.dir,
+        `../../../storage/temp/temp-${crypto.randomUUID()}.png`
+      )
       await Bun.write(tempPath, buffer)
       imagePaths.push(tempPath)
       log.debug('Image saved', { path: tempPath })
@@ -208,7 +235,13 @@ function setupAgentRegistryHandlers(
   executionEvents: ExecutionEvent[],
   sessionAgents: PersistedAgent[]
 ) {
-  const agentCreatedHandler = (agent: { id: string; type: string; task: string; model?: string; tools?: string[] }) => {
+  const agentCreatedHandler = (agent: {
+    id: string
+    type: string
+    task: string
+    model?: string
+    tools?: string[]
+  }) => {
     if (sessionId) {
       broadcastToSession(sessionId, {
         type: 'agent_event',
@@ -251,14 +284,20 @@ function setupAgentRegistryHandlers(
       })
     }
 
-    const pa = sessionAgents.find(a => a.id === agent.id)
+    const pa = sessionAgents.find((a) => a.id === agent.id)
     if (pa) {
       pa.status = 'active'
       pa.startedAt = new Date().toISOString()
     }
   }
 
-  const agentCompletedHandler = (agent: { id: string; result?: string; tokensUsed?: number; toolCalls?: number; durationMs?: number }) => {
+  const agentCompletedHandler = (agent: {
+    id: string
+    result?: string
+    tokensUsed?: number
+    toolCalls?: number
+    durationMs?: number
+  }) => {
     if (sessionId) {
       broadcastToSession(sessionId, {
         type: 'agent_event',
@@ -269,22 +308,26 @@ function setupAgentRegistryHandlers(
       })
     }
 
-    ws.send(JSON.stringify({
-      type: 'agent_result',
-      agentId: agent.id,
-      success: true,
-      summary: agent.result?.slice(0, 500),
-      usage: agent.tokensUsed ? {
-        inputTokens: 0,
-        outputTokens: 0,
-        cacheCreationTokens: 0,
-        cacheReadTokens: 0,
-        totalTokens: agent.tokensUsed,
-        contextPercent: 0
-      } : undefined,
-      toolCalls: agent.toolCalls,
-      durationMs: agent.durationMs,
-    }))
+    ws.send(
+      JSON.stringify({
+        type: 'agent_result',
+        agentId: agent.id,
+        success: true,
+        summary: agent.result?.slice(0, 500),
+        usage: agent.tokensUsed
+          ? {
+              inputTokens: 0,
+              outputTokens: 0,
+              cacheCreationTokens: 0,
+              cacheReadTokens: 0,
+              totalTokens: agent.tokensUsed,
+              contextPercent: 0,
+            }
+          : undefined,
+        toolCalls: agent.toolCalls,
+        durationMs: agent.durationMs,
+      })
+    )
 
     executionEvents.push({
       id: crypto.randomUUID(),
@@ -294,7 +337,7 @@ function setupAgentRegistryHandlers(
       agentStatus: 'completed',
     })
 
-    const pa = sessionAgents.find(a => a.id === agent.id)
+    const pa = sessionAgents.find((a) => a.id === agent.id)
     if (pa) {
       pa.status = 'completed'
       pa.completedAt = new Date().toISOString()
@@ -323,7 +366,7 @@ function setupAgentRegistryHandlers(
       agentError: agent.error,
     })
 
-    const pa = sessionAgents.find(a => a.id === agent.id)
+    const pa = sessionAgents.find((a) => a.id === agent.id)
     if (pa) {
       pa.status = 'failed'
       pa.completedAt = new Date().toISOString()
@@ -349,7 +392,17 @@ function setupAgentRegistryHandlers(
  */
 async function processStream(
   ws: WebSocketWithSend,
-  stream: AsyncIterable<{ type: string; data?: string; tool?: string; toolUseId?: string; toolInput?: unknown; toolOutput?: unknown; parentToolUseId?: string; usage?: TokenUsage; costUsd?: number }>,
+  stream: AsyncIterable<{
+    type: string
+    data?: string
+    tool?: string
+    toolUseId?: string
+    toolInput?: unknown
+    toolOutput?: unknown
+    parentToolUseId?: string
+    usage?: TokenUsage
+    costUsd?: number
+  }>,
   sessionId: string | undefined,
   executionEvents: ExecutionEvent[],
   activeTaskTools: Map<string, TaskToolInfo>
@@ -377,7 +430,11 @@ async function processStream(
 
       // Detect Task tool usage for Kanban/Terminals
       if (chunk.tool === 'Task' && chunk.toolInput) {
-        const input = chunk.toolInput as { subagent_type?: string; description?: string; prompt?: string }
+        const input = chunk.toolInput as {
+          subagent_type?: string
+          description?: string
+          prompt?: string
+        }
         const agentId = chunk.toolUseId || `task-${Date.now()}`
         const agentType = input.subagent_type || 'general-purpose'
         const taskTitle = input.description || input.prompt?.slice(0, 50) || 'Task'
@@ -397,9 +454,10 @@ async function processStream(
         log.debug('Task tool detected, emitting agent_event', { agentId, agentType, taskTitle })
       }
     } else if (chunk.type === 'tool_result') {
-      const toolOutput = typeof chunk.toolOutput === 'string'
-        ? chunk.toolOutput.slice(0, TOOL_OUTPUT_MAX_SIZE)
-        : undefined
+      const toolOutput =
+        typeof chunk.toolOutput === 'string'
+          ? chunk.toolOutput.slice(0, TOOL_OUTPUT_MAX_SIZE)
+          : undefined
 
       executionEvents.push({
         id: crypto.randomUUID(),
@@ -413,9 +471,10 @@ async function processStream(
       // Check Task tool completion for Kanban/Terminals
       if (chunk.toolUseId && activeTaskTools.has(chunk.toolUseId)) {
         const taskInfo = activeTaskTools.get(chunk.toolUseId)!
-        const isError = chunk.toolOutput?.toString().startsWith('Error') ||
-                        chunk.toolOutput?.toString().includes('failed') ||
-                        chunk.toolOutput?.toString().includes('FAILED')
+        const isError =
+          chunk.toolOutput?.toString().startsWith('Error') ||
+          chunk.toolOutput?.toString().includes('failed') ||
+          chunk.toolOutput?.toString().includes('FAILED')
 
         if (sessionId) {
           broadcastToSession(sessionId, {
@@ -428,7 +487,10 @@ async function processStream(
         }
 
         activeTaskTools.delete(chunk.toolUseId)
-        log.debug('Task tool completed, emitting agent_event', { agentId: taskInfo.agentId, isError })
+        log.debug('Task tool completed, emitting agent_event', {
+          agentId: taskInfo.agentId,
+          isError,
+        })
       }
     } else if (chunk.type === 'thinking') {
       executionEvents.push({
@@ -468,10 +530,7 @@ async function processStream(
 /**
  * Handle auto-continuation logic
  */
-function handleAutoContinuation(
-  ws: WebSocketWithSend,
-  fullResponse: string
-): void {
+function handleAutoContinuation(ws: WebSocketWithSend, fullResponse: string): void {
   const continuationCheck = shouldContinue(fullResponse)
 
   if (continuationCheck.should) {
@@ -479,17 +538,19 @@ function handleAutoContinuation(
     const continuePrompt = getContinuePrompt(fullResponse)
     const contState = autoContinuation.getState()
 
-    ws.send(JSON.stringify({
-      type: 'continuation',
-      event: 'iteration',
-      state: {
-        isActive: contState.isActive,
-        currentIteration: contState.currentIteration,
-        maxIterations: contState.maxIterations,
-        startedAt: contState.startedAt?.toISOString() || null,
-        sessionId: contState.sessionId,
-      } as ContinuationState,
-    }))
+    ws.send(
+      JSON.stringify({
+        type: 'continuation',
+        event: 'iteration',
+        state: {
+          isActive: contState.isActive,
+          currentIteration: contState.currentIteration,
+          maxIterations: contState.maxIterations,
+          startedAt: contState.startedAt?.toISOString() || null,
+          sessionId: contState.sessionId,
+        } as ContinuationState,
+      })
+    )
 
     log.info('Auto-continuing', {
       iteration: contState.currentIteration,
@@ -499,26 +560,33 @@ function handleAutoContinuation(
 
     // Send auto_continue event after delay
     setTimeout(() => {
-      ws.send(JSON.stringify({
-        type: 'auto_continue',
-        prompt: continuePrompt,
-        iteration: contState.currentIteration,
-      }))
+      ws.send(
+        JSON.stringify({
+          type: 'auto_continue',
+          prompt: continuePrompt,
+          iteration: contState.currentIteration,
+        })
+      )
     }, 1000)
-  } else if (continuationCheck.reason === 'completed' || continuationCheck.reason === 'max_iterations') {
+  } else if (
+    continuationCheck.reason === 'completed' ||
+    continuationCheck.reason === 'max_iterations'
+  ) {
     const contState = autoContinuation.getState()
-    ws.send(JSON.stringify({
-      type: 'continuation',
-      event: 'completed',
-      state: {
-        isActive: false,
-        currentIteration: contState.currentIteration,
-        maxIterations: contState.maxIterations,
-        startedAt: contState.startedAt?.toISOString() || null,
-        sessionId: contState.sessionId,
-      } as ContinuationState,
-      reason: continuationCheck.reason,
-    }))
+    ws.send(
+      JSON.stringify({
+        type: 'continuation',
+        event: 'completed',
+        state: {
+          isActive: false,
+          currentIteration: contState.currentIteration,
+          maxIterations: contState.maxIterations,
+          startedAt: contState.startedAt?.toISOString() || null,
+          sessionId: contState.sessionId,
+        } as ContinuationState,
+        reason: continuationCheck.reason,
+      })
+    )
   }
 }
 
@@ -540,7 +608,7 @@ async function saveSessionData(
     mcpServers: [],
     rules: [],
     skills: [],
-    activeAgentIds: sessionAgents.map(a => a.id),
+    activeAgentIds: sessionAgents.map((a) => a.id),
   }
 
   for (const event of executionEvents) {
@@ -555,7 +623,13 @@ async function saveSessionData(
     executionEvents: executionEvents.length > 0 ? executionEvents : undefined,
     usage: lastUsage,
     costUsd: lastCostUsd,
-    contextSnapshot: (contextSnapshot.mcpServers.length > 0 || contextSnapshot.rules.length > 0 || contextSnapshot.skills.length > 0 || contextSnapshot.activeAgentIds.length > 0) ? contextSnapshot : undefined,
+    contextSnapshot:
+      contextSnapshot.mcpServers.length > 0 ||
+      contextSnapshot.rules.length > 0 ||
+      contextSnapshot.skills.length > 0 ||
+      contextSnapshot.activeAgentIds.length > 0
+        ? contextSnapshot
+        : undefined,
   })
 
   // Persist agents
@@ -565,10 +639,13 @@ async function saveSessionData(
 
   // Extract memories
   try {
-    const memories = await extractMemoriesFromConversation([
-      { role: 'user', content: prompt },
-      { role: 'assistant', content: fullResponse }
-    ], { sessionId })
+    const memories = await extractMemoriesFromConversation(
+      [
+        { role: 'user', content: prompt },
+        { role: 'assistant', content: fullResponse },
+      ],
+      { sessionId }
+    )
 
     if (memories.length > 0) {
       log.info('Extracted memories', { count: memories.length, sessionId })
@@ -592,7 +669,7 @@ export async function handleExecuteCli(params: ExecuteCliParams): Promise<void> 
     orchestrator,
     agentRegistry,
     activeProcesses,
-    wsToRequestId
+    wsToRequestId,
   } = params
 
   const {
@@ -607,7 +684,7 @@ export async function handleExecuteCli(params: ExecuteCliParams): Promise<void> 
     planMode,
     bypassPermissions,
     allowFullPC,
-    provider
+    provider,
   } = data
 
   // Register socket for session broadcasts
@@ -632,7 +709,7 @@ export async function handleExecuteCli(params: ExecuteCliParams): Promise<void> 
     resume,
     imageCount: images?.length || 0,
     modes: { orchestrate, thinking, planMode, bypassPermissions },
-    provider
+    provider,
   })
 
   const requestId = crypto.randomUUID()
@@ -641,19 +718,27 @@ export async function handleExecuteCli(params: ExecuteCliParams): Promise<void> 
   if (activeProcesses.size >= WS_CONSTANTS.MAX_ACTIVE_PROCESSES) {
     log.warn('Max active processes reached, rejecting new request', {
       current: activeProcesses.size,
-      max: WS_CONSTANTS.MAX_ACTIVE_PROCESSES
+      max: WS_CONSTANTS.MAX_ACTIVE_PROCESSES,
     })
-    ws.send(JSON.stringify({
-      type: 'error',
-      data: 'Server at capacity, please try again later'
-    }))
+    ws.send(
+      JSON.stringify({
+        type: 'error',
+        data: 'Server at capacity, please try again later',
+      })
+    )
     return
   }
 
   const imageDataUrls = images?.map((img) => img.dataUrl) || []
 
   if (sessionId) {
-    await sessions.addMessage(sessionId, 'user', prompt, undefined, imageDataUrls.length > 0 ? imageDataUrls : undefined)
+    await sessions.addMessage(
+      sessionId,
+      'user',
+      prompt,
+      undefined,
+      imageDataUrls.length > 0 ? imageDataUrls : undefined
+    )
   }
 
   const imagePaths = await saveImagesToTemp(images)
@@ -672,11 +757,8 @@ export async function handleExecuteCli(params: ExecuteCliParams): Promise<void> 
 
   try {
     const providerName = provider || 'claude'
-    const cliService = providerName === 'codex'
-      ? codex
-      : providerName === 'gemini'
-        ? gemini
-        : claude
+    const cliService =
+      providerName === 'codex' ? codex : providerName === 'gemini' ? gemini : claude
 
     const sessionFilePath = sessionId ? sessions.getSessionFilePath(sessionId) : undefined
 
@@ -696,9 +778,10 @@ export async function handleExecuteCli(params: ExecuteCliParams): Promise<void> 
     })
 
     const { stream, abort } = streamResult
-    const sendUserAnswer = 'sendUserAnswer' in streamResult
-      ? (streamResult as { sendUserAnswer: (answer: string) => void }).sendUserAnswer
-      : undefined
+    const sendUserAnswer =
+      'sendUserAnswer' in streamResult
+        ? (streamResult as { sendUserAnswer: (answer: string) => void }).sendUserAnswer
+        : undefined
 
     activeProcesses.set(requestId, { abort, sendUserAnswer, sessionId, createdAt: Date.now() })
     wsToRequestId.set(ws, requestId)
@@ -713,12 +796,17 @@ export async function handleExecuteCli(params: ExecuteCliParams): Promise<void> 
 
     // Execution timeout
     const executionTimeoutId = setTimeout(() => {
-      log.warn('Execution timeout exceeded', { requestId, timeoutMs: WS_CONSTANTS.EXECUTION_TIMEOUT_MS })
+      log.warn('Execution timeout exceeded', {
+        requestId,
+        timeoutMs: WS_CONSTANTS.EXECUTION_TIMEOUT_MS,
+      })
       abort()
-      ws.send(JSON.stringify({
-        type: 'error',
-        data: '?? Execution timeout exceeded (10 minutes). Process aborted.',
-      }))
+      ws.send(
+        JSON.stringify({
+          type: 'error',
+          data: '?? Execution timeout exceeded (10 minutes). Process aborted.',
+        })
+      )
       ws.send(JSON.stringify({ type: 'done', data: '' }))
       activeProcesses.delete(requestId)
       wsToRequestId.delete(ws)
@@ -727,7 +815,17 @@ export async function handleExecuteCli(params: ExecuteCliParams): Promise<void> 
     try {
       const { fullResponse, lastUsage, lastCostUsd } = await processStream(
         ws,
-        stream as AsyncIterable<{ type: string; data?: string; tool?: string; toolUseId?: string; toolInput?: unknown; toolOutput?: unknown; parentToolUseId?: string; usage?: TokenUsage; costUsd?: number }>,
+        stream as AsyncIterable<{
+          type: string
+          data?: string
+          tool?: string
+          toolUseId?: string
+          toolInput?: unknown
+          toolOutput?: unknown
+          parentToolUseId?: string
+          usage?: TokenUsage
+          costUsd?: number
+        }>,
         sessionId,
         executionEvents,
         activeTaskTools
@@ -758,11 +856,15 @@ export async function handleExecuteCli(params: ExecuteCliParams): Promise<void> 
       clearTimeout(executionTimeoutId)
     }
   } catch (error) {
-    log.error('WS execute CLI failed', { error: error instanceof Error ? error.message : String(error) })
-    ws.send(JSON.stringify({
-      type: 'error',
-      data: error instanceof Error ? error.message : 'Unknown error'
-    }))
+    log.error('WS execute CLI failed', {
+      error: error instanceof Error ? error.message : String(error),
+    })
+    ws.send(
+      JSON.stringify({
+        type: 'error',
+        data: error instanceof Error ? error.message : 'Unknown error',
+      })
+    )
   } finally {
     cleanupAgentHandlers()
     await cleanupTempImages(imagePaths)

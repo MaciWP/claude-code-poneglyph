@@ -61,7 +61,7 @@ interface CodexStreamEvent {
 function buildPromptWithHistory(prompt: string, messages?: Message[]): string {
   if (!messages || messages.length === 0) return prompt
   const historyContext = messages
-    .map(msg => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`)
+    .map((msg) => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`)
     .join('\n\n')
   return `Previous conversation:\n\n${historyContext}\n\n---\n\nUser: ${prompt}`
 }
@@ -126,7 +126,10 @@ export class CodexService {
     yield* stream
   }
 
-  streamCLIWithAbort(options: CLIOptions): { stream: AsyncGenerator<StreamChunk>; abort: () => void } {
+  streamCLIWithAbort(options: CLIOptions): {
+    stream: AsyncGenerator<StreamChunk>
+    abort: () => void
+  } {
     let proc: ReturnType<typeof Bun.spawn> | null = null
     let aborted = false
 
@@ -154,9 +157,15 @@ export class CodexService {
       }
     }
 
-    const self = this
+    const streamCLI = this.streamCLIInternal.bind(this)
     async function* generator(): AsyncGenerator<StreamChunk> {
-      yield* self.streamCLIInternal(options, (p) => { proc = p }, () => aborted)
+      yield* streamCLI(
+        options,
+        (p) => {
+          proc = p
+        },
+        () => aborted
+      )
     }
 
     return { stream: generator(), abort }
@@ -179,21 +188,24 @@ export class CodexService {
       'exec',
       '--json',
       '--full-auto',
-      '--sandbox', DEFAULT_SANDBOX,
-      '--profile', 'dev',
+      '--sandbox',
+      DEFAULT_SANDBOX,
+      '--profile',
+      'dev',
       '--skip-git-repo-check',
-      '--cd', workDir,
-      promptToSend
+      '--cd',
+      workDir,
+      promptToSend,
     ]
 
     if (options.images && options.images.length > 0) {
-      args.splice(3, 0, ...options.images.flatMap(img => ['--image', img]))
+      args.splice(3, 0, ...options.images.flatMap((img) => ['--image', img]))
     }
 
     log.debug('Codex CLI stream start', {
       argsPreview: args.slice(0, 8),
       cwd: workDir,
-      imageCount: options.images?.length || 0
+      imageCount: options.images?.length || 0,
     })
 
     const proc = Bun.spawn(args, {
@@ -251,7 +263,7 @@ export class CodexService {
               tool: name,
               toolInput: event.item.input ?? event.item.tool_input,
               toolUseId: event.item.tool_use_id,
-              sessionId
+              sessionId,
             })
           }
         }
@@ -264,7 +276,7 @@ export class CodexService {
             toolOutput: event.item.output || event.item.tool_output || '',
             tool: toolName,
             toolUseId: event.item.tool_use_id,
-            sessionId
+            sessionId,
           })
         }
         return
@@ -314,7 +326,7 @@ export class CodexService {
               tool: block.name,
               toolInput: block.input,
               toolUseId: block.id,
-              sessionId
+              sessionId,
             })
           } else if (block.type === 'tool_result') {
             let toolName: string | undefined
@@ -328,10 +340,10 @@ export class CodexService {
             push({
               type: 'tool_result',
               data: 'completed',
-              toolOutput: typeof block.output === 'string' ? block.output : (block.text || ''),
+              toolOutput: typeof block.output === 'string' ? block.output : block.text || '',
               tool: toolName,
               toolUseId,
-              sessionId
+              sessionId,
             })
           }
         }
@@ -347,7 +359,7 @@ export class CodexService {
             tool: name,
             toolInput: event.tool_input,
             toolUseId: event.tool_use_id,
-            sessionId
+            sessionId,
           })
           return
         }
@@ -359,7 +371,7 @@ export class CodexService {
           data: event.result || event.output || '',
           sessionId,
           costUsd: event.total_cost_usd,
-          durationMs: event.duration_ms
+          durationMs: event.duration_ms,
         })
       }
     }
@@ -411,7 +423,9 @@ export class CodexService {
           }
         }
       } catch (error) {
-        log.error(`Codex CLI stream error (${isStderr ? 'stderr' : 'stdout'})`, { error: String(error) })
+        log.error(`Codex CLI stream error (${isStderr ? 'stderr' : 'stdout'})`, {
+          error: String(error),
+        })
         push({ type: 'error', data: String(error) })
       } finally {
         activeStreams--
@@ -426,7 +440,7 @@ export class CodexService {
       if (queue.length > 0) {
         yield queue.shift()!
       } else {
-        await new Promise<void>(resolve => {
+        await new Promise<void>((resolve) => {
           resolveSignal = resolve
           if (activeStreams === 0 && queue.length === 0) resolve()
           if (queue.length > 0) resolve()

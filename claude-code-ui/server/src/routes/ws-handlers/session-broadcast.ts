@@ -17,8 +17,8 @@ export function broadcastToSession(sessionId: string, message: object): void {
   const payload = JSON.stringify(message)
   for (const ws of sockets) {
     try {
-      (ws as WebSocketWithSend).send(payload)
-    } catch (error) {
+      ;(ws as WebSocketWithSend).send(payload)
+    } catch (_error) {
       // Socket may be closed, will be cleaned up on close event
       // This is expected behavior when client disconnects
     }

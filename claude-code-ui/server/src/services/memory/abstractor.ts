@@ -23,7 +23,7 @@ export async function findSimilarMemories(
   const clusters: Memory[][] = []
   const assigned = new Set<string>()
 
-  const memoriesWithEmbeddings = memories.filter(m => m.embedding && m.embedding.length > 0)
+  const memoriesWithEmbeddings = memories.filter((m) => m.embedding && m.embedding.length > 0)
 
   for (const memory of memoriesWithEmbeddings) {
     if (assigned.has(memory.id)) continue
@@ -49,9 +49,7 @@ export async function findSimilarMemories(
   return clusters
 }
 
-export async function abstractCluster(
-  cluster: Memory[]
-): Promise<AbstractionResult | null> {
+export async function abstractCluster(cluster: Memory[]): Promise<AbstractionResult | null> {
   if (cluster.length < MIN_CLUSTER_SIZE) return null
 
   const commonTags = findCommonTags(cluster)
@@ -62,20 +60,15 @@ export async function abstractCluster(
   let embedding: number[] | undefined
   try {
     embedding = await generateEmbedding(abstractContent)
-  } catch (error) {
+  } catch (_error) {
     log.warn('Failed to generate embedding for abstract memory')
   }
 
-  const abstractMemory = await memoryStore.add(
-    abstractContent,
-    'semantic',
-    'inferred',
-    {
-      embedding,
-      tags: ['abstracted', ...commonTags],
-      initialConfidence: avgConfidence * 0.9
-    }
-  )
+  const abstractMemory = await memoryStore.add(abstractContent, 'semantic', 'inferred', {
+    embedding,
+    tags: ['abstracted', ...commonTags],
+    initialConfidence: avgConfidence * 0.9,
+  })
 
   for (const memory of cluster) {
     await memoryGraph.addEdge(abstractMemory.id, memory.id, 'supersedes', 0.9)
@@ -84,14 +77,14 @@ export async function abstractCluster(
   log.info('Created abstract memory', {
     id: abstractMemory.id,
     sourceCount: cluster.length,
-    commonTags
+    commonTags,
   })
 
   return {
     abstractMemory,
-    sourceMemories: cluster.map(m => m.id),
+    sourceMemories: cluster.map((m) => m.id),
     patternType: commonTags[0] || 'general',
-    confidence: avgConfidence
+    confidence: avgConfidence,
   }
 }
 
@@ -122,7 +115,7 @@ function generateAbstractContent(memories: Memory[], tags: string[]): string {
   }
 
   if (tags.includes('code')) {
-    const language = tags.find(t => ['typescript', 'javascript', 'python'].includes(t))
+    const language = tags.find((t) => ['typescript', 'javascript', 'python'].includes(t))
     return `Recurring ${language || 'code'} pattern across ${memories.length} instances`
   }
 
@@ -156,10 +149,9 @@ function extractCommonPhrase(memories: Memory[]): string {
 export async function runAbstraction(): Promise<AbstractionResult[]> {
   const allMemories = await memoryStore.getAll()
 
-  const episodicMemories = allMemories.filter(m =>
-    m.type === 'episodic' &&
-    m.confidence.current > 0.4 &&
-    !m.metadata.tags.includes('abstracted')
+  const episodicMemories = allMemories.filter(
+    (m) =>
+      m.type === 'episodic' && m.confidence.current > 0.4 && !m.metadata.tags.includes('abstracted')
   )
 
   if (episodicMemories.length < MIN_CLUSTER_SIZE) {
@@ -180,7 +172,7 @@ export async function runAbstraction(): Promise<AbstractionResult[]> {
   log.info('Abstraction run complete', {
     processed: episodicMemories.length,
     clusters: clusters.length,
-    abstractions: results.length
+    abstractions: results.length,
   })
 
   return results
@@ -202,15 +194,16 @@ export async function detectPatterns(memories: Memory[]): Promise<MemoryPattern[
 
   for (const [tag, tagMemories] of tagGroups) {
     if (tagMemories.length >= 3) {
-      const avgConfidence = tagMemories.reduce((s, m) => s + m.confidence.current, 0) / tagMemories.length
+      const avgConfidence =
+        tagMemories.reduce((s, m) => s + m.confidence.current, 0) / tagMemories.length
 
       patterns.push({
         id: `pattern_${tag}_${Date.now()}`,
         pattern: tag,
         frequency: tagMemories.length,
-        memories: tagMemories.map(m => m.id),
+        memories: tagMemories.map((m) => m.id),
         confidence: avgConfidence,
-        abstracted: false
+        abstracted: false,
       })
     }
   }

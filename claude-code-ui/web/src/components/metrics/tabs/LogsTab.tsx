@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { Icons } from '../../../lib/icons'
 import { cn } from '../../../lib/utils'
 import { Card, Badge, ToggleBadge, IconButton, Button, EmptyState, ConfirmModal } from '../../ui'
@@ -24,10 +24,6 @@ interface LogEntry {
 interface LogsResponse {
   logs: LogEntry[]
   count: number
-}
-
-interface LogsTabProps {
-  // extensible for future props
 }
 
 // =============================================================================
@@ -273,7 +269,13 @@ function FilterBar({
         <Button
           variant="secondary"
           size="sm"
-          icon={isPaused ? <Icons.play className="w-3.5 h-3.5" /> : <Icons.pause className="w-3.5 h-3.5" />}
+          icon={
+            isPaused ? (
+              <Icons.play className="w-3.5 h-3.5" />
+            ) : (
+              <Icons.pause className="w-3.5 h-3.5" />
+            )
+          }
           onClick={onTogglePause}
         >
           {isPaused ? 'Resume' : 'Pause'}
@@ -383,7 +385,7 @@ function StatusBar({ totalLogs, displayedLogs, isLoading, autoScroll }: StatusBa
 // MAIN COMPONENT
 // =============================================================================
 
-export function LogsTab(_props: LogsTabProps): JSX.Element {
+export function LogsTab(): JSX.Element {
   // State
   const [logs, setLogs] = useState<LogEntry[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -435,20 +437,21 @@ export function LogsTab(_props: LogsTabProps): JSX.Element {
   }, [logs, autoScroll])
 
   // Filter logs
-  const filteredLogs = logs.filter((log) => {
-    // Level filter
-    if (!levelFilters.has(log.level)) return false
-    // Source filter
-    if (!sourceFilters.has(log.source)) return false
-    // Search filter
-    if (searchTerm && !log.message.toLowerCase().includes(searchTerm.toLowerCase())) {
-      return false
-    }
-    return true
-  })
+  const filteredLogs = useMemo(
+    () =>
+      logs.filter((log) => {
+        if (!levelFilters.has(log.level)) return false
+        if (!sourceFilters.has(log.source)) return false
+        if (searchTerm && !log.message.toLowerCase().includes(searchTerm.toLowerCase())) {
+          return false
+        }
+        return true
+      }),
+    [logs, levelFilters, sourceFilters, searchTerm]
+  )
 
   // Handlers
-  const handleToggleLevel = (level: LogLevel) => {
+  const handleToggleLevel = useCallback((level: LogLevel) => {
     setLevelFilters((prev) => {
       const next = new Set(prev)
       if (next.has(level)) {
@@ -458,9 +461,9 @@ export function LogsTab(_props: LogsTabProps): JSX.Element {
       }
       return next
     })
-  }
+  }, [])
 
-  const handleToggleSource = (source: LogSource) => {
+  const handleToggleSource = useCallback((source: LogSource) => {
     setSourceFilters((prev) => {
       const next = new Set(prev)
       if (next.has(source)) {
@@ -470,9 +473,9 @@ export function LogsTab(_props: LogsTabProps): JSX.Element {
       }
       return next
     })
-  }
+  }, [])
 
-  const handleToggleExpand = (id: string) => {
+  const handleToggleExpand = useCallback((id: string) => {
     setExpandedLogIds((prev) => {
       const next = new Set(prev)
       if (next.has(id)) {
@@ -482,13 +485,13 @@ export function LogsTab(_props: LogsTabProps): JSX.Element {
       }
       return next
     })
-  }
+  }, [])
 
-  const handleExport = (format: 'json' | 'text') => {
+  const handleExport = useCallback((format: 'json' | 'text') => {
     window.open(`/api/logs/export?format=${format}`, '_blank')
-  }
+  }, [])
 
-  const handleClearLogs = async () => {
+  const handleClearLogs = useCallback(async () => {
     try {
       await clearLogs()
       setLogs([])
@@ -498,7 +501,7 @@ export function LogsTab(_props: LogsTabProps): JSX.Element {
     } finally {
       setShowClearConfirm(false)
     }
-  }
+  }, [])
 
   return (
     <div className="h-full flex flex-col">

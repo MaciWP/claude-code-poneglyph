@@ -25,22 +25,25 @@ interface ConversationTurn {
 const PREFERENCE_PATTERNS = [
   { pattern: /(?:i\s+)?prefer\s+(.+?)(?:\.|$)/i, type: 'preference' as const },
   { pattern: /(?:i\s+)?like\s+(?:to\s+)?(.+?)(?:\.|$)/i, type: 'preference' as const },
-  { pattern: /(?:don't|do\s+not)\s+(?:use|like)\s+(.+?)(?:\.|$)/i, type: 'anti-preference' as const },
+  {
+    pattern: /(?:don't|do\s+not)\s+(?:use|like)\s+(.+?)(?:\.|$)/i,
+    type: 'anti-preference' as const,
+  },
   { pattern: /always\s+(?:use|do)\s+(.+?)(?:\.|$)/i, type: 'preference' as const },
-  { pattern: /never\s+(?:use|do)\s+(.+?)(?:\.|$)/i, type: 'anti-preference' as const }
+  { pattern: /never\s+(?:use|do)\s+(.+?)(?:\.|$)/i, type: 'anti-preference' as const },
 ]
 
 const KNOWLEDGE_PATTERNS = [
   { pattern: /(?:the\s+)?project\s+(?:uses?|has)\s+(.+?)(?:\.|$)/i, type: 'project' as const },
   { pattern: /(?:we|i)\s+use\s+(.+?)\s+for\s+(.+?)(?:\.|$)/i, type: 'stack' as const },
   { pattern: /(?:the\s+)?(?:database|db)\s+is\s+(.+?)(?:\.|$)/i, type: 'infrastructure' as const },
-  { pattern: /(?:deploy|run)\s+(?:on|to)\s+(.+?)(?:\.|$)/i, type: 'infrastructure' as const }
+  { pattern: /(?:deploy|run)\s+(?:on|to)\s+(.+?)(?:\.|$)/i, type: 'infrastructure' as const },
 ]
 
 const FEEDBACK_PATTERNS = [
   { pattern: /(?:that's\s+)?(?:correct|right|exactly)/i, type: 'positive' as const },
   { pattern: /(?:no,?\s+)?(?:that's\s+)?(?:wrong|incorrect)/i, type: 'negative' as const },
-  { pattern: /(?:actually|instead),?\s+(.+)/i, type: 'correction' as const }
+  { pattern: /(?:actually|instead),?\s+(.+)/i, type: 'correction' as const },
 ]
 
 export interface SurprisePattern {
@@ -60,12 +63,12 @@ export const SURPRISE_PATTERNS: SurprisePattern[] = [
       /that\s+worked/i,
       /problem\s+solved/i,
       /now\s+it(?:'s)?\s+working/i,
-      /finally\s+(?:got\s+it|works)/i
+      /finally\s+(?:got\s+it|works)/i,
     ],
     memoryType: 'episodic',
     laneType: 'learning',
     confidenceBoost: 0.2,
-    role: 'both'
+    role: 'both',
   },
   {
     name: 'user_correction',
@@ -74,12 +77,12 @@ export const SURPRISE_PATTERNS: SurprisePattern[] = [
       /that's\s+not\s+(?:what|how|right)/i,
       /don't\s+(?:do\s+)?that/i,
       /(?:please\s+)?(?:change|modify|fix)\s+(?:it|this|that)\s+to/i,
-      /wrong[,.]?\s+(?:it\s+should|use)/i
+      /wrong[,.]?\s+(?:it\s+should|use)/i,
     ],
     memoryType: 'semantic',
     laneType: 'correction',
     confidenceBoost: 0.3,
-    role: 'user'
+    role: 'user',
   },
   {
     name: 'enthusiasm',
@@ -87,12 +90,12 @@ export const SURPRISE_PATTERNS: SurprisePattern[] = [
       /(?:that's\s+)?(?:perfect|exactly\s+what\s+I\s+(?:wanted|needed))/i,
       /(?:this\s+is\s+)?(?:great|awesome|excellent)/i,
       /(?:love|like)\s+(?:it|this|that)/i,
-      /(?:yes|yeah)[!,]\s*(?:that's|this\s+is)/i
+      /(?:yes|yeah)[!,]\s*(?:that's|this\s+is)/i,
     ],
     memoryType: 'episodic',
     laneType: 'confidence',
     confidenceBoost: 0.15,
-    role: 'user'
+    role: 'user',
   },
   {
     name: 'negative_reaction',
@@ -100,12 +103,12 @@ export const SURPRISE_PATTERNS: SurprisePattern[] = [
       /(?:this\s+is\s+)?(?:wrong|broken|not\s+working)/i,
       /(?:don't|never)\s+do\s+(?:this|that)\s+again/i,
       /(?:that's\s+)?(?:terrible|awful|bad)/i,
-      /(?:please\s+)?stop\s+doing/i
+      /(?:please\s+)?stop\s+doing/i,
     ],
     memoryType: 'semantic',
     laneType: 'correction',
     confidenceBoost: 0.25,
-    role: 'user'
+    role: 'user',
   },
   {
     name: 'decision',
@@ -113,12 +116,12 @@ export const SURPRISE_PATTERNS: SurprisePattern[] = [
       /(?:I|we)\s+(?:decided|chose|picked)\s+(?:to\s+)?/i,
       /(?:let's|we'll)\s+(?:go\s+with|use)\s+/i,
       /(?:the\s+)?decision\s+(?:is|was)\s+(?:to\s+)?/i,
-      /(?:I|we)\s+(?:will|want\s+to)\s+(?:use|go\s+with)/i
+      /(?:I|we)\s+(?:will|want\s+to)\s+(?:use|go\s+with)/i,
     ],
     memoryType: 'semantic',
     laneType: 'decision',
     confidenceBoost: 0.2,
-    role: 'both'
+    role: 'both',
   },
   {
     name: 'commitment',
@@ -126,12 +129,12 @@ export const SURPRISE_PATTERNS: SurprisePattern[] = [
       /(?:always|usually)\s+(?:use|do|prefer)/i,
       /(?:my|our)\s+(?:standard|default|preferred)\s+(?:is|approach)/i,
       /(?:I|we)\s+(?:always|never)\s+/i,
-      /(?:from\s+now\s+on|going\s+forward),?\s+(?:we|I)\s+(?:will|should)/i
+      /(?:from\s+now\s+on|going\s+forward),?\s+(?:we|I)\s+(?:will|should)/i,
     ],
     memoryType: 'semantic',
     laneType: 'commitment',
     confidenceBoost: 0.2,
-    role: 'user'
+    role: 'user',
   },
   {
     name: 'insight',
@@ -139,12 +142,12 @@ export const SURPRISE_PATTERNS: SurprisePattern[] = [
       /(?:I|we)\s+(?:realized|discovered|found\s+out)/i,
       /(?:it\s+)?turns\s+out\s+(?:that\s+)?/i,
       /(?:the\s+)?(?:key|trick|secret)\s+(?:is|was)/i,
-      /(?:interesting|surprisingly),?\s+/i
+      /(?:interesting|surprisingly),?\s+/i,
     ],
     memoryType: 'semantic',
     laneType: 'insight',
     confidenceBoost: 0.15,
-    role: 'both'
+    role: 'both',
   },
   {
     name: 'gap',
@@ -152,25 +155,25 @@ export const SURPRISE_PATTERNS: SurprisePattern[] = [
       /(?:we\s+)?(?:need|should\s+add|missing)\s+/i,
       /(?:there's\s+)?no\s+(?:way\s+to|support\s+for)/i,
       /(?:it\s+)?(?:doesn't|can't)\s+(?:handle|support)/i,
-      /(?:TODO|FIXME|HACK):/i
+      /(?:TODO|FIXME|HACK):/i,
     ],
     memoryType: 'semantic',
     laneType: 'gap',
     confidenceBoost: 0.1,
-    role: 'both'
+    role: 'both',
   },
   {
     name: 'workflow',
     patterns: [
       /(?:the\s+)?(?:process|workflow|procedure)\s+(?:is|should\s+be)/i,
       /(?:step\s+\d+|first|then|finally)[,:]\s+/i,
-      /(?:when|before|after)\s+(?:doing|running|executing)/i
+      /(?:when|before|after)\s+(?:doing|running|executing)/i,
     ],
     memoryType: 'procedural',
     laneType: 'workflow_note',
     confidenceBoost: 0.1,
-    role: 'both'
-  }
+    role: 'both',
+  },
 ]
 
 export function extractSurpriseMemories(
@@ -193,10 +196,12 @@ export function extractSurpriseMemories(
         const endIndex = Math.min(text.length, text.indexOf(matchedText) + matchedText.length + 200)
         const sourceChunk = text.slice(startIndex, endIndex)
 
-        const title = text.slice(
-          Math.max(0, text.indexOf(matchedText) - 20),
-          Math.min(text.length, text.indexOf(matchedText) + matchedText.length + 50)
-        ).trim()
+        const title = text
+          .slice(
+            Math.max(0, text.indexOf(matchedText) - 20),
+            Math.min(text.length, text.indexOf(matchedText) + matchedText.length + 50)
+          )
+          .trim()
 
         results.push({
           content: sourceChunk,
@@ -206,7 +211,7 @@ export function extractSurpriseMemories(
           tags: ['surprise', surprise.name, surprise.laneType],
           reason: `Surprise trigger: ${surprise.name} (pattern: ${pattern.source.slice(0, 30)}...)`,
           title: title.length > 100 ? title.slice(0, 100) + '...' : title,
-          sourceChunk
+          sourceChunk,
         })
 
         break
@@ -244,28 +249,23 @@ export async function extractFromConversation(
         }
       }
 
-      const memory = await memoryStore.add(
-        result.content,
-        result.type,
-        'interaction',
-        {
-          embedding,
-          tags: result.tags,
-          sessionId: options.sessionId,
-          agentType: options.agentType,
-          initialConfidence: result.confidence,
-          laneType: result.laneType,
-          title: result.title,
-          sourceChunk: result.sourceChunk,
-          reasoning: result.reason
-        }
-      )
+      const memory = await memoryStore.add(result.content, result.type, 'interaction', {
+        embedding,
+        tags: result.tags,
+        sessionId: options.sessionId,
+        agentType: options.agentType,
+        initialConfidence: result.confidence,
+        laneType: result.laneType,
+        title: result.title,
+        sourceChunk: result.sourceChunk,
+        reasoning: result.reason,
+      })
 
       extracted.push(memory)
       log.debug('Extracted memory', {
         id: memory.id,
         type: result.type,
-        reason: result.reason
+        reason: result.reason,
       })
     }
   }
@@ -286,13 +286,14 @@ export function extractFromText(
       const match = text.match(pattern)
       if (match) {
         results.push({
-          content: type === 'anti-preference'
-            ? `User does NOT want: ${match[1]}`
-            : `User prefers: ${match[1]}`,
+          content:
+            type === 'anti-preference'
+              ? `User does NOT want: ${match[1]}`
+              : `User prefers: ${match[1]}`,
           type: 'semantic',
           confidence: 0.7,
           tags: ['preference', type],
-          reason: `Matched preference pattern: ${pattern.source.slice(0, 30)}...`
+          reason: `Matched preference pattern: ${pattern.source.slice(0, 30)}...`,
         })
       }
     }
@@ -309,7 +310,7 @@ export function extractFromText(
           type: 'semantic',
           confidence: 0.8,
           tags: ['knowledge', type],
-          reason: `Matched knowledge pattern: ${pattern.source.slice(0, 30)}...`
+          reason: `Matched knowledge pattern: ${pattern.source.slice(0, 30)}...`,
         })
       }
     }
@@ -324,7 +325,7 @@ export function extractFromText(
               type: 'episodic',
               confidence: 0.9,
               tags: ['feedback', 'confirmation'],
-              reason: 'User confirmed previous response'
+              reason: 'User confirmed previous response',
             })
           } else if (type === 'correction' && match[1]) {
             results.push({
@@ -332,7 +333,7 @@ export function extractFromText(
               type: 'semantic',
               confidence: 0.85,
               tags: ['feedback', 'correction'],
-              reason: 'User provided correction'
+              reason: 'User provided correction',
             })
           }
         }
@@ -349,7 +350,7 @@ export function extractFromText(
         type: 'procedural',
         confidence: 0.5,
         tags: ['code', language],
-        reason: 'Detected code generation'
+        reason: 'Detected code generation',
       })
     }
   }
@@ -365,13 +366,13 @@ export function extractTags(text: string): string[] {
     /\b(react|vue|angular|svelte)\b/gi,
     /\b(node|bun|deno)\b/gi,
     /\b(postgres|mysql|mongodb|redis)\b/gi,
-    /\b(docker|kubernetes|aws|gcp|azure)\b/gi
+    /\b(docker|kubernetes|aws|gcp|azure)\b/gi,
   ]
 
   for (const pattern of techPatterns) {
     const matches = text.match(pattern)
     if (matches) {
-      tags.push(...matches.map(m => m.toLowerCase()))
+      tags.push(...matches.map((m) => m.toLowerCase()))
     }
   }
 
@@ -390,22 +391,17 @@ export async function extractExplicitMemory(
   let embedding: number[] | undefined
   try {
     embedding = await generateEmbedding(instruction)
-  } catch (error) {
+  } catch (_error) {
     log.warn('Failed to generate embedding for explicit memory')
   }
 
-  const memory = await memoryStore.add(
-    instruction,
-    'semantic',
-    'explicit',
-    {
-      embedding,
-      tags: ['explicit', ...tags],
-      sessionId: options.sessionId,
-      agentType: options.agentType,
-      initialConfidence: 0.9
-    }
-  )
+  const memory = await memoryStore.add(instruction, 'semantic', 'explicit', {
+    embedding,
+    tags: ['explicit', ...tags],
+    sessionId: options.sessionId,
+    agentType: options.agentType,
+    initialConfidence: 0.9,
+  })
 
   log.info('Created explicit memory', { id: memory.id })
   return memory

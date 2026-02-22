@@ -13,6 +13,7 @@ import { logger } from '../logger'
 import {
   type ActiveProcess,
   type WebSocketWithSend,
+  type ExecuteCliData,
   WS_CONSTANTS,
   registerSessionSocket,
   unregisterSessionSocket,
@@ -22,9 +23,14 @@ import {
   handleExecuteCli,
 } from './ws-handlers'
 
+interface WebSocketMessage {
+  type: string
+  data?: Record<string, unknown>
+}
+
 // State maps for active processes and WebSocket tracking
 const activeProcesses = new Map<string, ActiveProcess>()
-const wsToRequestId = new Map<unknown, string>()
+const wsToRequestId = new Map<object, string>()
 
 // Logger for cleanup (outside createWebSocketRoutes scope)
 const cleanupLog = logger.child('websocket-cleanup')
@@ -130,7 +136,7 @@ function handleAbort(
  */
 function handleUserAnswer(
   message: { data?: { requestId?: string; answer?: string } },
-  ws: unknown,
+  ws: object,
   log: ReturnType<typeof logger.child>
 ): void {
   const requestId = message.data?.requestId || wsToRequestId.get(ws)
@@ -166,24 +172,25 @@ export const createWebSocketRoutes = (
   return new Elysia().ws('/ws', {
     body: t.Object({
       type: t.String(),
-      data: t.Any(),
+      data: t.Optional(t.Unknown()),
     }),
     open(ws) {
       log.debug('WebSocket connected')
       setupContextWindowMonitoring(ws as unknown as WebSocketWithSend)
     },
-    async message(ws, message) {
+    async message(ws, rawMessage) {
       const wsTyped = ws as unknown as WebSocketWithSend
+      const message = rawMessage as unknown as WebSocketMessage
 
       // Handle abort request
       if (message.type === 'abort') {
-        handleAbort(wsTyped, message, log)
+        handleAbort(wsTyped, message as { data?: { requestId?: string } }, log)
         return
       }
 
       // Handle session registration (for Visual Mode WebSocket)
       if (message.type === 'register-session') {
-        const sessionId = message.data?.sessionId
+        const sessionId = (message.data as { sessionId?: string } | undefined)?.sessionId
         if (sessionId) {
           registerSessionSocket(sessionId, ws)
           log.debug('Visual Mode WebSocket registered for session', { sessionId })
@@ -194,44 +201,34 @@ export const createWebSocketRoutes = (
 
       // Handle user answer for AskUserQuestion
       if (message.type === 'user_answer') {
-        handleUserAnswer(message, ws, log)
+        handleUserAnswer(
+          message as { data?: { requestId?: string; answer?: string } },
+          ws as object,
+          log
+        )
         return
       }
 
       // Handle execute-cli command
       if (message.type === 'execute-cli') {
-        const {
-          prompt,
-          messages,
-          sessionId,
-          workDir,
-          resume,
-          images,
-          orchestrate,
-          leadOrchestrate,
-          thinking,
-          planMode,
-          bypassPermissions,
-          allowFullPC,
-          provider,
-        } = message.data
+        const data = (message.data ?? {}) as unknown as ExecuteCliData
 
         // Register socket for session broadcasts
-        if (sessionId) {
-          registerSessionSocket(sessionId, ws)
+        if (data.sessionId) {
+          registerSessionSocket(data.sessionId, ws)
         }
 
         // Use Lead Orchestrator for automatic agent delegation
-        if (leadOrchestrate && leadOrchestrator) {
+        if (data.leadOrchestrate && leadOrchestrator) {
           const requestId = crypto.randomUUID()
           await handleLeadOrchestrator({
             ws: wsTyped,
             leadOrchestrator,
             sessions,
-            prompt,
-            messages,
-            sessionId,
-            workDir,
+            prompt: data.prompt,
+            messages: data.messages,
+            sessionId: data.sessionId,
+            workDir: data.workDir,
             requestId,
             activeProcesses,
             wsToRequestId,
@@ -244,20 +241,7 @@ export const createWebSocketRoutes = (
         // Standard CLI execution
         await handleExecuteCli({
           ws: wsTyped,
-          data: {
-            prompt,
-            messages,
-            sessionId,
-            workDir,
-            resume,
-            images,
-            orchestrate,
-            thinking,
-            planMode,
-            bypassPermissions,
-            allowFullPC,
-            provider,
-          },
+          data,
           sessions,
           claude,
           codex,

@@ -6,13 +6,16 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   {
     rules: {
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+      ],
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/explicit-function-return-type': 'off',
-      'no-console': ['warn', { allow: ['warn', 'error'] }]
-    }
+      'no-console': ['warn', { allow: ['warn', 'error'] }],
+    },
   },
   {
-    ignores: ['node_modules/', 'dist/']
+    ignores: ['node_modules/', 'dist/'],
   }
 )

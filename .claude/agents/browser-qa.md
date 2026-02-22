@@ -1,14 +1,11 @@
 ---
+name: browser-qa
 description: |
   QA agent specialized in UI testing with Playwright.
   Use proactively when: UI testing, visual verification, browser automation, user story validation.
   Keywords - playwright, browser, qa, ui test, visual, screenshot, user story, e2e
 model: sonnet
-allowedTools:
-  - Read
-  - Bash
-  - Glob
-  - Grep
+tools: Read, Bash, Glob, Grep
 disallowedTools:
   - Edit
   - Write

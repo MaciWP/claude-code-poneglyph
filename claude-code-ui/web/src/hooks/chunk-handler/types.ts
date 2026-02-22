@@ -1,4 +1,15 @@
-import type { LogEntry, ActiveContext, SessionStats, StreamChunk, ToolUse, ContextType, AgentStep, TokenUsage, TodoItem, ScopedTodos } from '../../types/chat'
+import type {
+  LogEntry,
+  ActiveContext,
+  SessionStats,
+  StreamChunk,
+  ToolUse,
+  ContextType,
+  AgentStep,
+  TokenUsage,
+  TodoItem,
+  ScopedTodos,
+} from '../../types/chat'
 import type { Agent, AgentType, AgentStatus } from '../../lib/api'
 import type { LearningEvent } from '../useLearningEvents'
 
@@ -28,20 +39,7 @@ export interface ContextChunk {
   name: string
   detail?: string
   status?: 'active' | 'completed' | 'failed'
-  memories?: MemorySummary[]  // For memory-injection context type
-}
-
-export interface ChunkHandlerRefs {
-  currentResponseRef: React.MutableRefObject<string | null>
-  currentThinkingRef: React.MutableRefObject<string | null>
-  activeAgentsMapRef: React.MutableRefObject<Map<string, ActiveAgent>>
-  currentAgentIdRef: React.MutableRefObject<string | null>
-  toolToParentMapRef: React.MutableRefObject<Map<string, string>>
-  seenToolUseIdsRef: React.MutableRefObject<Set<string>>
-  seenAskUserQuestionsRef: React.MutableRefObject<Set<string>>
-  agentTypeCounterRef: React.MutableRefObject<Map<string, number>>
-  parallelExecutionIdRef: React.MutableRefObject<string | null>
-  parallelExecutionStepsRef: React.MutableRefObject<AgentStep[]>
+  memories?: MemorySummary[] // For memory-injection context type
 }
 
 export interface UseChunkHandlerOptions {
@@ -62,4 +60,17 @@ export interface UseChunkHandlerOptions {
   onLearningEvent?: (event: LearningEvent) => void
 }
 
-export { StreamChunk, ToolUse, AgentStep, TokenUsage, TodoItem, ScopedTodos, LogEntry, ActiveContext, SessionStats, Agent, AgentType, AgentStatus }
+export {
+  StreamChunk,
+  ToolUse,
+  AgentStep,
+  TokenUsage,
+  TodoItem,
+  ScopedTodos,
+  LogEntry,
+  ActiveContext,
+  SessionStats,
+  Agent,
+  AgentType,
+  AgentStatus,
+}

@@ -1,6 +1,13 @@
 import { mkdir, readFile, writeFile, readdir, unlink, access, rm } from 'fs/promises'
 import { join, resolve } from 'path'
-import type { Message, Session, ExecutionEvent, TokenUsage, ContextSnapshot, PersistedAgent } from '@shared/types'
+import type {
+  Message,
+  Session,
+  ExecutionEvent,
+  TokenUsage,
+  ContextSnapshot,
+  PersistedAgent,
+} from '@shared/types'
 import { logger } from '../logger'
 
 interface RichMessageData {
@@ -42,7 +49,9 @@ export class SessionStore {
       const elapsed = Date.now() - startTime
       if (elapsed >= LOCK_TIMEOUT_MS) {
         log.error('Lock acquisition timeout', { sessionId, timeoutMs: LOCK_TIMEOUT_MS })
-        throw new Error(`Failed to acquire lock for session ${sessionId} - timeout exceeded (${LOCK_TIMEOUT_MS}ms)`)
+        throw new Error(
+          `Failed to acquire lock for session ${sessionId} - timeout exceeded (${LOCK_TIMEOUT_MS}ms)`
+        )
       }
 
       // Race between lock release and timeout
@@ -53,7 +62,7 @@ export class SessionStore {
           existingLock,
           new Promise<void>((_, reject) =>
             setTimeout(() => reject(new Error('Lock timeout')), remainingTime)
-          )
+          ),
         ]).catch(() => {
           // Timeout reached, will be handled in the next iteration
         })
@@ -61,7 +70,7 @@ export class SessionStore {
     }
 
     let resolve!: () => void
-    const lock = new Promise<void>(r => {
+    const lock = new Promise<void>((r) => {
       resolve = r
     })
     this.locks.set(sessionId, lock)
@@ -133,9 +142,7 @@ export class SessionStore {
     const hydratedMessages = await Promise.all(
       session.messages.map(async (msg) => {
         if (!msg.images?.length) return msg
-        const hydratedImages = await Promise.all(
-          msg.images.map((img) => this.loadImageFile(img))
-        )
+        const hydratedImages = await Promise.all(msg.images.map((img) => this.loadImageFile(img)))
         return { ...msg, images: hydratedImages }
       })
     )
@@ -191,10 +198,10 @@ export class SessionStore {
 
     try {
       const files = await readdir(this.baseDir)
-      const jsonFiles = files.filter(f => f.endsWith('.json'))
+      const jsonFiles = files.filter((f) => f.endsWith('.json'))
 
       const sessions = await Promise.all(
-        jsonFiles.map(async file => {
+        jsonFiles.map(async (file) => {
           const id = file.replace('.json', '')
           return this.get(id)
         })
@@ -244,7 +251,7 @@ export class SessionStore {
 
   async deleteAll(): Promise<number> {
     const sessions = await this.list()
-    await Promise.all(sessions.map(s => this.delete(s.id)))
+    await Promise.all(sessions.map((s) => this.delete(s.id)))
     return sessions.length
   }
 
@@ -261,7 +268,7 @@ export class SessionStore {
       try {
         const data = await readFile(path, 'utf-8')
         session = JSON.parse(data)
-      } catch (error) {
+      } catch (_error) {
         // Session file does not exist or is invalid
         throw new Error(`Session not found: ${sessionId}`)
       }
@@ -298,11 +305,11 @@ export class SessionStore {
   async cleanupOldSessions(maxAgeDays: number = 30): Promise<{ deleted: number; failed: number }> {
     await this.initialized
 
-    const cutoff = Date.now() - (maxAgeDays * 24 * 60 * 60 * 1000)
+    const cutoff = Date.now() - maxAgeDays * 24 * 60 * 60 * 1000
     const sessions = await this.list()
 
     // Filter sessions that are older than cutoff
-    const sessionsToDelete = sessions.filter(session => {
+    const sessionsToDelete = sessions.filter((session) => {
       const updatedAt = new Date(session.updatedAt).getTime()
       return updatedAt < cutoff
     })
@@ -313,27 +320,29 @@ export class SessionStore {
 
     // Execute deletes in parallel with Promise.allSettled
     const results = await Promise.allSettled(
-      sessionsToDelete.map(async session => {
+      sessionsToDelete.map(async (session) => {
         const updatedAt = new Date(session.updatedAt).getTime()
         await this.delete(session.id)
         log.info('Cleaned up old session', {
           sessionId: session.id,
-          age: Math.floor((Date.now() - updatedAt) / 86400000) + ' days'
+          age: Math.floor((Date.now() - updatedAt) / 86400000) + ' days',
         })
         return session.id
       })
     )
 
-    const deleted = results.filter(r => r.status === 'fulfilled').length
-    const failed = results.filter(r => r.status === 'rejected').length
+    const deleted = results.filter((r) => r.status === 'fulfilled').length
+    const failed = results.filter((r) => r.status === 'rejected').length
 
     // Log failures for debugging
     if (failed > 0) {
-      const failedResults = results.filter((r): r is PromiseRejectedResult => r.status === 'rejected')
+      const failedResults = results.filter(
+        (r): r is PromiseRejectedResult => r.status === 'rejected'
+      )
       failedResults.forEach((result, idx) => {
         log.warn('Failed to delete session during cleanup', {
           sessionId: sessionsToDelete[idx]?.id,
-          error: result.reason
+          error: result.reason,
         })
       })
     }
@@ -341,7 +350,7 @@ export class SessionStore {
     log.info('Session cleanup completed', {
       deleted,
       failed,
-      remaining: sessions.length - deleted
+      remaining: sessions.length - deleted,
     })
 
     return { deleted, failed }
@@ -356,7 +365,7 @@ export class SessionStore {
       try {
         const data = await readFile(path, 'utf-8')
         session = JSON.parse(data)
-      } catch (error) {
+      } catch (_error) {
         // Session file does not exist or is invalid
         throw new Error(`Session not found: ${sessionId}`)
       }
@@ -364,7 +373,7 @@ export class SessionStore {
       if (!session.agents) session.agents = []
 
       // Check if agent already exists (update instead of add)
-      const existingIdx = session.agents.findIndex(a => a.id === agent.id)
+      const existingIdx = session.agents.findIndex((a) => a.id === agent.id)
       if (existingIdx !== -1) {
         session.agents[existingIdx] = agent
       } else {
@@ -375,21 +384,25 @@ export class SessionStore {
     })
   }
 
-  async updateAgent(sessionId: string, agentId: string, updates: Partial<PersistedAgent>): Promise<void> {
+  async updateAgent(
+    sessionId: string,
+    agentId: string,
+    updates: Partial<PersistedAgent>
+  ): Promise<void> {
     await this.withLock(sessionId, async () => {
       const path = join(this.baseDir, `${sessionId}.json`)
       let session: Session
       try {
         const data = await readFile(path, 'utf-8')
         session = JSON.parse(data)
-      } catch (error) {
+      } catch (_error) {
         // Session file does not exist or is invalid
         throw new Error(`Session not found: ${sessionId}`)
       }
 
       if (!session.agents) return
 
-      const idx = session.agents.findIndex(a => a.id === agentId)
+      const idx = session.agents.findIndex((a) => a.id === agentId)
       if (idx !== -1) {
         session.agents[idx] = { ...session.agents[idx], ...updates }
         await this.save(session)

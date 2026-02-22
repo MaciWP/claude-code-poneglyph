@@ -1,7 +1,14 @@
-import type { Session, Message, ClaudeConfig, ModelProvider, PersistedAgent } from '@shared/types'
+import type {
+  Session,
+  Message,
+  ClaudeConfig,
+  ClaudeConfigItem,
+  ModelProvider,
+  PersistedAgent,
+} from '@shared/types'
 import { APIError, NetworkError, AbortedError } from './errors'
 
-export type { Session, Message, ClaudeConfig, ModelProvider, PersistedAgent }
+export type { Session, Message, ClaudeConfig, ClaudeConfigItem, ModelProvider, PersistedAgent }
 
 const API_BASE = '/api'
 
@@ -25,10 +32,7 @@ interface FetchOptions extends RequestInit {
   timeout?: number
 }
 
-async function apiFetch<T>(
-  endpoint: string,
-  options: FetchOptions = {}
-): Promise<T> {
+async function apiFetch<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
   const { timeout = 30000, ...fetchOptions } = options
   const url = `${API_BASE}${endpoint}`
 
@@ -53,9 +57,17 @@ async function apiFetch<T>(
     }
 
     const text = await response.text()
-    if (!text) return null as T
+    if (!text) {
+      // Safe for void returns (DELETE endpoints). Non-void callers
+      // never receive an empty body from a 2xx response in practice.
+      return undefined as unknown as T
+    }
 
-    return JSON.parse(text) as T
+    try {
+      return JSON.parse(text) as T
+    } catch {
+      throw new APIError(response.status, endpoint, 'Invalid JSON response')
+    }
   } catch (error) {
     clearTimeout(timeoutId)
 
@@ -84,14 +96,6 @@ function combineSignals(...signals: AbortSignal[]): AbortSignal {
     signal.addEventListener('abort', () => controller.abort(), { once: true })
   }
   return controller.signal
-}
-
-export interface ClaudeConfigItem {
-  name: string
-  description: string
-  model?: string
-  tools?: string[]
-  triggers?: string[]
 }
 
 export async function getClaudeConfig(signal?: AbortSignal): Promise<ClaudeConfig> {
@@ -179,7 +183,16 @@ export function createWebSocket(): WebSocket {
 
 // Agent Registry API
 export type AgentStatus = 'pending' | 'active' | 'completed' | 'failed' | 'deleted'
-export type AgentType = 'scout' | 'architect' | 'builder' | 'reviewer' | 'general-purpose' | 'Explore' | 'Plan' | 'code-quality' | 'refactor-agent'
+export type AgentType =
+  | 'scout'
+  | 'architect'
+  | 'builder'
+  | 'reviewer'
+  | 'general-purpose'
+  | 'Explore'
+  | 'Plan'
+  | 'code-quality'
+  | 'refactor-agent'
 
 export interface Agent {
   id: string
@@ -235,7 +248,10 @@ export async function getAgents(): Promise<AgentsResponse> {
   }
 }
 
-export async function getSessionAgents(sessionId: string, signal?: AbortSignal): Promise<SessionAgentStats> {
+export async function getSessionAgents(
+  sessionId: string,
+  signal?: AbortSignal
+): Promise<SessionAgentStats> {
   const key = `session-agents-${sessionId}`
   const controller = createAbortableRequest(key)
   const defaultStats: SessionAgentStats = { sessionId, agents: [], metrics: emptyMetrics }

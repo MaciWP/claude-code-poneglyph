@@ -63,7 +63,7 @@ async function executeAgent(
         agent: 'builder',
         output: 'Implementation complete',
       }
-    case 'reviewer':
+    case 'reviewer': {
       context.reviewerCalls++
       // Simulate alternating verdicts for testing
       const verdict = context.reviewerCalls === 1 ? 'NEEDS_CHANGES' : 'APPROVED'
@@ -73,6 +73,7 @@ async function executeAgent(
         verdict,
         output: verdict === 'APPROVED' ? 'Code looks good' : 'Please fix naming conventions',
       }
+    }
     case 'error-analyzer':
       context.errorAnalyzerCalls++
       return {

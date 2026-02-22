@@ -11,6 +11,14 @@ const MIN_SCALE = 0.5
 const MAX_SCALE = 4
 const SCALE_STEP = 0.25
 
+function sanitizeSvg(svg: string): string {
+  return svg
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/\s*on\w+\s*=\s*["'][^"']*["']/gi, '')
+    .replace(/javascript:/gi, '')
+    .replace(/<foreignObject[^>]*>[\s\S]*?<\/foreignObject>/gi, '')
+}
+
 function processSvgForFullscreen(svgContent: string): string {
   const parser = new DOMParser()
   const doc = parser.parseFromString(svgContent, 'image/svg+xml')
@@ -51,14 +59,14 @@ export default function MermaidModal({ svgContent, onClose }: Props): JSX.Elemen
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
   const viewportRef = useRef<HTMLDivElement>(null)
 
-  const processedSvg = useMemo(() => processSvgForFullscreen(svgContent), [svgContent])
+  const processedSvg = useMemo(() => sanitizeSvg(processSvgForFullscreen(svgContent)), [svgContent])
 
   const handleZoomIn = useCallback(() => {
-    setScale(prev => Math.min(prev + SCALE_STEP, MAX_SCALE))
+    setScale((prev) => Math.min(prev + SCALE_STEP, MAX_SCALE))
   }, [])
 
   const handleZoomOut = useCallback(() => {
-    setScale(prev => Math.max(prev - SCALE_STEP, MIN_SCALE))
+    setScale((prev) => Math.max(prev - SCALE_STEP, MIN_SCALE))
   }, [])
 
   const handleReset = useCallback(() => {
@@ -70,22 +78,28 @@ export default function MermaidModal({ svgContent, onClose }: Props): JSX.Elemen
     e.preventDefault()
     e.stopPropagation()
     const delta = e.deltaY > 0 ? -SCALE_STEP : SCALE_STEP
-    setScale(prev => Math.min(Math.max(prev + delta, MIN_SCALE), MAX_SCALE))
+    setScale((prev) => Math.min(Math.max(prev + delta, MIN_SCALE), MAX_SCALE))
   }, [])
 
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault()
-    setIsDragging(true)
-    setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y })
-  }, [position])
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault()
+      setIsDragging(true)
+      setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y })
+    },
+    [position]
+  )
 
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!isDragging) return
-    setPosition({
-      x: e.clientX - dragStart.x,
-      y: e.clientY - dragStart.y,
-    })
-  }, [isDragging, dragStart])
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (!isDragging) return
+      setPosition({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y,
+      })
+    },
+    [isDragging, dragStart]
+  )
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false)
@@ -151,7 +165,10 @@ export default function MermaidModal({ svgContent, onClose }: Props): JSX.Elemen
       {/* Controls bar */}
       <div className="absolute top-4 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-slate-800/95 backdrop-blur-sm rounded-lg px-3 py-2 border border-slate-600 shadow-xl z-10">
         <button
-          onClick={(e) => { e.stopPropagation(); handleZoomOut(); }}
+          onClick={(e) => {
+            e.stopPropagation()
+            handleZoomOut()
+          }}
           disabled={scale <= MIN_SCALE}
           className={`p-1.5 ${tw.radius.md} text-slate-400 hover:text-white hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors`}
           aria-label="Zoom out"
@@ -164,7 +181,10 @@ export default function MermaidModal({ svgContent, onClose }: Props): JSX.Elemen
         </span>
 
         <button
-          onClick={(e) => { e.stopPropagation(); handleZoomIn(); }}
+          onClick={(e) => {
+            e.stopPropagation()
+            handleZoomIn()
+          }}
           disabled={scale >= MAX_SCALE}
           className={`p-1.5 ${tw.radius.md} text-slate-400 hover:text-white hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors`}
           aria-label="Zoom in"
@@ -175,7 +195,10 @@ export default function MermaidModal({ svgContent, onClose }: Props): JSX.Elemen
         <div className="w-px h-4 bg-slate-600 mx-1" />
 
         <button
-          onClick={(e) => { e.stopPropagation(); handleReset(); }}
+          onClick={(e) => {
+            e.stopPropagation()
+            handleReset()
+          }}
           className={`p-1.5 ${tw.radius.md} text-slate-400 hover:text-white hover:bg-slate-700 transition-colors`}
           aria-label="Reset zoom"
         >
@@ -185,7 +208,10 @@ export default function MermaidModal({ svgContent, onClose }: Props): JSX.Elemen
         <div className="w-px h-4 bg-slate-600 mx-1" />
 
         <button
-          onClick={(e) => { e.stopPropagation(); onClose(); }}
+          onClick={(e) => {
+            e.stopPropagation()
+            onClose()
+          }}
           className={`p-1.5 ${tw.radius.md} text-slate-400 hover:text-white hover:bg-slate-700 transition-colors`}
           aria-label="Close"
         >

@@ -66,9 +66,23 @@ async function loadPromptEngineerSkill(): Promise<string> {
 }
 
 const VAGUE_WORDS = [
-  'somehow', 'maybe', 'various', 'some', 'stuff', 'things',
-  'better', 'improve', 'optimize', 'fix', 'arregla', 'mejora',
-  'algo', 'eso', 'esto', 'make it work', 'hazlo funcionar'
+  'somehow',
+  'maybe',
+  'various',
+  'some',
+  'stuff',
+  'things',
+  'better',
+  'improve',
+  'optimize',
+  'fix',
+  'arregla',
+  'mejora',
+  'algo',
+  'eso',
+  'esto',
+  'make it work',
+  'hazlo funcionar',
 ]
 
 function requiresDelegation(intent: ClassifiedIntent, prompt: string): boolean {
@@ -79,11 +93,11 @@ function requiresDelegation(intent: ClassifiedIntent, prompt: string): boolean {
 
   // Condition 2: Prompt contains vague words
   const promptLower = prompt.toLowerCase()
-  const hasVagueWords = VAGUE_WORDS.some(word => promptLower.includes(word))
+  const hasVagueWords = VAGUE_WORDS.some((word) => promptLower.includes(word))
 
   // Condition 3: Prompt too short (< 30 chars) for implementation tasks
-  const isTooShort = prompt.length < 30 &&
-    ['implementation', 'debugging', 'refactoring'].includes(intent.primary)
+  const isTooShort =
+    prompt.length < 30 && ['implementation', 'debugging', 'refactoring'].includes(intent.primary)
 
   return hasVagueWords || isTooShort
 }
@@ -112,7 +126,7 @@ async function loadOrchestrationRules(): Promise<string> {
     cachedRules = await readFile(rulesPath, 'utf-8')
     log.info('Loaded orchestration rules')
     return cachedRules
-  } catch (error) {
+  } catch (_error) {
     log.warn('Failed to load orchestration rules, using defaults')
     return getDefaultRules()
   }
@@ -127,7 +141,7 @@ async function loadIntents(): Promise<IntentsConfig> {
     cachedIntents = parseYaml(content) as IntentsConfig
     log.info('Loaded intents config')
     return cachedIntents
-  } catch (error) {
+  } catch (_error) {
     log.warn('Failed to load intents, using defaults')
     return getDefaultIntents()
   }
@@ -161,15 +175,15 @@ function getDefaultIntents(): IntentsConfig {
         keywords: ['implement', 'create', 'add', 'build', 'make'],
         agent: 'general-purpose',
         workflow: ['Explore', 'general-purpose'],
-        description: 'Creating new features'
+        description: 'Creating new features',
       },
       {
         name: 'exploration',
         keywords: ['find', 'search', 'where', 'how', 'what'],
         agent: 'Explore',
-        description: 'Understanding codebase'
-      }
-    ]
+        description: 'Understanding codebase',
+      },
+    ],
   }
 }
 
@@ -182,9 +196,7 @@ export function classifyIntent(prompt: string): ClassifiedIntent {
   let matchedKeywords: string[] = []
 
   for (const intent of config.intents) {
-    const matches = intent.keywords.filter((kw) =>
-      promptLower.includes(kw.toLowerCase())
-    )
+    const matches = intent.keywords.filter((kw) => promptLower.includes(kw.toLowerCase()))
 
     if (matches.length > bestScore) {
       bestScore = matches.length
@@ -199,7 +211,7 @@ export function classifyIntent(prompt: string): ClassifiedIntent {
       confidence: 0.3,
       matchedKeywords: [],
       suggestedAgent: 'general-purpose',
-      workflow: ['Explore', 'general-purpose']
+      workflow: ['Explore', 'general-purpose'],
     }
   }
 
@@ -210,17 +222,17 @@ export function classifyIntent(prompt: string): ClassifiedIntent {
     confidence,
     matchedKeywords,
     suggestedAgent: bestMatch.agent,
-    workflow: bestMatch.workflow || [bestMatch.agent]
+    workflow: bestMatch.workflow || [bestMatch.agent],
   }
 }
 
 function buildDelegationHints(intent: ClassifiedIntent): string {
   const agentDescriptions: Record<string, string> = {
-    'Explore': 'Use Task(subagent_type="Explore") to scout the codebase first',
-    'Plan': 'Use Task(subagent_type="Plan") to design the approach',
+    Explore: 'Use Task(subagent_type="Explore") to scout the codebase first',
+    Plan: 'Use Task(subagent_type="Plan") to design the approach',
     'general-purpose': 'Use Task(subagent_type="general-purpose") to implement',
     'code-quality': 'Use Task(subagent_type="code-quality") to review',
-    'refactor-agent': 'Use Task(subagent_type="refactor-agent") to refactor'
+    'refactor-agent': 'Use Task(subagent_type="refactor-agent") to refactor',
   }
 
   const steps = intent.workflow.map((agent, i) => {
@@ -248,9 +260,10 @@ function getProactiveHints(complexity: number, domains: string[]): string {
   if (complexity < 40) return ''
 
   const level = complexity >= 70 ? 'aggressive' : 'proactive'
-  const domainHints = domains.length > 0
-    ? domains.map(d => `- ${d}: Consider specialized agent`).join('\n')
-    : '- general: Use appropriate agent based on task type'
+  const domainHints =
+    domains.length > 0
+      ? domains.map((d) => `- ${d}: Consider specialized agent`).join('\n')
+      : '- general: Use appropriate agent based on task type'
 
   return `
 [Orchestration Hints - Level: ${level}]
@@ -335,7 +348,7 @@ ${memoryContext}
     complexityScore,
     detectedDomains,
     hasMemories: memoryContext.length > 0,
-    promptEngineerActive: shouldEnhance
+    promptEngineerActive: shouldEnhance,
   })
 
   return {
@@ -347,8 +360,8 @@ ${memoryContext}
       orchestrationMode: options.forceOrchestration ?? true,
       promptEngineerActive: shouldEnhance,
       complexityScore,
-      detectedDomains
-    }
+      detectedDomains,
+    },
   }
 }
 
