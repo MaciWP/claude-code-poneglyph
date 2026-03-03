@@ -5,6 +5,7 @@ description: |
   Use proactively when: UI testing, visual verification, browser automation, user story validation.
   Keywords - playwright, browser, qa, ui test, visual, screenshot, user story, e2e
 model: sonnet
+isolation: worktree
 tools: Read, Bash, Glob, Grep
 disallowedTools:
   - Edit

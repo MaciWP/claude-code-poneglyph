@@ -2,6 +2,8 @@ import { EventEmitter } from 'events'
 import { ClaudeService, type CLIOptions } from './claude'
 import { agentRegistry as defaultAgentRegistry, type AgentType } from './agent-registry'
 import { expertStore as defaultExpertStore, type ExpertStore } from './expert-store'
+import { runQualityGate } from './hook-runner'
+import { getContextForAgent } from './context-loader'
 import { logger } from '../logger'
 import type { StreamChunk } from '@shared/types'
 
@@ -367,7 +369,7 @@ ${agentPrompt}`
       }
     }
 
-    return `${expertContext}
+    let enrichedPrompt = `${expertContext}
 ## Task
 ${config.prompt}
 
@@ -393,6 +395,17 @@ ${config.prompt}
 3. Do NOT include full code in the summary
 4. The Lead Orchestrator only sees your summary
 `
+
+    try {
+      const contextAddition = await getContextForAgent([], config.prompt)
+      if (contextAddition) {
+        enrichedPrompt += contextAddition
+      }
+    } catch {
+      // Context loading is best-effort, don't block agent spawn
+    }
+
+    return enrichedPrompt
   }
 
   private normalizeAgentType(type: string): AgentType {
@@ -417,6 +430,66 @@ ${config.prompt}
     }
 
     return 'general-purpose'
+  }
+
+  async spawnCommand(
+    command: string,
+    workDir?: string
+  ): Promise<{
+    output: string
+    exitCode: number
+    durationMs: number
+  }> {
+    const start = Date.now()
+    const shellArgs = ['bash', '-c', command]
+
+    try {
+      const proc = Bun.spawn(shellArgs, {
+        cwd: workDir || process.cwd(),
+        stdout: 'pipe',
+        stderr: 'pipe',
+        env: process.env,
+      })
+
+      const exitCode = await proc.exited
+      const stdout = await new Response(proc.stdout).text()
+      const stderr = await new Response(proc.stderr).text()
+      const output = stdout + (stderr ? '\n' + stderr : '')
+
+      return {
+        output: output.slice(0, MAX_OUTPUT_LENGTH),
+        exitCode,
+        durationMs: Date.now() - start,
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      log.error('spawnCommand failed', { command, error: errorMessage })
+
+      return {
+        output: errorMessage,
+        exitCode: 1,
+        durationMs: Date.now() - start,
+      }
+    }
+  }
+
+  async runQualityCheck(workDir?: string): Promise<{
+    passed: boolean
+    output: string
+  }> {
+    try {
+      const result = await runQualityGate(workDir || process.cwd())
+      const output = result.results
+        .map(
+          (r) => `${r.hookName}: ${r.passed ? 'PASS' : 'FAIL'}${r.stderr ? ' - ' + r.stderr : ''}`
+        )
+        .join('\n')
+      return { passed: result.passed, output }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      log.error('runQualityCheck failed', { error: errorMessage })
+      return { passed: false, output: errorMessage }
+    }
   }
 }
 

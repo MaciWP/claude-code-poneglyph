@@ -19,15 +19,15 @@ export interface AgentStep {
 
 export interface LogEntry {
   id: string
-  type: 'response' | 'tool' | 'thinking' | 'init' | 'error' | 'result' | 'agent_result'
+  type: 'response' | 'tool' | 'thinking' | 'init' | 'error' | 'result' | 'agent_result' | 'qa'
   content: string
   timestamp: Date
   tool?: string
   toolInput?: unknown
   toolOutput?: string
-  toolUseId?: string  // For correlating Task tool_use with tool_result
-  parentToolUseId?: string  // Parent Task's toolUseId for agent tool correlation
-  agentUuid?: string  // Frontend-generated unique ID for agent tracking
+  toolUseId?: string // For correlating Task tool_use with tool_result
+  parentToolUseId?: string // Parent Task's toolUseId for agent tool correlation
+  agentUuid?: string // Frontend-generated unique ID for agent tracking
   images?: string[]
   agent?: string
   agentType?: string
@@ -37,7 +37,21 @@ export interface LogEntry {
   agentStartTime?: Date
   agentStatus?: 'running' | 'completed' | 'failed'
   agentError?: string
-  agentTodos?: TodoItem[]  // Todos specific to this agent
+  agentTodos?: TodoItem[] // Todos specific to this agent
+  qaRunId?: string
+  qaStoryName?: string
+  qaStatus?: 'running' | 'passed' | 'failed' | 'cancelled'
+  qaSteps?: Array<{
+    index: number
+    action: string
+    target: string
+    status: 'pending' | 'running' | 'passed' | 'failed'
+    screenshotPath?: string
+    error?: string
+    durationMs?: number
+  }>
+  qaScreenshots?: string[]
+  qaError?: string
 }
 
 export interface ToolUse {
@@ -94,31 +108,147 @@ export interface ToolTaxonomyEntry {
 }
 
 export const TOOL_TAXONOMY: Record<string, ToolTaxonomyEntry> = {
-  Read: { category: 'file-read', icon: 'bookOpen', color: 'text-emerald-400', bgColor: 'bg-emerald-500/20', description: 'Read file' },
-  Glob: { category: 'file-read', icon: 'search', color: 'text-emerald-400', bgColor: 'bg-emerald-500/20', description: 'Find files' },
-  Grep: { category: 'file-read', icon: 'searchCode', color: 'text-emerald-400', bgColor: 'bg-emerald-500/20', description: 'Search content' },
-  Write: { category: 'file-write', icon: 'pen', color: 'text-amber-400', bgColor: 'bg-amber-500/20', description: 'Write file' },
-  Edit: { category: 'file-write', icon: 'fileEdit', color: 'text-amber-400', bgColor: 'bg-amber-500/20', description: 'Edit file' },
-  NotebookEdit: { category: 'file-write', icon: 'notebook', color: 'text-amber-400', bgColor: 'bg-amber-500/20', description: 'Edit notebook' },
-  Bash: { category: 'execution', icon: 'terminal', color: 'text-blue-400', bgColor: 'bg-blue-500/20', description: 'Run command' },
-  Task: { category: 'agent', icon: 'bot', color: 'text-orange-400', bgColor: 'bg-orange-500/20', description: 'Spawn agent' },
-  TaskOutput: { category: 'agent', icon: 'layers', color: 'text-orange-400', bgColor: 'bg-orange-500/20', description: 'Agent output' },
-  Skill: { category: 'skill', icon: 'zap', color: 'text-purple-400', bgColor: 'bg-purple-500/20', description: 'Execute skill' },
-  TodoWrite: { category: 'planning', icon: 'clipboard', color: 'text-cyan-400', bgColor: 'bg-cyan-500/20', description: 'Manage tasks' },
-  EnterPlanMode: { category: 'planning', icon: 'ruler', color: 'text-cyan-400', bgColor: 'bg-cyan-500/20', description: 'Start planning' },
-  ExitPlanMode: { category: 'planning', icon: 'checkCircle', color: 'text-cyan-400', bgColor: 'bg-cyan-500/20', description: 'Finish planning' },
-  AskUserQuestion: { category: 'interaction', icon: 'help', color: 'text-yellow-400', bgColor: 'bg-yellow-500/20', description: 'Ask user' },
-  LSP: { category: 'navigation', icon: 'compass', color: 'text-teal-400', bgColor: 'bg-teal-500/20', description: 'Code navigation' },
-  WebFetch: { category: 'navigation', icon: 'globe', color: 'text-teal-400', bgColor: 'bg-teal-500/20', description: 'Fetch URL' },
-  WebSearch: { category: 'navigation', icon: 'searchCode', color: 'text-teal-400', bgColor: 'bg-teal-500/20', description: 'Web search' },
-  KillShell: { category: 'execution', icon: 'circleStop', color: 'text-red-400', bgColor: 'bg-red-500/20', description: 'Kill process' },
+  Read: {
+    category: 'file-read',
+    icon: 'bookOpen',
+    color: 'text-emerald-400',
+    bgColor: 'bg-emerald-500/20',
+    description: 'Read file',
+  },
+  Glob: {
+    category: 'file-read',
+    icon: 'search',
+    color: 'text-emerald-400',
+    bgColor: 'bg-emerald-500/20',
+    description: 'Find files',
+  },
+  Grep: {
+    category: 'file-read',
+    icon: 'searchCode',
+    color: 'text-emerald-400',
+    bgColor: 'bg-emerald-500/20',
+    description: 'Search content',
+  },
+  Write: {
+    category: 'file-write',
+    icon: 'pen',
+    color: 'text-amber-400',
+    bgColor: 'bg-amber-500/20',
+    description: 'Write file',
+  },
+  Edit: {
+    category: 'file-write',
+    icon: 'fileEdit',
+    color: 'text-amber-400',
+    bgColor: 'bg-amber-500/20',
+    description: 'Edit file',
+  },
+  NotebookEdit: {
+    category: 'file-write',
+    icon: 'notebook',
+    color: 'text-amber-400',
+    bgColor: 'bg-amber-500/20',
+    description: 'Edit notebook',
+  },
+  Bash: {
+    category: 'execution',
+    icon: 'terminal',
+    color: 'text-blue-400',
+    bgColor: 'bg-blue-500/20',
+    description: 'Run command',
+  },
+  Task: {
+    category: 'agent',
+    icon: 'bot',
+    color: 'text-orange-400',
+    bgColor: 'bg-orange-500/20',
+    description: 'Spawn agent',
+  },
+  TaskOutput: {
+    category: 'agent',
+    icon: 'layers',
+    color: 'text-orange-400',
+    bgColor: 'bg-orange-500/20',
+    description: 'Agent output',
+  },
+  Skill: {
+    category: 'skill',
+    icon: 'zap',
+    color: 'text-purple-400',
+    bgColor: 'bg-purple-500/20',
+    description: 'Execute skill',
+  },
+  TodoWrite: {
+    category: 'planning',
+    icon: 'clipboard',
+    color: 'text-cyan-400',
+    bgColor: 'bg-cyan-500/20',
+    description: 'Manage tasks',
+  },
+  EnterPlanMode: {
+    category: 'planning',
+    icon: 'ruler',
+    color: 'text-cyan-400',
+    bgColor: 'bg-cyan-500/20',
+    description: 'Start planning',
+  },
+  ExitPlanMode: {
+    category: 'planning',
+    icon: 'checkCircle',
+    color: 'text-cyan-400',
+    bgColor: 'bg-cyan-500/20',
+    description: 'Finish planning',
+  },
+  AskUserQuestion: {
+    category: 'interaction',
+    icon: 'help',
+    color: 'text-yellow-400',
+    bgColor: 'bg-yellow-500/20',
+    description: 'Ask user',
+  },
+  LSP: {
+    category: 'navigation',
+    icon: 'compass',
+    color: 'text-teal-400',
+    bgColor: 'bg-teal-500/20',
+    description: 'Code navigation',
+  },
+  WebFetch: {
+    category: 'navigation',
+    icon: 'globe',
+    color: 'text-teal-400',
+    bgColor: 'bg-teal-500/20',
+    description: 'Fetch URL',
+  },
+  WebSearch: {
+    category: 'navigation',
+    icon: 'searchCode',
+    color: 'text-teal-400',
+    bgColor: 'bg-teal-500/20',
+    description: 'Web search',
+  },
+  KillShell: {
+    category: 'execution',
+    icon: 'circleStop',
+    color: 'text-red-400',
+    bgColor: 'bg-red-500/20',
+    description: 'Kill process',
+  },
 }
 
 export type ContextIconName = 'zap' | 'ruler' | 'anchor' | 'plug' | 'brain' | 'terminal'
 
-export const CONTEXT_TAXONOMY: Record<string, { icon: ContextIconName; color: string; bgColor: string; label: string }> = {
+export const CONTEXT_TAXONOMY: Record<
+  string,
+  { icon: ContextIconName; color: string; bgColor: string; label: string }
+> = {
   skill: { icon: 'zap', color: 'text-purple-400', bgColor: 'bg-purple-500/20', label: 'Skill' },
-  command: { icon: 'terminal', color: 'text-blue-400', bgColor: 'bg-blue-500/20', label: 'Command' },
+  command: {
+    icon: 'terminal',
+    color: 'text-blue-400',
+    bgColor: 'bg-blue-500/20',
+    label: 'Command',
+  },
   rule: { icon: 'ruler', color: 'text-rose-400', bgColor: 'bg-rose-500/20', label: 'Rule' },
   hook: { icon: 'anchor', color: 'text-lime-400', bgColor: 'bg-lime-500/20', label: 'Hook' },
   mcp: { icon: 'plug', color: 'text-pink-400', bgColor: 'bg-pink-500/20', label: 'MCP' },
@@ -138,15 +268,35 @@ export interface ContextEntry {
 
 export function getToolTaxonomy(toolName: string): ToolTaxonomyEntry {
   if (toolName.startsWith('mcp__')) {
-    return { category: 'mcp', icon: 'plug', color: 'text-pink-400', bgColor: 'bg-pink-500/20', description: 'MCP tool' }
+    return {
+      category: 'mcp',
+      icon: 'plug',
+      color: 'text-pink-400',
+      bgColor: 'bg-pink-500/20',
+      description: 'MCP tool',
+    }
   }
 
   if (toolName.startsWith('Agent:')) {
-    return { category: 'agent', icon: 'bot', color: 'text-orange-400', bgColor: 'bg-orange-500/20', description: 'Agent task' }
+    return {
+      category: 'agent',
+      icon: 'bot',
+      color: 'text-orange-400',
+      bgColor: 'bg-orange-500/20',
+      description: 'Agent task',
+    }
   }
 
   const baseName = toolName.split('(')[0].trim()
-  return TOOL_TAXONOMY[baseName] || { category: 'execution', icon: 'settings', color: 'text-gray-400', bgColor: 'bg-gray-500/20', description: 'Tool' }
+  return (
+    TOOL_TAXONOMY[baseName] || {
+      category: 'execution',
+      icon: 'settings',
+      color: 'text-gray-400',
+      bgColor: 'bg-gray-500/20',
+      description: 'Tool',
+    }
+  )
 }
 
 export interface AgentStats {
@@ -245,7 +395,17 @@ export interface ScopedTodos {
   byAgent: Map<string, TodoItem[]>
 }
 
-export type FilterType = 'all' | 'response' | 'tool' | 'thinking' | 'agent' | 'context' | 'file' | 'exec' | 'mcp' | 'plan'
+export type FilterType =
+  | 'all'
+  | 'response'
+  | 'tool'
+  | 'thinking'
+  | 'agent'
+  | 'context'
+  | 'file'
+  | 'exec'
+  | 'mcp'
+  | 'plan'
 
 export const LOG_TYPE_BADGES: Record<LogEntry['type'], string> = {
   response: 'bg-blue-600/20 text-blue-400',
@@ -255,11 +415,25 @@ export const LOG_TYPE_BADGES: Record<LogEntry['type'], string> = {
   error: 'bg-red-600/20 text-red-400',
   result: 'bg-blue-600/20 text-blue-400',
   agent_result: 'bg-orange-600/20 text-orange-400',
+  qa: 'bg-violet-600/20 text-violet-400',
 }
 
-export type FilterIconName = 'message' | 'folder' | 'terminal' | 'bot' | 'plug' | 'ruler' | 'zap' | 'brain'
+export type FilterIconName =
+  | 'message'
+  | 'folder'
+  | 'terminal'
+  | 'bot'
+  | 'plug'
+  | 'ruler'
+  | 'zap'
+  | 'brain'
 
-export const FILTER_BUTTONS: { key: FilterType; label: string; color: string; icon?: FilterIconName }[] = [
+export const FILTER_BUTTONS: {
+  key: FilterType
+  label: string
+  color: string
+  icon?: FilterIconName
+}[] = [
   { key: 'all', label: 'ALL', color: 'gray' },
   { key: 'response', label: 'CHAT', color: 'blue', icon: 'message' },
   { key: 'file', label: 'FILES', color: 'emerald', icon: 'folder' },

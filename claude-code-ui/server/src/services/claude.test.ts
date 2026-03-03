@@ -458,21 +458,13 @@ describe('ClaudeService', () => {
     })
   })
 
-  describe('execute() SDK', () => {
-    test.skip('returns execute result with response - requires SDK mock', async () => {
-      // SDK module is readonly and cannot be mocked directly in Bun
-      // This test would require dependency injection or a wrapper module
-      // For now, SDK functionality is tested via integration tests
-      expect(true).toBe(true)
-    })
-
-    test('ClaudeService instance can be created', () => {
+  describe('ClaudeService', () => {
+    test('instance can be created with CLI methods', () => {
       const instance = new ClaudeService()
       expect(instance).toBeDefined()
-      expect(typeof instance.execute).toBe('function')
       expect(typeof instance.executeCLI).toBe('function')
-      expect(typeof instance.stream).toBe('function')
       expect(typeof instance.streamCLI).toBe('function')
+      expect(typeof instance.streamCLIWithAbort).toBe('function')
     })
   })
 })

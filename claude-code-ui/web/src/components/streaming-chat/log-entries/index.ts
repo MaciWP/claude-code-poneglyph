@@ -5,6 +5,7 @@ export { default as TaskOutputView } from './TaskOutputView'
 export { default as ContextEntryView } from './ContextEntryView'
 export { default as StandardLogEntry } from './StandardLogEntry'
 export { default as EditToolView } from './EditToolView'
+export { default as QAMessageView } from './QAMessageView'
 
 // Shared components
 export * from './shared'

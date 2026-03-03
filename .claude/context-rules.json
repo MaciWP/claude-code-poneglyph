@@ -1,0 +1,52 @@
+{
+  "rules": [
+    {
+      "name": "api-routes",
+      "paths": ["server/src/routes/**", "**/routes/**"],
+      "keywords": ["endpoint", "route", "api", "rest", "handler"],
+      "contexts": ["api-design", "typescript-patterns"]
+    },
+    {
+      "name": "services",
+      "paths": ["server/src/services/**", "**/services/**"],
+      "keywords": ["service", "business logic"],
+      "contexts": ["typescript-patterns", "testing-strategy"]
+    },
+    {
+      "name": "auth-security",
+      "paths": ["**/auth/**", "**/security/**"],
+      "keywords": ["auth", "jwt", "token", "password", "session", "security"],
+      "contexts": ["security-coding", "typescript-patterns"]
+    },
+    {
+      "name": "database",
+      "paths": ["**/db/**", "**/database/**", "**/drizzle/**"],
+      "keywords": ["database", "sql", "query", "migration", "orm", "transaction"],
+      "contexts": ["database-patterns", "typescript-patterns"]
+    },
+    {
+      "name": "websocket",
+      "paths": ["**/ws/**", "**/websocket/**", "**/ws-handlers/**"],
+      "keywords": ["websocket", "ws", "realtime", "streaming", "socket"],
+      "contexts": ["websocket-patterns", "typescript-patterns"]
+    },
+    {
+      "name": "react-components",
+      "paths": ["web/src/components/**", "**/components/**"],
+      "keywords": ["component", "react", "tsx", "hook", "ui"],
+      "contexts": ["typescript-patterns"]
+    },
+    {
+      "name": "testing",
+      "paths": ["**/*.test.ts", "**/*.test.tsx", "**/__tests__/**"],
+      "keywords": ["test", "mock", "fixture", "coverage", "tdd"],
+      "contexts": ["testing-strategy", "bun-best-practices"]
+    },
+    {
+      "name": "config",
+      "paths": ["**/config/**", "**/.env*", "**/settings*"],
+      "keywords": ["config", "env", "environment", "settings", "validation"],
+      "contexts": ["config-validator"]
+    }
+  ]
+}

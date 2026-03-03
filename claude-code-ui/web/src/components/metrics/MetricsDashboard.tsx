@@ -3,13 +3,22 @@ import { cn } from '../../lib/utils'
 import { IconButton, Skeleton } from '../ui'
 import { StatusDot } from '../ui/StatusBadge'
 import { useMetricsDashboard, type DashboardTab } from '../../hooks/useMetricsDashboard'
-import { OverviewTab, ExpertsTab, LearningTab, LogsTab } from './tabs'
+import { useQADashboard } from '../../hooks/useQADashboard'
+import { OverviewTab, ExpertsTab, LearningTab, LogsTab, QATab } from './tabs'
 
 interface Props {
   onClose?: () => void
 }
 
-const TABS: DashboardTab[] = ['overview', 'experts', 'learning', 'logs']
+const TABS: DashboardTab[] = ['overview', 'experts', 'learning', 'logs', 'qa']
+
+const TAB_LABELS: Record<DashboardTab, string> = {
+  overview: 'Overview',
+  experts: 'Experts',
+  learning: 'Learning',
+  logs: 'Logs',
+  qa: 'QA',
+}
 
 export default function MetricsDashboard({ onClose }: Props) {
   const {
@@ -27,6 +36,7 @@ export default function MetricsDashboard({ onClose }: Props) {
     clearSelectedExpert,
     avgExpertConfidence,
   } = useMetricsDashboard()
+  const qa = useQADashboard()
 
   if (loading) {
     return <LoadingState />
@@ -45,11 +55,7 @@ export default function MetricsDashboard({ onClose }: Props) {
       <div className="flex-1 overflow-y-auto p-4">
         <div key={activeTab} className="animate-slide-up">
           {activeTab === 'overview' && (
-            <OverviewTab
-              stats={stats}
-              experts={experts}
-              avgConfidence={avgExpertConfidence}
-            />
+            <OverviewTab stats={stats} experts={experts} avgConfidence={avgExpertConfidence} />
           )}
           {activeTab === 'experts' && (
             <ExpertsTab
@@ -67,6 +73,18 @@ export default function MetricsDashboard({ onClose }: Props) {
             />
           )}
           {activeTab === 'logs' && <LogsTab />}
+          {activeTab === 'qa' && (
+            <QATab
+              stories={qa.stories}
+              results={qa.results}
+              activeRun={qa.activeRun}
+              isLoading={qa.isLoading}
+              isRunning={qa.isRunning}
+              error={qa.error}
+              onRunStory={qa.runStory}
+              onCancelRun={qa.cancelRun}
+            />
+          )}
         </div>
       </div>
     </div>
@@ -112,16 +130,10 @@ function Header({
           onClick={onToggleRefresh}
           className={cn(
             'px-2 py-1 rounded text-xs flex items-center gap-1.5 transition-colors',
-            autoRefresh
-              ? 'bg-green-600/20 text-green-400'
-              : 'bg-surface-primary text-content-muted'
+            autoRefresh ? 'bg-green-600/20 text-green-400' : 'bg-surface-primary text-content-muted'
           )}
         >
-          <StatusDot
-            status={autoRefresh ? 'success' : 'pending'}
-            size="sm"
-            pulse={autoRefresh}
-          />
+          <StatusDot status={autoRefresh ? 'success' : 'pending'} size="sm" pulse={autoRefresh} />
           {autoRefresh ? 'Live' : 'Paused'}
         </button>
         {onClose && (
@@ -142,19 +154,19 @@ function TabBar({
   onTabChange: (tab: DashboardTab) => void
 }) {
   return (
-    <div className="flex border-b border-stroke-primary">
-      {TABS.map(tab => (
+    <div className="flex overflow-x-auto border-b border-stroke-primary">
+      {TABS.map((tab) => (
         <button
           key={tab}
           onClick={() => onTabChange(tab)}
           className={cn(
-            'flex-1 px-4 py-2 text-sm font-medium transition-colors',
+            'flex-1 shrink-0 px-3 py-2 text-xs font-medium whitespace-nowrap transition-colors',
             activeTab === tab
               ? 'text-purple-400 border-b-2 border-purple-400'
               : 'text-content-muted hover:text-white'
           )}
         >
-          {tab.charAt(0).toUpperCase() + tab.slice(1)}
+          {TAB_LABELS[tab]}
         </button>
       ))}
     </div>

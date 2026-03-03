@@ -1,39 +1,14 @@
 /**
  * Claude Service Types
  *
- * All interfaces and types for Claude SDK and CLI execution.
+ * All interfaces and types for Claude CLI execution.
  * This module has no dependencies on other claude/* modules to avoid circular imports.
  */
 
-import type { SDKMessage } from '@anthropic-ai/claude-agent-sdk'
 import type { Message } from '@shared/types'
 
 // Re-export StreamChunk from shared types for convenience
 export type { StreamChunk } from '@shared/types'
-
-// =============================================================================
-// SDK TYPES
-// =============================================================================
-
-export interface ExecuteOptions {
-  prompt: string
-  sessionId?: string
-  workDir?: string
-  tools?: string[]
-  resume?: string
-  allowFullPC?: boolean
-  bypassPermissions?: boolean
-}
-
-export interface ExecuteResult {
-  response: string
-  messages: SDKMessage[]
-  sessionId: string
-  toolsUsed: string[]
-  tokensUsed?: number
-  costUsd?: number
-  mode: 'sdk' | 'cli'
-}
 
 // =============================================================================
 // CLI TYPES

@@ -53,9 +53,7 @@ describe('API Integration Tests', () => {
 
   describe('GET /api/health', () => {
     test('returns 200 with status ok', async () => {
-      const response = await app.handle(
-        new Request('http://localhost/api/health')
-      )
+      const response = await app.handle(new Request('http://localhost/api/health'))
 
       expect(response.status).toBe(200)
 
@@ -65,9 +63,7 @@ describe('API Integration Tests', () => {
     })
 
     test('timestamp is valid ISO string', async () => {
-      const response = await app.handle(
-        new Request('http://localhost/api/health')
-      )
+      const response = await app.handle(new Request('http://localhost/api/health'))
 
       const data = await response.json()
       const parsed = new Date(data.timestamp)
@@ -78,14 +74,13 @@ describe('API Integration Tests', () => {
   describe('Sessions API', () => {
     describe('GET /api/sessions', () => {
       test('returns empty array initially', async () => {
-        const response = await app.handle(
-          new Request('http://localhost/api/sessions')
-        )
+        const response = await app.handle(new Request('http://localhost/api/sessions'))
 
         expect(response.status).toBe(200)
 
         const data = await response.json()
-        expect(Array.isArray(data)).toBe(true)
+        expect(Array.isArray(data.sessions)).toBe(true)
+        expect(typeof data.total).toBe('number')
       })
     })
 
@@ -95,7 +90,7 @@ describe('API Integration Tests', () => {
           new Request('http://localhost/api/sessions', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({})
+            body: JSON.stringify({}),
           })
         )
 
@@ -114,7 +109,7 @@ describe('API Integration Tests', () => {
           new Request('http://localhost/api/sessions', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: 'Test Session' })
+            body: JSON.stringify({ name: 'Test Session' }),
           })
         )
 
@@ -129,7 +124,7 @@ describe('API Integration Tests', () => {
           new Request('http://localhost/api/sessions', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: 'Work Dir Test', workDir: '/custom/path' })
+            body: JSON.stringify({ name: 'Work Dir Test', workDir: '/custom/path' }),
           })
         )
 
@@ -146,7 +141,7 @@ describe('API Integration Tests', () => {
           new Request('http://localhost/api/sessions', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: 'Retrievable Session' })
+            body: JSON.stringify({ name: 'Retrievable Session' }),
           })
         )
         const created = await createResponse.json()
@@ -157,9 +152,10 @@ describe('API Integration Tests', () => {
 
         expect(response.status).toBe(200)
 
-        const session = await response.json()
-        expect(session.id).toBe(created.id)
-        expect(session.name).toBe('Retrievable Session')
+        const data = await response.json()
+        expect(data.session).toBeDefined()
+        expect(data.session.id).toBe(created.id)
+        expect(data.session.name).toBe('Retrievable Session')
       })
 
       test('returns 404 for non-existent session', async () => {
@@ -177,14 +173,14 @@ describe('API Integration Tests', () => {
           new Request('http://localhost/api/sessions', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: 'To Delete' })
+            body: JSON.stringify({ name: 'To Delete' }),
           })
         )
         const created = await createResponse.json()
 
         const deleteResponse = await app.handle(
           new Request(`http://localhost/api/sessions/${created.id}`, {
-            method: 'DELETE'
+            method: 'DELETE',
           })
         )
 
@@ -206,20 +202,20 @@ describe('API Integration Tests', () => {
           new Request('http://localhost/api/sessions', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: 'Batch Delete 1' })
+            body: JSON.stringify({ name: 'Batch Delete 1' }),
           })
         )
         await app.handle(
           new Request('http://localhost/api/sessions', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: 'Batch Delete 2' })
+            body: JSON.stringify({ name: 'Batch Delete 2' }),
           })
         )
 
         const deleteResponse = await app.handle(
           new Request('http://localhost/api/sessions', {
-            method: 'DELETE'
+            method: 'DELETE',
           })
         )
 
@@ -229,11 +225,10 @@ describe('API Integration Tests', () => {
         expect(result.ok).toBe(true)
         expect(result.deleted).toBeGreaterThanOrEqual(2)
 
-        const listResponse = await app.handle(
-          new Request('http://localhost/api/sessions')
-        )
-        const sessions = await listResponse.json()
-        expect(sessions).toEqual([])
+        const listResponse = await app.handle(new Request('http://localhost/api/sessions'))
+        const listData = await listResponse.json()
+        expect(listData.sessions).toEqual([])
+        expect(listData.total).toBe(0)
       })
     })
   })
@@ -245,9 +240,7 @@ describe('API Integration Tests', () => {
 
     describe('GET /api/agents', () => {
       test('returns agents list with metrics', async () => {
-        const response = await app.handle(
-          new Request('http://localhost/api/agents')
-        )
+        const response = await app.handle(new Request('http://localhost/api/agents'))
 
         expect(response.status).toBe(200)
 
@@ -261,13 +254,11 @@ describe('API Integration Tests', () => {
         const agent = agentRegistry.createAgent({
           type: 'scout',
           sessionId: 'session-1',
-          task: 'Explore codebase'
+          task: 'Explore codebase',
         })
         agentRegistry.startAgent(agent.id)
 
-        const response = await app.handle(
-          new Request('http://localhost/api/agents')
-        )
+        const response = await app.handle(new Request('http://localhost/api/agents'))
 
         const data = await response.json()
         expect(data.agents.length).toBe(1)
@@ -280,21 +271,19 @@ describe('API Integration Tests', () => {
         const activeAgent = agentRegistry.createAgent({
           type: 'builder',
           sessionId: 'session-1',
-          task: 'Build feature'
+          task: 'Build feature',
         })
         agentRegistry.startAgent(activeAgent.id)
 
         const completedAgent = agentRegistry.createAgent({
           type: 'reviewer',
           sessionId: 'session-1',
-          task: 'Review code'
+          task: 'Review code',
         })
         agentRegistry.startAgent(completedAgent.id)
         agentRegistry.completeAgent(completedAgent.id, 'Review done')
 
-        const response = await app.handle(
-          new Request('http://localhost/api/agents/active')
-        )
+        const response = await app.handle(new Request('http://localhost/api/agents/active'))
 
         expect(response.status).toBe(200)
 
@@ -309,7 +298,7 @@ describe('API Integration Tests', () => {
         const agent = agentRegistry.createAgent({
           type: 'architect',
           sessionId: 'test-session',
-          task: 'Design system'
+          task: 'Design system',
         })
         agentRegistry.startAgent(agent.id)
         agentRegistry.completeAgent(agent.id, 'Design done')
@@ -332,13 +321,11 @@ describe('API Integration Tests', () => {
         const agent = agentRegistry.createAgent({
           type: 'scout',
           sessionId: 'session-1',
-          task: 'Document bug'
+          task: 'Document bug',
         })
         agentRegistry.startAgent(agent.id)
 
-        const response = await app.handle(
-          new Request(`http://localhost/api/agents/${agent.id}`)
-        )
+        const response = await app.handle(new Request(`http://localhost/api/agents/${agent.id}`))
 
         expect(response.status).toBe(200)
 
@@ -348,9 +335,7 @@ describe('API Integration Tests', () => {
       })
 
       test('returns 404 for non-existent agent', async () => {
-        const response = await app.handle(
-          new Request('http://localhost/api/agents/non-existent')
-        )
+        const response = await app.handle(new Request('http://localhost/api/agents/non-existent'))
 
         expect(response.status).toBe(404)
       })
@@ -361,7 +346,7 @@ describe('API Integration Tests', () => {
         const agent = agentRegistry.createAgent({
           type: 'refactor-agent',
           sessionId: 'session-1',
-          task: 'Refactor code'
+          task: 'Refactor code',
         })
         agentRegistry.startAgent(agent.id)
 
@@ -371,8 +356,8 @@ describe('API Integration Tests', () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               result: 'Refactoring completed',
-              tokensUsed: 1500
-            })
+              tokensUsed: 1500,
+            }),
           })
         )
 
@@ -389,7 +374,7 @@ describe('API Integration Tests', () => {
           new Request('http://localhost/api/agents/non-existent/complete', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ result: 'Done' })
+            body: JSON.stringify({ result: 'Done' }),
           })
         )
 
@@ -402,7 +387,7 @@ describe('API Integration Tests', () => {
         const agent = agentRegistry.createAgent({
           type: 'code-quality',
           sessionId: 'session-1',
-          task: 'Check quality'
+          task: 'Check quality',
         })
         agentRegistry.startAgent(agent.id)
 
@@ -410,7 +395,7 @@ describe('API Integration Tests', () => {
           new Request(`http://localhost/api/agents/${agent.id}/fail`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ error: 'Connection timeout' })
+            body: JSON.stringify({ error: 'Connection timeout' }),
           })
         )
 
@@ -427,14 +412,14 @@ describe('API Integration Tests', () => {
         const agent = agentRegistry.createAgent({
           type: 'scout',
           sessionId: 'session-1',
-          task: 'Decompose task'
+          task: 'Decompose task',
         })
         agentRegistry.startAgent(agent.id)
         agentRegistry.completeAgent(agent.id, 'Done')
 
         const response = await app.handle(
           new Request(`http://localhost/api/agents/${agent.id}`, {
-            method: 'DELETE'
+            method: 'DELETE',
           })
         )
 
@@ -443,9 +428,7 @@ describe('API Integration Tests', () => {
         const result = await response.json()
         expect(result.ok).toBe(true)
 
-        const getResponse = await app.handle(
-          new Request(`http://localhost/api/agents/${agent.id}`)
-        )
+        const getResponse = await app.handle(new Request(`http://localhost/api/agents/${agent.id}`))
         const deletedAgent = await getResponse.json()
         expect(deletedAgent.status).toBe('deleted')
       })
@@ -453,7 +436,7 @@ describe('API Integration Tests', () => {
       test('returns 404 for non-existent agent', async () => {
         const response = await app.handle(
           new Request('http://localhost/api/agents/non-existent-id', {
-            method: 'DELETE'
+            method: 'DELETE',
           })
         )
 
@@ -466,7 +449,7 @@ describe('API Integration Tests', () => {
         const agent1 = agentRegistry.createAgent({
           type: 'scout',
           sessionId: 'clear-session',
-          task: 'Explore'
+          task: 'Explore',
         })
         agentRegistry.startAgent(agent1.id)
         agentRegistry.completeAgent(agent1.id, 'Done')
@@ -474,14 +457,14 @@ describe('API Integration Tests', () => {
         const agent2 = agentRegistry.createAgent({
           type: 'builder',
           sessionId: 'clear-session',
-          task: 'Build'
+          task: 'Build',
         })
         agentRegistry.startAgent(agent2.id)
         agentRegistry.completeAgent(agent2.id, 'Done')
 
         const response = await app.handle(
           new Request('http://localhost/api/agents/session/clear-session', {
-            method: 'DELETE'
+            method: 'DELETE',
           })
         )
 
@@ -497,9 +480,7 @@ describe('API Integration Tests', () => {
   describe('Claude Config API', () => {
     describe('GET /api/claude-config', () => {
       test('returns config with agents, skills, and commands', async () => {
-        const response = await app.handle(
-          new Request('http://localhost/api/claude-config')
-        )
+        const response = await app.handle(new Request('http://localhost/api/claude-config'))
 
         expect(response.status).toBe(200)
 
@@ -517,9 +498,7 @@ describe('API Integration Tests', () => {
   describe('Memory API', () => {
     describe('GET /api/memory', () => {
       test('returns memories with count', async () => {
-        const response = await app.handle(
-          new Request('http://localhost/api/memory')
-        )
+        const response = await app.handle(new Request('http://localhost/api/memory'))
 
         expect(response.status).toBe(200)
 
@@ -532,9 +511,7 @@ describe('API Integration Tests', () => {
 
     describe('GET /api/memory/stats', () => {
       test('returns memory system stats', async () => {
-        const response = await app.handle(
-          new Request('http://localhost/api/memory/stats')
-        )
+        const response = await app.handle(new Request('http://localhost/api/memory/stats'))
 
         expect(response.status).toBe(200)
 
@@ -551,8 +528,8 @@ describe('API Integration Tests', () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               query: 'test query',
-              limit: 5
-            })
+              limit: 5,
+            }),
           })
         )
 
@@ -574,8 +551,8 @@ describe('API Integration Tests', () => {
               memoryId: 'test-memory-id',
               type: 'positive',
               context: 'helpful response',
-              sessionId: 'test-session'
-            })
+              sessionId: 'test-session',
+            }),
           })
         )
 
@@ -592,8 +569,8 @@ describe('API Integration Tests', () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               memoryId: 'test-memory-id',
-              type: 'negative'
-            })
+              type: 'negative',
+            }),
           })
         )
 

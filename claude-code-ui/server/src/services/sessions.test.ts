@@ -163,8 +163,15 @@ describe('SessionStore', () => {
       expect(existsSync(path)).toBe(false)
     })
 
-    test('does nothing for non-existent ID', async () => {
-      await expect(store.delete('non-existent')).resolves.toBeUndefined()
+    test('returns true when session exists', async () => {
+      const session = await store.create('To Check')
+      const result = await store.delete(session.id)
+      expect(result).toBe(true)
+    })
+
+    test('returns false for non-existent ID', async () => {
+      const result = await store.delete('non-existent')
+      expect(result).toBe(false)
     })
   })
 

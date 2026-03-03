@@ -6,6 +6,7 @@ import type {
   AgentStep,
   ContextChunk,
   TodoItem,
+  LogEntry,
 } from './types'
 import type { LearningChange } from '../useLearningEvents'
 import { classifyTool, normalizeContent, extractShortInput } from './utils'
@@ -466,8 +467,115 @@ export function useChunkHandler({
         }
 
         case 'orchestrator_event':
-          // TODO: Handle orchestrator events if needed
           break
+
+        case 'qa_started': {
+          const qaStarted = chunk as unknown as { runId: string; storyName: string }
+          setLogs((prev) => [
+            ...prev,
+            {
+              id: crypto.randomUUID(),
+              type: 'qa',
+              content: `QA: ${qaStarted.storyName}`,
+              timestamp: new Date(),
+              qaRunId: qaStarted.runId,
+              qaStoryName: qaStarted.storyName,
+              qaStatus: 'running',
+              qaSteps: [],
+              qaScreenshots: [],
+            },
+          ])
+          break
+        }
+
+        case 'qa_step': {
+          const qaStep = chunk as unknown as {
+            runId: string
+            step: {
+              index: number
+              action: string
+              target: string
+              status: 'pending' | 'running' | 'passed' | 'failed'
+              screenshotPath?: string
+              error?: string
+              durationMs?: number
+            }
+          }
+          setLogs((prev) =>
+            prev.map((entry) =>
+              entry.type === 'qa' && entry.qaRunId === qaStep.runId
+                ? {
+                    ...entry,
+                    qaSteps: [
+                      ...(entry.qaSteps?.filter((s) => s.index !== qaStep.step.index) ?? []),
+                      qaStep.step,
+                    ].sort((a, b) => a.index - b.index),
+                  }
+                : entry
+            )
+          )
+          break
+        }
+
+        case 'qa_screenshot': {
+          const qaScreenshot = chunk as unknown as {
+            runId: string
+            path: string
+            stepIndex: number
+          }
+          setLogs((prev) =>
+            prev.map((entry) =>
+              entry.type === 'qa' && entry.qaRunId === qaScreenshot.runId
+                ? {
+                    ...entry,
+                    qaScreenshots: [...(entry.qaScreenshots ?? []), qaScreenshot.path],
+                  }
+                : entry
+            )
+          )
+          break
+        }
+
+        case 'qa_completed': {
+          const qaCompleted = chunk as unknown as {
+            runId: string
+            result: {
+              storyName: string
+              status: 'passed' | 'failed' | 'cancelled'
+              steps: LogEntry['qaSteps']
+              screenshots: string[]
+              summary?: string
+              error?: string
+            }
+          }
+          setLogs((prev) =>
+            prev.map((entry) =>
+              entry.type === 'qa' && entry.qaRunId === qaCompleted.runId
+                ? {
+                    ...entry,
+                    qaStatus: qaCompleted.result.status,
+                    qaSteps: qaCompleted.result.steps,
+                    qaScreenshots: qaCompleted.result.screenshots,
+                    qaError: qaCompleted.result.error,
+                    content: `QA: ${qaCompleted.result.storyName} — ${qaCompleted.result.status.toUpperCase()}`,
+                  }
+                : entry
+            )
+          )
+          break
+        }
+
+        case 'qa_error': {
+          const qaError = chunk as unknown as { runId: string; error: string }
+          setLogs((prev) =>
+            prev.map((entry) =>
+              entry.type === 'qa' && entry.qaRunId === qaError.runId
+                ? { ...entry, qaStatus: 'failed' as const, qaError: qaError.error }
+                : entry
+            )
+          )
+          break
+        }
 
         default:
           break

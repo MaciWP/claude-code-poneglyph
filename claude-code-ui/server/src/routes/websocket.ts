@@ -14,14 +14,17 @@ import {
   type ActiveProcess,
   type WebSocketWithSend,
   type ExecuteCliData,
+  type QAWSEvent,
   WS_CONSTANTS,
   registerSessionSocket,
   unregisterSessionSocket,
+  broadcastToAll,
   setupContextWindowMonitoring,
   cleanupContextWindowMonitoring,
   handleLeadOrchestrator,
   handleExecuteCli,
 } from './ws-handlers'
+import { qaRunner } from '../services/qa-runner'
 
 interface WebSocketMessage {
   type: string
@@ -62,6 +65,11 @@ const cleanupInterval = setInterval(() => {
 
 // Allow cleanup of interval if needed
 export const stopCleanupInterval = () => clearInterval(cleanupInterval)
+
+// Broadcast QA runner events to all connected WebSocket clients (once at module init)
+qaRunner.on('qa_event', (event: QAWSEvent) => {
+  broadcastToAll(event)
+})
 
 /**
  * Handle abort message

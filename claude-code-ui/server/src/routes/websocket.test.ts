@@ -88,22 +88,8 @@ interface MockStreamChunk {
 
 function createMockClaudeService(): ClaudeService {
   return {
-    execute: mock(() =>
-      Promise.resolve({
-        response: '',
-        messages: [],
-        sessionId: '',
-        toolsUsed: [],
-        mode: 'sdk' as const,
-      })
-    ),
     executeCLI: mock(() =>
       Promise.resolve({ response: '', sessionId: '', toolsUsed: [], mode: 'cli' as const })
-    ),
-    stream: mock(() =>
-      (async function* () {
-        yield { type: 'done', data: '' }
-      })()
     ),
     streamCLI: mock(() =>
       (async function* () {

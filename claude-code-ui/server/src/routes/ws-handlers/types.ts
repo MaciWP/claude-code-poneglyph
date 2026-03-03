@@ -6,6 +6,7 @@ import type { orchestrator as OrchestratorType } from '../../services/orchestrat
 import type { agentRegistry as AgentRegistryType } from '../../services/agent-registry'
 import type { OrchestratorAgent } from '../../services/orchestrator-agent'
 import type { ContextWindowState } from '@shared/types'
+import type { QAResult, QAStepResult } from '../../types/qa'
 
 /**
  * Active process tracking for abort functionality
@@ -85,3 +86,10 @@ export const WS_CONSTANTS = {
   PROCESS_TTL_MS: 30 * 60 * 1000, // 30 minutes
   EXECUTION_TIMEOUT_MS: 10 * 60 * 1000, // 10 minutes
 } as const
+
+export type QAWSEvent =
+  | { type: 'qa_started'; runId: string; storyName: string }
+  | { type: 'qa_step'; runId: string; step: QAStepResult }
+  | { type: 'qa_screenshot'; runId: string; path: string; stepIndex: number }
+  | { type: 'qa_completed'; runId: string; result: QAResult }
+  | { type: 'qa_error'; runId: string; error: string }

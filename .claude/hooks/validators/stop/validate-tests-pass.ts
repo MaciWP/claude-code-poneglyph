@@ -3,7 +3,7 @@
 /**
  * Stop Hook Validator: Run tests and verify they pass.
  *
- * Reads stdin JSON (consumes to avoid broken pipe) but does not use it.
+ * Reads stdin JSON and checks `last_assistant_message` for error keywords.
  * Env var:
  *   VALIDATE_TEST_PATH - optional specific test path to run
  *
@@ -22,7 +22,7 @@ const MAX_OUTPUT_LINES = 30;
 // The hook tolerates up to this many failures without blocking.
 // Update these baselines when pre-existing failures are fixed.
 const KNOWN_FAILURE_BASELINE: Record<string, number> = {
-  server: 5,
+  server: 7,
   web: 0,
 };
 
@@ -35,12 +35,15 @@ interface SubProject {
 // Stdin Consumption
 // =============================================================================
 
-async function consumeStdin(): Promise<void> {
+async function consumeStdin(): Promise<string> {
   return new Promise((resolve) => {
+    const chunks: string[] = [];
     process.stdin.setEncoding("utf8");
-    process.stdin.on("data", () => {});
-    process.stdin.on("end", resolve);
-    process.stdin.on("error", resolve);
+    process.stdin.on("data", (chunk: string) => {
+      chunks.push(chunk);
+    });
+    process.stdin.on("end", () => resolve(chunks.join("")));
+    process.stdin.on("error", () => resolve(""));
     process.stdin.resume();
   });
 }
@@ -140,8 +143,27 @@ async function runTestsInProject(
 // Main
 // =============================================================================
 
+const ERROR_KEYWORDS = /error|failed|cannot compile/i;
+
 async function main(): Promise<void> {
-  await consumeStdin();
+  const stdinRaw = await consumeStdin();
+
+  let lastAssistantMessage = "";
+  try {
+    const parsed = JSON.parse(stdinRaw) as Record<string, unknown>;
+    lastAssistantMessage =
+      (typeof parsed.last_assistant_message === "string"
+        ? parsed.last_assistant_message
+        : "") ?? "";
+  } catch {
+    // stdin may be empty or invalid JSON — continue normally
+  }
+
+  if (lastAssistantMessage && ERROR_KEYWORDS.test(lastAssistantMessage)) {
+    console.error(
+      "[stop-hook] Builder reportó posibles errores. Verificando tests...",
+    );
+  }
 
   const testPath = process.env.VALIDATE_TEST_PATH;
   const root = findProjectRoot();

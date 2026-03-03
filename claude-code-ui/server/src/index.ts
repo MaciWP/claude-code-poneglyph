@@ -1,5 +1,6 @@
 import { Elysia } from 'elysia'
 import { cors } from '@elysiajs/cors'
+import { staticPlugin } from '@elysiajs/static'
 import { mkdir } from 'fs/promises'
 import { join } from 'path'
 import { ClaudeService } from './services/claude'
@@ -29,12 +30,17 @@ import {
   learningRoutes,
   multiExpertRoutes,
   logsRoutes,
+  qaRoutes,
+  outloopRoutes,
   stopCleanupInterval,
 } from './routes'
 
 const storageDir = join(import.meta.dir, '../storage')
 await mkdir(storageDir, { recursive: true })
 logger.debug('startup', `Storage directory ensured: ${storageDir}`)
+
+const uiEvidencePath = join(process.cwd(), '..', '..', '.claude', 'ui-evidence')
+await mkdir(uiEvidencePath, { recursive: true })
 
 const claude = new ClaudeService()
 const codex = new CodexService()
@@ -94,6 +100,9 @@ const app = new Elysia()
   .use(learningRoutes)
   .use(multiExpertRoutes)
   .use(logsRoutes)
+  .use(qaRoutes)
+  .use(outloopRoutes)
+  .use(staticPlugin({ assets: uiEvidencePath, prefix: '/qa-evidence' }))
   .use(
     createWebSocketRoutes(
       claude,
@@ -115,7 +124,6 @@ const app = new Elysia()
       sessionsExport: '/api/sessions/:id/export',
       sessionsImport: '/api/sessions/import',
       sessionsSummarize: '/api/sessions/:id/summarize',
-      execute: '/api/execute',
       executeCli: '/api/execute-cli',
       agents: '/api/agents',
       metrics: '/api/metrics',
@@ -124,6 +132,8 @@ const app = new Elysia()
       multiExpert: '/api/multi-expert',
       memory: '/api/memory',
       logs: '/api/logs',
+      qa: '/api/qa',
+      qaEvidence: '/qa-evidence',
       websocket: '/ws',
     },
   }))

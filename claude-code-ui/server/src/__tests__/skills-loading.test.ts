@@ -199,7 +199,7 @@ async function loadSkillByName(basePath: string, skillName: string): Promise<Ski
 }
 
 describe('Skills Loading', () => {
-  const SKILLS_PATH = '.claude/skills'
+  const SKILLS_PATH = join(import.meta.dir, '../../../../.claude/skills')
 
   describe('Discovery', () => {
     test('should discover skills from .claude/skills/', async () => {

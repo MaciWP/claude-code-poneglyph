@@ -7,24 +7,26 @@
   "scripts": {
     "dev:server": "cd claude-code-ui/server && bun dev",
     "dev:web": "cd claude-code-ui/web && bun dev",
-    "test": "cd claude-code-ui/server && bun test && cd ../web && bun test",
+    "test": "bun test --cwd claude-code-ui/server && bun test --cwd claude-code-ui/web",
     "lint": "cd claude-code-ui/server && bun run lint && cd ../web && bun run lint",
     "typecheck": "cd claude-code-ui/server && bun run typecheck && cd ../web && bun run typecheck",
     "validate": "bun run typecheck && bun run lint && bun run test",
+    "setup:playwright": "npx playwright install chromium",
     "prepare": "husky"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "husky": "^9.0.0",
     "lint-staged": "^15.0.0"
   },
   "lint-staged": {
     "claude-code-ui/server/src/**/*.ts": [
-      "bash -c 'cd claude-code-ui/server && bunx eslint --fix \"$@\"' _",
-      "bash -c 'cd claude-code-ui/server && bunx prettier --write \"$@\"' _"
+      "bash -c 'cd claude-code-ui/server && bunx eslint --no-error-on-unmatched-pattern --fix \"$@\"' _",
+      "bash -c 'cd claude-code-ui/server && bunx prettier --ignore-unknown --write \"$@\"' _"
     ],
     "claude-code-ui/web/src/**/*.{ts,tsx}": [
-      "bash -c 'cd claude-code-ui/web && bunx eslint --fix \"$@\"' _",
-      "bash -c 'cd claude-code-ui/web && bunx prettier --write \"$@\"' _"
+      "bash -c 'cd claude-code-ui/web && bunx eslint --no-error-on-unmatched-pattern --fix \"$@\"' _",
+      "bash -c 'cd claude-code-ui/web && bunx prettier --ignore-unknown --write \"$@\"' _"
     ]
   },
   "repository": {

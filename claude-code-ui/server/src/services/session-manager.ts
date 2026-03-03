@@ -132,9 +132,12 @@ export class SessionManager {
     return updated
   }
 
-  async delete(id: string): Promise<void> {
-    await this.store.delete(id)
-    log.info('Session deleted', { id })
+  async delete(id: string): Promise<boolean> {
+    const deleted = await this.store.delete(id)
+    if (deleted) {
+      log.info('Session deleted', { id })
+    }
+    return deleted
   }
 
   async list(options: ListOptions = {}): Promise<SessionMetadata[]> {
@@ -223,10 +226,7 @@ export class SessionManager {
     }
 
     // Messages to summarize (older ones)
-    const toSummarize = session.messages.slice(
-      0,
-      messageCount - this.config.maxShortTermMessages
-    )
+    const toSummarize = session.messages.slice(0, messageCount - this.config.maxShortTermMessages)
     // Messages to keep (recent ones)
     const toKeep = session.messages.slice(-this.config.maxShortTermMessages)
 
@@ -247,9 +247,7 @@ export class SessionManager {
 
     // Get existing summary and append
     const existingSummary = (session as Session & { longTermSummary?: string }).longTermSummary
-    const combinedSummary = existingSummary
-      ? `${existingSummary}\n\n---\n\n${summary}`
-      : summary
+    const combinedSummary = existingSummary ? `${existingSummary}\n\n---\n\n${summary}` : summary
 
     // Update session with summarized history
     const updated: Session & { longTermSummary?: string } = {
@@ -383,9 +381,7 @@ export class SessionManager {
   private toMetadata(session: Session): SessionMetadata {
     const tokenEstimate = estimateSessionTokens(session.messages)
     const lastMessage = session.messages[session.messages.length - 1]
-    const summary = lastMessage
-      ? lastMessage.content.slice(0, 100)
-      : 'No messages'
+    const summary = lastMessage ? lastMessage.content.slice(0, 100) : 'No messages'
 
     return {
       id: session.id,

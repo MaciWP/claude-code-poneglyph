@@ -1,20 +1,12 @@
 /**
  * Claude Service Module
  *
- * Main entry point for Claude SDK and CLI execution.
+ * Main entry point for Claude CLI execution.
  * Re-exports all types and provides the ClaudeService class.
  */
 
 // Re-export all types
-export type {
-  ExecuteOptions,
-  ExecuteResult,
-  CLIOptions,
-  CLIResult,
-  CLIStreamEvent,
-  CLIJsonOutput,
-  ActiveTaskInfo,
-} from './types'
+export type { CLIOptions, CLIResult, CLIStreamEvent, CLIJsonOutput, ActiveTaskInfo } from './types'
 
 // Re-export StreamChunk from shared types
 export type { StreamChunk } from '@shared/types'
@@ -23,25 +15,17 @@ export type { StreamChunk } from '@shared/types'
 export { isValidCLIEvent, parseCLIOutput } from './parser'
 
 // Import implementations
-import { executeWithSDK, streamWithSDK } from './sdk'
 import { executeWithCLI, streamCLI, streamCLIWithAbort } from './cli'
-import type { ExecuteOptions, ExecuteResult, CLIOptions, CLIResult } from './types'
+import type { CLIOptions, CLIResult } from './types'
 import type { StreamChunk } from '@shared/types'
 
 /**
- * ClaudeService class providing both SDK and CLI execution modes.
+ * ClaudeService class providing CLI execution mode.
  *
  * This class wraps the module functions to maintain backwards compatibility
  * with existing code that uses `new ClaudeService()`.
  */
 export class ClaudeService {
-  /**
-   * Execute a prompt using the Claude SDK (one-shot mode).
-   */
-  async execute(options: ExecuteOptions): Promise<ExecuteResult> {
-    return executeWithSDK(options)
-  }
-
   /**
    * Execute a prompt using the Claude CLI (one-shot mode).
    */
@@ -65,12 +49,5 @@ export class ClaudeService {
     sendUserAnswer: (answer: string) => void
   } {
     return streamCLIWithAbort(options)
-  }
-
-  /**
-   * Stream execution using the Claude SDK.
-   */
-  async *stream(options: ExecuteOptions): AsyncGenerator<StreamChunk> {
-    yield* streamWithSDK(options)
   }
 }

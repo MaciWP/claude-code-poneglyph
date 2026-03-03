@@ -227,14 +227,21 @@ export class SessionStore {
     await writeFile(path, JSON.stringify(toSave, null, 2))
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: string): Promise<boolean> {
     await this.initialized
 
     const path = join(this.baseDir, `${id}.json`)
     try {
+      await access(path)
+    } catch {
+      return false
+    }
+
+    try {
       await unlink(path)
     } catch (error) {
       log.warn('Failed to delete session file', { sessionId: id, error })
+      return false
     }
 
     const sessionImagesDir = this.getSessionImagesDir(id)
@@ -242,11 +249,12 @@ export class SessionStore {
       await rm(sessionImagesDir, { recursive: true })
       log.debug('Deleted session images', { sessionId: id })
     } catch (error) {
-      // Ignore ENOENT (directory doesn't exist)
       if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
         log.warn('Failed to delete session images', { sessionId: id, error })
       }
     }
+
+    return true
   }
 
   async deleteAll(): Promise<number> {

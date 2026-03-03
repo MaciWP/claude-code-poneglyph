@@ -16,54 +16,9 @@ export const createClaudeExecuteRoutes = (
 ) => {
   const log = logger.child('claude-execute')
 
-  return new Elysia({ prefix: '/api' })
-    .post('/execute', async ({ body }) => {
-      log.info('Execute SDK request', {
-        prompt: body.prompt.slice(0, 100),
-        sessionId: body.sessionId,
-        workDir: body.workDir,
-        resume: body.resume
-      })
-
-      try {
-        const result = await claude.execute({
-          prompt: body.prompt,
-          sessionId: body.sessionId,
-          workDir: body.workDir,
-          tools: body.tools,
-          resume: body.resume,
-        })
-
-        log.info('Execute SDK response', {
-          responseLength: result.response.length,
-          toolsUsed: result.toolsUsed,
-          sessionId: result.sessionId,
-          mode: result.mode
-        })
-
-        if (body.sessionId) {
-          await sessions.addMessage(body.sessionId, 'user', body.prompt)
-          await sessions.addMessage(body.sessionId, 'assistant', result.response)
-        }
-
-        return result
-      } catch (error) {
-        log.error('Execute SDK failed', {
-          error: error instanceof Error ? error.message : String(error)
-        })
-        throw new ClaudeError(error instanceof Error ? error.message : String(error))
-      }
-    }, {
-      body: t.Object({
-        prompt: t.String(),
-        sessionId: t.Optional(t.String()),
-        workDir: t.Optional(t.String()),
-        tools: t.Optional(t.Array(t.String())),
-        resume: t.Optional(t.String()),
-      })
-    })
-
-    .post('/execute-cli', async ({ body }) => {
+  return new Elysia({ prefix: '/api' }).post(
+    '/execute-cli',
+    async ({ body }) => {
       let promptToUse = body.prompt
 
       if (body.orchestrate) {
@@ -72,7 +27,7 @@ export const createClaudeExecuteRoutes = (
         log.info('Orchestration enabled', {
           intent: enriched.metadata.intent.primary,
           confidence: enriched.metadata.intent.confidence,
-          workflow: enriched.metadata.intent.workflow
+          workflow: enriched.metadata.intent.workflow,
         })
       }
 
@@ -82,7 +37,7 @@ export const createClaudeExecuteRoutes = (
         workDir: body.workDir,
         resume: body.resume,
         orchestrate: body.orchestrate,
-        provider: body.provider
+        provider: body.provider,
       })
 
       try {
@@ -121,7 +76,7 @@ export const createClaudeExecuteRoutes = (
           sessionId: result.sessionId,
           toolsUsed: result.toolsUsed,
           costUsd: result.costUsd,
-          durationMs: result.durationMs
+          durationMs: result.durationMs,
         })
 
         if (body.sessionId) {
@@ -132,21 +87,27 @@ export const createClaudeExecuteRoutes = (
         return result
       } catch (error) {
         log.error('Execute CLI failed', {
-          error: error instanceof Error ? error.message : String(error)
+          error: error instanceof Error ? error.message : String(error),
         })
         throw new ClaudeError(error instanceof Error ? error.message : String(error))
       }
-    }, {
+    },
+    {
       body: t.Object({
         prompt: t.String(),
-        provider: t.Optional(t.Union([t.Literal('claude'), t.Literal('codex'), t.Literal('gemini')])),
+        provider: t.Optional(
+          t.Union([t.Literal('claude'), t.Literal('codex'), t.Literal('gemini')])
+        ),
         sessionId: t.Optional(t.String()),
         workDir: t.Optional(t.String()),
-        outputFormat: t.Optional(t.Union([t.Literal('json'), t.Literal('stream-json'), t.Literal('text')])),
+        outputFormat: t.Optional(
+          t.Union([t.Literal('json'), t.Literal('stream-json'), t.Literal('text')])
+        ),
         continue: t.Optional(t.Boolean()),
         resume: t.Optional(t.String()),
         allowedTools: t.Optional(t.Array(t.String())),
         orchestrate: t.Optional(t.Boolean()),
-      })
-    })
+      }),
+    }
+  )
 }

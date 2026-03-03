@@ -15,7 +15,6 @@
     "validate": "bun run typecheck && bun run lint && bun test"
   },
   "dependencies": {
-    "@anthropic-ai/claude-agent-sdk": "^0.1.73",
     "@elysiajs/cors": "^1.0.2",
     "@elysiajs/static": "^1.4.7",
     "@google/generative-ai": "^0.24.1",

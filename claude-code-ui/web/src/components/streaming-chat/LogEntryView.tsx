@@ -8,6 +8,7 @@ import {
   ContextEntryView,
   StandardLogEntry,
   EditToolView,
+  QAMessageView,
 } from './log-entries'
 import ParallelExecutionCard from './ParallelExecutionCard'
 
@@ -19,7 +20,13 @@ interface Props {
   onSendMessage?: (message: string) => void
 }
 
-export default memo(function LogEntryView({ entry, onExpandImage, activeAgent, sessionId, onSendMessage }: Props) {
+export default memo(function LogEntryView({
+  entry,
+  onExpandImage,
+  activeAgent,
+  sessionId,
+  onSendMessage,
+}: Props) {
   // AskUserQuestion - interactive question UI
   if (entry.type === 'tool' && entry.tool === 'AskUserQuestion') {
     return <AskUserQuestionView entry={entry} onSendMessage={onSendMessage} />
@@ -59,8 +66,17 @@ export default memo(function LogEntryView({ entry, onExpandImage, activeAgent, s
     return <EditToolView entry={entry} />
   }
 
+  // QA run - inline QA story progress
+  if (entry.type === 'qa') {
+    return <QAMessageView entry={entry} />
+  }
+
   // Context entry - skills, rules, hooks, etc.
-  if (entry.type === 'init' && typeof entry.content === 'string' && entry.content.startsWith('context:')) {
+  if (
+    entry.type === 'init' &&
+    typeof entry.content === 'string' &&
+    entry.content.startsWith('context:')
+  ) {
     return <ContextEntryView entry={entry} />
   }
 

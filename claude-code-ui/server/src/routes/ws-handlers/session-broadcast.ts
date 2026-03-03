@@ -63,6 +63,23 @@ export function getSessionIdForSocket(ws: unknown): string | undefined {
 }
 
 /**
+ * Broadcast a message to ALL connected WebSocket clients across all sessions.
+ * Used for global events like QA results that are not session-specific.
+ */
+export function broadcastToAll(message: object): void {
+  const payload = JSON.stringify(message)
+  for (const sockets of sessionSockets.values()) {
+    for (const ws of sockets) {
+      try {
+        ;(ws as WebSocketWithSend).send(payload)
+      } catch (_error) {
+        // Socket may be closed, will be cleaned up on close event
+      }
+    }
+  }
+}
+
+/**
  * Get all sockets for a session (for testing/debugging)
  */
 export function getSessionSockets(sessionId: string): Set<unknown> | undefined {

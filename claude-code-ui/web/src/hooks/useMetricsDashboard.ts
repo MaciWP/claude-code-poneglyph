@@ -12,7 +12,7 @@ import {
 import { DASHBOARD_REFRESH_MS } from '../lib/constants'
 import { useAutoRefresh } from './useAutoRefresh'
 
-export type DashboardTab = 'overview' | 'experts' | 'learning' | 'logs'
+export type DashboardTab = 'overview' | 'experts' | 'learning' | 'logs' | 'qa'
 
 export interface UseMetricsDashboardOptions {
   autoRefreshEnabled?: boolean
@@ -108,9 +108,8 @@ export function useMetricsDashboard(
   }, [])
 
   // Computed values
-  const avgExpertConfidence = experts.length > 0
-    ? experts.reduce((sum, e) => sum + e.confidence, 0) / experts.length
-    : 0
+  const avgExpertConfidence =
+    experts.length > 0 ? experts.reduce((sum, e) => sum + e.confidence, 0) / experts.length : 0
 
   return {
     // Data

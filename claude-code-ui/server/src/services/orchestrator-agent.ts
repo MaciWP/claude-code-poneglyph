@@ -14,6 +14,14 @@ import {
 } from './learning-loop'
 import { SessionStateManager, type AgentExecutionRecord } from './session-state'
 import { captureFilesystemState } from './filesystem-state'
+import {
+  loadBlueprints,
+  detectBlueprint,
+  startBlueprint,
+  setAgentSpawner as setBlueprintSpawner,
+  onBlueprintEvent,
+} from './blueprint-executor'
+import type { BlueprintRun, BlueprintEvent } from '@shared/types/blueprint'
 import { logger } from '../logger'
 
 const log = logger.child('orchestrator-agent')
@@ -133,6 +141,17 @@ export class OrchestratorAgent extends EventEmitter {
       this.learningLoopHandlers.set(event, handler)
       this.learningLoop.on(event, handler)
     }
+
+    // Inject spawner into blueprint executor and load definitions
+    setBlueprintSpawner({ spawn: (cfg) => this.spawner.spawn(cfg as unknown as SpawnConfig) })
+    loadBlueprints().catch((err) => {
+      log.warn('Failed to load blueprints', { error: String(err) })
+    })
+
+    // Forward blueprint events to orchestrator event emitter
+    onBlueprintEvent((event: BlueprintEvent) => {
+      this.emit('blueprint_event', event)
+    })
 
     // Start periodic cleanup of old executions
     this.startCleanupInterval()
@@ -303,6 +322,35 @@ export class OrchestratorAgent extends EventEmitter {
     this.executions.set(executionId, execution)
 
     try {
+      // Try blueprint execution first (only if blueprint has executable nodes)
+      try {
+        const blueprint = detectBlueprint(prompt, classification.complexityScore)
+        if (blueprint && blueprint.nodes.length > 0) {
+          this.emit('blueprint_detected', { blueprintId: blueprint.id, name: blueprint.name })
+          const variables = { task: prompt, workDir: workDir || process.cwd() }
+          const run = await startBlueprint(blueprint.id, variables, sessionId, workDir)
+
+          if (run.status === 'completed') {
+            execution.status = 'complete'
+            execution.completedAt = new Date()
+            await this.recordMetrics(execution, true)
+            this.emit('completed', { executionId, execution })
+            return this.synthesizeBlueprintResults(run)
+          } else if (run.status === 'failed') {
+            // Fall through to regular orchestration as fallback
+            this.emit('blueprint_fallback', {
+              blueprintId: blueprint.id,
+              reason: 'execution_failed',
+            })
+          }
+        }
+      } catch (blueprintError) {
+        log.warn('Blueprint detection/execution failed, falling back to regular orchestration', {
+          executionId,
+          error: String(blueprintError),
+        })
+      }
+
       // Si no requiere delegación, retornar directamente sin spawnear agentes
       if (!classification.requiresDelegation) {
         log.info('Low complexity - no delegation needed', {
@@ -661,6 +709,14 @@ ${config.expertId ? `Expert ID: ${config.expertId}` : ''}
     }
 
     return synthesis
+  }
+
+  private synthesizeBlueprintResults(run: BlueprintRun): string {
+    const results = run.nodeRuns
+      .filter((n) => n.status === 'completed' && n.output)
+      .map((n) => `### ${n.nodeId}\n${n.output}`)
+      .join('\n\n')
+    return `## Blueprint: ${run.blueprintName}\n\n${results}`
   }
 
   private truncateSummary(text: string, maxTokens: number): string {
