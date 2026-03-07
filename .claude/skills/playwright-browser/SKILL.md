@@ -4,6 +4,8 @@ version: 1.0.0
 keywords: [playwright, browser, screenshot, pdf, e2e, ui, visual, qa, user story, automation]
 for_agents: [browser-qa, builder]
 description: Playwright browser automation for UI testing - CLI commands, programmatic API, and user story YAML schema.
+type: capability-uplift
+disable-model-invocation: false
 ---
 
 # Playwright Browser Skill

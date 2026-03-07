@@ -1,0 +1,10 @@
+{
+  "skills": ["refactoring-patterns"],
+  "query": "This class handles user validation, database queries, and email sending. Apply SOLID principles.",
+  "expected_behavior": [
+    "Identifies Single Responsibility violation",
+    "Extracts into separate classes per responsibility",
+    "Uses dependency injection for loose coupling",
+    "Defines interfaces for each dependency"
+  ]
+}

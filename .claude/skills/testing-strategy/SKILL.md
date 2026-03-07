@@ -4,6 +4,8 @@ version: 1.0.0
 keywords: [test, unit, integration, e2e, mock, fixture, tdd, bdd, coverage, bun test]
 for_agents: [builder, reviewer]
 description: Testing strategies con Bun Test - unit, integration, mocking, fixtures y TDD workflow.
+type: knowledge-base
+disable-model-invocation: false
 ---
 
 # Testing Strategy Skill

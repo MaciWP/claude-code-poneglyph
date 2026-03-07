@@ -16,6 +16,8 @@ activation:
     - n+1
     - latency
 for_agents: [reviewer]
+type: knowledge-base
+disable-model-invocation: false
 version: "1.0"
 ---
 

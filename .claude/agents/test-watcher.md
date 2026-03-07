@@ -10,6 +10,7 @@ permissionMode: default
 skills:
   - bun-best-practices
   - typescript-patterns
+background: true
 ---
 
 # Test Watcher

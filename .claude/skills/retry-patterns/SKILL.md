@@ -1,9 +1,8 @@
 ---
 name: retry-patterns
-description: |
-  Patrones de retry para manejo de errores transitorios.
-  Use when: errores transitorios, timeouts, circuit breaker, resilience.
-  Keywords - error, retry, timeout, backoff, circuit breaker, transient, resilience, fallback
+description: "Patrones de retry para manejo de errores transitorios.\nUse when: errores transitorios, timeouts, circuit breaker, resilience.\nKeywords - error, retry, timeout, backoff, circuit breaker, transient, resilience, fallback\n"
+type: knowledge-base
+disable-model-invocation: false
 activation:
   keywords:
     - error

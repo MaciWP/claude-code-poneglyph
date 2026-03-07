@@ -1,9 +1,11 @@
 ---
 name: dev-server
-description: |
-  Dev server management - start, stop, restart, status.
-  Use proactively when: starting servers, checking status, debugging port issues.
-  Keywords - server, start, stop, dev, backend, frontend, levanta, arranca
+description: "Dev server management - start, stop, restart, status.\n\
+  Use proactively when: starting servers, checking status, debugging port issues.\n\
+  Keywords - server, start, stop, dev, backend, frontend, levanta, arranca"
+type: capability-uplift
+disable-model-invocation: false
+argument-hint: "[start|stop|restart|status] [backend|frontend]"
 activation:
   keywords:
     - server

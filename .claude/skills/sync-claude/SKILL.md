@@ -16,6 +16,8 @@ activation:
     - vincular
 for_agents: [builder, general-purpose]
 version: "2.0"
+type: encoded-preference
+disable-model-invocation: false
 ---
 
 # Sync Claude Config

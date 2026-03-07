@@ -1,0 +1,10 @@
+{
+  "skills": ["api-design"],
+  "query": "Add cursor-based pagination and filtering to a list endpoint",
+  "expected_behavior": [
+    "Implements cursor-based pagination over offset",
+    "Uses query parameters for filtering",
+    "Returns pagination metadata in response",
+    "Validates pagination parameters"
+  ]
+}

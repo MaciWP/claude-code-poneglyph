@@ -11,6 +11,7 @@ activation:
     - scaffold agent
     - make agent
     - subagent
+type: encoded-preference
 disable-model-invocation: true
 argument-hint: [agent-name] [type?]
 allowed-tools: Read, Write, Glob, Bash

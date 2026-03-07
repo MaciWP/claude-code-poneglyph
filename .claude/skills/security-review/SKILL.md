@@ -1,9 +1,9 @@
 ---
 name: security-review
-description: |
-  Skill de revision para seguridad basada en OWASP Top 10.
-  Use when reviewing: codigo de autenticacion, manejo de input, auditorias de seguridad.
-  Keywords - security, owasp, vulnerability, injection, xss, csrf, audit, secrets, auth
+description: "Skill de revision para seguridad basada en OWASP Top 10.\nUse when reviewing: codigo de autenticacion, manejo de input, auditorias de seguridad.\nKeywords - security, owasp, vulnerability, injection, xss, csrf, audit, secrets, auth\n"
+type: knowledge-base
+disable-model-invocation: false
+argument-hint: "[file-path or module]"
 activation:
   keywords:
     - security

@@ -1,9 +1,9 @@
 ---
 name: anti-hallucination
-description: |
-  Validation patterns to prevent AI hallucinations about files, functions, and facts.
-  Use proactively when: making claims about code, suggesting changes, referencing files.
-  Keywords - validate, verify, check, exists, hallucination, confidence, claim, assert
+description: "Validation patterns to prevent AI hallucinations about files, functions, and facts.\nUse proactively when: making claims about code, suggesting changes, referencing files.\nKeywords - validate, verify, check, exists, hallucination, confidence, claim, assert\n"
+type: encoded-preference
+disable-model-invocation: false
+argument-hint: "[claim to validate]"
 activation:
   keywords:
     - validate

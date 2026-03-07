@@ -11,6 +11,7 @@ skills:
   - code-quality
   - refactoring-patterns
   - typescript-patterns
+background: true
 ---
 
 # Code Quality Auditor

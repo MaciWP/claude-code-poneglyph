@@ -11,6 +11,7 @@ activation:
     - scaffold skill
     - make skill
     - add command
+type: encoded-preference
 disable-model-invocation: true
 argument-hint: [skill-name] [type?]
 allowed-tools: Read, Write, Glob, Bash

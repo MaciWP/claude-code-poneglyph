@@ -1,0 +1,10 @@
+{
+  "skills": ["api-design"],
+  "query": "Implement standardized error handling and response format for an Elysia API",
+  "expected_behavior": [
+    "Uses consistent error response structure",
+    "Maps errors to appropriate HTTP status codes",
+    "Includes error codes for programmatic handling",
+    "Implements global error handler middleware"
+  ]
+}

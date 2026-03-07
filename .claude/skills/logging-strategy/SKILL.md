@@ -1,9 +1,10 @@
 ---
 name: logging-strategy
-description: |
-  Structured logging with context, log levels, and JSON output for Bun/Elysia apps.
-  Use proactively when: setting up logging, adding request tracing, debugging production.
-  Keywords - log, logging, logger, structured, json logs, pino, contextual logging
+description: "Structured logging with context, log levels, and JSON output for Bun/Elysia apps.\n\
+  Use proactively when: setting up logging, adding request tracing, debugging production.\n\
+  Keywords - log, logging, logger, structured, json logs, pino, contextual logging"
+type: knowledge-base
+disable-model-invocation: false
 activation:
   keywords:
     - log

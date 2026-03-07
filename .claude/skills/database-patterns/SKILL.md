@@ -4,6 +4,8 @@ version: 1.0.0
 keywords: [database, sql, drizzle, prisma, migration, transaction, query, orm, schema, index]
 for_agents: [builder, reviewer]
 description: Patrones de base de datos para SQL, Drizzle ORM, transacciones y optimización.
+type: knowledge-base
+disable-model-invocation: false
 ---
 
 # Database Patterns Skill

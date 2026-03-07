@@ -18,6 +18,8 @@ activation:
     - where is
     - who calls
 for_agents: [builder, reviewer, error-analyzer, scout, architect]
+type: capability-uplift
+disable-model-invocation: false
 version: "1.0"
 ---
 

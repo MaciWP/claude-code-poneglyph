@@ -4,6 +4,8 @@ description: |
   Enforces code style standards including YOLO philosophy and type hints.
   Use proactively when: writing code, reviewing code, checking style compliance.
   Keywords - style, yolo, comments, type hints, imports, naming, conventions
+type: encoded-preference
+disable-model-invocation: false
 activation:
   keywords:
     - style

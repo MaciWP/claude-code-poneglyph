@@ -4,6 +4,8 @@ description: |
   Bun runtime patterns for Elysia, testing, file I/O, shell commands, and WebSocket.
   Use proactively when: using Bun APIs, writing Elysia routes, running tests, spawning processes.
   Keywords - bun, elysia, bun test, bun file, bun spawn, shell, websocket, runtime
+type: knowledge-base
+disable-model-invocation: false
 activation:
   keywords:
     - bun

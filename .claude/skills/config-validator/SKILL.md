@@ -1,9 +1,8 @@
 ---
 name: config-validator
-description: |
-  Type-safe configuration validation with Zod and Bun.env for environment variables.
-  Use proactively when: loading env vars, setting up config, validating settings.
-  Keywords - env, config, validation, zod, environment, settings, bun env
+description: "Type-safe configuration validation with Zod and Bun.env for environment variables.\nUse proactively when: loading env vars, setting up config, validating settings.\nKeywords - env, config, validation, zod, environment, settings, bun env\n"
+type: knowledge-base
+disable-model-invocation: false
 activation:
   keywords:
     - env

@@ -4,6 +4,8 @@ version: 1.0.0
 keywords: [api, rest, openapi, swagger, endpoint, pagination, versioning, elysia, route]
 for_agents: [builder, reviewer, architect]
 description: Diseño de APIs REST con Elysia - convenciones, OpenAPI, paginación y errores.
+type: knowledge-base
+disable-model-invocation: false
 ---
 
 # API Design Skill

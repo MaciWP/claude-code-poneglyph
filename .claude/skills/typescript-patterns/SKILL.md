@@ -1,9 +1,8 @@
 ---
 name: typescript-patterns
-description: |
-  TypeScript best practices for type safety, async/await, error handling, and generics.
-  Use proactively when: writing TypeScript code, handling async operations, defining interfaces.
-  Keywords - typescript, async, await, promise, type, interface, generic, error handling
+description: "TypeScript best practices for type safety, async/await, error handling, and generics.\nUse proactively when: writing TypeScript code, handling async operations, defining interfaces.\nKeywords - typescript, async, await, promise, type, interface, generic, error handling\n"
+type: knowledge-base
+disable-model-invocation: false
 activation:
   keywords:
     - typescript

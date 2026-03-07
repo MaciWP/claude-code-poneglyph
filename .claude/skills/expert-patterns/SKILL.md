@@ -1,11 +1,13 @@
 ---
 name: expert-patterns
-description: |
-  Analiza código comparándolo con best practices de docs oficiales, blogs de expertos,
-  repos exitosos (>1k stars) y estándares de la industria (OWASP).
-  Use when: reviewing code, implementing new patterns, validating architecture.
-  Keywords - best practice, pattern, expert, compare, industry standard, owasp,
-  clean code, architecture, design pattern
+description: "Analiza código comparándolo con best practices de docs oficiales, blogs de expertos,\n\
+  repos exitosos (>1k stars) y estándares de la industria (OWASP).\n\
+  Use when: reviewing code, implementing new patterns, validating architecture.\n\
+  Keywords - best practice, pattern, expert, compare, industry standard, owasp,\n\
+  clean code, architecture, design pattern"
+type: encoded-preference
+disable-model-invocation: false
+argument-hint: "[pattern-name or code-path]"
 activation:
   keywords:
     - best practice

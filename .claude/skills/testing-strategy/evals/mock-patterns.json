@@ -1,0 +1,10 @@
+{
+  "skills": ["testing-strategy"],
+  "query": "Implement proper mocking patterns for testing a service with external API dependencies",
+  "expected_behavior": [
+    "Uses bun mock for function mocking",
+    "Creates typed mock factories",
+    "Implements spy patterns for verification",
+    "Handles async mock responses"
+  ]
+}

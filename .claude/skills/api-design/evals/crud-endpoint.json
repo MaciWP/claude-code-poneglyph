@@ -1,0 +1,10 @@
+{
+  "skills": ["api-design"],
+  "query": "Design RESTful CRUD endpoints for a blog posts resource with Elysia",
+  "expected_behavior": [
+    "Uses proper HTTP methods (GET, POST, PUT, DELETE)",
+    "Implements consistent response format with status codes",
+    "Adds OpenAPI documentation via Elysia swagger",
+    "Includes pagination for list endpoints"
+  ]
+}

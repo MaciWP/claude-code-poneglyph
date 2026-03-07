@@ -1,0 +1,10 @@
+{
+  "skills": ["refactoring-patterns"],
+  "query": "Refactor this 100-line function by extracting logical groups into separate functions",
+  "expected_behavior": [
+    "Identifies cohesive code blocks to extract",
+    "Preserves existing behavior (no functional changes)",
+    "Names extracted functions descriptively",
+    "Runs tests before and after to verify"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "skills": ["testing-strategy"],
+  "query": "Write integration tests for the /api/users endpoints",
+  "expected_behavior": [
+    "Tests full HTTP request/response cycle",
+    "Sets up and tears down test database",
+    "Tests authentication and authorization",
+    "Validates response schemas"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "skills": ["refactoring-patterns"],
+  "query": "Simplify this deeply nested conditional logic with 5 levels of if/else",
+  "expected_behavior": [
+    "Uses early returns to reduce nesting",
+    "Extracts complex conditions into named functions",
+    "Considers strategy or lookup table patterns",
+    "Maintains all existing edge cases"
+  ]
+}
