@@ -20,7 +20,7 @@ interface SecretPattern {
 
 const SECRET_PATTERNS: SecretPattern[] = [
   { name: 'AWS Access Key', pattern: /AKIA[0-9A-Z]{16}/g },
-  { name: 'AWS Secret Key', pattern: /[A-Za-z0-9/+=]{40}/g },
+  { name: 'AWS Secret Key', pattern: /(?:aws[_-]?secret|secret[_-]?access[_-]?key)['":\s]*[=:]\s*['"]?[A-Za-z0-9/+=]{40}/gi },
   { name: 'GitHub Token', pattern: /gh[ps]_[A-Za-z0-9]{36,}/g },
   {
     name: 'Generic API Key',
@@ -65,7 +65,7 @@ interface SecretFinding {
  * @returns True if path contains any ignore patterns
  */
 function shouldIgnorePath(path: string): boolean {
-  const normalizedPath = path.toLowerCase().replace(/\\\\/g, '/')
+  const normalizedPath = path.toLowerCase().replace(/\\/g, '/')
   return IGNORE_PATH_PATTERNS.some((pattern) => normalizedPath.includes(pattern))
 }
 

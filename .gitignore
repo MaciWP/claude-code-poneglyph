@@ -57,9 +57,6 @@ tmpclaude-*-cwd
 # Trace data
 .claude/traces/
 
-# Codex local data
-.codex/
-
 # Runtime data directories
 data/
 !data/sessions/.gitkeep

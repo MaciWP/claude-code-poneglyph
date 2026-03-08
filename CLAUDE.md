@@ -94,7 +94,6 @@ LSP (primario) > Grep (fallback) > Glob (archivos)
 
 | Comando | Contenido |
 |---------|-----------|
-| `/load-reference` | API, arquitectura, tools |
 | `/load-security` | Patrones de seguridad |
 | `/load-testing-strategy` | Testing |
 

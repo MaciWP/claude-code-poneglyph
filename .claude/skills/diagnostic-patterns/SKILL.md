@@ -94,9 +94,8 @@ flowchart TD
 
 | Integration | File | Description |
 |-------------|------|-------------|
-| Elysia Error Handler | [`integrations/elysia-error-handler.md`](${CLAUDE_SKILL_DIR}/integrations/elysia-error-handler.md) | Error handler middleware for Elysia |
 | Structured Logging | [`integrations/structured-logging.md`](${CLAUDE_SKILL_DIR}/integrations/structured-logging.md) | JSON-based logging with request context |
-| Request Tracing | [`integrations/request-tracing.md`](${CLAUDE_SKILL_DIR}/integrations/request-tracing.md) | Request ID assignment and timing middleware |
+| Request Tracing | [`integrations/request-tracing.md`](${CLAUDE_SKILL_DIR}/integrations/request-tracing.md) | Request ID and timing middleware |
 
 ## Checklists
 

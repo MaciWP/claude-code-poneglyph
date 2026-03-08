@@ -33,10 +33,10 @@ Se decidió implementar un **plan optimizado** con las siguientes característic
 
 | Fase | Contenido | Estado |
 |------|-----------|--------|
-| 1 | Documentación base | ✅ Completada |
-| 2 | Quality gates (ESLint, Prettier, scripts) | ✅ Completada |
-| 3 | Git & CI (GitHub Actions, husky) | ✅ Completada |
-| 4 | Operativo (backlog, mejoras) | Pendiente |
+| 1 | Documentación base | SUPERSEDED |
+| 2 | Quality gates (ESLint, Prettier, scripts) | SUPERSEDED |
+| 3 | Git & CI (GitHub Actions, husky) | SUPERSEDED |
+| 4 | Operativo (backlog, mejoras) | SUPERSEDED |
 
 ### 4. Archivos NO Creados (duplicación evitada)
 
@@ -90,3 +90,7 @@ Se decidió implementar un **plan optimizado** con las siguientes característic
 - Plan original: Prompt de bootstrap del usuario
 - Plan optimizado: `orchestrator_plan.md`
 - Estado de quality: `reports/QUALITY_GATES.md`
+
+## Nota (2026-03-08)
+
+Fases 1-4 completadas y SUPERSEDED por el pivot estratégico. Los archivos referenciados en "Archivos Creados" (docs/, scripts/, web/, .github/) fueron eliminados durante el pivot que archivó la Web UI y reforzó la orquestación pura. La arquitectura actual está reflejada en `CLAUDE.md`.

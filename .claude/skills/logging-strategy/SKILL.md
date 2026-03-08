@@ -1,6 +1,6 @@
 ---
 name: logging-strategy
-description: "Structured logging with context, log levels, and JSON output for Bun/Elysia apps.\n\
+description: "Structured logging with context, log levels, and JSON output for Bun/TypeScript apps.\n\
   Use proactively when: setting up logging, adding request tracing, debugging production.\n\
   Keywords - log, logging, logger, structured, json logs, pino, contextual logging"
 type: knowledge-base
@@ -20,7 +20,7 @@ version: "1.0"
 
 # Logging Strategy
 
-Structured logging patterns for Bun/Elysia applications with contextual information and production-ready output.
+Structured logging patterns for Bun/TypeScript applications with contextual information and production-ready output.
 
 ## When to Use This Skill
 
@@ -125,62 +125,63 @@ export const logger = {
 }
 ```
 
-### 3. Request Context - Elysia Middleware
+### 3. Request Context - Middleware Pattern
 
 ```typescript
 // WRONG - No request context in logs
-app.get('/users/:id', async ({ params }) => {
+app.get('/users/:id', async (req, res) => {
   console.log('Fetching user') // No context
-  const user = await getUser(params.id)
+  const user = await getUser(req.params.id)
   console.log('Found user') // Can't trace request
-  return user
+  res.json(user)
 })
 
-// CORRECT - Request-scoped logging
-import { Elysia } from 'elysia'
+// CORRECT - Request-scoped logging middleware (framework-agnostic)
 import { logger } from './logger'
 
-export const loggingPlugin = new Elysia({ name: 'logging' })
-  .derive(({ request }) => {
-    const requestId = crypto.randomUUID()
-    const startTime = performance.now()
+function requestLogging(req: Request): {
+  requestId: string
+  log: ReturnType<typeof logger.child>
+  startTime: number
+} {
+  const requestId = req.headers.get('x-request-id') || crypto.randomUUID()
+  const url = new URL(req.url)
 
-    return {
+  return {
+    requestId,
+    startTime: performance.now(),
+    log: logger.child({
       requestId,
-      startTime,
-      log: logger.child({
-        requestId,
-        method: request.method,
-        path: new URL(request.url).pathname,
-      }),
-    }
-  })
-  .onBeforeHandle(({ log }) => {
-    log.info('Request started')
-  })
-  .onAfterHandle(({ log, startTime, set }) => {
+      method: req.method,
+      path: url.pathname,
+    }),
+  }
+}
+
+// Usage in any framework
+function handleRequest(req: Request): Response {
+  const { log, startTime, requestId } = requestLogging(req)
+
+  log.info('Request started')
+  try {
+    const result = processRequest(req)
     const duration = performance.now() - startTime
     log.info('Request completed', {
-      statusCode: set.status || 200,
+      statusCode: 200,
       durationMs: Math.round(duration * 100) / 100,
     })
-  })
-  .onError(({ log, startTime, error }) => {
+    return new Response(JSON.stringify(result), {
+      headers: { 'x-request-id': requestId },
+    })
+  } catch (error) {
     const duration = performance.now() - startTime
     log.error('Request failed', {
-      error: error.message,
+      error: error instanceof Error ? error.message : 'Unknown',
       durationMs: Math.round(duration * 100) / 100,
     })
-  })
-
-// Usage
-const app = new Elysia()
-  .use(loggingPlugin)
-  .get('/users/:id', ({ params, log }) => {
-    log.info('Fetching user', { userId: params.id })
-    // All logs include requestId automatically
-    return getUser(params.id)
-  })
+    throw error
+  }
+}
 ```
 
 ### 4. Log Levels - When to Use Each
@@ -409,48 +410,46 @@ function createLogger(baseContext: LogContext = {}): Logger {
 export const logger = createLogger()
 ```
 
-### Elysia Integration
+### HTTP Server Integration
 
 ```typescript
 // src/middleware/logging.ts
-import { Elysia } from 'elysia'
 import { logger } from '../logger'
 
-export const loggingPlugin = new Elysia({ name: 'logging' })
-  .derive(({ request }) => {
-    const requestId = crypto.randomUUID()
-    const url = new URL(request.url)
-
-    return {
+export function withLogging(handler: (req: Request) => Promise<Response>): (req: Request) => Promise<Response> {
+  return async (req: Request): Promise<Response> => {
+    const requestId = req.headers.get('x-request-id') || crypto.randomUUID()
+    const url = new URL(req.url)
+    const startTime = performance.now()
+    const log = logger.child({
       requestId,
-      startTime: performance.now(),
-      log: logger.child({
-        requestId,
-        method: request.method,
-        path: url.pathname,
-        query: url.search || undefined,
-      }),
-    }
-  })
-  .onBeforeHandle(({ log }) => {
+      method: req.method,
+      path: url.pathname,
+      query: url.search || undefined,
+    })
+
     log.info('Request started')
-  })
-  .onAfterHandle(({ log, startTime, set, response }) => {
-    const duration = performance.now() - startTime
-    log.info('Request completed', {
-      statusCode: set.status || 200,
-      durationMs: Math.round(duration * 100) / 100,
-    })
-  })
-  .onError(({ log, startTime, error, set }) => {
-    const duration = performance.now() - startTime
-    log.error('Request failed', {
-      statusCode: set.status || 500,
-      error: error.message,
-      stack: error.stack,
-      durationMs: Math.round(duration * 100) / 100,
-    })
-  })
+
+    try {
+      const response = await handler(req)
+      const duration = performance.now() - startTime
+      log.info('Request completed', {
+        statusCode: response.status,
+        durationMs: Math.round(duration * 100) / 100,
+      })
+      return response
+    } catch (error) {
+      const duration = performance.now() - startTime
+      log.error('Request failed', {
+        statusCode: 500,
+        error: error instanceof Error ? error.message : 'Unknown',
+        stack: error instanceof Error ? error.stack : undefined,
+        durationMs: Math.round(duration * 100) / 100,
+      })
+      throw error
+    }
+  }
+}
 ```
 
 ### JSON Output Example (Production)
@@ -479,4 +478,4 @@ export const loggingPlugin = new Elysia({ name: 'logging' })
 ---
 
 **Version**: 1.0
-**Stack**: Bun, Elysia, TypeScript
+**Stack**: Bun, TypeScript

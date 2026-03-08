@@ -25,7 +25,6 @@ Reglas para carga de skills y contexto a agentes. Evitar sobrecarga de contexto 
 |--------|------|---------|
 | Skill (via Skill tool) | Domain patterns, best practices | `api-design`, `security-review` |
 | Scout agent | Codebase exploration, finding files | "Find all auth-related files" |
-| command-loader agent | Loading commands, expanding @file refs | `/load-reference` |
 | Explore agent | Deep codebase analysis | "How does the auth system work?" |
 
 ## Anti-Patterns
