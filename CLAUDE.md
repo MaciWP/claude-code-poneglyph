@@ -51,9 +51,9 @@ Sistema de orquestación que potencia Claude Code con agentes especializados, sk
 
 | Problema | Solución |
 |----------|----------|
-| Sin orquestación | 17 agentes especializados con routing por complejidad |
+| Sin orquestación | 16 agentes especializados con routing por complejidad |
 | Sin validación automática | 30+ hooks (pre/post/stop) |
-| Sin conocimiento de dominio | 26 skills auto-matcheadas por keywords |
+| Sin conocimiento de dominio | 24 skills auto-matcheadas por keywords |
 | Sin memoria persistente | Sistema de memoria semántica |
 
 ## HOW
@@ -62,8 +62,8 @@ Sistema de orquestación que potencia Claude Code con agentes especializados, sk
 graph LR
     User --> CC[Claude Code]
     CC --> Orch[Lead Orchestrator]
-    Orch --> Agents[17 Agents]
-    Orch --> Skills[26 Skills]
+    Orch --> Agents[16 Agents]
+    Orch --> Skills[24 Skills]
     Orch --> Hooks[30+ Hooks]
 ```
 
@@ -71,8 +71,8 @@ graph LR
 
 ```
 .claude/
-├── agents/       # 17 agentes especializados
-├── skills/       # 26 skills con auto-matching
+├── agents/       # 16 agentes especializados
+├── skills/       # 24 skills con auto-matching
 ├── hooks/        # Hooks pre/post/stop
 ├── rules/        # Reglas de orquestación
 ├── commands/     # Slash commands
