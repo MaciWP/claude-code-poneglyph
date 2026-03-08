@@ -102,7 +102,7 @@ Domain knowledge loaded automatically by keyword matching (max 3 per delegation)
 | **Security** | security-review, anti-hallucination |
 | **Testing** | testing-strategy |
 | **Operations** | bun-best-practices, logging-strategy, retry-patterns, recovery-strategies |
-| **Meta** | prompt-engineer, create-agent, create-skill, expert-patterns, diagnostic-patterns |
+| **Meta** | prompt-engineer, meta-create-agent, meta-create-skill, expert-patterns, diagnostic-patterns |
 
 ### Hooks
 

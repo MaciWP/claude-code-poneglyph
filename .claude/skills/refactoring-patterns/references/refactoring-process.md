@@ -99,7 +99,7 @@ describe('OrderService.createOrder (after refactor)', () => {
 
 | Current Location | Pattern to Apply | Target |
 |------------------|------------------|--------|
-| `server/src/routes/*.ts` | Extract Service | `services/` directory |
+| `src/routes/*.ts` | Extract Service | `services/` directory |
 | Long route handlers | Extract Function | Named helper functions |
 | Repeated validation | Parameter Object + Zod | Shared schemas |
 | Direct DB access in routes | Dependency Injection | Service constructors |

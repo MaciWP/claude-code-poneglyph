@@ -202,10 +202,11 @@ The command searches for specs in this order:
 | Spec Type | Output Location |
 |-----------|-----------------|
 | Types/Interfaces | `src/types/` or adjacent to module |
-| Services | `src/services/` |
+| Services/Lib | `src/lib/` or `src/services/` |
 | Hooks | `.claude/hooks/` |
 | Agents | `.claude/agents/` |
 | Skills | `.claude/skills/` |
+| Rules | `.claude/rules/` |
 | Tests | `*.test.ts` adjacent |
 
 ---
@@ -243,12 +244,12 @@ The command searches for specs in this order:
 
 **Generates**:
 ```
-server/src/lib/
+src/lib/
 ├── ai-logger.ts          # AILogger class from Design 4.7
 └── types/
     └── logging.ts        # AILog, TraceInfo, ErrorInfo from Design 4.1
 
-tests/lib/
+src/lib/
 └── ai-logger.test.ts     # From BDD scenarios
 ```
 
@@ -264,12 +265,12 @@ tests/lib/
 
 **Generates**:
 ```
-server/src/lib/
+src/lib/
 ├── circuit-breaker.ts    # From Design 4.1
 ├── retry.ts              # From Design 4.2
 └── fallback.ts           # From Design 4.3
 
-tests/lib/
+src/lib/
 ├── circuit-breaker.test.ts
 ├── retry.test.ts
 └── fallback.test.ts

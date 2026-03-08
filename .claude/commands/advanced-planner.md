@@ -250,22 +250,19 @@ graph TD
 **Tarea**: "Añadir endpoint de exportación de sesiones"
 
 > **Nota**: Este ejemplo usa la estructura REAL del proyecto. Antes de crear un plan,
-> siempre verificar estructura con `Glob('claude-code-ui/server/src/**/*')`.
+> siempre verificar estructura con `Glob('.claude/**/*')`.
 
 ### Estructura del Proyecto (Referencia)
 
 ```
-claude-code-ui/
-├── shared/
-│   └── types.ts              ← Types compartidos
-└── server/src/
-    ├── services/
-    │   ├── sessions.ts       ← Lógica de negocio (clase SessionStore)
-    │   └── sessions.test.ts  ← Tests junto al archivo
-    ├── routes/
-    │   ├── sessions.ts       ← Endpoints Elysia
-    │   └── __tests__/        ← Tests alternativos
-    └── config/               ← Configs específicos
+.claude/
+├── agents/                   ← Agentes especializados (builder.md, reviewer.md, etc.)
+├── skills/                   ← Skills con auto-matching (api-design/, security-review/, etc.)
+│   └── */SKILL.md            ← Cada skill en su directorio
+├── hooks/                    ← Hooks pre/post/stop
+│   └── validators/           ← Validadores (tests, linting)
+├── rules/                    ← Reglas de orquestación
+└── commands/                 ← Slash commands
 ```
 
 ### Tool Inventory
@@ -284,19 +281,17 @@ claude-code-ui/
 ```mermaid
 graph TD
   subgraph "🔵 PARALLEL-1: Foundation"
-    A[shared/types.ts]
+    A[.claude/agents/doc-generator.md]
+    B[.claude/skills/doc-patterns/SKILL.md]
   end
-  subgraph "🔴 SEQ-2: Business Logic"
-    B[server/src/services/sessions.ts]
+  subgraph "🔴 SEQ-2: Integration"
+    C[.claude/rules/skill-matching.md]
   end
-  subgraph "🔴 SEQ-3: Routes"
-    C[server/src/routes/sessions.ts]
-  end
-  subgraph "🔵 PARALLEL-4: Validation"
-    D[server/src/services/sessions.test.ts]
+  subgraph "🔵 PARALLEL-3: Validation"
+    D[validate-tests-pass.test.ts]
     E[Task:reviewer]
   end
-  A --> B
+  A --> C
   B --> C
   C --> D
   C --> E
@@ -306,50 +301,41 @@ graph TD
 - 🔵 = Paralelo (sin dependencias mutuas)
 - 🔴 = Secuencial/Blocking (requiere paso anterior)
 
-#### 🔵 PARALLEL-1: Foundation (Types)
+#### 🔵 PARALLEL-1: Foundation
 **Deps**: - | **Paralelo**: ✅
 
 | # | Archivo | Tool | Skills | Contenido |
 |---|---------|------|--------|-----------|
-| 1.1 | `shared/types.ts` | Edit | typescript-patterns, code-style-enforcer | `ExportFormat`, `SessionExport` types |
+| 1.1 | `.claude/agents/doc-generator.md` | Write | code-style-enforcer | Agent definition con frontmatter YAML |
+| 1.2 | `.claude/skills/doc-patterns/SKILL.md` | Write | code-style-enforcer | Skill con keywords y patterns |
 
-**Anti-alucinación**: `Glob('shared/types.ts')` → Verificar existe antes de Edit
-**Ejecutar**: `Read(shared/types.ts) → Edit(shared/types.ts)`
+**Anti-alucinación**: `Glob('.claude/agents/')` → Verificar dir existe antes de Write
+**Ejecutar**: `Write(agent) + Write(skill)` EN MISMO MENSAJE
 
-#### 🔴 SEQ-2: Business Logic [Blocking]
+#### 🔴 SEQ-2: Integration [Blocking]
 **Deps**: PARALLEL-1 ✅ | **Paralelo**: ❌
 
 | # | Archivo | Tool | Skills | Contenido |
 |---|---------|------|--------|-----------|
-| 2.1 | `server/src/services/sessions.ts` | Edit | typescript-patterns, bun-best-practices | Método `export(id, format): SessionExport` |
+| 2.1 | `.claude/rules/skill-matching.md` | Edit | - | Añadir keyword mapping para `doc-patterns` |
 
-**Pre**: Verificar types importan sin error TS
-**Ejecutar**: `Read(services/sessions.ts) → Edit`
+**Pre**: Verificar skill file creado correctamente
+**Ejecutar**: `Read(.claude/rules/skill-matching.md) → Edit`
 **Recovery**:
-- TypeScript error → Verificar import path `../../../shared/types`
-- Logic error → `Task:architect` para revisar diseño
+- Edit conflict → Re-read file, include more context
+- Missing skill → Verificar PARALLEL-1 completado
 
-#### 🔴 SEQ-3: Routes [Blocking]
-**Deps**: SEQ-2 ✅ | **Paralelo**: ❌
-
-| # | Archivo | Tool | Skills | Contenido |
-|---|---------|------|--------|-----------|
-| 3.1 | `server/src/routes/sessions.ts` | Edit | bun-best-practices | `.get('/sessions/:id/export', ...)` |
-
-**Docs**: Consultar documentación oficial de Elysia para response headers
-**Ejecutar**: `Read(routes/sessions.ts) → Edit`
-
-#### 🔵 PARALLEL-4: Validation
-**Deps**: SEQ-3 ✅ | **Paralelo**: ✅ (tests + reviewer son independientes)
+#### 🔵 PARALLEL-3: Validation
+**Deps**: SEQ-2 ✅ | **Paralelo**: ✅ (tests + reviewer son independientes)
 
 | # | Archivo | Tool | Agent |
 |---|---------|------|-------|
-| 4.1 | `server/src/services/sessions.test.ts` | Edit | - |
-| 4.2 | - | Task | reviewer (sonnet, background: true) |
+| 3.1 | `.claude/hooks/validators/stop/validate-tests-pass.test.ts` | Edit | - |
+| 3.2 | - | Task | reviewer (sonnet, background: true) |
 
 **Pre**: `/load-testing-strategy` antes de escribir tests
-**Ejecutar**: `Edit(sessions.test.ts) + Task(reviewer, run_in_background:true)` EN MISMO MENSAJE
-**Post**: `Bash: cd server && bun test src/services/sessions.test.ts`
+**Ejecutar**: `Edit(test) + Task(reviewer, run_in_background:true)` EN MISMO MENSAJE
+**Post**: `bun test ./.claude/hooks/`
 **Recovery (tests)**:
 - Assertion failed → Verificar expected vs actual values
 - Import error → Check relative paths

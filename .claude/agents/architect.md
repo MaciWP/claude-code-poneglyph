@@ -10,6 +10,8 @@ permissionMode: plan
 skills:
   - refactoring-patterns
   - code-quality
+  - api-design
+  - expert-patterns
 memory: project
 ---
 

@@ -8,7 +8,8 @@ description: |
 tools: Read, Write, Grep, Edit
 model: sonnet
 permissionMode: acceptEdits
-skills: []
+skills:
+  - diagnostic-patterns
 ---
 
 # Bug Documenter Agent

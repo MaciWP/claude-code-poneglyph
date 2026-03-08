@@ -12,6 +12,8 @@ skills:
   - typescript-patterns
   - bun-best-practices
   - code-style-enforcer
+  - testing-strategy
+  - api-design
 hooks:
   Stop:
     - hooks:

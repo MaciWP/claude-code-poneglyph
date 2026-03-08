@@ -90,7 +90,7 @@ Skills are auto-loaded by keyword matching before delegation (max 3 per task).
 | **Operations** | bun-best-practices, logging-strategy, retry-patterns, recovery-strategies | log, logging, error, retry, circuit, fallback |
 | **Refactoring** | refactoring-patterns, code-quality | refactor, extract, SOLID, clean, simplify |
 | **Meta** | prompt-engineer, expert-patterns, diagnostic-patterns | best practice, pattern, expert, compare |
-| **Tooling** | create-agent, create-skill, lsp-operations, sync-claude, performance-review, playwright-browser | (manual load) |
+| **Tooling** | meta-create-agent, meta-create-skill, lsp-operations, sync-claude, performance-review, playwright-browser | (manual load) |
 
 ### Skill Loading
 

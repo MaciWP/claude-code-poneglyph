@@ -9,7 +9,8 @@ tools: Read, Glob, Grep, WebSearch, WebFetch
 disallowedTools: Edit, Write, Bash, Task
 model: opus
 permissionMode: plan
-skills: []
+skills:
+  - expert-patterns
 memory: project
 ---
 

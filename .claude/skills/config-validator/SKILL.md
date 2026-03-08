@@ -307,7 +307,7 @@ export const config = loadConfig()
 ### Complete Elysia Config
 
 ```typescript
-// server/src/config.ts
+// src/config.ts
 import { z } from 'zod'
 
 const envSchema = z
@@ -396,7 +396,7 @@ ENABLE_ANALYTICS=false
 ### Using Config in Elysia
 
 ```typescript
-// server/src/index.ts
+// src/index.ts
 import { Elysia } from 'elysia'
 import { config } from './config'
 

@@ -1,5 +1,5 @@
 ---
-name: create-agent
+name: meta-create-agent
 description: |
   Meta-skill para crear subagentes de Claude Code desde templates estandarizados.
   Use proactively when: crear nuevo agente, scaffolding de agente, definir especialista delegado.
@@ -70,7 +70,7 @@ What will this agent specialize in?
 
 ### Step 4: Generate Agent File
 
-1. Leer template desde `.claude/skills/create-agent/templates/{type}.md`
+1. Leer template desde `.claude/skills/meta-create-agent/templates/{type}.md`
 2. Reemplazar placeholders con valores del usuario
 3. Escribir archivo a `.claude/agents/{category}/{agent-name}.md`
 
@@ -269,7 +269,7 @@ model: sonnet
 ### Example 1: Security Reviewer
 
 ```
-/create-agent security-reviewer reader
+/meta-create-agent security-reviewer reader
 ```
 
 **Creates**: `.claude/agents/readers/security-reviewer.md`
@@ -327,7 +327,7 @@ When invoked:
 ### Example 2: Test Runner
 
 ```
-/create-agent test-runner executor
+/meta-create-agent test-runner executor
 ```
 
 **Creates**: `.claude/agents/executors/test-runner.md`
@@ -388,7 +388,7 @@ Errors (if any):
 ### Example 3: API Implementer
 
 ```
-/create-agent api-implementer builder
+/meta-create-agent api-implementer builder
 ```
 
 **Creates**: `.claude/agents/builders/api-implementer.md`
@@ -517,5 +517,5 @@ When invoked:
 
 - **SPEC-021**: Subagents Extension System
 - **SPEC-020**: Skills Extension System
-- `/create-skill`: Create skills for agents to use
+- `/meta-create-skill`: Create skills for agents to use
 - `extension-architect`: Meta-agent managing all extensions

@@ -10,6 +10,7 @@ permissionMode: plan
 skills:
   - security-review
   - typescript-patterns
+  - anti-hallucination
 ---
 
 # Security Auditor

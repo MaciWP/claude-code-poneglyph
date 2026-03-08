@@ -49,8 +49,8 @@ When you run `/tools`, display:
 4. code-quality - Code quality analysis
 5. code-style-enforcer - Code style enforcement
 6. config-validator - Configuration validation
-7. create-agent - Create new agents
-8. create-skill - Create new skills
+7. meta-create-agent - Create new agents
+8. meta-create-skill - Create new skills
 9. database-patterns - Database access patterns
 10. diagnostic-patterns - Diagnostic and debugging patterns
 11. expert-patterns - Best practices comparison from authoritative sources
@@ -177,8 +177,8 @@ Data & Communication:
 Tooling:
 • playwright-browser - Browser automation
 • lsp-operations - LSP navigation
-• create-agent - Create new agents
-• create-skill - Create new skills
+• meta-create-agent - Create new agents
+• meta-create-skill - Create new skills
 • sync-claude - Sync claude config
 • prompt-engineer - Prompt engineering
 • expert-patterns - Best practices comparison

@@ -384,7 +384,7 @@ process.on('SIGTERM', cleanup)
 ### Complete Elysia Server
 
 ```typescript
-// server/src/index.ts
+// src/index.ts
 import { Elysia, t } from 'elysia'
 import { cors } from '@elysiajs/cors'
 import { swagger } from '@elysiajs/swagger'
@@ -435,7 +435,7 @@ export type App = typeof app
 ### Test File Structure
 
 ```typescript
-// server/src/services/user.test.ts
+// src/services/user.test.ts
 import { describe, test, expect, beforeEach, mock } from 'bun:test'
 import { UserService } from './user'
 
@@ -467,7 +467,7 @@ describe('UserService', () => {
 ### Configuration Loading
 
 ```typescript
-// server/src/config.ts
+// src/config.ts
 interface Config {
   port: number
   apiKey: string

@@ -8,6 +8,9 @@ model: sonnet
 tools: Read, Grep, Glob, WebFetch, WebSearch
 disallowedTools: Task, Edit, Write
 permissionMode: default
+skills:
+  - lsp-operations
+  - anti-hallucination
 ---
 # Scout Agent
 

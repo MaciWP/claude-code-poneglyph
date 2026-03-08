@@ -326,7 +326,7 @@ const users = await timed('fetchUsers', () => db.users.findMany())
 ### Complete Logger Implementation
 
 ```typescript
-// server/src/logger.ts
+// src/logger.ts
 type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 
 interface LogContext {
@@ -412,7 +412,7 @@ export const logger = createLogger()
 ### Elysia Integration
 
 ```typescript
-// server/src/middleware/logging.ts
+// src/middleware/logging.ts
 import { Elysia } from 'elysia'
 import { logger } from '../logger'
 

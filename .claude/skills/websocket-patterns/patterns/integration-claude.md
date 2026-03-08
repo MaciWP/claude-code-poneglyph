@@ -6,16 +6,16 @@ For **claude-code-poneglyph**, integrate WebSocket patterns in:
 
 | File | Pattern |
 |------|---------|
-| `server/src/routes/ws.ts` | Main WebSocket handler |
-| `server/src/services/connection-manager.ts` | Connection registry |
-| `server/src/services/message-handler.ts` | Message routing |
-| `web/src/hooks/useWebSocket.ts` | React WebSocket hook |
-| `web/src/services/ws-client.ts` | ReconnectingWebSocket |
+| `src/routes/ws.ts` | Main WebSocket handler |
+| `src/services/connection-manager.ts` | Connection registry |
+| `src/services/message-handler.ts` | Message routing |
+| `src/hooks/useWebSocket.ts` | React WebSocket hook |
+| `src/services/ws-client.ts` | ReconnectingWebSocket |
 
 ## Integration with Claude Service
 
 ```typescript
-// server/src/routes/ws.ts
+// src/routes/ws.ts
 import { Elysia } from 'elysia'
 import { connectionManager } from '../services/connection-manager'
 import { claudeService } from '../services/claude'

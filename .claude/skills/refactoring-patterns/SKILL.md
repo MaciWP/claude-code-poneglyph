@@ -110,7 +110,7 @@ graph LR
 
 | Location | Apply | Target |
 |----------|-------|--------|
-| `server/src/routes/*.ts` | Extract Service | `services/` directory |
+| `src/routes/*.ts` | Extract Service | `services/` directory |
 | Long route handlers | Extract Function | Named helpers |
 | Repeated validation | Parameter Object | Shared schemas |
 | Direct DB in routes | Dependency Injection | Service constructors |

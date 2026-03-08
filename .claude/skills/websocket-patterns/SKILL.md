@@ -126,16 +126,6 @@ class ConnectionManager {
 | Validation | Use Elysia `body` schema for all messages |
 | Broadcast | Check `readyState === 1` before sending |
 
-## Project Files
-
-| File | Purpose |
-|------|---------|
-| `server/src/routes/ws.ts` | Main WebSocket handler |
-| `server/src/services/connection-manager.ts` | Connection registry |
-| `server/src/services/message-handler.ts` | Message routing |
-| `web/src/hooks/useWebSocket.ts` | React WebSocket hook |
-| `web/src/services/ws-client.ts` | ReconnectingWebSocket |
-
 ---
 
 **Version**: 2.0

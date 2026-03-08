@@ -236,15 +236,9 @@ LSP({ operation: 'findReferences', filePath: 'file2.ts', line: 20, character: 10
 LSP({ operation: 'hover', filePath: 'file3.ts', line: 30, character: 15 })
 ```
 
-## High-Value Files (This Project)
+## High-Value Files
 
-| File | Why LSP Helps |
-|------|---------------|
-| `server/src/services/claude.ts` | SDK, 15+ interfaces |
-| `server/src/routes/websocket.ts` | 10+ modules |
-| `server/src/services/orchestrator-agent.ts` | Events, async |
-| `web/src/components/StreamingChat.tsx` | 15+ hooks |
-| `web/src/types/chat.ts` | 30+ types |
+Use `Glob` to discover project files before applying LSP operations. Each project will have different key files -- identify them at exploration time rather than relying on hardcoded paths.
 
 ## Checklist
 

@@ -5,7 +5,7 @@
 - All UI code archived to `archive/web-ui` branch
 - Main content: `.claude/` directory with agents, skills, hooks, rules
 - Root `package.json` only has `bun test .claude/hooks/` script
-- No more `claude-code-ui/` directory on main branch
+- No web UI directory on main branch (archived to `archive/web-ui` branch)
 - `CLAUDE.md` is a symlink from `~/.claude/CLAUDE.md` to this repo
 
 ## Key Patterns

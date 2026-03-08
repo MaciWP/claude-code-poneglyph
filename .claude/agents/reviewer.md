@@ -12,6 +12,8 @@ skills:
   - code-quality
   - security-review
   - performance-review
+  - testing-strategy
+  - anti-hallucination
 hooks:
   post_tool_use:
     - .claude/hooks/validators/security/secrets-validator.ts

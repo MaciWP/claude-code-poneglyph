@@ -1,5 +1,5 @@
 ---
-name: create-skill
+name: meta-create-skill
 description: |
   Meta-skill para crear skills de Claude Code desde templates estandarizados.
   Use proactively when: crear nuevo skill, scaffolding de conocimiento, definir workflow.
@@ -88,7 +88,7 @@ What will this skill investigate?
 ### Step 4: Generate Skill
 
 1. Crear directorio: `.claude/skills/{skill-name}/`
-2. Leer template desde `.claude/skills/create-skill/templates/{type}.md`
+2. Leer template desde `.claude/skills/meta-create-skill/templates/{type}.md`
 3. Reemplazar placeholders con valores del usuario
 4. Escribir archivo: `.claude/skills/{skill-name}/SKILL.md`
 
@@ -263,7 +263,7 @@ agent: Explore
 ### Example 1: API Conventions (Reference)
 
 ```
-/create-skill api-conventions reference
+/meta-create-skill api-conventions reference
 ```
 
 **Creates**: `.claude/skills/api-conventions/SKILL.md`
@@ -359,7 +359,7 @@ Before completing, verify:
 ### Example 2: Deploy (Workflow)
 
 ```
-/create-skill deploy workflow
+/meta-create-skill deploy workflow
 ```
 
 **Creates**: `.claude/skills/deploy/SKILL.md`
@@ -496,7 +496,7 @@ If something goes wrong:
 ### Example 3: Architecture Analysis (Research)
 
 ```
-/create-skill arch-analysis research
+/meta-create-skill arch-analysis research
 ```
 
 **Creates**: `.claude/skills/arch-analysis/SKILL.md`
@@ -650,5 +650,5 @@ project/
 ## Related
 
 - **SPEC-020**: Skills Extension System
-- `/create-agent`: Create subagents that can use skills
+- `/meta-create-agent`: Create subagents that can use skills
 - `extension-architect`: Meta-agent managing all extensions

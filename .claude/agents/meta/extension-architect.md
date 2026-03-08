@@ -9,8 +9,8 @@ tools: Read, Write, Edit, Glob, Grep, Bash
 model: sonnet
 permissionMode: acceptEdits
 skills:
-  - create-agent
-  - create-skill
+  - meta-create-agent
+  - meta-create-skill
 ---
 
 # Extension Architect
@@ -30,8 +30,8 @@ Orchestrator of the Claude Code extension ecosystem. Responsible for:
 
 | Capability | Description | Skill/Tool |
 |------------|-------------|------------|
-| Create Agents | Generate subagent files from templates | `/create-agent` |
-| Create Skills | Generate SKILL.md files with proper format | `/create-skill` |
+| Create Agents | Generate subagent files from templates | `/meta-create-agent` |
+| Create Skills | Generate SKILL.md files with proper format | `/meta-create-skill` |
 | Create Hooks | Configure hooks in settings.json | Manual |
 | Organize Structure | Maintain directory naming conventions | Glob, Write |
 | Validate Format | Check frontmatter and configuration | Read, Grep |
@@ -51,11 +51,11 @@ Orchestrator of the Claude Code extension ecosystem. Responsible for:
 
 ## Available Skills
 
-### /create-agent
+### /meta-create-agent
 
 Generate subagents from standardized templates.
 
-**Invocation**: `/create-agent [name] [type?]`
+**Invocation**: `/meta-create-agent [name] [type?]`
 
 **Types available**:
 
@@ -68,14 +68,14 @@ Generate subagents from standardized templates.
 
 **Example**:
 ```
-/create-agent security-reviewer reader
+/meta-create-agent security-reviewer reader
 ```
 
-### /create-skill
+### /meta-create-skill
 
 Generate skills from standardized templates.
 
-**Invocation**: `/create-skill [name] [type?]`
+**Invocation**: `/meta-create-skill [name] [type?]`
 
 **Types available**:
 
@@ -87,7 +87,7 @@ Generate skills from standardized templates.
 
 **Example**:
 ```
-/create-skill api-conventions reference
+/meta-create-skill api-conventions reference
 ```
 
 ---
@@ -146,7 +146,7 @@ Checklist:
 
 ### Agent Templates
 
-Located at `.claude/skills/create-agent/templates/`
+Located at `.claude/skills/meta-create-agent/templates/`
 
 | Template | File | Use Case |
 |----------|------|----------|
@@ -157,7 +157,7 @@ Located at `.claude/skills/create-agent/templates/`
 
 ### Skill Templates
 
-Located at `.claude/skills/create-skill/templates/`
+Located at `.claude/skills/meta-create-skill/templates/`
 
 | Template | File | Use Case |
 |----------|------|----------|
@@ -198,14 +198,14 @@ Located at `.claude/skills/create-skill/templates/`
 │   └── meta/              # Extension management agents
 │       └── extension-architect.md
 ├── skills/
-│   ├── create-agent/
+│   ├── meta-create-agent/
 │   │   ├── SKILL.md
 │   │   └── templates/
 │   │       ├── reader.md
 │   │       ├── builder.md
 │   │       ├── executor.md
 │   │       └── researcher.md
-│   ├── create-skill/
+│   ├── meta-create-skill/
 │   │   ├── SKILL.md
 │   │   └── templates/
 │   │       ├── reference.md
@@ -237,7 +237,7 @@ Located at `.claude/skills/create-skill/templates/`
 
 **Command**:
 ```
-/create-agent security-reviewer reader
+/meta-create-agent security-reviewer reader
 ```
 
 **Result**:
@@ -262,7 +262,7 @@ skills:
 
 **Command**:
 ```
-/create-skill api-conventions reference
+/meta-create-skill api-conventions reference
 ```
 
 **Result**:
@@ -281,7 +281,7 @@ description: |
 
 **Command**:
 ```
-/create-skill deploy workflow
+/meta-create-skill deploy workflow
 ```
 
 **Result**:

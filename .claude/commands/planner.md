@@ -44,9 +44,9 @@ Antes de generar cualquier plan, consultar estas fuentes. **No suponer nada.**
 
 | Archivo | Propósito | Qué buscar |
 |---------|-----------|------------|
-| `server/package.json` | Stack backend | Versiones Elysia, Bun, deps |
+| `package.json` | Stack y scripts | Versiones, deps, test scripts |
 | `tsconfig.json` | Config TypeScript | `strict: true`? Paths? |
-| `Glob('src/**/*')` | Estructura dirs | Arquitectura real del proyecto |
+| `Glob('.claude/**/*')` | Estructura dirs | Arquitectura real del proyecto |
 
 ### C. Verificación Anti-Duplicados
 
@@ -578,59 +578,55 @@ graph TD
 
 ## 15. EJEMPLO COMPLETO
 
-**Tarea**: "Añadir endpoint de exportación de sesiones"
+**Tarea**: "Añadir nuevo agent de documentación con skill asociado"
 
 ### Resumen Ejecutivo
 
-Implementar endpoint GET `/sessions/:id/export` en el backend Elysia para exportar sesiones en JSON/CSV.
-Afecta 4 archivos, 0 nuevos (solo ediciones), riesgo BAJO.
+Implementar agent `doc-generator.md` con skill `doc-patterns/SKILL.md` y tests para el hook de validación.
+Afecta 4 archivos, 2 nuevos, riesgo BAJO.
 
 ### Deep Research Summary
 
 | API/Framework | Versión proyecto | Consultado | Breaking changes? |
 |---------------|-----------------|------------|-------------------|
-| Elysia | 1.2.x | Docs oficiales | No |
-| Bun | 1.1.x | Docs oficiales | No |
+| Bun | 1.x | Docs oficiales | No |
 
 ### Gap Analysis
 
 | Acción | Archivo | Deps | Verificación | Riesgo |
 |--------|---------|------|--------------|--------|
-| Edit | `shared/types.ts` | - | `Glob('shared/types.ts')` ✅ | Bajo |
-| Edit | `server/src/services/sessions.ts` | types | `Glob` ✅ | Bajo |
-| Edit | `server/src/routes/sessions.ts` | services | `Glob` ✅ | Bajo |
-| Edit | `server/src/services/sessions.test.ts` | - | `Glob` ✅ | Bajo |
+| Create | `.claude/agents/doc-generator.md` | - | `Glob('.claude/agents/')` dir existe | Bajo |
+| Create | `.claude/skills/doc-patterns/SKILL.md` | - | `Glob('.claude/skills/')` dir existe | Bajo |
+| Edit | `.claude/rules/skill-matching.md` | skill | `Glob` ✅ | Bajo |
+| Edit | `.claude/hooks/validators/stop/validate-tests-pass.test.ts` | - | `Glob` ✅ | Bajo |
 
 ### Tool Inventory
 
 | Tipo | Herramienta | Uso | Config |
 |------|-------------|-----|--------|
 | Skill | typescript-patterns | Types y async | Auto |
-| Skill | bun-best-practices | Runtime Elysia | Auto |
+| Skill | bun-best-practices | Runtime Bun | Auto |
 | Agent | reviewer | Review final | sonnet, background |
-| Script | check.sh | Quality Gate | Post |
 
 ### Grafo de Dependencias
 
 ```mermaid
 graph TD
-  subgraph "🔵 PARALLEL-1: Types"
-    A[shared/types.ts]
+  subgraph "🔵 PARALLEL-1: Foundation"
+    A[.claude/agents/doc-generator.md]
+    B[.claude/skills/doc-patterns/SKILL.md]
   end
-  subgraph "🟡 SEQ-2: Service"
-    B[server/src/services/sessions.ts]
+  subgraph "🟡 SEQ-2: Integration"
+    C[.claude/rules/skill-matching.md]
   end
-  subgraph "🟡 SEQ-3: Route"
-    C[server/src/routes/sessions.ts]
-  end
-  subgraph "🔵 PARALLEL-4: Validation"
-    D[sessions.test.ts]
+  subgraph "🔵 PARALLEL-3: Validation"
+    D[validate-tests-pass.test.ts]
     E[Task:reviewer]
   end
-  subgraph "🔴 CHECKPOINT-5: Quality Gate"
-    F[./scripts/check.sh]
+  subgraph "🔴 CHECKPOINT-4: Quality Gate"
+    F[bun test .claude/hooks/]
   end
-  A --> B
+  A --> C
   B --> C
   C --> D
   C --> E
@@ -638,54 +634,42 @@ graph TD
   E --> F
 ```
 
-#### 🔵 PARALLEL-1: Types
+#### 🔵 PARALLEL-1: Foundation
 **Deps**: - | **Tipo**: 🔵
 
 | # | Archivo | Tool | Verificación |
 |---|---------|------|--------------|
-| 1.1 | `shared/types.ts` | Edit | `bun typecheck` |
+| 1.1 | `.claude/agents/doc-generator.md` | Write | `Glob` confirma |
+| 1.2 | `.claude/skills/doc-patterns/SKILL.md` | Write | `Glob` confirma |
 
-**Contenido**: `ExportFormat`, `SessionExport` types
-**Ejecutar**: `Read → Edit`
-**Ground Truth**: `bun typecheck shared/types.ts`
+**Ejecutar**: `Write(agent) + Write(skill)` EN MISMO MENSAJE
 
-#### 🟡 SEQ-2: Service
+#### 🟡 SEQ-2: Integration
 **Deps**: PARALLEL-1 ✅ | **Tipo**: 🟡
 
 | # | Archivo | Tool | Verificación |
 |---|---------|------|--------------|
-| 2.1 | `server/src/services/sessions.ts` | Edit | `bun typecheck` |
+| 2.1 | `.claude/rules/skill-matching.md` | Edit | `Grep('doc-patterns')` confirma |
 
-**Contenido**: Método `export(id, format): SessionExport`
-**Test correspondiente**: Planificado en PARALLEL-4
+**Contenido**: Añadir keyword mapping para `doc-patterns`
 
-#### 🟡 SEQ-3: Route
-**Deps**: SEQ-2 ✅ | **Tipo**: 🟡
-
-| # | Archivo | Tool | Verificación |
-|---|---------|------|--------------|
-| 3.1 | `server/src/routes/sessions.ts` | Edit | `bun typecheck` |
-
-**Contenido**: `.get('/sessions/:id/export', ...)`
-**Docs**: Consultar documentación oficial de Elysia para response headers
-
-#### 🔵 PARALLEL-4: Validation
-**Deps**: SEQ-3 ✅ | **Tipo**: 🔵
+#### 🔵 PARALLEL-3: Validation
+**Deps**: SEQ-2 ✅ | **Tipo**: 🔵
 
 | # | Archivo | Tool | Verificación |
 |---|---------|------|--------------|
-| 4.1 | `server/src/services/sessions.test.ts` | Edit | `bun test sessions.test.ts` |
-| 4.2 | - | Task:reviewer | - |
+| 3.1 | `validate-tests-pass.test.ts` | Edit | `bun test .claude/hooks/` |
+| 3.2 | - | Task:reviewer | - |
 
 **Ejecutar**: `Edit(test) + Task(reviewer, background:true)` EN MISMO MENSAJE
-**Ground Truth**: `bun test server/src/services/sessions.test.ts`
+**Ground Truth**: `bun test ./.claude/hooks/`
 
-#### 🔴 CHECKPOINT-5: Quality Gate
-**Deps**: PARALLEL-4 ✅ | **Tipo**: 🔴
+#### 🔴 CHECKPOINT-4: Quality Gate
+**Deps**: PARALLEL-3 ✅ | **Tipo**: 🔴
 
 | # | Acción | Verificación |
 |---|--------|--------------|
-| 5.1 | `./scripts/check.sh` | Exit code 0 |
+| 4.1 | `bun test ./.claude/hooks/` | Exit code 0 |
 
 **Recovery**: Si falla → corregir antes de commit
 

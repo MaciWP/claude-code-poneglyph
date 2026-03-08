@@ -1,5 +1,5 @@
 ---
-name: create-expert
+name: meta-create-expert
 description: Crea un nuevo experto con estructura base
 arguments:
   - name: domain
@@ -102,8 +102,8 @@ known_issues: []
 changelog:
   - date: "[TIMESTAMP ISO8601]"
     type: "bootstrap"
-    source: "create-expert"
-    change: "Initial creation via /create-expert command"
+    source: "meta-create-expert"
+    change: "Initial creation via /meta-create-expert command"
     confidence_delta: 0.5
 
 validation:

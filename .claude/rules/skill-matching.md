@@ -57,3 +57,24 @@ Si hay mas de 3 matches:
 | reviewer | code-quality + matcheadas (max 2) |
 | architect | api-design + security-review si aplica |
 | error-analyzer | retry-patterns + recovery-strategies |
+
+## Agent Skill Enrichment
+
+Cuando el Lead delega a un agent, DEBE:
+
+1. Verificar las skills del agent (frontmatter `skills:`)
+2. Si la tarea requiere skills adicionales, mencionarlas en el prompt del Task
+3. El agent tiene acceso a sus skills frontmatter automaticamente
+
+| Metodo | Cuando | Ejemplo |
+|--------|--------|---------|
+| Frontmatter `skills:` | Siempre auto-cargadas | builder tiene typescript-patterns |
+| Mencion en prompt | Skill no esta en frontmatter pero es relevante | "Aplica patrones de database-patterns" |
+| Lead carga Skill() | Contexto complejo que el agent necesita | `Skill("security-review")` antes de Task |
+
+### Principio de Modularidad
+
+Cualquier agent puede beneficiarse de cualquier skill. Las skills frontmatter son las **default**, pero el Lead puede enriquecer via prompt. Esto permite:
+- Un reviewer usando testing-strategy para validar tests
+- Un builder usando security-review para codigo con auth
+- Un scout usando lsp-operations para navegacion semantica
