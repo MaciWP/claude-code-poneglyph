@@ -21,6 +21,18 @@ interface Props {
   contextWindow?: ContextWindowState
   isContextCompacting?: boolean
   contextCompactionSaved?: number | null
+  costUsd?: number
+}
+
+function estimateCostFromTokens(usage: TokenUsage): number {
+  const inputCost = (usage.inputTokens / 1000) * 0.015
+  const outputCost = (usage.outputTokens / 1000) * 0.075
+  return inputCost + outputCost
+}
+
+function formatCost(cost: number): string {
+  if (cost < 0.01) return `$${cost.toFixed(4)}`
+  return `$${cost.toFixed(2)}`
 }
 
 export default function StatsBar({
@@ -33,9 +45,17 @@ export default function StatsBar({
   contextWindow,
   isContextCompacting = false,
   contextCompactionSaved,
+  costUsd,
 }: Props) {
   const connectionStatus = isProcessing ? 'processing' : isConnected ? 'connected' : 'disconnected'
   const connectionLabel = isProcessing ? 'Processing' : isConnected ? 'Connected' : 'Disconnected'
+
+  const displayCost =
+    costUsd && costUsd > 0
+      ? costUsd
+      : usage && usage.totalTokens > 0
+        ? estimateCostFromTokens(usage)
+        : 0
 
   return (
     <div className="flex items-center justify-between px-4 py-2 bg-surface-header border-b border-stroke-primary text-xs">
@@ -45,18 +65,30 @@ export default function StatsBar({
           <span className="text-content-muted">{connectionLabel}</span>
         </div>
 
-
-        {learningEvents.length > 0 && (
-          <LearningIndicator events={learningEvents} />
-        )}
+        {learningEvents.length > 0 && <LearningIndicator events={learningEvents} />}
       </div>
 
       <div className="flex items-center gap-4">
-        <StatItem label="Messages" value={sessionStats.messageCount.toString()} color="text-content-secondary" />
-        <StatItem label="Tools" value={sessionStats.toolUseCount.toString()} color="text-blue-400" />
+        <StatItem
+          label="Messages"
+          value={sessionStats.messageCount.toString()}
+          color="text-content-secondary"
+        />
+        <StatItem
+          label="Tools"
+          value={sessionStats.toolUseCount.toString()}
+          color="text-blue-400"
+        />
         {usage && (
           <>
-            <StatItem label="Tokens" value={usage.totalTokens.toLocaleString()} color="text-purple-400" />
+            <StatItem
+              label="Tokens"
+              value={usage.totalTokens.toLocaleString()}
+              color="text-purple-400"
+            />
+            {displayCost > 0 && (
+              <StatItem label="Cost" value={formatCost(displayCost)} color="text-green-400" />
+            )}
             {contextWindow ? (
               <div className="flex items-center gap-1.5">
                 <span className="text-content-dimmed">Context:</span>
@@ -82,7 +114,11 @@ export default function StatsBar({
           </>
         )}
         {responseTime !== undefined && responseTime > 0 && (
-          <StatItem label="Last" value={`${(responseTime / 1000).toFixed(1)}s`} color="text-content-muted" />
+          <StatItem
+            label="Last"
+            value={`${(responseTime / 1000).toFixed(1)}s`}
+            color="text-content-muted"
+          />
         )}
       </div>
     </div>

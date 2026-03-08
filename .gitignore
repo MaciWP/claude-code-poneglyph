@@ -56,3 +56,14 @@ tmpclaude-*-cwd
 
 # Codex local data
 .codex/
+
+# Runtime data directories
+data/
+claude-code-ui/data/
+!data/sessions/.gitkeep
+
+# Test results (Playwright/runner artifacts)
+test-results/
+
+# Windows shell artifact
+nul

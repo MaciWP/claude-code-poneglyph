@@ -1,0 +1,16 @@
+[
+  {
+    "id": "2e58d302-3299-474a-a385-20a2c1408e12",
+    "sessionId": "8ecdef87-fede-4153-b048-3b094ecc4ea2",
+    "prompt": "/plan Podrías hacer una plan para analizar como mejorar esta app mobil?",
+    "promptScore": 0,
+    "complexityScore": 0,
+    "skillsLoaded": [],
+    "agents": [],
+    "totalTokens": 0,
+    "totalCostUsd": 2.7380899000000003,
+    "durationMs": 458358,
+    "status": "completed",
+    "timestamp": "2026-03-08T09:02:59.920Z"
+  }
+]

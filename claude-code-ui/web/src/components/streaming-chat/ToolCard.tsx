@@ -3,6 +3,7 @@ import { getToolTaxonomy } from '../../types/chat'
 import { Icons } from '../../lib/icons'
 import { formatTime, cn } from '../../lib/utils'
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard'
+import { useTabNavigation } from '../../contexts/TabContext'
 import { Badge } from '../ui/Badge'
 
 const BORDER_COLORS: Record<string, string> = {
@@ -66,7 +67,9 @@ function extractAgentType(toolInput: unknown): string | null {
   return null
 }
 
-function extractSkillOrCommand(toolInput: unknown): { type: 'skill' | 'command'; name: string } | null {
+function extractSkillOrCommand(
+  toolInput: unknown
+): { type: 'skill' | 'command'; name: string } | null {
   if (!toolInput || typeof toolInput !== 'object') return null
   const input = toolInput as Record<string, unknown>
 
@@ -88,8 +91,15 @@ function formatMCPToolName(toolName: string): { server: string; tool: string } {
   return { server: 'unknown', tool: toolName }
 }
 
-export default memo(function ToolCard({ toolName, toolInput, toolOutput, timestamp, agentName }: Props) {
+export default memo(function ToolCard({
+  toolName,
+  toolInput,
+  toolOutput,
+  timestamp,
+  agentName,
+}: Props) {
   const { copied, copy } = useCopyToClipboard()
+  const { setActiveTab } = useTabNavigation()
   const [expanded, setExpanded] = useState(false)
 
   const baseTaxonomy = getToolTaxonomy(toolName)
@@ -101,9 +111,16 @@ export default memo(function ToolCard({ toolName, toolInput, toolOutput, timesta
   const mcpInfo = isMCP ? formatMCPToolName(toolName) : null
 
   // Override taxonomy for commands (executed via Skill tool)
-  const taxonomy = skillOrCommand?.type === 'command'
-    ? { ...baseTaxonomy, icon: 'terminal' as const, color: 'text-blue-400', bgColor: 'bg-blue-500/20', category: 'command' }
-    : baseTaxonomy
+  const taxonomy =
+    skillOrCommand?.type === 'command'
+      ? {
+          ...baseTaxonomy,
+          icon: 'terminal' as const,
+          color: 'text-blue-400',
+          bgColor: 'bg-blue-500/20',
+          category: 'command',
+        }
+      : baseTaxonomy
 
   const displayName = isMCP
     ? `MCP: ${mcpInfo?.server}`
@@ -141,38 +158,44 @@ export default memo(function ToolCard({ toolName, toolInput, toolOutput, timesta
             {quickInfo}
           </span>
         )}
-        {agentName && (
-          <span className="text-[11px] text-orange-400">via {agentName}</span>
+        {agentName && <span className="text-[11px] text-orange-400">via {agentName}</span>}
+        {agentType && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              setActiveTab('observatory')
+            }}
+            className="text-[11px] text-blue-400 hover:text-blue-300 transition-colors"
+          >
+            Observatory
+          </button>
         )}
-        <span className="ml-auto text-[11px] text-content-dimmed">
-          {formatTime(timestamp)}
-        </span>
+        <span className="ml-auto text-[11px] text-content-dimmed">{formatTime(timestamp)}</span>
         <Icons.chevronRight className="w-3 h-3 text-content-dimmed transition-transform duration-150" />
       </div>
     )
   }
 
   return (
-    <div className={cn(
-      'rounded-lg border overflow-hidden transition-all duration-200 ease-out animate-slide-up',
-      taxonomy.bgColor,
-      borderColor
-    )}>
+    <div
+      className={cn(
+        'rounded-lg border overflow-hidden transition-all duration-200 ease-out animate-slide-up',
+        taxonomy.bgColor,
+        borderColor
+      )}
+    >
       <div
         className="px-3 py-2 flex items-center gap-2 border-b border-white/5 cursor-pointer transition-colors duration-150 hover:bg-white/5"
         onClick={() => setExpanded(false)}
       >
         <IconComponent className="w-5 h-5" />
         <span className={cn('font-medium', taxonomy.color)}>{displayName}</span>
-        {mcpInfo && (
-          <span className="text-xs text-content-subtle font-mono">{mcpInfo.tool}</span>
-        )}
+        {mcpInfo && <span className="text-xs text-content-subtle font-mono">{mcpInfo.tool}</span>}
         <Badge size="xs" className={cn('ml-auto', taxonomy.bgColor, taxonomy.color)}>
           {taxonomy.category}
         </Badge>
-        <span className="text-[11px] text-content-dimmed">
-          {formatTime(timestamp)}
-        </span>
+        <span className="text-[11px] text-content-dimmed">{formatTime(timestamp)}</span>
         <Icons.chevronDown className="w-3 h-3 text-content-subtle" />
       </div>
 
@@ -218,6 +241,16 @@ export default memo(function ToolCard({ toolName, toolInput, toolOutput, timesta
             )}
           </button>
         )}
+        {agentType && (
+          <button
+            type="button"
+            onClick={() => setActiveTab('observatory')}
+            className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-colors duration-150 ml-auto"
+          >
+            <Icons.activity className="w-3 h-3" />
+            View in Observatory
+          </button>
+        )}
       </div>
 
       <div className="border-t border-white/5 max-h-64 overflow-y-auto">
@@ -242,4 +275,3 @@ export default memo(function ToolCard({ toolName, toolInput, toolOutput, timesta
     </div>
   )
 })
-

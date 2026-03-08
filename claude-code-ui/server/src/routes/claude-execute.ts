@@ -6,6 +6,9 @@ import type { SessionStore } from '../services/sessions'
 import type { orchestrator as OrchestratorType } from '../services/orchestrator'
 import { logger } from '../logger'
 import { ClaudeError } from '../errors'
+import { metricsStore } from '../services/metrics-store'
+import { learningLoop } from '../services/learning-loop'
+import { traceCollector } from '../services/trace-collector'
 
 export const createClaudeExecuteRoutes = (
   claude: ClaudeService,
@@ -39,6 +42,17 @@ export const createClaudeExecuteRoutes = (
         orchestrate: body.orchestrate,
         provider: body.provider,
       })
+
+      const executionStartTime = Date.now()
+      const executionId = crypto.randomUUID()
+
+      let traceId: string | undefined
+      try {
+        const trace = traceCollector.startTrace(body.sessionId || executionId, body.prompt)
+        traceId = trace.id
+      } catch (err) {
+        log.warn('Failed to start trace', { error: String(err) })
+      }
 
       try {
         let result
@@ -84,8 +98,80 @@ export const createClaudeExecuteRoutes = (
           await sessions.addMessage(body.sessionId, 'assistant', result.response)
         }
 
+        const durationMs = result.durationMs ?? Date.now() - executionStartTime
+
+        metricsStore
+          .record({
+            id: executionId,
+            timestamp: new Date().toISOString(),
+            prompt: body.prompt,
+            sessionId: body.sessionId || executionId,
+            useOrchestrator: !!body.orchestrate,
+            agentsSpawned: 0,
+            totalToolCalls: result.toolsUsed?.length ?? 0,
+            durationMs,
+            success: true,
+            expertiseUsed: false,
+          })
+          .catch((err) => {
+            log.warn('Failed to record metrics', { error: String(err) })
+          })
+
+        learningLoop
+          .processExecution({
+            agentId: executionId,
+            agentType: 'cli-http',
+            sessionId: body.sessionId || executionId,
+            prompt: body.prompt,
+            output: result.response.slice(0, 2000),
+            success: true,
+            toolCalls: result.toolsUsed?.length ?? 0,
+            durationMs,
+          })
+          .catch((err) => {
+            log.warn('Failed to process learning', { error: String(err) })
+          })
+
+        if (traceId) {
+          try {
+            traceCollector.updateTrace(traceId, {
+              totalCostUsd: result.costUsd ?? 0,
+            })
+            traceCollector.completeTrace(traceId, 'completed')
+          } catch (err) {
+            log.warn('Failed to complete trace', { error: String(err) })
+          }
+        }
+
         return result
       } catch (error) {
+        const durationMs = Date.now() - executionStartTime
+
+        if (traceId) {
+          try {
+            traceCollector.completeTrace(traceId, 'failed')
+          } catch (err) {
+            log.warn('Failed to complete trace on error', { error: String(err) })
+          }
+        }
+
+        metricsStore
+          .record({
+            id: executionId,
+            timestamp: new Date().toISOString(),
+            prompt: body.prompt,
+            sessionId: body.sessionId || executionId,
+            useOrchestrator: !!body.orchestrate,
+            agentsSpawned: 0,
+            totalToolCalls: 0,
+            durationMs,
+            success: false,
+            expertiseUsed: false,
+          })
+          .catch((err) => {
+            log.warn('Failed to record failure metrics', { error: String(err) })
+          })
+
         log.error('Execute CLI failed', {
           error: error instanceof Error ? error.message : String(error),
         })

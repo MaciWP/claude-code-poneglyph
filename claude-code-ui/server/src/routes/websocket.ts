@@ -25,6 +25,8 @@ import {
   handleExecuteCli,
 } from './ws-handlers'
 import { qaRunner } from '../services/qa-runner'
+import { traceCollector } from '../services/trace-collector'
+import type { TraceEvent } from '@shared/types'
 
 interface WebSocketMessage {
   type: string
@@ -68,6 +70,11 @@ export const stopCleanupInterval = () => clearInterval(cleanupInterval)
 
 // Broadcast QA runner events to all connected WebSocket clients (once at module init)
 qaRunner.on('qa_event', (event: QAWSEvent) => {
+  broadcastToAll(event)
+})
+
+// Forward trace events from TraceCollector to all connected WebSocket clients
+traceCollector.on('trace_event', (event: TraceEvent) => {
   broadcastToAll(event)
 })
 

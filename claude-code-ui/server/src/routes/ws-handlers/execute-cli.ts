@@ -26,6 +26,10 @@ import {
   shouldContinue,
   getContinuePrompt,
 } from '../../services/auto-continuation'
+import { metricsStore } from '../../services/metrics-store'
+import { learningLoop } from '../../services/learning-loop'
+import { traceCollector } from '../../services/trace-collector'
+import { updateContextWindow } from '../../services/context-window-monitor'
 import { logger } from '../../logger'
 
 const log = logger.child('ws-execute-cli')
@@ -233,8 +237,11 @@ function setupAgentRegistryHandlers(
   agentRegistry: typeof AgentRegistryType,
   sessionId: string | undefined,
   executionEvents: ExecutionEvent[],
-  sessionAgents: PersistedAgent[]
+  sessionAgents: PersistedAgent[],
+  traceId?: string
 ) {
+  const traceAgentIdMap = new Map<string, string>()
+
   const agentCreatedHandler = (agent: {
     id: string
     type: string
@@ -272,6 +279,24 @@ function setupAgentRegistryHandlers(
       createdAt: new Date().toISOString(),
       toolUseId: agent.id,
     })
+
+    if (traceId) {
+      try {
+        const traceAgentId = traceCollector.addAgent(traceId, {
+          type: agent.type,
+          task: agent.task,
+          status: 'pending',
+          tokensUsed: 0,
+          durationMs: 0,
+          startedAt: new Date().toISOString(),
+        })
+        if (traceAgentId) {
+          traceAgentIdMap.set(agent.id, traceAgentId)
+        }
+      } catch (err) {
+        log.warn('Failed to add agent to trace', { error: String(err) })
+      }
+    }
   }
 
   const agentStartedHandler = (agent: { id: string }) => {
@@ -288,6 +313,17 @@ function setupAgentRegistryHandlers(
     if (pa) {
       pa.status = 'active'
       pa.startedAt = new Date().toISOString()
+    }
+
+    if (traceId) {
+      try {
+        const traceAgentId = traceAgentIdMap.get(agent.id)
+        if (traceAgentId) {
+          traceCollector.updateAgent(traceId, traceAgentId, { status: 'active' })
+        }
+      } catch (err) {
+        log.warn('Failed to update agent trace status', { error: String(err) })
+      }
     }
   }
 
@@ -344,6 +380,22 @@ function setupAgentRegistryHandlers(
       pa.result = agent.result?.slice(0, 1000)
       pa.tokensUsed = agent.tokensUsed
     }
+
+    if (traceId) {
+      try {
+        const traceAgentId = traceAgentIdMap.get(agent.id)
+        if (traceAgentId) {
+          traceCollector.updateAgent(traceId, traceAgentId, {
+            status: 'completed',
+            result: agent.result?.slice(0, 500),
+            tokensUsed: agent.tokensUsed ?? 0,
+            durationMs: agent.durationMs ?? 0,
+          })
+        }
+      } catch (err) {
+        log.warn('Failed to update agent trace completion', { error: String(err) })
+      }
+    }
   }
 
   const agentFailedHandler = (agent: { id: string; error?: string }) => {
@@ -371,6 +423,20 @@ function setupAgentRegistryHandlers(
       pa.status = 'failed'
       pa.completedAt = new Date().toISOString()
       pa.error = agent.error
+    }
+
+    if (traceId) {
+      try {
+        const traceAgentId = traceAgentIdMap.get(agent.id)
+        if (traceAgentId) {
+          traceCollector.updateAgent(traceId, traceAgentId, {
+            status: 'failed',
+            error: agent.error,
+          })
+        }
+      } catch (err) {
+        log.warn('Failed to update agent trace failure', { error: String(err) })
+      }
     }
   }
 
@@ -513,6 +579,12 @@ async function processStream(
     } else if (chunk.type === 'result') {
       lastUsage = chunk.usage
       lastCostUsd = chunk.costUsd
+
+      if (chunk.usage) {
+        updateContextWindow({
+          current: chunk.usage.totalTokens ?? 0,
+        })
+      }
     }
 
     // Send to requesting client
@@ -743,16 +815,26 @@ export async function handleExecuteCli(params: ExecuteCliParams): Promise<void> 
 
   const imagePaths = await saveImagesToTemp(images)
 
+  const executionStartTime = Date.now()
   const executionEvents: ExecutionEvent[] = []
   const sessionAgents: PersistedAgent[] = []
   const activeTaskTools = new Map<string, TaskToolInfo>()
+
+  let traceId: string | undefined
+  try {
+    const trace = traceCollector.startTrace(sessionId || requestId, prompt)
+    traceId = trace.id
+  } catch (err) {
+    log.warn('Failed to start trace', { error: String(err) })
+  }
 
   const cleanupAgentHandlers = setupAgentRegistryHandlers(
     ws,
     agentRegistry,
     sessionId,
     executionEvents,
-    sessionAgents
+    sessionAgents,
+    traceId
   )
 
   try {
@@ -852,6 +934,59 @@ export async function handleExecuteCli(params: ExecuteCliParams): Promise<void> 
           lastCostUsd
         )
       }
+
+      const durationMs = Date.now() - executionStartTime
+      const toolCallEvents = executionEvents.filter((e) => e.type === 'tool_use')
+
+      if (traceId) {
+        try {
+          if (lastUsage || lastCostUsd) {
+            traceCollector.updateTrace(traceId, {
+              totalTokens: lastUsage?.totalTokens ?? 0,
+              totalCostUsd: lastCostUsd ?? 0,
+            })
+          }
+          traceCollector.completeTrace(traceId, 'completed')
+        } catch (err) {
+          log.warn('Failed to complete trace', { error: String(err) })
+        }
+      }
+
+      metricsStore
+        .record({
+          id: requestId,
+          timestamp: new Date().toISOString(),
+          prompt,
+          sessionId: sessionId || requestId,
+          useOrchestrator: !!orchestrate,
+          agentsSpawned: sessionAgents.length,
+          totalToolCalls: toolCallEvents.length,
+          durationMs,
+          success: true,
+          expertiseUsed: false,
+        })
+        .catch((err) => {
+          log.warn('Failed to record metrics', { error: String(err) })
+        })
+
+      learningLoop
+        .processExecution({
+          agentId: requestId,
+          agentType: 'cli',
+          sessionId: sessionId || requestId,
+          prompt,
+          output: fullResponse.slice(0, 2000),
+          success: true,
+          toolCalls: toolCallEvents.length,
+          durationMs,
+          filesModified: executionEvents
+            .filter((e) => e.type === 'tool_use' && e.toolName === 'Edit')
+            .map((e) => String(e.toolInput ?? ''))
+            .slice(0, 20),
+        })
+        .catch((err) => {
+          log.warn('Failed to process learning', { error: String(err) })
+        })
     } finally {
       clearTimeout(executionTimeoutId)
     }
@@ -859,6 +994,15 @@ export async function handleExecuteCli(params: ExecuteCliParams): Promise<void> 
     log.error('WS execute CLI failed', {
       error: error instanceof Error ? error.message : String(error),
     })
+
+    if (traceId) {
+      try {
+        traceCollector.completeTrace(traceId, 'failed')
+      } catch (err) {
+        log.warn('Failed to complete trace on error', { error: String(err) })
+      }
+    }
+
     ws.send(
       JSON.stringify({
         type: 'error',

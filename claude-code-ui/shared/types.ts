@@ -487,3 +487,59 @@ export interface OutloopStartRequest {
   maxRounds?: number;
   branch?: string;
 }
+
+// ============================================
+// Observatory Trace Types
+// ============================================
+
+export interface ExecutionTrace {
+  id: string;
+  sessionId: string;
+  prompt: string;
+  promptScore: number;
+  complexityScore: number;
+  skillsLoaded: string[];
+  agents: AgentTrace[];
+  totalTokens: number;
+  totalCostUsd: number;
+  durationMs: number;
+  status: "running" | "completed" | "failed";
+  timestamp: string;
+}
+
+export interface AgentTrace {
+  id: string;
+  type: string;
+  task: string;
+  status: "pending" | "active" | "completed" | "failed";
+  result?: string;
+  error?: string;
+  tokensUsed: number;
+  durationMs: number;
+  startedAt: string;
+  completedAt?: string;
+}
+
+export interface TraceEvent {
+  type:
+    | "trace:start"
+    | "trace:update"
+    | "trace:agent_start"
+    | "trace:agent_complete"
+    | "trace:complete";
+  trace: ExecutionTrace;
+}
+
+// ============================================
+// Hook Monitor Types
+// ============================================
+
+export interface HookStats {
+  name: string;
+  type: string;
+  executions: number;
+  avgDurationMs: number;
+  successRate: number;
+  lastExecutedAt: string;
+  lastError?: string;
+}

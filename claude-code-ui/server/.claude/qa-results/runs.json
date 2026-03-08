@@ -1,0 +1,191 @@
+[
+  {
+    "id": "chat-flow-1771970829050",
+    "storyName": "chat-flow",
+    "status": "running",
+    "startedAt": "2026-02-24T22:07:09.050Z",
+    "steps": [],
+    "screenshots": []
+  },
+  {
+    "id": "metrics-panel-1771970864211",
+    "storyName": "metrics-panel",
+    "status": "running",
+    "startedAt": "2026-02-24T22:07:44.211Z",
+    "steps": [],
+    "screenshots": []
+  },
+  {
+    "id": "metrics-panel-1771971180360",
+    "storyName": "metrics-panel",
+    "status": "running",
+    "startedAt": "2026-02-24T22:13:00.360Z",
+    "steps": [],
+    "screenshots": []
+  },
+  {
+    "id": "metrics-panel-1771971571031",
+    "storyName": "metrics-panel",
+    "status": "failed",
+    "startedAt": "2026-02-24T22:19:31.031Z",
+    "steps": [],
+    "screenshots": [],
+    "completedAt": "2026-02-24T22:19:34.098Z"
+  },
+  {
+    "id": "metrics-panel-1771971799552",
+    "storyName": "metrics-panel",
+    "status": "failed",
+    "startedAt": "2026-02-24T22:23:19.552Z",
+    "steps": [],
+    "screenshots": [],
+    "completedAt": "2026-02-24T22:23:22.688Z",
+    "error": "Playwright exited with code 1"
+  },
+  {
+    "id": "metrics-panel-1771971897654",
+    "storyName": "metrics-panel",
+    "status": "failed",
+    "startedAt": "2026-02-24T22:24:57.654Z",
+    "steps": [],
+    "screenshots": [],
+    "completedAt": "2026-02-24T22:25:00.598Z",
+    "error": "Playwright exited with code 1"
+  },
+  {
+    "id": "metrics-panel-1771971949413",
+    "storyName": "metrics-panel",
+    "status": "failed",
+    "startedAt": "2026-02-24T22:25:49.413Z",
+    "steps": [],
+    "screenshots": [],
+    "completedAt": "2026-02-24T22:25:52.536Z",
+    "error": "Playwright exited with code 1"
+  },
+  {
+    "id": "metrics-panel-1771972059112",
+    "storyName": "metrics-panel",
+    "status": "failed",
+    "startedAt": "2026-02-24T22:27:39.112Z",
+    "steps": [],
+    "screenshots": [],
+    "completedAt": "2026-02-24T22:27:42.307Z",
+    "error": "Playwright exited with code 1"
+  },
+  {
+    "id": "metrics-panel-1771972093188",
+    "storyName": "metrics-panel",
+    "status": "failed",
+    "startedAt": "2026-02-24T22:28:13.188Z",
+    "steps": [],
+    "screenshots": [],
+    "completedAt": "2026-02-24T22:28:16.002Z",
+    "error": "Playwright exited with code 1"
+  },
+  {
+    "id": "metrics-panel-1771972204885",
+    "storyName": "metrics-panel",
+    "status": "failed",
+    "startedAt": "2026-02-24T22:30:04.885Z",
+    "steps": [],
+    "screenshots": [],
+    "completedAt": "2026-02-24T22:30:07.712Z",
+    "error": "Playwright exited with code 1"
+  },
+  {
+    "id": "metrics-panel-1771972261872",
+    "storyName": "metrics-panel",
+    "status": "failed",
+    "startedAt": "2026-02-24T22:31:01.872Z",
+    "steps": [],
+    "screenshots": [],
+    "completedAt": "2026-02-24T22:31:04.701Z",
+    "error": "Playwright exited with code 1"
+  },
+  {
+    "id": "metrics-panel-1771972302761",
+    "storyName": "metrics-panel",
+    "status": "passed",
+    "startedAt": "2026-02-24T22:31:42.761Z",
+    "steps": [
+      {
+        "index": 0,
+        "action": "",
+        "target": "",
+        "status": "running"
+      }
+    ],
+    "screenshots": [],
+    "completedAt": "2026-02-24T22:31:48.763Z"
+  },
+  {
+    "id": "metrics-panel-1771972375724",
+    "storyName": "metrics-panel",
+    "status": "passed",
+    "startedAt": "2026-02-24T22:32:55.724Z",
+    "steps": [
+      {
+        "index": 0,
+        "action": "",
+        "target": "",
+        "status": "passed",
+        "durationMs": 1303
+      },
+      {
+        "index": 1,
+        "action": "",
+        "target": "",
+        "status": "passed",
+        "durationMs": 503
+      },
+      {
+        "index": 2,
+        "action": "",
+        "target": "",
+        "status": "passed",
+        "durationMs": 45
+      }
+    ],
+    "screenshots": [
+      "D:/PYTHON/claude-code-poneglyph/.claude/ui-evidence/metrics-panel/step-0.png",
+      "D:/PYTHON/claude-code-poneglyph/.claude/ui-evidence/metrics-panel/step-1.png",
+      "D:/PYTHON/claude-code-poneglyph/.claude/ui-evidence/metrics-panel/step-2.png"
+    ],
+    "completedAt": "2026-02-24T22:33:01.669Z"
+  },
+  {
+    "id": "metrics-panel-1771972846097",
+    "storyName": "metrics-panel",
+    "status": "passed",
+    "startedAt": "2026-02-24T22:40:46.097Z",
+    "steps": [
+      {
+        "index": 0,
+        "action": "",
+        "target": "",
+        "status": "passed",
+        "durationMs": 1320
+      },
+      {
+        "index": 1,
+        "action": "",
+        "target": "",
+        "status": "passed",
+        "durationMs": 502
+      },
+      {
+        "index": 2,
+        "action": "",
+        "target": "",
+        "status": "passed",
+        "durationMs": 53
+      }
+    ],
+    "screenshots": [
+      "D:/PYTHON/claude-code-poneglyph/.claude/ui-evidence/metrics-panel/step-0.png",
+      "D:/PYTHON/claude-code-poneglyph/.claude/ui-evidence/metrics-panel/step-1.png",
+      "D:/PYTHON/claude-code-poneglyph/.claude/ui-evidence/metrics-panel/step-2.png"
+    ],
+    "completedAt": "2026-02-24T22:40:52.286Z"
+  }
+]

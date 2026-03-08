@@ -4,6 +4,7 @@ import MarkdownContent from './MarkdownContent'
 import { getAgentIcon } from '../../lib/constants'
 import { getModelBadge } from '../../lib/utils'
 import { Icons } from '../../lib/icons'
+import { useTabNavigation } from '../../contexts/TabContext'
 
 interface Props {
   agentType: string
@@ -20,9 +21,23 @@ interface Props {
   agentStatus?: 'running' | 'completed' | 'failed'
 }
 
-export default memo(function AgentResultCard({ agentType, prompt, result, error, timestamp, model, agentId, title, agentTools, agentSteps, agentStartTime, agentStatus }: Props) {
+export default memo(function AgentResultCard({
+  agentType,
+  prompt,
+  result,
+  error,
+  timestamp,
+  model,
+  agentId,
+  title,
+  agentTools,
+  agentSteps,
+  agentStartTime,
+  agentStatus,
+}: Props) {
   const [expanded, setExpanded] = useState(false)
   const [copied, setCopied] = useState(false)
+  const { setActiveTab } = useTabNavigation()
 
   const iconName = getAgentIcon(agentType)
   const IconComponent = Icons[iconName]
@@ -44,17 +59,9 @@ export default memo(function AgentResultCard({ agentType, prompt, result, error,
       ? 'border-green-500/50'
       : 'border-orange-500/50'
 
-  const bgColor = hasError
-    ? 'bg-red-500/10'
-    : hasResult
-      ? 'bg-green-500/10'
-      : 'bg-orange-500/10'
+  const bgColor = hasError ? 'bg-red-500/10' : hasResult ? 'bg-green-500/10' : 'bg-orange-500/10'
 
-  const statusColor = hasError
-    ? 'text-red-400'
-    : hasResult
-      ? 'text-green-400'
-      : 'text-orange-400'
+  const statusColor = hasError ? 'text-red-400' : hasResult ? 'text-green-400' : 'text-orange-400'
 
   async function copyContent() {
     const content = error || result || prompt
@@ -65,11 +72,12 @@ export default memo(function AgentResultCard({ agentType, prompt, result, error,
 
   // Compact mode: single line when not expanded
   if (!expanded && !isInProgress) {
-    const resultSummary = hasResult && result
-      ? result.split('\n')[0].slice(0, 80) + (result.length > 80 ? '...' : '')
-      : hasError
-        ? 'Error occurred'
-        : ''
+    const resultSummary =
+      hasResult && result
+        ? result.split('\n')[0].slice(0, 80) + (result.length > 80 ? '...' : '')
+        : hasError
+          ? 'Error occurred'
+          : ''
 
     return (
       <div
@@ -78,17 +86,28 @@ export default memo(function AgentResultCard({ agentType, prompt, result, error,
       >
         <IconComponent className="w-4 h-4" />
         {modelBadge && (
-          <span className={`${modelBadge.color} text-white text-[11px] px-1 rounded font-bold`} title={model}>
+          <span
+            className={`${modelBadge.color} text-white text-[11px] px-1 rounded font-bold`}
+            title={model}
+          >
             {modelBadge.text}
           </span>
         )}
         <span className="text-xs font-medium text-orange-300">{agentType}</span>
         {title && (
-          <span className="text-[11px] text-gray-400 truncate max-w-[300px]">
-            | {title}
-          </span>
+          <span className="text-[11px] text-gray-400 truncate max-w-[300px]">| {title}</span>
         )}
         <span className="text-[11px] text-gray-500 truncate max-w-[200px]">{resultSummary}</span>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation()
+            setActiveTab('observatory')
+          }}
+          className="text-[11px] text-blue-400 hover:text-blue-300 transition-colors"
+        >
+          Observatory
+        </button>
         <span className={`ml-auto ${statusColor}`}>
           {hasError ? (
             <Icons.x className="w-4 h-4" />
@@ -99,7 +118,11 @@ export default memo(function AgentResultCard({ agentType, prompt, result, error,
           )}
         </span>
         <span className="text-[11px] text-gray-600">
-          {timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+          {timestamp.toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+          })}
         </span>
         <Icons.chevronRight className="w-3 h-3 text-gray-600" />
       </div>
@@ -115,12 +138,28 @@ export default memo(function AgentResultCard({ agentType, prompt, result, error,
       >
         <IconComponent className="w-5 h-5" />
         {modelBadge && (
-          <span className={`${modelBadge.color} text-white text-[11px] px-1.5 py-0.5 rounded font-bold`} title={model}>
+          <span
+            className={`${modelBadge.color} text-white text-[11px] px-1.5 py-0.5 rounded font-bold`}
+            title={model}
+          >
             {modelBadge.text}
           </span>
         )}
         <span className="font-medium text-orange-300">Agent: {agentType}</span>
-        {agentId && <span className="text-[11px] text-gray-600 font-mono">ID: {agentId.slice(0, 8)}</span>}
+        {agentId && (
+          <span className="text-[11px] text-gray-600 font-mono">ID: {agentId.slice(0, 8)}</span>
+        )}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation()
+            setActiveTab('observatory')
+          }}
+          className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-colors"
+        >
+          <Icons.activity className="w-3 h-3" />
+          Observatory
+        </button>
         <div className={`ml-auto flex items-center gap-1.5 ${statusColor}`}>
           {isInProgress ? (
             <span className="w-2 h-2 bg-orange-400 rounded-full animate-pulse" />
@@ -131,11 +170,14 @@ export default memo(function AgentResultCard({ agentType, prompt, result, error,
           )}
         </div>
         <span className="text-[11px] text-gray-600">
-          {timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+          {timestamp.toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+          })}
         </span>
         {!isInProgress && <Icons.chevronDown className="w-3 h-3 text-gray-500" />}
       </div>
-
 
       {/* Prompt Section - always show for context */}
       <div className="px-3 py-2 border-b border-white/5 bg-black/20">
@@ -149,7 +191,7 @@ export default memo(function AgentResultCard({ agentType, prompt, result, error,
       {agentSteps && agentSteps.length > 0 && (
         <div className="px-3 py-2 border-b border-white/5 bg-black/10 max-h-36 overflow-y-auto">
           <div className="text-[11px] text-gray-500 uppercase mb-1.5">
-            Steps ({agentSteps.filter(s => s.status === 'completed').length}/{agentSteps.length})
+            Steps ({agentSteps.filter((s) => s.status === 'completed').length}/{agentSteps.length})
           </div>
           <div className="space-y-0.5">
             {agentSteps.map((step, i) => (
@@ -166,7 +208,11 @@ export default memo(function AgentResultCard({ agentType, prompt, result, error,
                   </span>
                 )}
                 <span className="ml-auto text-gray-700 text-[11px] tabular-nums">
-                  {step.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                  {step.timestamp.toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                  })}
                 </span>
               </div>
             ))}
@@ -236,16 +282,20 @@ export default memo(function AgentResultCard({ agentType, prompt, result, error,
           <div className="flex flex-wrap gap-1 items-center">
             <span className="text-[11px] text-gray-500 mr-1">Tools:</span>
             {Object.entries(
-              agentTools.reduce((acc, tool) => {
-                acc[tool] = (acc[tool] || 0) + 1
-                return acc
-              }, {} as Record<string, number>)
+              agentTools.reduce(
+                (acc, tool) => {
+                  acc[tool] = (acc[tool] || 0) + 1
+                  return acc
+                },
+                {} as Record<string, number>
+              )
             ).map(([tool, count]) => (
               <span
                 key={tool}
                 className="text-[11px] bg-gray-700/50 text-gray-400 px-1.5 py-0.5 rounded"
               >
-                {tool}{count > 1 ? ` ×${count}` : ''}
+                {tool}
+                {count > 1 ? ` ×${count}` : ''}
               </span>
             ))}
           </div>
@@ -256,14 +306,23 @@ export default memo(function AgentResultCard({ agentType, prompt, result, error,
       {isInProgress && (
         <div className="px-3 py-2 flex items-center gap-2 text-orange-400">
           <div className="flex gap-0.5">
-            <span className="w-1.5 h-1.5 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-            <span className="w-1.5 h-1.5 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-            <span className="w-1.5 h-1.5 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+            <span
+              className="w-1.5 h-1.5 bg-orange-400 rounded-full animate-bounce"
+              style={{ animationDelay: '0ms' }}
+            />
+            <span
+              className="w-1.5 h-1.5 bg-orange-400 rounded-full animate-bounce"
+              style={{ animationDelay: '150ms' }}
+            />
+            <span
+              className="w-1.5 h-1.5 bg-orange-400 rounded-full animate-bounce"
+              style={{ animationDelay: '300ms' }}
+            />
           </div>
           <span className="text-xs">Agent is working...</span>
           {agentSteps && agentSteps.length > 0 && (
             <span className="text-[11px] text-gray-500 ml-auto">
-              {agentSteps.filter(s => s.status === 'completed').length} steps completed
+              {agentSteps.filter((s) => s.status === 'completed').length} steps completed
             </span>
           )}
         </div>

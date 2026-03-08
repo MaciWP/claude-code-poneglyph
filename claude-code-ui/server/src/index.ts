@@ -15,6 +15,8 @@ import { setAgentSpawner } from './services/workflow-executor'
 import { createOrchestratorAgent } from './services/orchestrator-agent'
 import { SessionStateManager } from './services/session-state'
 import { expertStore } from './services/expert-store'
+import { traceCollector } from './services/trace-collector'
+import { hookMonitor } from './services/hook-monitor'
 import { config } from './config'
 import { logger } from './logger'
 import {
@@ -32,6 +34,9 @@ import {
   logsRoutes,
   qaRoutes,
   outloopRoutes,
+  skillsRoutes,
+  tracesRoutes,
+  configRoutes,
   stopCleanupInterval,
 } from './routes'
 
@@ -87,6 +92,13 @@ const leadOrchestrator = await initializeOrchestrator()
 const sessionStateManager = new SessionStateManager()
 leadOrchestrator.setSessionStateManager(sessionStateManager)
 
+logger.info('startup', 'Observatory services initialized', {
+  traceCollector: 'ready',
+  hookMonitor: 'ready',
+})
+
+export { traceCollector, hookMonitor }
+
 const app = new Elysia()
   .use(cors())
   .use(healthRoutes)
@@ -102,6 +114,9 @@ const app = new Elysia()
   .use(logsRoutes)
   .use(qaRoutes)
   .use(outloopRoutes)
+  .use(skillsRoutes)
+  .use(tracesRoutes)
+  .use(configRoutes)
   .use(staticPlugin({ assets: uiEvidencePath, prefix: '/qa-evidence' }))
   .use(
     createWebSocketRoutes(
