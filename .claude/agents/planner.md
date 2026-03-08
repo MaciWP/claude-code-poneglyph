@@ -406,6 +406,43 @@ Task(
 | Maximizar paralelo | Target >70% Parallel Efficiency |
 | Formato estructurado | Markdown + JSON output |
 
+## Error Recovery Plan
+
+### Parallel Wave Failure
+
+When a task in a PARALLEL wave fails, the other tasks in the same wave **continue executing**. The failed task is isolated and does not block siblings.
+
+| Scenario | Behavior |
+|----------|----------|
+| Task in PARALLEL wave fails | Other tasks continue; failed task queued for retry |
+| Task in SEQUENTIAL wave fails | Wave halts; error-analyzer invoked before retry |
+| CHECKPOINT review rejects | Only rejected tasks re-enter pipeline |
+
+### Retry Policy
+
+Each task supports an `onError` field in the plan output:
+
+| Value | Behavior |
+|-------|----------|
+| `"retry"` | Retry up to 2 times with error-analyzer feedback |
+| `"skip"` | Mark as skipped, continue with dependents if possible |
+| `"abort"` | Halt entire roadmap, report to Lead |
+
+Default is `"retry"` for builder tasks and `"abort"` for checkpoint failures.
+
+### Checkpoint Recovery
+
+Completed tasks are **never re-run**. The planner tracks task status:
+
+| Status | Re-run? | Notes |
+|--------|---------|-------|
+| `completed` | No | Output cached for dependents |
+| `failed` | Yes | After error-analyzer feedback |
+| `skipped` | No | Dependents receive skip signal |
+| `pending` | Yes | Not yet started |
+
+When resuming after failure, the Lead uses the roadmap status to determine which tasks remain. Only `failed` and `pending` tasks enter the execution queue.
+
 ## Ejemplo Completo
 
 ### Input

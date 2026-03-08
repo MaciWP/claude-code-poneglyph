@@ -1,71 +1,77 @@
-# Performance Rules
+# Performance & Navigation
 
-Reglas para maximizar velocidad y eficiencia de Claude Code.
+## Tool Hierarchy (Single Source of Truth)
+
+| Prioridad | Tool | Uso |
+|-----------|------|-----|
+| 1 | **LSP** | Navegacion semantica (type-aware) |
+| 2 | Grep | Busqueda de texto (fallback) |
+| 3 | Glob | Busqueda de archivos |
+
+## LSP Operations
+
+| Tarea | Operacion LSP |
+|-------|---------------|
+| Donde esta definida X? | `goToDefinition` |
+| Donde se usa X? | `findReferences` |
+| Que parametros acepta? | `hover` |
+| Que funciones tiene este archivo? | `documentSymbol` |
+| Quien llama a esta funcion? | `incomingCalls` |
+| Que llama esta funcion? | `outgoingCalls` |
+
+Usar Grep como fallback cuando: LSP no disponible, busqueda de texto literal, archivos no-codigo.
 
 ## Batch Operations (OBLIGATORIO)
 
-| ✅ Paralelo (mismo mensaje) | ❌ Secuencial (esperar resultado) |
-|-----------------------------|-----------------------------------|
-| 3+ Read independientes | Edit después de Read mismo archivo |
+| Paralelo (mismo mensaje) | Secuencial (esperar resultado) |
+|--------------------------|--------------------------------|
+| 3+ Read independientes | Edit despues de Read mismo archivo |
 | 2+ Glob patterns diferentes | Write dependiente de Read |
 | 2+ Task agents independientes | Task que necesita output previo |
-| LSP + Grep para búsqueda comprehensiva | Bash con archivo recién creado |
-| WebSearch + WebFetch | Nodo marcado "Blocking" |
+| Multiple LSP en diferentes simbolos | LSP despues de crear archivo |
+| LSP + Grep para busqueda comprehensiva | Bash con archivo recien creado |
+| goToDefinition + findReferences | Nodo marcado "Blocking" |
+| WebSearch + WebFetch | |
+
+**Anti-pattern**: Si lees archivos uno por uno o corres agents secuencialmente -> BATCH en un mensaje.
 
 ## Anti-Patterns
 
-| ❌ No hacer | ✅ Hacer |
-|-------------|----------|
+| No hacer | Hacer |
+|----------|-------|
 | Read archivos uno por uno | Batch 3+ Reads en un mensaje |
 | Task agents secuenciales sin dependencia | Lanzar agents en paralelo |
-| Glob → Read → Grep | Glob + Grep paralelos |
-| Edit sin Read previo | Read → Edit secuencial |
+| Glob -> Read -> Grep | Glob + Grep paralelos |
+| Edit sin Read previo | Read -> Edit secuencial |
+
+## Quality Triggers
+
+| Agent | Cuando |
+|-------|--------|
+| code-quality | Despues de implementar, refactoring |
+| reviewer | Antes de commit, cambios significativos |
 
 ## Token Budget
 
-| Fase | Budget | Descripción |
+| Fase | Budget | Descripcion |
 |------|--------|-------------|
-| Exploración | 20% | Glob, Grep, Read inicial |
-| Implementación | 60% | Edit, Write, código |
-| Verificación | 20% | Tests, review, docs |
-
-## Ejemplos de Paralelización
-
-### Lecturas paralelas
-
-```
-Read("/src/services/auth.ts") + Read("/src/types/user.ts") + Grep("login", "src/")
-```
-
-### Agents paralelos independientes
-
-```
-Task(subagent_type="scout", prompt="find auth files") +
-Task(subagent_type="code-quality", prompt="analyze complexity", run_in_background=true)
-```
-
-### Writes independientes
-
-```
-Write("/src/types/session.ts", content1) +
-Write("/src/utils/validation.ts", content2)
-```
+| Exploracion | 20% | Glob, Grep, Read inicial |
+| Implementacion | 60% | Edit, Write, codigo |
+| Verificacion | 20% | Tests, review, docs |
 
 ## Parallel Efficiency Score
 
-Evaluar después de cada tarea compleja:
-
-| Score | Significado | Acción |
+| Score | Significado | Accion |
 |-------|-------------|--------|
 | >80% | Excelente | Continuar |
 | 50-80% | Aceptable | Revisar oportunidades |
 | <50% | Pobre | STOP - refactorizar approach |
 
-**Cálculo**: (operaciones paralelas) / (total que PODRÍAN ser paralelas) × 100
+**Calculo**: (operaciones paralelas) / (total que PODRIAN ser paralelas) x 100
 
 ## Cache Strategy
 
-| Resultado | Cache Duration | Condición |
+| Resultado | Cache Duration | Condicion |
 |-----------|----------------|-----------|
 | LSP results | 5 min | Si archivo no modificado |
 | Grep results | 2 min | Si directorio no modificado |
@@ -76,9 +82,18 @@ Evaluar después de cada tarea compleja:
 
 | Tarea | Tool Primario | Fallback |
 |-------|---------------|----------|
-| Definición de símbolo | LSP goToDefinition | Grep |
-| Usos de símbolo | LSP findReferences | Grep |
+| Definicion de simbolo | LSP goToDefinition | Grep |
+| Usos de simbolo | LSP findReferences | Grep |
 | Buscar archivo | Glob | Bash find |
 | Buscar texto | Grep | Bash grep |
 | Leer archivo | Read | Bash cat |
 | Editar archivo | Edit | Bash sed |
+
+## Tools por Complejidad
+
+| Trigger | Tool/Agent |
+|---------|------------|
+| >3 subtasks o complejidad >60 | task-decomposer |
+| Prompt vago | prompt-engineer |
+| Feature design | architect |
+| Pre-implementacion | scout |

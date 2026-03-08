@@ -2,107 +2,155 @@
 
 ## Overview
 
-Claude Code Poneglyph es un UI wrapper para Claude Code CLI con soporte para SDK y CLI spawn modes.
+Claude Code Poneglyph is a multi-agent orchestration system for Claude Code. It provides specialized agents, domain skills, automated hooks, and routing rules that enhance Claude Code sessions.
 
 ## System Diagram
 
 ```mermaid
 graph TD
-    subgraph "Frontend (React + Vite)"
-        Web[Web UI :5173]
-        Chat[StreamingChat]
-        Sessions[SessionManager]
+    subgraph "User Layer"
+        U[User]
     end
 
-    subgraph "Backend (Bun + Elysia)"
-        API[Elysia API :8080]
-        WS[WebSocket Handler]
-        Claude[Claude Service]
-        Memory[Memory Service]
+    subgraph "Claude Code"
+        CC[Claude Code CLI]
+        Lead[Lead Orchestrator]
     end
 
-    subgraph "External"
-        CLI[Claude Code CLI]
-        SDK[Claude SDK]
-        DB[(PostgreSQL)]
-        Redis[(Redis)]
+    subgraph "Orchestration (.claude/)"
+        direction TB
+        Agents[15 Specialized Agents]
+        Skills[24 Domain Skills]
+        Hooks[30+ Hooks pre/post/stop]
+        Rules[Routing Rules]
+        Commands[Slash Commands]
     end
 
-    Web --> API
-    Web --> WS
-    API --> Claude
-    WS --> Claude
-    Claude --> CLI
-    Claude --> SDK
-    API --> Memory
-    Memory --> DB
-    Memory --> Redis
+    U --> CC
+    CC --> Lead
+    Lead --> Agents
+    Lead --> Skills
+    Lead --> Rules
+    Agents --> Hooks
+    Skills -.-> Agents
 ```
 
-## Components
-
-### Frontend
-
-| Componente | Responsabilidad |
-|------------|-----------------|
-| StreamingChat | UI de chat con streaming |
-| SessionManager | Gestión de sesiones |
-| AgentSelector | Selección de agentes |
-
-### Backend
-
-| Componente | Responsabilidad |
-|------------|-----------------|
-| Claude Service | Ejecutar Claude Code (SDK/CLI) |
-| Memory Service | Búsqueda semántica en memoria |
-| Session Store | Persistencia de sesiones |
-| WebSocket Handler | Streaming en tiempo real |
-
-## Data Flow
-
-### Execute Request
+## Orchestration Flow
 
 ```mermaid
 sequenceDiagram
     participant U as User
-    participant W as Web
-    participant A as API
-    participant C as Claude
-    participant CLI as CLI/SDK
+    participant L as Lead Orchestrator
+    participant P as Planner
+    participant B as Builder
+    participant R as Reviewer
+    participant H as Hooks
 
-    U->>W: Submit prompt
-    W->>A: POST /api/execute
-    A->>C: execute(prompt, options)
-    C->>CLI: spawn/sdk call
-    CLI-->>C: streaming response
-    C-->>A: events
-    A-->>W: SSE/WebSocket
-    W-->>U: Display response
+    U->>L: Prompt
+    L->>L: Score prompt (5 criteria)
+    L->>L: Calculate complexity
+    alt Complexity > 60
+        L->>P: Plan implementation
+        P-->>L: Execution roadmap
+    end
+    L->>B: Delegate implementation
+    B->>H: Pre-hooks validate
+    B-->>L: Implementation complete
+    L->>R: Review checkpoint
+    R-->>L: APPROVED / NEEDS_CHANGES
+    L->>H: Stop hooks (validate-tests-pass)
+    L-->>U: Result
 ```
+
+## Components
+
+### Lead Orchestrator
+
+The Lead session acts as a pure orchestrator. It never executes code directly.
+
+| Responsibility | Mechanism |
+|----------------|-----------|
+| Evaluate prompt quality | Prompt scoring (5 criteria, threshold 70) |
+| Route by complexity | Complexity calculator (Low/Med/High) |
+| Load domain context | Skill auto-matching by keywords |
+| Delegate implementation | Task dispatch to specialized agents |
+| Validate results | Reviewer checkpoints + hook validation |
+| Handle errors | Error-analyzer diagnosis + retry |
+
+### Agents
+
+Specialized sub-agents delegated via `Task()`. Each has defined tools, model, and permission mode.
+
+| Category | Agents |
+|----------|--------|
+| **Implementation** | builder, refactor-agent |
+| **Planning** | planner, architect, task-decomposer |
+| **Validation** | reviewer, code-quality, security-auditor, test-watcher |
+| **Exploration** | scout, command-loader |
+| **Analysis** | error-analyzer, bug-documenter |
+| **Operations** | merge-resolver, knowledge-sync |
+
+### Skills
+
+Domain knowledge loaded automatically by keyword matching (max 3 per delegation).
+
+| Category | Skills |
+|----------|--------|
+| **Code** | typescript-patterns, code-style-enforcer, code-quality, refactoring-patterns |
+| **API** | api-design, websocket-patterns |
+| **Data** | database-patterns, config-validator |
+| **Security** | security-review, anti-hallucination |
+| **Testing** | testing-strategy |
+| **Operations** | bun-best-practices, logging-strategy, retry-patterns, recovery-strategies |
+| **Meta** | prompt-engineer, create-agent, create-skill, expert-patterns, diagnostic-patterns |
+
+### Hooks
+
+Automated validators that run at lifecycle points.
+
+| Type | When | Purpose |
+|------|------|---------|
+| **Pre** | Before tool execution | Validate inputs, check preconditions |
+| **Post** | After tool execution | Verify outputs, enforce rules |
+| **Stop** | Before session ends | Run tests, validate final state |
+
+### Rules
+
+Routing and behavior rules loaded into every session.
+
+| Rule | Purpose |
+|------|---------|
+| prompt-scoring | Evaluate prompt quality before acting |
+| complexity-routing | Route tasks by complexity score |
+| skill-matching | Auto-load skills by keyword detection |
+| lead-orchestrator | Enforce delegation-only behavior |
+| performance | Maximize parallelization |
+| code-review | Review standards |
 
 ## Directory Structure
 
 ```
-claude-code-ui/
-├── server/src/
-│   ├── routes/       # Elysia routes
-│   ├── services/     # Business logic
-│   ├── config/       # Configuration
-│   └── index.ts      # Entry point
-├── web/src/
-│   ├── components/   # React components
-│   ├── hooks/        # Custom hooks
-│   ├── stores/       # State management
-│   └── main.tsx      # Entry point
-└── shared/
-    └── types.ts      # Shared types
+.claude/
+├── agents/           # 15 specialized agents (md frontmatter)
+├── skills/           # 24 domain skills (directories)
+├── hooks/            # Automated validators (TypeScript)
+│   ├── validators/
+│   │   ├── pre/      # Pre-tool hooks
+│   │   ├── post/     # Post-tool hooks
+│   │   └── stop/     # Stop hooks
+│   └── *.test.ts     # Hook tests
+├── rules/            # Routing and behavior rules (md)
+├── commands/         # Slash commands
+├── agent_docs/       # Extended documentation
+└── agent-memory/     # Persistent agent memory
 ```
 
 ## Key Decisions
 
-| Decisión | Razón |
-|----------|-------|
-| Bun runtime | Performance, native TypeScript |
-| Elysia framework | Type-safe, fast, Bun-native |
-| React + Vite | DX, fast HMR |
-| SDK + CLI modes | Flexibilidad según caso de uso |
+| Decision | Reason |
+|----------|--------|
+| Pure orchestration (no UI) | Anthropic Desktop handles UI; value is in orchestration |
+| Lead never executes code | Separation of concerns, prevents direct tool misuse |
+| Skill auto-matching | Reduces manual context loading, ensures domain knowledge |
+| Hook-based validation | Automated quality gates without manual intervention |
+| Agent specialization | Each agent has minimal tools for its role (principle of least privilege) |

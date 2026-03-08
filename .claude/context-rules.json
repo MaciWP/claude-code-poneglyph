@@ -2,13 +2,13 @@
   "rules": [
     {
       "name": "api-routes",
-      "paths": ["server/src/routes/**", "**/routes/**"],
+      "paths": ["**/routes/**"],
       "keywords": ["endpoint", "route", "api", "rest", "handler"],
       "contexts": ["api-design", "typescript-patterns"]
     },
     {
       "name": "services",
-      "paths": ["server/src/services/**", "**/services/**"],
+      "paths": ["**/services/**"],
       "keywords": ["service", "business logic"],
       "contexts": ["typescript-patterns", "testing-strategy"]
     },
@@ -31,12 +31,6 @@
       "contexts": ["websocket-patterns", "typescript-patterns"]
     },
     {
-      "name": "react-components",
-      "paths": ["web/src/components/**", "**/components/**"],
-      "keywords": ["component", "react", "tsx", "hook", "ui"],
-      "contexts": ["typescript-patterns"]
-    },
-    {
       "name": "testing",
       "paths": ["**/*.test.ts", "**/*.test.tsx", "**/__tests__/**"],
       "keywords": ["test", "mock", "fixture", "coverage", "tdd"],
@@ -47,6 +41,16 @@
       "paths": ["**/config/**", "**/.env*", "**/settings*"],
       "keywords": ["config", "env", "environment", "settings", "validation"],
       "contexts": ["config-validator"]
+    },
+    {
+      "name": "orchestration",
+      "paths": [".claude/agents/**", ".claude/rules/**", ".claude/skills/**"],
+      "contexts": ["expert-patterns"]
+    },
+    {
+      "name": "hooks",
+      "paths": [".claude/hooks/**"],
+      "contexts": ["typescript-patterns", "bun-best-practices"]
     }
   ]
 }

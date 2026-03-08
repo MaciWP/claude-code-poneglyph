@@ -57,14 +57,17 @@ This agent activates when:
 **Scan for new/modified code:**
 
 ```
-# Find new endpoints
-Grep("\.get\(|\.post\(|\.put\(|\.delete\(|\.patch\(", "server/src/routes/")
+# Find new/modified agents
+Glob(".claude/agents/*.md")
 
-# Find new patterns
-Grep("export (function|class|const|interface)", "src/")
+# Find new/modified skills
+Glob(".claude/skills/**/SKILL.md")
 
-# Find new services
-Glob("**/services/*.ts")
+# Find new/modified rules
+Glob(".claude/rules/*.md")
+
+# Find new/modified hooks
+Glob(".claude/hooks/**/*.ts")
 ```
 
 ### Step 2: Compare with Documentation
@@ -143,9 +146,10 @@ Link related sections:
 | **Patterns** | `.claude/agent_docs/patterns.md` | Read/Write |
 | **Architecture** | `.claude/agent_docs/architecture.md` | Read/Write |
 | **Troubleshooting** | `.claude/agent_docs/troubleshooting.md` | Read/Write |
-| **Source Code** | `server/src/`, `web/src/` | Read (scanning) |
-| **Routes** | `server/src/routes/` | Read (endpoints) |
-| **Services** | `server/src/services/` | Read (patterns) |
+| **Agents** | `.claude/agents/` | Read (scanning) |
+| **Skills** | `.claude/skills/` | Read (scanning) |
+| **Rules** | `.claude/rules/` | Read (scanning) |
+| **Hooks** | `.claude/hooks/` | Read (scanning) |
 
 ### Directory Structure
 
@@ -250,19 +254,21 @@ docker compose up -d postgres
 
 ```mermaid
 graph TD
-    Client[Web Client] --> API[Elysia API]
-    API --> Services[Service Layer]
-    Services --> DB[(Database)]
-    Services --> Claude[Claude SDK]
+    User[User] --> CC[Claude Code]
+    CC --> Orch[Lead Orchestrator]
+    Orch --> Agents[.claude/agents/]
+    Orch --> Skills[.claude/skills/]
+    Orch --> Hooks[.claude/hooks/]
 ```
 
 ## Components
 
 | Component | Location | Responsibility |
 |-----------|----------|----------------|
-| API | server/src/routes | HTTP endpoints |
-| Services | server/src/services | Business logic |
-| Models | server/src/models | Data structures |
+| Agents | .claude/agents/ | Specialized agent definitions |
+| Skills | .claude/skills/ | Domain knowledge and patterns |
+| Rules | .claude/rules/ | Orchestration rules |
+| Hooks | .claude/hooks/ | Pre/post/stop validators |
 ```
 
 ## Sync Rules

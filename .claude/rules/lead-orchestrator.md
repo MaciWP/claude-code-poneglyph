@@ -103,12 +103,12 @@ Task(reviewer, "revisar modulo auth", run_in_background=true) + Task(reviewer, "
 | builder A → esperar → builder B (archivos distintos) | 2 builders paralelos |
 | reviewer M1 → esperar → reviewer M2 | 2 reviewers en background |
 
-### Parallel Efficiency Score
+### Cuando usar `run_in_background=true`
 
-| Score | Calificacion |
-|-------|--------------|
-| >80% | Excelente |
-| 50-80% | Revisar oportunidades |
-| <50% | Re-planificar delegacion |
+| Usar | No usar |
+|------|---------|
+| reviewer que no bloquea siguiente paso | builder que produce archivos necesarios para siguiente Task |
+| scout exploratorio cuando builder puede empezar con archivos conocidos | planner cuyo roadmap se necesita antes de delegar |
+| code-quality audit en paralelo con siguiente feature | error-analyzer cuyo diagnostico determina siguiente accion |
 
-Calculo: (Tasks en paralelo / Total Tasks) x 100
+> Para batching de herramientas (Read, Glob, Grep) y Parallel Efficiency Score, ver `performance.md`.

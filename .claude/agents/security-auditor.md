@@ -9,7 +9,6 @@ model: opus
 permissionMode: plan
 skills:
   - security-review
-  - security-review
   - typescript-patterns
 ---
 
@@ -294,6 +293,5 @@ const API_KEY = Bun.env.ANTHROPIC_API_KEY
 
 ## Related Skills
 
-- **security-review**: Security review patterns and checklists
-- **security-review**: Secure coding practices
+- **security-review**: Security review patterns, checklists, and secure coding practices
 - **typescript-patterns**: TypeScript-specific security patterns

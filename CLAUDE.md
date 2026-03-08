@@ -153,12 +153,12 @@ graph TD
 
 ### Verificacion Post-Implementacion (OBLIGATORIO)
 
-Despues de que builder complete implementacion, SIEMPRE:
+Builder verifica automaticamente via Stop hook `validate-tests-pass.ts`. Lead NO ejecuta comandos directamente.
 
-| Paso | Comando | Proposito |
-|------|---------|-----------|
-| 1 | `bun typecheck` | Verificar tipos TypeScript |
-| 2 | `bun test` | Ejecutar tests |
-| 3 | Revisar output | Confirmar cero errores |
+| Paso | Quien | Accion |
+|------|-------|--------|
+| 1 | Builder (auto) | Stop hook ejecuta `bun test` |
+| 2 | Lead | Revisa reporte del builder |
+| 3 | Lead (si falla) | Delega a error-analyzer → re-delega a builder |
 
-**NUNCA reportar "completado" sin verificar que compila y los tests pasan.**
+**NUNCA reportar "completado" sin que builder confirme tests passing.**
