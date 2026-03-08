@@ -1,6 +1,6 @@
 # Claude Code Poneglyph
 
-UI wrapper para Claude Code | Bun + Elysia + React
+Sistema de orquestación multi-agente para Claude Code
 
 > **Arquitectura de Configuración**
 >
@@ -45,41 +45,39 @@ Claude Code actúa como el mejor **co-programador** posible. Juntos llegamos má
 
 ## WHAT
 
-Plataforma para ejecutar Claude Code con UI web, soporte SDK y CLI spawn.
+Sistema de orquestación que potencia Claude Code con agentes especializados, skills, hooks y reglas.
 
 ## WHY
 
 | Problema | Solución |
 |----------|----------|
-| CLI sin UI | Web interface con streaming |
+| Sin orquestación | 17 agentes especializados con routing por complejidad |
+| Sin validación automática | 30+ hooks (pre/post/stop) |
+| Sin conocimiento de dominio | 26 skills auto-matcheadas por keywords |
 | Sin memoria persistente | Sistema de memoria semántica |
-| Sin orquestación | Multi-agente con especialización |
 
 ## HOW
 
 ```mermaid
 graph LR
-    User --> Web
-    Web --> Elysia
-    Elysia --> Claude[Claude Code]
-    Claude --> Response
+    User --> CC[Claude Code]
+    CC --> Orch[Lead Orchestrator]
+    Orch --> Agents[17 Agents]
+    Orch --> Skills[26 Skills]
+    Orch --> Hooks[30+ Hooks]
 ```
 
-## Commands
+## Estructura
 
-```bash
-bun dev:server  # Backend :8080
-bun dev:web     # Frontend :5173
 ```
-
-## API
-
-| Endpoint | Descripción |
-|----------|-------------|
-| POST `/api/execute` | SDK mode |
-| POST `/api/execute-cli` | CLI spawn |
-| WS `/ws` | Streaming |
-| GET `/api/sessions` | Listar sesiones |
+.claude/
+├── agents/       # 17 agentes especializados
+├── skills/       # 26 skills con auto-matching
+├── hooks/        # Hooks pre/post/stop
+├── rules/        # Reglas de orquestación
+├── commands/     # Slash commands
+└── agent_docs/   # Documentación extendida
+```
 
 ## Anti-Hallucination
 
@@ -91,14 +89,6 @@ bun dev:web     # Frontend :5173
 ## Tool Hierarchy
 
 LSP (primario) > Grep (fallback) > Glob (archivos)
-
-## Deep Dive
-
-Documentación detallada en `.claude/agent_docs/`:
-- `architecture.md` - Arquitectura completa
-- `api-reference.md` - Todos los endpoints
-- `patterns.md` - Patrones del proyecto
-- `troubleshooting.md` - Errores comunes
 
 ## Extended Context
 

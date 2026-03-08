@@ -76,7 +76,7 @@ describe("validate-tests-pass", () => {
     });
     expect(result.exitCode).toBe(2);
     expect(result.stderr).toContain("VALIDATION FAILED");
-    expect(result.stderr).toContain("Tests did not pass");
+    expect(result.stderr).toContain("test failures");
   });
 
   test("includes output tail in stderr on failure", async () => {

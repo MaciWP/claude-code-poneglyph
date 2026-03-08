@@ -7,8 +7,7 @@
  * Env var:
  *   VALIDATE_TEST_PATH - optional specific test path to run
  *
- * Runs tests per-subproject so each picks up its own bunfig.toml
- * (e.g. web needs happy-dom preload for React component tests).
+ * Runs tests in .claude/hooks/ directory.
  * Exit 0 = tests pass, Exit 2 = tests fail (last 30 lines in stderr).
  */
 
@@ -22,13 +21,13 @@ const MAX_OUTPUT_LINES = 30;
 // The hook tolerates up to this many failures without blocking.
 // Update these baselines when pre-existing failures are fixed.
 const KNOWN_FAILURE_BASELINE: Record<string, number> = {
-  server: 7,
-  web: 0,
+  root: 0,
 };
 
 interface SubProject {
   name: string;
   cwd: string;
+  testPath?: string;
 }
 
 // =============================================================================
@@ -57,20 +56,27 @@ function findProjectRoot(): string {
 }
 
 async function getSubProjects(root: string): Promise<SubProject[]> {
-  const candidates: SubProject[] = [
-    { name: "server", cwd: resolve(root, "claude-code-ui", "server") },
-    { name: "web", cwd: resolve(root, "claude-code-ui", "web") },
-  ];
-
-  const valid: SubProject[] = [];
-  for (const candidate of candidates) {
-    const pkgFile = Bun.file(resolve(candidate.cwd, "package.json"));
-    if (await pkgFile.exists()) {
-      valid.push(candidate);
-    }
+  const rootPkg = Bun.file(resolve(root, "package.json"));
+  if (!(await rootPkg.exists())) {
+    return [];
   }
 
-  return valid;
+  const hooksDir = resolve(root, ".claude", "hooks");
+  const hooksExist = await Bun.file(
+    resolve(hooksDir, "validators", "config.ts"),
+  ).exists();
+
+  if (!hooksExist) {
+    return [];
+  }
+
+  return [
+    {
+      name: "root",
+      cwd: root,
+      testPath: "./.claude/hooks/",
+    },
+  ];
 }
 
 // =============================================================================
@@ -116,7 +122,7 @@ async function runTestsInProject(
   project: SubProject,
   testPath?: string,
 ): Promise<TestResult> {
-  const command = buildTestCommand(testPath);
+  const command = buildTestCommand(testPath || project.testPath);
 
   const proc = Bun.spawn(command, {
     cwd: project.cwd,
@@ -170,43 +176,19 @@ async function main(): Promise<void> {
   const subProjects = await getSubProjects(root);
 
   if (subProjects.length === 0) {
-    // Fallback: run bun test from root (no subprojects found)
-    const command = buildTestCommand(testPath);
-    const proc = Bun.spawn(command, {
-      cwd: root,
-      stdout: "pipe",
-      stderr: "pipe",
-    });
-
-    const timeoutId = setTimeout(() => {
-      proc.kill();
-    }, TEST_TIMEOUT_MS);
-
-    const exitCode = await proc.exited;
-    clearTimeout(timeoutId);
-
-    if (exitCode === 0) {
-      process.exit(EXIT_CODES.PASS);
-    }
-
-    const stdout = await new Response(proc.stdout).text();
-    const stderr = await new Response(proc.stderr).text();
-    const combined = [stdout, stderr].filter(Boolean).join("\n");
-    console.error(
-      `VALIDATION FAILED: Tests did not pass (exit code ${exitCode}):\n\n${tailLines(combined, MAX_OUTPUT_LINES)}`,
-    );
-    process.exit(EXIT_CODES.BLOCK);
+    // No subprojects and no root tests found — nothing to validate
+    process.exit(EXIT_CODES.PASS);
   }
 
   // If VALIDATE_TEST_PATH is set, determine which subproject it belongs to
   if (testPath) {
     const normalizedPath = testPath.replace(/\\/g, "/");
     const matched = subProjects.find((sp) => {
+      if (sp.name === "root") {
+        return normalizedPath.includes(".claude/hooks/");
+      }
       const normalizedCwd = sp.cwd.replace(/\\/g, "/");
-      return (
-        normalizedPath.startsWith(normalizedCwd) ||
-        normalizedPath.includes(`claude-code-ui/${sp.name}`)
-      );
+      return normalizedPath.startsWith(normalizedCwd);
     });
 
     if (matched) {

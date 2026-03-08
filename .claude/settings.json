@@ -111,6 +111,16 @@
             "command": "bun run .claude/hooks/validators/stop/validate-tests-pass.ts"
           }
         ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun run .claude/hooks/trace-logger.ts",
+            "timeout": 5000
+          }
+        ]
       }
     ],
     "PreToolUse": [

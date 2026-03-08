@@ -1,6 +1,0 @@
-export { default as OverviewTab } from './OverviewTab'
-export { default as ExpertsTab } from './ExpertsTab'
-export { default as ExpertDetailView } from './ExpertDetailView'
-export { default as LearningTab } from './LearningTab'
-export { LogsTab } from './LogsTab'
-export { default as QATab } from './QATab'

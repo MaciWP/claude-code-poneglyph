@@ -1,4 +1,3 @@
 #!/bin/sh
 
-# Run lint-staged on staged files
-bunx lint-staged
+bun test ./.claude/hooks/

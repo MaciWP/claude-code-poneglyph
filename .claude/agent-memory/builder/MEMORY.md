@@ -1,23 +1,20 @@
 # Builder Agent Memory
 
-## Project Structure
-- Server code: `claude-code-ui/server/src/`
-- Services: `claude-code-ui/server/src/services/`
-- Tests: `claude-code-ui/server/src/__tests__/` and co-located `*.test.ts`
+## Project Structure (Post-Pivot - 2026-03-08)
+- Project is now a pure orchestration system (no web UI)
+- All UI code archived to `archive/web-ui` branch
+- Main content: `.claude/` directory with agents, skills, hooks, rules
+- Root `package.json` only has `bun test .claude/hooks/` script
+- No more `claude-code-ui/` directory on main branch
+- `CLAUDE.md` is a symlink from `~/.claude/CLAUDE.md` to this repo
 
 ## Key Patterns
 - Linter auto-reformats on edit (biome or similar) - always re-read after edits for exact string matching
-- `OrchestratorAgent` is a class extending EventEmitter, not a factory function pattern
-- `SpawnResult.extractedMeta` has `filesModified`, `filesRead`, `errors` arrays
-- `SessionStateManager` uses Map<sessionId, SessionState> pattern
 
 ## Testing Notes
-- Many pre-existing test failures (React tests need DOM, gemini mock broken, learning-loop timing)
-- Orchestrator-agent tests at `server/src/__tests__/orchestrator-agent.test.ts` - 12 tests, all pass
-- Always run `bun typecheck` first, then specific test files
-- Full suite: server 619 pass, 4 fail (pre-existing), 1 skip; web 50 pass, 0 fail
-- Stop hook at `.claude/hooks/validators/stop/validate-tests-pass.ts` runs per-subproject
-- Hook has baseline tolerance: server=5 failures, web=0 (in `KNOWN_FAILURE_BASELINE`)
+- Tests now only cover `.claude/hooks/` directory
+- Run: `bun test .claude/hooks/`
+- Stop hook at `.claude/hooks/validators/stop/validate-tests-pass.ts`
 - `bunx --cwd owner/repo` is ambiguous - bunx treats it as GitHub specifier, use `bash -c 'cd dir && bunx cmd'`
 
 ## Bun mock.module Leaking (CRITICAL)
@@ -28,9 +25,8 @@
 - **Fix pattern**: Use `spyOn(singleton, 'method')` instead of `mock.module` when possible
 - **When mock.module is needed**: Include ALL exports the real module has, not just what you use
 - Always add `afterAll(() => { spy.mockRestore() })` to restore spies
-- Relative paths from different test files can resolve to the same module (e.g., `../logger` from `__tests__/` and `../logger` from `services/` both hit `src/logger.ts`)
 
 ## Lessons Learned
 - Windows paths with backslashes work in `cd` commands but need quoting
+- Windows file locks can prevent `rm -rf` on empty directories - git still tracks deletions correctly
 - When adding optional fields to interfaces used in existing code, no breaking changes occur
-- Pass new data through existing structures (e.g., `extractedMeta` on `AgentResult`) rather than creating parallel data flows

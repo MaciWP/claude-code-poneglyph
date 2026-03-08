@@ -54,12 +54,14 @@ tmpclaude-*-cwd
 # Claude Code metrics (runtime data)
 **/.claude/metrics/
 
+# Trace data
+.claude/traces/
+
 # Codex local data
 .codex/
 
 # Runtime data directories
 data/
-claude-code-ui/data/
 !data/sessions/.gitkeep
 
 # Test results (Playwright/runner artifacts)
