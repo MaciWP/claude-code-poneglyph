@@ -8,18 +8,15 @@ URLs y fuentes de conocimiento para analisis de patrones.
 |-----------|-----|--------|
 | Bun | https://bun.sh/docs | Runtime, APIs, Testing |
 | Elysia | https://elysiajs.com/essential/route | Routes, Plugins, Validation |
-| React | https://react.dev/reference/react | Hooks, Components, Patterns |
 | TypeScript | https://www.typescriptlang.org/docs/handbook | Types, Generics, Utility Types |
 
 ## Expert Blogs
 
 | Expert | URL | Specialty |
 |--------|-----|-----------|
-| Kent C. Dodds | https://kentcdodds.com/blog | Testing, React patterns |
-| Dan Abramov | https://overreacted.io | React internals, mental models |
-| Josh W. Comeau | https://www.joshwcomeau.com | CSS, React, animations |
 | Matt Pocock | https://www.totaltypescript.com/articles | TypeScript advanced |
 | Tanner Linsley | https://tanstack.com/blog | State management, queries |
+| Kent C. Dodds | https://kentcdodds.com/blog | Testing patterns |
 
 ## Standards & Security
 
@@ -35,7 +32,6 @@ URLs y fuentes de conocimiento para analisis de patrones.
 |----------|--------------|---------------|
 | Elysia apps | `elysia stars:>100` | elysia-examples |
 | Bun projects | `bun typescript stars:>500` | bun-examples |
-| React patterns | `react patterns stars:>5000` | bulletproof-react |
 | TypeScript | `typescript starter stars:>1000` | ts-reset |
 | API design | `rest api typescript stars:>2000` | trpc |
 

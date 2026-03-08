@@ -25,7 +25,6 @@ Mantener activas durante TODA la planificación y ejecución:
 | Keywords detectados | Acción |
 |---------------------|--------|
 | elysia, backend, api, endpoint | Skill: `typescript-patterns` |
-| react, frontend, component | Skill: `typescript-patterns` |
 | bun, runtime, server | Skill: `bun-best-practices` |
 | test, coverage, vitest | `/load-testing-strategy` |
 | security, auth, jwt | `/load-security` |

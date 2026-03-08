@@ -20,7 +20,7 @@ Analiza un archivo o patron comparandolo con best practices de documentacion ofi
 
 | Categoria | Keywords | Fuentes Prioritarias |
 |-----------|----------|---------------------|
-| security | auth, validation, crypto | OWASP, security-coding |
+| security | auth, validation, crypto | OWASP, security-review |
 | api | routes, endpoints, REST | Elysia docs, api-design |
 | react | components, hooks, state | React docs, Kent C. Dodds |
 | typescript | types, generics, patterns | TS handbook, Matt Pocock |

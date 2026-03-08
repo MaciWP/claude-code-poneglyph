@@ -32,16 +32,6 @@ Usar esta matriz para evaluar codigo contra multiples fuentes.
 | Generics | Constrain with `extends` | Total TypeScript |
 | Enums | Use union types | ts-reset |
 
-## Category: React
-
-| Aspecto | Best Practice | Source |
-|---------|---------------|--------|
-| Components | Function components | React docs |
-| Data fetching | React Query/SWR | Kent C. Dodds |
-| Forms | Controlled + schema validation | React Hook Form |
-| State | Lift up, then context | Dan Abramov |
-| Effects | Prefer events over effects | React docs |
-
 ## Category: Security
 
 | Aspecto | Best Practice | Source |

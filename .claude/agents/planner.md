@@ -73,7 +73,7 @@ Glob(".claude/commands/*.md")
       "keywords": ["typescript", "async", "types", "interface"],
       "forAgents": ["builder"]
     },
-    "security-coding": {
+    "security-review": {
       "keywords": ["security", "auth", "validation", "owasp"],
       "forAgents": ["builder"]
     },
@@ -115,7 +115,7 @@ Glob(".claude/commands/*.md")
 
 | Tarea | Tipo | Agente | Skills Sugeridas | Razon |
 |-------|------|--------|------------------|-------|
-| Crear servicio auth | Implementar | `builder` | security-coding, typescript-patterns | Auth requiere patrones seguros |
+| Crear servicio auth | Implementar | `builder` | security-review, typescript-patterns | Auth requiere patrones seguros |
 | Refactorizar funcion | Implementar | `builder` | refactoring-patterns | Refactoring es implementacion |
 | WebSocket reconnection | Implementar | `builder` | websocket-patterns, bun-best-practices | Dominio especifico |
 | Revisar codigo auth | Validar | `reviewer` | security-review | Security necesita checklist |
@@ -183,7 +183,7 @@ Score = (tareas_en_waves_paralelas / total_tareas) x 100
 Implementar [QUE] en [DONDE]. Afecta N archivos, riesgo [NIVEL].
 
 **Agentes Base**: builder, reviewer, error-analyzer
-**Skills Sugeridas**: typescript-patterns, security-coding, security-review
+**Skills Sugeridas**: typescript-patterns, security-review, security-review
 **Parallel Efficiency Score**: 83%
 
 ## Execution Roadmap
@@ -197,7 +197,7 @@ Implementar [QUE] en [DONDE]. Afecta N archivos, riesgo [NIVEL].
 ### SEQ-2: Core
 | # | Archivo | Accion | Agente | Skills | Deps |
 |---|---------|--------|--------|--------|------|
-| 2.1 | services/auth.ts | Create | builder | security-coding, typescript-patterns | 1.1, 1.2 |
+| 2.1 | services/auth.ts | Create | builder | security-review, typescript-patterns | 1.1, 1.2 |
 
 ### CHECKPOINT-3: Validation
 | # | Tipo | Agente | Skills | Scope |
@@ -214,7 +214,7 @@ Implementar [QUE] en [DONDE]. Afecta N archivos, riesgo [NIVEL].
     "totalTasks": 4,
     "parallelEfficiency": 0.83,
     "agentsUsed": ["builder", "reviewer"],
-    "skillsUsed": ["typescript-patterns", "security-coding", "security-review"]
+    "skillsUsed": ["typescript-patterns", "security-review", "security-review"]
   },
   "waves": [
     {
@@ -254,7 +254,7 @@ Implementar [QUE] en [DONDE]. Afecta N archivos, riesgo [NIVEL].
           "file": "src/services/auth.ts",
           "action": "Create",
           "agent": "builder",
-          "suggestedSkills": ["security-coding", "typescript-patterns"],
+          "suggestedSkills": ["security-review", "typescript-patterns"],
           "skillReason": "Auth service requiere patrones seguros",
           "dependencies": ["1.1", "1.2"],
           "complexity": 25
@@ -425,7 +425,7 @@ Implementar sistema de autenticacion JWT con login, logout, refresh tokens y mid
 Afecta 5 archivos, riesgo MEDIUM (seguridad).
 
 **Agentes Base**: builder, reviewer
-**Skills Sugeridas**: typescript-patterns, security-coding, security-review, bun-best-practices
+**Skills Sugeridas**: typescript-patterns, security-review, security-review, bun-best-practices
 **Parallel Efficiency Score**: 75%
 
 ## Execution Roadmap
@@ -434,12 +434,12 @@ Afecta 5 archivos, riesgo MEDIUM (seguridad).
 | # | Archivo | Accion | Agente | Skills | Razon |
 |---|---------|--------|--------|--------|-------|
 | 1.1 | src/types/auth.ts | Create | builder | typescript-patterns | Types base |
-| 1.2 | src/config/jwt.ts | Create | builder | security-coding | Config segura |
+| 1.2 | src/config/jwt.ts | Create | builder | security-review | Config segura |
 
 ### SEQ-2: Core Service
 | # | Archivo | Accion | Agente | Skills | Deps |
 |---|---------|--------|--------|--------|------|
-| 2.1 | src/services/auth.ts | Create | builder | security-coding, typescript-patterns | 1.1, 1.2 |
+| 2.1 | src/services/auth.ts | Create | builder | security-review, typescript-patterns | 1.1, 1.2 |
 
 ### CHECKPOINT-3: Security Review
 | # | Tipo | Agente | Skills | Scope |
@@ -449,7 +449,7 @@ Afecta 5 archivos, riesgo MEDIUM (seguridad).
 ### PARALLEL-4: Middleware & Routes
 | # | Archivo | Accion | Agente | Skills | Deps |
 |---|---------|--------|--------|--------|------|
-| 4.1 | src/middleware/auth.ts | Create | builder | security-coding, bun-best-practices | 2.1, 3.1 |
+| 4.1 | src/middleware/auth.ts | Create | builder | security-review, bun-best-practices | 2.1, 3.1 |
 | 4.2 | src/routes/auth.ts | Create | builder | bun-best-practices | 2.1, 3.1 |
 
 ### CHECKPOINT-5: Final Review

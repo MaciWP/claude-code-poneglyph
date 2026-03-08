@@ -41,62 +41,52 @@ When you run `/tools`, display:
 🛠️  AVAILABLE TOOLS
 ═══════════════════════════════════════════════════════════════════════════════
 
-## 🎯 SKILLS (9 available)
+## 🎯 SKILLS (24 available)
 
-1. adaptive-meta-orchestrator ⭐ (CRITICAL - Always activate first)
-   Master orchestrator, coordinates all workflows
-   Activation: Skill(adaptive-meta-orchestrator)
-
-2. skill-builder
-   Create new skills based on patterns
-   Activation: Skill(skill-builder)
-
-3. task-decomposer
-   Break complex tasks into subtasks
-   Activation: Skill(task-decomposer)
-
-4. task-router
-   Route tasks to optimal agents
-   Activation: Skill(task-router)
-
-5. code-analyzer
-   Code quality and complexity analysis
-   Activation: Skill(code-analyzer)
-
-6. security-auditor
-   Security vulnerability detection
-   Activation: Skill(security-auditor)
-
-7. orchestrator-observability
-   Performance monitoring and metrics
-   Activation: Skill(orchestrator-observability)
-
-8. spec-architect-agent
-   Spec-driven development
-   Activation: Skill(spec-architect-agent)
-
-9. utils-builder
-   Utility function generation
-   Activation: Skill(utils-builder)
+1. anti-hallucination - Validation patterns to prevent hallucination
+2. api-design - REST API design patterns
+3. bun-best-practices - Bun runtime best practices
+4. code-quality - Code quality analysis
+5. code-style-enforcer - Code style enforcement
+6. config-validator - Configuration validation
+7. create-agent - Create new agents
+8. create-skill - Create new skills
+9. database-patterns - Database access patterns
+10. diagnostic-patterns - Diagnostic and debugging patterns
+11. expert-patterns - Best practices comparison from authoritative sources
+12. logging-strategy - Logging strategy
+13. lsp-operations - LSP navigation operations
+14. performance-review - Performance review patterns
+15. playwright-browser - Browser automation with Playwright
+16. prompt-engineer - Prompt engineering patterns
+17. recovery-strategies - Recovery strategies for failures
+18. refactoring-patterns - Refactoring patterns
+19. retry-patterns - Retry and circuit breaker patterns
+20. security-review - Security review patterns
+21. sync-claude - Sync claude configuration
+22. testing-strategy - Testing strategy and patterns
+23. typescript-patterns - TypeScript best practices
+24. websocket-patterns - WebSocket patterns
 
 ---
 
-## 🤖 AGENTS (3 available)
+## 🤖 AGENTS (15 available)
 
-1. bug-documenter
-   Maintains AI_BUGS_KNOWLEDGE.md
-   Documents bugs, root causes, solutions, prevention patterns
-   Activation: Task(subagent_type='bug-documenter', prompt='...')
-
-2. decision-documenter
-   Maintains AI_PRODUCT_DECISIONS.md
-   Documents feature specs, design decisions, architecture
-   Activation: Task(subagent_type='decision-documenter', prompt='...')
-
-3. progress-tracker
-   Maintains AI_PROGRESS_TRACKER.md
-   Tracks feature completion, blockers, priorities
-   Activation: Task(subagent_type='progress-tracker', prompt='...')
+1. architect - Feature design and architecture
+2. bug-documenter - Document bugs, root causes, solutions
+3. builder - Implement code changes
+4. code-quality - Code quality analysis (background)
+5. command-loader - Load and manage commands
+6. error-analyzer - Analyze and diagnose errors
+7. knowledge-sync - Sync knowledge across sessions
+8. merge-resolver - Resolve merge conflicts
+9. planner - Plan complex implementations
+10. refactor-agent - Refactoring operations
+11. reviewer - Code review (background)
+12. scout - Explore and discover codebase
+13. security-auditor - Security vulnerability detection
+14. task-decomposer - Break complex tasks into subtasks
+15. test-watcher - Watch and validate tests
 
 ---
 
@@ -158,49 +148,78 @@ const commands = await Glob({ pattern: '.claude/commands/*.md' });
 ### `/tools skills`
 
 ```
-🎯 SKILLS (9 available)
+🎯 SKILLS (24 available)
 
-Master Orchestration:
-• adaptive-meta-orchestrator ⭐ - Always activate first
-  Coordinates all workflows, auto-detects stack
+Core Patterns:
+• typescript-patterns - TypeScript best practices
+• bun-best-practices - Bun runtime patterns
+• api-design - REST API design
+• code-style-enforcer - Code style enforcement
+• code-quality - Code quality analysis
 
-Decomposition & Routing:
-• task-decomposer - Break complex tasks into subtasks
-• task-router - Route tasks to optimal agents
+Security & Reliability:
+• security-review - Security review patterns
+• retry-patterns - Retry and circuit breaker
+• recovery-strategies - Recovery strategies
+• config-validator - Configuration validation
 
-Analysis & Quality:
-• code-analyzer - Code quality and complexity analysis
-• security-auditor - Security vulnerability detection
+Testing & Debugging:
+• testing-strategy - Testing patterns
+• diagnostic-patterns - Debugging patterns
+• logging-strategy - Logging strategy
+• anti-hallucination - Validation patterns
+• performance-review - Performance review
 
-Builders:
-• skill-builder - Create new skills
-• utils-builder - Generate utility functions
-• spec-architect-agent - Spec-driven development
+Data & Communication:
+• database-patterns - Database access patterns
+• websocket-patterns - WebSocket patterns
 
-Monitoring:
-• orchestrator-observability - Performance metrics
+Tooling:
+• playwright-browser - Browser automation
+• lsp-operations - LSP navigation
+• create-agent - Create new agents
+• create-skill - Create new skills
+• sync-claude - Sync claude config
+• prompt-engineer - Prompt engineering
+• expert-patterns - Best practices comparison
+• refactoring-patterns - Refactoring patterns
 
 Activation: Skill(name)
-Example: Skill(adaptive-meta-orchestrator)
+Example: Skill(typescript-patterns)
 ```
 
 ### `/tools agents`
 
 ```
-🤖 AGENTS (3 available)
+🤖 AGENTS (15 available)
 
-Documentation Agents:
-• bug-documenter - AI_BUGS_KNOWLEDGE.md
-  Logs bugs, root causes, solutions, prevention patterns
+Implementation:
+• builder - Implement code changes
+• refactor-agent - Refactoring operations
+• merge-resolver - Resolve merge conflicts
 
-• decision-documenter - AI_PRODUCT_DECISIONS.md
-  Logs feature specs, design decisions, architecture
+Planning & Design:
+• architect - Feature design and architecture
+• planner - Plan complex implementations
+• task-decomposer - Break tasks into subtasks
 
-• progress-tracker - AI_PROGRESS_TRACKER.md
-  Tracks completion %, blockers, priorities
+Review & Quality:
+• reviewer - Code review
+• code-quality - Code quality analysis
+• security-auditor - Security vulnerability detection
+• test-watcher - Watch and validate tests
+
+Analysis & Discovery:
+• scout - Explore codebase
+• error-analyzer - Analyze errors
+• bug-documenter - Document bugs
+
+Utilities:
+• command-loader - Load and manage commands
+• knowledge-sync - Sync knowledge across sessions
 
 Activation: Task(subagent_type='agent-name', prompt='task description')
-Example: Task(subagent_type='bug-documenter', prompt='Document auth bug')
+Example: Task(subagent_type='builder', prompt='Implement validation logic')
 ```
 
 ### `/tools commands`

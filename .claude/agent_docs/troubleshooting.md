@@ -82,7 +82,7 @@ curl http://localhost:8080/api/health
 # 2. Si CORS, verificar config
 # server/src/index.ts
 app.use(cors({
-  origin: ['http://localhost:5173']
+  origin: [process.env.ALLOWED_ORIGIN || 'http://localhost:3000']
 }))
 ```
 

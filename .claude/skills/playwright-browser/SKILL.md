@@ -2,7 +2,7 @@
 name: playwright-browser
 version: 1.0.0
 keywords: [playwright, browser, screenshot, pdf, e2e, ui, visual, qa, user story, automation]
-for_agents: [browser-qa, builder]
+for_agents: [builder]
 description: Playwright browser automation for UI testing - CLI commands, programmatic API, and user story YAML schema.
 type: capability-uplift
 disable-model-invocation: false
@@ -35,9 +35,9 @@ Playwright is used via `npx` (NOT added to package.json). It is an on-demand too
 ### CLI Examples
 
 ```bash
-npx playwright screenshot http://localhost:5173 ./evidence/home.png
-npx playwright screenshot --full-page http://localhost:5173 ./evidence/home-full.png
-npx playwright pdf http://localhost:5173 ./evidence/home.pdf
+npx playwright screenshot $TARGET_URL ./evidence/home.png
+npx playwright screenshot --full-page $TARGET_URL ./evidence/home-full.png
+npx playwright pdf $TARGET_URL ./evidence/home.pdf
 ```
 
 ## Programmatic API with Bun
@@ -53,7 +53,7 @@ const context = await browser.newContext({
 });
 const page = await context.newPage();
 
-await page.goto('http://localhost:5173');
+await page.goto('$TARGET_URL');
 await page.waitForSelector('textarea');
 await page.fill('textarea', 'Hello, test message');
 await page.click('button[type="submit"]');
@@ -67,7 +67,7 @@ await browser.close();
 
 | Action | Playwright Method | Example |
 |--------|-------------------|---------|
-| navigate | `page.goto(url)` | `await page.goto('http://localhost:5173')` |
+| navigate | `page.goto(url)` | `await page.goto('$TARGET_URL')` |
 | click | `page.click(selector)` | `await page.click('button[type="submit"]')` |
 | type | `page.type(selector, text)` | `await page.type('input', 'hello')` |
 | fill | `page.fill(selector, text)` | `await page.fill('textarea', 'message')` |
@@ -95,7 +95,7 @@ Stories are declarative YAML files stored in `.claude/ui-stories/`.
 ```yaml
 name: string              # Unique identifier for the story
 description: string       # What this story verifies
-url: string               # Base URL (e.g., http://localhost:5173)
+url: string               # Base URL (e.g., $TARGET_URL)
 viewport:
   width: number           # Viewport width in pixels
   height: number          # Viewport height in pixels

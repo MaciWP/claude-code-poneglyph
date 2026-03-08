@@ -15,7 +15,7 @@ description: Implement a spec from .specs/ directory - reads full spec document 
 **Examples**:
 ```
 /implement-spec SPEC-014
-/implement-spec frontend-architecture-refactor
+/implement-spec orchestration-hooks-refactor
 /implement-spec session-management
 ```
 
@@ -124,11 +124,11 @@ Scenario: List users successfully
 // Extract from spec document
 const spec = {
   id: 'SPEC-014',
-  title: 'Frontend Architecture Refactor',
+  title: 'Orchestration Hooks Refactor',
   design: {
     types: [...],      // TypeScript interfaces/types
     api: [...],        // Endpoints if any
-    components: [...], // React components if any
+    modules: [...],    // Modules/services if any
     patterns: [...]    // Design patterns to follow
   },
   bdd: [...],          // Gherkin scenarios
@@ -201,41 +201,34 @@ The command searches for specs in this order:
 
 | Spec Type | Output Location |
 |-----------|-----------------|
-| Types/Interfaces | `server/src/types/` or `web/src/types/` |
-| Services | `server/src/services/` |
-| Store slices | `web/src/store/slices/` |
-| Components | `web/src/components/` |
-| Hooks | `web/src/hooks/` |
-| API routes | `server/src/routes/` |
-| Tests | `tests/` or `*.test.ts` adjacent |
+| Types/Interfaces | `src/types/` or adjacent to module |
+| Services | `src/services/` |
+| Hooks | `.claude/hooks/` |
+| Agents | `.claude/agents/` |
+| Skills | `.claude/skills/` |
+| Tests | `*.test.ts` adjacent |
 
 ---
 
 ## Examples
 
-### Example 1: Implement SPEC-014 (Zustand)
+### Example 1: Implement SPEC-014 (Hook Validators)
 
 ```
 /implement-spec SPEC-014
 ```
 
-**Reads**: `.specs/frontend-architecture-refactor.md`
+**Reads**: `.specs/orchestration-hooks-refactor.md`
 
 **Generates**:
 ```
-web/src/store/
-├── index.ts              # Main store with slices
-├── slices/
-│   ├── sessionSlice.ts   # From Design 4.2
-│   ├── chatSlice.ts      # From Design 4.2
-│   ├── settingsSlice.ts  # From Design 4.2
-│   └── ...
-└── middleware/
-    └── devtools.ts       # From Design 4.3
-
-tests/store/
-├── sessionSlice.test.ts  # From BDD scenarios
-└── ...
+.claude/hooks/
+├── validators/
+│   ├── stop/
+│   │   └── validate-tests-pass.ts   # From Design 4.2
+│   └── pre/
+│       └── validate-input.ts        # From Design 4.2
+└── validators.test.ts               # From BDD scenarios
 ```
 
 ---

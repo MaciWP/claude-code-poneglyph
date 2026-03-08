@@ -16,7 +16,7 @@
       "name": "auth-security",
       "paths": ["**/auth/**", "**/security/**"],
       "keywords": ["auth", "jwt", "token", "password", "session", "security"],
-      "contexts": ["security-coding", "typescript-patterns"]
+      "contexts": ["security-review", "typescript-patterns"]
     },
     {
       "name": "database",

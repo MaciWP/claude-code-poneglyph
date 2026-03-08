@@ -50,12 +50,12 @@ load .claude/commands/load-security.md
 ### Load Skill
 ```
 load skill:typescript-patterns
-load skill:security-coding
+load skill:security-review
 ```
 
 ### Load Multiple Skills (max 3)
 ```
-load skills: typescript-patterns, security-coding, bun-best-practices
+load skills: typescript-patterns, security-review, bun-best-practices
 ```
 
 ## Processing Flow
@@ -162,7 +162,7 @@ When loading a skill, the agent:
 ### Multiple Skills (Max 3, 25KB Total)
 
 ```
-load skills: typescript-patterns, security-coding, bun-best-practices
+load skills: typescript-patterns, security-review, bun-best-practices
 ```
 
 The agent:
@@ -184,7 +184,7 @@ If skill not found, return available skills:
     "message": "Skill 'unicorn-patterns' not found",
     "availableSkills": [
       "typescript-patterns",
-      "security-coding",
+      "security-review",
       "bun-best-practices"
     ]
   }
@@ -313,11 +313,11 @@ If skill not found, return available skills:
 
 ### Example 3: Load Multiple Skills
 
-**Request**: `load skills: typescript-patterns, security-coding`
+**Request**: `load skills: typescript-patterns, security-review`
 
 **Process**:
 1. Load typescript-patterns (8KB)
-2. Load security-coding (8KB)
+2. Load security-review (8KB)
 3. Total: 16KB < 25KB limit
 4. Return JSON with both skills
 
@@ -345,7 +345,7 @@ sequenceDiagram
     participant B as Builder
 
     U->>L: "implement auth JWT"
-    L->>CL: load skill:security-coding
+    L->>CL: load skill:security-review
     CL-->>L: {success: true, skills: [...]}
     L->>CL: load skill:typescript-patterns
     CL-->>L: {success: true, skills: [...]}

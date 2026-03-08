@@ -6,7 +6,7 @@ Antes de delegar a builder/reviewer, detectar keywords y cargar skills relevante
 
 | Keywords en Prompt | Skill a Cargar |
 |--------------------|----------------|
-| auth, jwt, password, security, token, session | `security-coding` |
+| auth, jwt, password, security, token, session | `security-review` |
 | database, sql, drizzle, migration, query, orm, transaction | `database-patterns` |
 | test, mock, tdd, coverage, unit, integration, fixture | `testing-strategy` |
 | api, endpoint, route, rest, openapi, swagger, pagination | `api-design` |
@@ -33,12 +33,12 @@ Keywords detectados: `endpoint`, `login`, `jwt`, `password`, `validacion`
 
 Skills matcheadas:
 1. `api-design` (endpoint)
-2. `security-coding` (jwt, password)
+2. `security-review` (jwt, password)
 
 Instruccion al builder:
 
 ```
-Cargar skills: api-design, security-coding
+Cargar skills: api-design, security-review
 Contexto: Endpoint de login requiere patrones REST y seguridad JWT
 ```
 
@@ -55,5 +55,5 @@ Si hay mas de 3 matches:
 |--------|----------------------|
 | builder | Todas las matcheadas (max 3) |
 | reviewer | code-quality + matcheadas (max 2) |
-| architect | api-design + security-coding si aplica |
+| architect | api-design + security-review si aplica |
 | error-analyzer | retry-patterns + recovery-strategies |

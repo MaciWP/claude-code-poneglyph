@@ -78,7 +78,7 @@ Detectar keywords en `$ARGUMENTS` y asignar skills:
 
 | Keywords | Skill |
 |----------|-------|
-| auth, jwt, password, security, token | `security-coding` |
+| auth, jwt, password, security, token | `security-review` |
 | database, sql, drizzle, migration, query | `database-patterns` |
 | test, mock, tdd, coverage | `testing-strategy` |
 | api, endpoint, route, rest, openapi | `api-design` |

@@ -14,7 +14,7 @@ activation:
     - csrf
     - audit
     - secrets
-for_agents: [reviewer]
+for_agents: [reviewer, builder]
 version: "1.0"
 ---
 

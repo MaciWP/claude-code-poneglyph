@@ -45,7 +45,6 @@ Antes de generar cualquier plan, consultar estas fuentes. **No suponer nada.**
 | Archivo | Propósito | Qué buscar |
 |---------|-----------|------------|
 | `server/package.json` | Stack backend | Versiones Elysia, Bun, deps |
-| `web/package.json` | Stack frontend | Versiones React, Vite, deps |
 | `tsconfig.json` | Config TypeScript | `strict: true`? Paths? |
 | `Glob('src/**/*')` | Estructura dirs | Arquitectura real del proyecto |
 
@@ -70,7 +69,7 @@ Grep('class X', 'src/')  # ¿Ya hay implementación?
 
 | Condición | Acción OBLIGATORIA |
 |-----------|-------------------|
-| API de framework (Elysia, React, Bun) | Consultar documentación oficial |
+| API de framework (Elysia, Bun) | Consultar documentación oficial |
 | Librería poco conocida (<10k stars) | WebSearch "[library] changelog 2025 2026" |
 | Patrón de diseño/arquitectura | WebSearch + WebFetch de repo >1k stars |
 | Cualquier duda sobre sintaxis/API | Documentación oficial ANTES de escribir código |
@@ -110,7 +109,6 @@ Antes de usar cualquier API, verificar:
 | `google-generativeai` | `google-genai` (nueva API) |
 | `OpenAIClient` Azure v1 | `AzureOpenAIClient` v2 |
 | Callbacks (`callback(err, result)`) | async/await |
-| Class components React | Functional components + hooks |
 | `var` | `const`/`let` |
 | `require()` | `import` |
 | `any` types | Tipos específicos o `unknown` |
@@ -131,7 +129,6 @@ Si encuentras estos patrones en docs/ejemplos, **buscar alternativa**:
 | Keywords detectados | Acción |
 |---------------------|--------|
 | elysia, backend, api, endpoint | Skill: `typescript-patterns` + `bun-best-practices` |
-| react, frontend, component | Skill: `typescript-patterns` |
 | bun, runtime, server | Skill: `bun-best-practices` |
 | test, coverage, vitest | `/load-testing-strategy` |
 | security, auth, jwt | `/load-security` |
@@ -511,7 +508,6 @@ Afecta [N] archivos, [M] son nuevos, riesgo [BAJO/MEDIO/ALTO].
 | API/Framework | Versión en proyecto | Versión consultada | Breaking changes? |
 |---------------|--------------------|--------------------|-------------------|
 | Elysia | 1.2.3 | 1.2.3 (docs oficiales) | No |
-| React | 18.2.0 | 18.2.0 (docs oficiales) | No |
 
 ### D. Gap Analysis
 

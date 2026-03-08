@@ -100,6 +100,26 @@
             "command": "bun run .claude/hooks/validators/typescript/import-validator.ts"
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun run .claude/hooks/validators/typescript/syntax-validator.ts",
+            "timeout": 10000
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun run .claude/hooks/validators/format/json-validator.ts",
+            "timeout": 5000
+          }
+        ]
       }
     ],
     "Stop": [

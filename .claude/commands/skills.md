@@ -58,7 +58,7 @@ Segun SPEC-009, las skills deben organizarse asi:
 |   |-- typescript-patterns/
 |   |-- bun-best-practices/
 |   |-- websocket-patterns/
-|   |-- security-coding/
+|   |-- security-review/
 |   |-- refactoring-patterns/
 |-- reviewer/             # Skills para reviewer
 |   |-- security-review/
@@ -142,7 +142,7 @@ TIP: Usa las keywords para auto-trigger de skills
 | `typescript-patterns` | Type safety, async/await, generics | typescript, async, promise, interface |
 | `bun-best-practices` | Bun runtime, Elysia patterns | bun, elysia, test, shell |
 | `websocket-patterns` | Real-time, streaming | websocket, ws, realtime, streaming |
-| `security-coding` | Secure auth, validation, encryption | security, auth, jwt, password |
+| `security-review` | Secure auth, validation, encryption | security, auth, jwt, password |
 | `refactoring-patterns` | SOLID, extract, clean code | refactor, extract, SOLID, clean |
 | `config-validator` | Env vars, Zod validation | env, config, zod, validation |
 | `logging-strategy` | Structured logging, context | log, logging, structured, json |
@@ -233,8 +233,8 @@ Ejemplo de carga:
 ```
 Lead -> "Implementar auth service"
 Planner detecta: "auth" keyword
-Sugiere: security-coding skill
-Lead -> Task(builder, prompt, skills=[security-coding])
+Sugiere: security-review skill
+Lead -> Task(builder, prompt, skills=[security-review])
 Builder recibe skill content en prompt
 ```
 

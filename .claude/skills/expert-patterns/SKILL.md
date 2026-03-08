@@ -43,7 +43,6 @@ Compara código del proyecto con best practices de múltiples fuentes autorizada
 |---------|-----------|
 | `knowledge-base/bun-patterns.md` | Bun runtime patterns |
 | `knowledge-base/elysia-patterns.md` | Elysia framework |
-| `knowledge-base/react-patterns.md` | React modern |
 | `knowledge-base/typescript-patterns.md` | TypeScript advanced |
 | `knowledge-base/owasp-checklist.md` | Security checklist |
 | `knowledge-base/repo-patterns.md` | Repos exitosos |
