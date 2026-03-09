@@ -1,30 +1,28 @@
 #!/usr/bin/env bun
 /**
- * Lead Enforcement Hook
- * Bloquea herramientas prohibidas cuando CLAUDE_LEAD_MODE=true
- * El Lead debe delegar a builder/scout en lugar de usar estas tools directamente.
+ * Lead Enforcement Hook (PreToolUse)
+ *
+ * WARN-ONLY: nunca bloquea (siempre exit 0).
+ * Emite un warning a stderr cuando la sesion principal usa tools directas
+ * en lugar de delegar a subagentes. Es solo un recordatorio, no un bloqueador.
+ *
+ * Las reglas reales de orquestacion estan en rules/lead-orchestrator.md.
  */
 
-const BLOCKED_TOOLS = ['Read', 'Edit', 'Write', 'Bash', 'Glob', 'Grep']
-
-async function main() {
-  // Solo activar si CLAUDE_LEAD_MODE está habilitado
-  if (process.env.CLAUDE_LEAD_MODE !== 'true') {
-    process.exit(0) // ALLOW - no enforcement mode
+async function main(): Promise<void> {
+  if (process.env.CLAUDE_LEAD_MODE !== "true") {
+    process.exit(0);
   }
 
-  const input = JSON.parse(await Bun.stdin.text())
-  const toolName = input.tool_name
+  const input = JSON.parse(await Bun.stdin.text());
+  const tool = input.tool_name;
+  const directTools = ["Read", "Edit", "Write", "Bash", "Glob", "Grep"];
 
-  if (BLOCKED_TOOLS.includes(toolName)) {
-    console.error(`❌ Lead no puede usar ${toolName}. Delega a builder/scout.`)
-    process.exit(2) // BLOCK
+  if (directTools.includes(tool)) {
+    console.error(`⚠️ Lead: ${tool} directo. Considera delegar.`);
   }
 
-  process.exit(0) // ALLOW
+  process.exit(0);
 }
 
-main().catch((err) => {
-  console.error('Hook error:', err)
-  process.exit(0) // Allow on error to not break workflow
-})
+main().catch(() => process.exit(0));
