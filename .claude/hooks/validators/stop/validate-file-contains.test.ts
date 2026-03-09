@@ -11,7 +11,7 @@ const STOP_EVENT_JSON = JSON.stringify({
 async function runValidator(
   env: Record<string, string> = {},
 ): Promise<{ exitCode: number; stderr: string }> {
-  const proc = Bun.spawn(["bun", VALIDATOR_PATH], {
+  const proc = Bun.spawn([process.execPath, VALIDATOR_PATH], {
     stdin: new Blob([STOP_EVENT_JSON]),
     stdout: "pipe",
     stderr: "pipe",

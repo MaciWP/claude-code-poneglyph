@@ -84,7 +84,7 @@ async function getSubProjects(root: string): Promise<SubProject[]> {
 // =============================================================================
 
 function buildTestCommand(testPath?: string): string[] {
-  const args = ["bun", "test"];
+  const args = [process.execPath, "test"];
   if (testPath) {
     args.push(testPath);
   }

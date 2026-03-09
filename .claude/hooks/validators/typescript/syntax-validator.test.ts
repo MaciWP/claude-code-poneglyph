@@ -18,7 +18,7 @@ async function runValidator(
 ): Promise<{ exitCode: number; stderr: string }> {
   const inputJson = JSON.stringify(input);
 
-  const proc = Bun.spawn(["bun", VALIDATOR_PATH], {
+  const proc = Bun.spawn([process.execPath, VALIDATOR_PATH], {
     stdin: new Blob([inputJson]),
     stdout: "pipe",
     stderr: "pipe",

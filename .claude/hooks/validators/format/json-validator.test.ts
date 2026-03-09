@@ -13,7 +13,7 @@ interface TestInput {
 }
 
 async function runValidator(input: TestInput): Promise<{ exitCode: number; stderr: string }> {
-  const proc = Bun.spawn(['bun', 'run', VALIDATOR_PATH], {
+  const proc = Bun.spawn([process.execPath, 'run', VALIDATOR_PATH], {
     stdin: 'pipe',
     stdout: 'pipe',
     stderr: 'pipe',

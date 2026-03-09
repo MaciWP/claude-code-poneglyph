@@ -5,6 +5,7 @@
  * Runs tsc --noEmit to check for syntax errors in TypeScript files.
  */
 
+import { dirname, join } from "path";
 import {
   EXIT_CODES,
   readStdin,
@@ -24,7 +25,8 @@ async function main(): Promise<void> {
     process.exit(EXIT_CODES.PASS);
   }
 
-  const tscPath = Bun.which("tsc") || "./node_modules/.bin/tsc";
+  const tscPath =
+    Bun.which("tsc") || join(dirname(process.execPath), "tsc");
 
   const proc = Bun.spawn(
     [
