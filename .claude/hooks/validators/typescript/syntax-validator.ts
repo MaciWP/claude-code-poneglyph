@@ -24,9 +24,11 @@ async function main(): Promise<void> {
     process.exit(EXIT_CODES.PASS);
   }
 
+  const tscPath = Bun.which("tsc") || "./node_modules/.bin/tsc";
+
   const proc = Bun.spawn(
     [
-      "tsc",
+      tscPath,
       "--noEmit",
       "--isolatedModules",
       "--skipLibCheck",
