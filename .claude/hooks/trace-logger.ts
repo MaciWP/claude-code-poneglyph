@@ -14,31 +14,58 @@ import { mkdirSync } from "fs";
 import { homedir } from "os";
 import { join } from "path";
 
-interface TraceEntry {
+import type { TranscriptMessage } from "./lib/trace-extract";
+import {
+  extractFirstUserPrompt,
+  extractAgentsAndSkills,
+} from "./lib/trace-extract";
+import {
+  estimateTokens,
+  detectModel,
+  calculateCost,
+  calculateDuration,
+  detectStatus,
+  countToolCalls,
+  countFilesChanged,
+} from "./lib/trace-metrics";
+
+export type { ContentBlock, TranscriptMessage } from "./lib/trace-extract";
+
+export {
+  getContentLength,
+  extractFirstUserPrompt,
+  extractAgentsAndSkills,
+} from "./lib/trace-extract";
+
+export {
+  MODEL_PRICING,
+  estimateTokens,
+  detectModel,
+  calculateCost,
+  calculateDuration,
+  detectStatus,
+  countToolCalls,
+  countFilesChanged,
+} from "./lib/trace-metrics";
+
+export interface TraceEntry {
   ts: string;
   sessionId: string;
   prompt: string;
   agents: string[];
   skills: string[];
   tokens: number;
+  inputTokens: number;
+  outputTokens: number;
   costUsd: number;
   durationMs: number;
+  model: string;
   status: string;
+  toolCalls: number;
+  filesChanged: number;
 }
 
-interface ContentBlock {
-  type: string;
-  text?: string;
-  name?: string;
-  input?: Record<string, unknown>;
-}
-
-interface TranscriptMessage {
-  role: string;
-  content: string | ContentBlock[];
-}
-
-interface StopHookInput {
+export interface StopHookInput {
   session_id?: string;
   last_assistant_message?: string;
   transcript?: TranscriptMessage[];
@@ -57,51 +84,44 @@ async function consumeStdin(): Promise<string> {
   });
 }
 
-function extractFirstUserPrompt(transcript: TranscriptMessage[]): string {
-  for (const msg of transcript) {
-    if (msg.role !== "user") continue;
+function buildTrace(
+  input: StopHookInput,
+  transcript: TranscriptMessage[],
+): TraceEntry {
+  const prompt = extractFirstUserPrompt(transcript);
+  const { agents, skills } = extractAgentsAndSkills(transcript);
+  const { inputTokens, outputTokens } = estimateTokens(transcript);
+  const tokens = inputTokens + outputTokens;
+  const model = detectModel(transcript);
 
-    if (typeof msg.content === "string") {
-      return msg.content.slice(0, 200);
-    }
-
-    if (Array.isArray(msg.content)) {
-      const textBlock = msg.content.find(
-        (b: ContentBlock) => b.type === "text" && b.text,
-      );
-      if (textBlock?.text) {
-        return textBlock.text.slice(0, 200);
-      }
-    }
-  }
-
-  return "unknown";
+  return {
+    ts: new Date().toISOString(),
+    sessionId: input.session_id || "unknown",
+    prompt,
+    agents,
+    skills,
+    tokens,
+    inputTokens,
+    outputTokens,
+    costUsd: calculateCost(inputTokens, outputTokens, model),
+    durationMs: calculateDuration(tokens),
+    model,
+    status: detectStatus(transcript, input.last_assistant_message || ""),
+    toolCalls: countToolCalls(transcript),
+    filesChanged: countFilesChanged(transcript),
+  };
 }
 
-function extractAgentsAndSkills(transcript: TranscriptMessage[]): {
-  agents: string[];
-  skills: string[];
-} {
-  const agents = new Set<string>();
-  const skills = new Set<string>();
+async function writeTrace(trace: TraceEntry): Promise<void> {
+  const tracesDir = join(homedir(), ".claude", "traces");
+  mkdirSync(tracesDir, { recursive: true });
 
-  for (const msg of transcript) {
-    if (msg.role !== "assistant") continue;
-    const blocks = Array.isArray(msg.content) ? msg.content : [];
-    for (const block of blocks) {
-      if (block.type !== "tool_use") continue;
-      if (block.name === "Task" || block.name === "Agent") {
-        const agentType = block.input?.subagent_type;
-        if (typeof agentType === "string") agents.add(agentType);
-      }
-      if (block.name === "Skill") {
-        const skillName = block.input?.skill;
-        if (typeof skillName === "string") skills.add(skillName);
-      }
-    }
-  }
+  const dateStr = new Date().toISOString().split("T")[0];
+  const filePath = join(tracesDir, `${dateStr}.jsonl`);
 
-  return { agents: [...agents], skills: [...skills] };
+  const file = Bun.file(filePath);
+  const existing = (await file.exists()) ? await file.text() : "";
+  await Bun.write(filePath, existing + JSON.stringify(trace) + "\n");
 }
 
 async function main(): Promise<void> {
@@ -113,31 +133,8 @@ async function main(): Promise<void> {
 
     const input: StopHookInput = JSON.parse(raw);
     const transcript = input.transcript || [];
-
-    const prompt = extractFirstUserPrompt(transcript);
-    const { agents, skills } = extractAgentsAndSkills(transcript);
-
-    const trace: TraceEntry = {
-      ts: new Date().toISOString(),
-      sessionId: input.session_id || "unknown",
-      prompt,
-      agents,
-      skills,
-      tokens: 0,
-      costUsd: 0,
-      durationMs: 0,
-      status: "completed",
-    };
-
-    const tracesDir = join(homedir(), ".claude", "traces");
-    mkdirSync(tracesDir, { recursive: true });
-
-    const dateStr = new Date().toISOString().split("T")[0];
-    const filePath = join(tracesDir, `${dateStr}.jsonl`);
-
-    const file = Bun.file(filePath);
-    const existing = (await file.exists()) ? await file.text() : "";
-    await Bun.write(filePath, existing + JSON.stringify(trace) + "\n");
+    const trace = buildTrace(input, transcript);
+    await writeTrace(trace);
   } catch {
     // Never block - trace logging is best-effort
   }

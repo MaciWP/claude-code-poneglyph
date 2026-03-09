@@ -11,20 +11,29 @@ Calcular complejidad antes de delegar para determinar si requiere planner.
 | **Dependencias** | 20% | 0-1 | 2-3 | 4+ |
 | **Seguridad** | 20% | Ninguna | Data | Auth/Crypto |
 | **Integraciones** | 20% | 0-1 | 2-3 | 4+ |
+| **Worktree** | 0% (modifier) | No aplica | Overlap posible | Paralelo confirmado |
 
 ## Calculo
 
 ```
-score = Σ (factor_value × peso × 20)
+score = Σ (factor_value × peso × 100 / 3)
 ```
 
+Cada factor contribuye maximo ~33 puntos (value=3 × 20% × 33.3). Total maximo = 100.
+
+| Value | × Peso (20%) | × Scale (33.3) | Contribucion |
+|-------|-------------|----------------|-------------|
+| Low (1) | 0.20 | 33.3 | ~7 |
+| Medium (2) | 0.20 | 33.3 | ~13 |
+| High (3) | 0.20 | 33.3 | ~20 |
+
 Ejemplo:
-- Archivos: 3-5 (Medium = 2) × 20% × 20 = 8
-- Dominios: 2-3 (Medium = 2) × 20% × 20 = 8
-- Dependencias: 0-1 (Low = 1) × 20% × 20 = 4
-- Seguridad: Ninguna (Low = 1) × 20% × 20 = 4
-- Integraciones: 0-1 (Low = 1) × 20% × 20 = 4
-- **Total: 28**
+- Archivos: 3-5 (Medium = 2) × 0.20 × 33.3 = ~13
+- Dominios: 2-3 (Medium = 2) × 0.20 × 33.3 = ~13
+- Dependencias: 0-1 (Low = 1) × 0.20 × 33.3 = ~7
+- Seguridad: Ninguna (Low = 1) × 0.20 × 33.3 = ~7
+- Integraciones: 0-1 (Low = 1) × 0.20 × 33.3 = ~7
+- **Total: ~47** → planner opcional
 
 ## Routing por Complejidad
 
@@ -34,27 +43,71 @@ Ejemplo:
 | **30-60** | planner opcional | Considerar plan si hay incertidumbre |
 | **> 60** | planner obligatorio | Requiere roadmap estructurado |
 
+## Worktree Decision
+
+Independiente del score de complejidad, evaluar necesidad de worktree:
+
+| Condicion | Worktree |
+|-----------|----------|
+| Score >60 + planner genera >1 builder | Obligatorio |
+| 2+ builders en paralelo (cualquier score) | Obligatorio |
+| Tarea marcada experimental | Obligatorio |
+| Score <30, single builder | No necesario |
+
+## Model Routing
+
+Seleccion de modelo por agente y complejidad para optimizar costos.
+
+### Model Selection Matrix
+
+| Agente | Complejidad <30 | Complejidad 30-60 | Complejidad >60 |
+|--------|----------------|-------------------|-----------------|
+| builder | sonnet | sonnet | opus |
+| reviewer | sonnet | sonnet | sonnet |
+| planner | sonnet | opus | opus |
+| scout | haiku | sonnet | sonnet |
+| error-analyzer | sonnet | sonnet | opus |
+| architect | opus | opus | opus |
+
+### Cost-per-Agent Defaults
+
+| Agente | Model Default | Razon |
+|--------|--------------|-------|
+| scout | haiku | Solo lectura/exploracion, no genera codigo |
+| reviewer | sonnet | Analisis de calidad, no implementacion |
+| builder | sonnet | Balance costo/calidad para implementacion |
+| planner | opus | Requiere razonamiento profundo |
+| architect | opus | Decisiones de arquitectura criticas |
+
+### Budget Alerts
+
+| Condicion | Accion |
+|-----------|--------|
+| Sesion >$1.00 | Warning al usuario |
+| Sesion >$5.00 | Solicitar confirmacion para continuar |
+| Dia >$20.00 | Revisar patron de uso |
+
 ## Ejemplos
 
 ### Complejidad Baja (< 30)
 > "Anadir validacion de email al endpoint de registro"
 
-- Archivos: 1-2 → 4
-- Dominios: 1 → 4
-- Dependencias: 1 → 4
-- Seguridad: Data → 8
-- Integraciones: 0 → 4
-- **Total: 24** → builder directo
+- Archivos: 1-2 (Low = 1) × 0.20 × 33.3 = ~7
+- Dominios: 1 (Low = 1) × 0.20 × 33.3 = ~7
+- Dependencias: 1 (Low = 1) × 0.20 × 33.3 = ~7
+- Seguridad: Data (Medium = 2) × 0.20 × 33.3 = ~13
+- Integraciones: 0 (Low = 1) × 0.20 × 33.3 = ~7
+- **Total: ~41** → planner opcional
 
 ### Complejidad Alta (> 60)
 > "Implementar sistema de autenticacion OAuth con Google y GitHub"
 
-- Archivos: 6+ → 12
-- Dominios: 4+ (auth, users, sessions, providers) → 12
-- Dependencias: 4+ → 12
-- Seguridad: Auth → 12
-- Integraciones: 4+ → 12
-- **Total: 60** → planner obligatorio
+- Archivos: 6+ (High = 3) × 0.20 × 33.3 = ~20
+- Dominios: 4+ (High = 3) × 0.20 × 33.3 = ~20
+- Dependencias: 4+ (High = 3) × 0.20 × 33.3 = ~20
+- Seguridad: Auth (High = 3) × 0.20 × 33.3 = ~20
+- Integraciones: 4+ (High = 3) × 0.20 × 33.3 = ~20
+- **Total: ~100** → planner obligatorio
 
 ## Proceso
 

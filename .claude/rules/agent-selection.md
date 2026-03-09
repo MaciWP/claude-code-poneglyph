@@ -28,6 +28,7 @@
 | **Plan then Build** | planner -> N builders parallel | complexity >60 |
 | **Build then Review** | builder -> reviewer | mandatory for multi-file changes |
 | **Error then Fix** | error-analyzer -> builder | diagnosis before fix |
+| **Worktree Parallel** | 2+ builders + merge-resolver | Parallel builders con file overlap potencial |
 
 ## Anti-Patterns
 
@@ -38,3 +39,4 @@
 | planner for complexity <30 | overkill, slows execution | builder directo |
 | skipping reviewer after multi-file changes | quality risk | reviewer checkpoint |
 | single builder for >60 complexity without planner | uncoordinated, error-prone | planner -> N builders |
+| 2+ builders paralelos sin worktree en archivos solapados | Conflictos de escritura | Activar `isolation: "worktree"` para cada builder |

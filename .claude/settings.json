@@ -120,6 +120,24 @@
             "timeout": 5000
           }
         ]
+      },
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun run .claude/hooks/validators/context/record-read.ts"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun run .claude/hooks/validators/context/update-after-write.ts"
+          }
+        ]
       }
     ],
     "Stop": [
@@ -150,6 +168,16 @@
           {
             "type": "command",
             "command": "bun .claude/hooks/lead-enforcement.ts",
+            "timeout": 5000
+          }
+        ]
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun run .claude/hooks/validators/context/check-staleness.ts",
             "timeout": 5000
           }
         ]

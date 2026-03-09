@@ -11,6 +11,7 @@ Guia de recuperacion cuando agentes fallan. Define retry budgets, escalacion y d
 | Agent timeout | 1 | Double timeout | Escalate to user |
 | Reviewer BLOCKED | 0 | - | Re-plan with planner |
 | Reviewer NEEDS_CHANGES | 2 | Apply feedback | Escalate to user |
+| Worktree merge conflict | 1 | merge-resolver | Escalate to user |
 
 ## Escalation Decision Tree
 
@@ -53,6 +54,33 @@ Do NOT repeat: Do not access user.id without null check.
 Changed constraints: Add guard clause before accessing user properties.
 ```
 
+## Pattern-Based Recovery
+
+Antes de reintentar, consultar la base de patrones de error (`~/.claude/error-patterns.jsonl`).
+
+### Flujo con Patrones
+
+| Paso | Accion |
+|------|--------|
+| 1 | Error ocurre → normalizar mensaje |
+| 2 | Buscar match en patterns (exact > regex > fuzzy) |
+| 3a | Match con >70% success rate → aplicar fix directo (skip error-analyzer) |
+| 3b | Match con <70% success rate → error-analyzer + historial de fixes |
+| 3c | Sin match → error-analyzer standard + registrar nuevo pattern |
+| 4 | Registrar outcome (exito/fallo) para actualizar success rate |
+
+### Recovery Prompt con Pattern
+
+Cuando hay un match, incluir en el prompt del builder:
+
+| Campo | Contenido |
+|-------|-----------|
+| **Known pattern** | Mensaje normalizado del pattern |
+| **Category** | Clasificacion del error |
+| **Best fix** | Fix con mayor success rate |
+| **Success rate** | Porcentaje de exito historico |
+| **Previous attempts** | Fixes que fallaron (para NO repetir) |
+
 ## Stuck Detection
 
 | Condicion | Accion |
@@ -66,6 +94,16 @@ Cuando se detecta bloqueo, preguntar al usuario:
 1. Contexto que puede faltar
 2. Si el approach debe cambiar
 3. Si la tarea debe dividirse
+
+## Worktree Cleanup on Failure
+
+| Condicion | Accion |
+|-----------|--------|
+| Builder en worktree falla | Preservar worktree, delegar a error-analyzer |
+| Error-analyzer diagnostica fix | Reintentar builder en MISMO worktree |
+| Retry falla | Eliminar worktree + branch, escalar al usuario |
+| Merge conflict en worktree | Delegar a merge-resolver |
+| merge-resolver falla | Preservar worktree, escalar al usuario con diff |
 
 ## Proceso
 

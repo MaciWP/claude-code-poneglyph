@@ -57,6 +57,9 @@ tmpclaude-*-cwd
 # Trace data
 .claude/traces/
 
+# Context registry (runtime data)
+.claude/.context-registry.json
+
 # Runtime data directories
 data/
 !data/sessions/.gitkeep

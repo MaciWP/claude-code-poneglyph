@@ -4,13 +4,15 @@ Reglas para carga de skills y contexto a agentes. Evitar sobrecarga de contexto 
 
 ## Skill Loading Limits
 
-| Agent | Max Skills | Base Skills (no cuentan) | Notes |
-|-------|-----------|--------------------------|-------|
-| builder | 5 | - | 3 core + 2 domain-specific |
-| reviewer | 4 | code-quality, testing-strategy, anti-hallucination (always loaded) | + 2 matched skills |
-| error-analyzer | 2 | retry-patterns (always loaded) | + matched skills |
-| architect | 4 | - | + api-design, expert-patterns |
-| planner | 2 | - | High-level only |
+| Agent | Base Skills (gratis) | Max Adicionales | Total Max | Notes |
+|-------|---------------------|-----------------|-----------|-------|
+| builder | — | 5 | 5 | Frontmatter consume slots del max |
+| reviewer | code-quality, testing-strategy, anti-hallucination | 2 | 5 | Base son gratis |
+| error-analyzer | retry-patterns | 2 | 3 | + matched skills |
+| architect | — | 4 | 4 | + api-design, expert-patterns |
+| planner | — | 2 | 2 | High-level only |
+| scout | — | 1 | 1 | Minimal context |
+| security-auditor | security-review | 2 | 3 | + matched skills |
 
 ## Precedence Rules
 
@@ -18,6 +20,16 @@ Reglas para carga de skills y contexto a agentes. Evitar sobrecarga de contexto 
 2. **Base skills no cuentan** contra el limite max del agente
 3. **Si keyword matches > agent max**: priorizar por frecuencia de keywords en el prompt
 4. **Si empate**: preferir skills del dominio principal de la tarea
+
+## Composition Rules
+
+Cuando multiples skills aplican, respetar sinergia y conflictos:
+
+1. **Sinergia**: Si dos skills matcheadas son par sinergico (ver `skill-matching.md`), ambas reciben +1 prioridad
+2. **Conflicto**: Si dos skills son par conflictivo, descartar la de menor score
+3. **Budget overflow**: Si matches > max del agente, ordenar por score y truncar
+4. **Base skills**: NO cuentan contra el limite max (son gratis)
+5. **Frontmatter skills**: SI cuentan contra el limite max del agente
 
 ## Context Loading Methods
 

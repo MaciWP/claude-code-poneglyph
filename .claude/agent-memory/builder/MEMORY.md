@@ -26,7 +26,29 @@
 - **When mock.module is needed**: Include ALL exports the real module has, not just what you use
 - Always add `afterAll(() => { spy.mockRestore() })` to restore spies
 
+## Complexity Validator (CRITICAL)
+- Threshold is 25, uses `>` (so 25 passes, 26 blocks)
+- Counts per-FILE not per-function: `if(`, `else`, `for(`, `while(`, `case `, `catch(`, `&&`, `||`, `?(?!:)`
+- `||` counts: `normalizeEntry` with 14 fallbacks = 14 complexity points. Use spread with defaults object instead
+- `?.` optional chaining counts as `?` complexity (regex `?(?!:)` matches `?.` since `.` != `:`)
+- Split large files into <25 complexity each; use barrel re-exports
+- Test with: `bun .claude/hooks/lib/count-complexity.ts <file>` (if script exists)
+
+## Syntax Validator (Pre-existing Bug)
+- Runs `tsc --noEmit --pretty false <filePath>` which IGNORES tsconfig.json
+- Any file using `Bun`, `process`, `Set`, `import.meta` will fail without `@types/bun`
+- This is a pre-existing issue - not caused by new code
+- tsconfig.json exists now with `moduleDetection: "force"` and `@types/bun` installed
+
+## Typecheck Guard
+- Runs `tsc --noEmit --project tsconfig.json` (project-wide)
+- All files in `.claude/hooks/` are checked together
+- `moduleDetection: "force"` prevents "duplicate function" errors between files with same function names
+- Test files with inline `TestInput` interfaces must include ALL fields used (e.g., `command?: string`)
+
 ## Lessons Learned
 - Windows paths with backslashes work in `cd` commands but need quoting
 - Windows file locks can prevent `rm -rf` on empty directories - git still tracks deletions correctly
 - When adding optional fields to interfaces used in existing code, no breaking changes occur
+- `bun test` requires `./` prefix for dotfile directories: `bun test ./.claude/hooks/`
+- Import paths in `.ts` files must NOT have `.ts` extension (syntax-validator blocks it)

@@ -1,71 +1,74 @@
-import { describe, test, expect } from 'bun:test'
-import { join } from 'path'
+import { describe, test, expect } from "bun:test";
+import { join } from "path";
 
-const VALIDATOR_PATH = join(import.meta.dir, 'complexity-validator.ts')
+const VALIDATOR_PATH = join(import.meta.dir, "complexity-validator.ts");
 
 interface TestInput {
-  tool_name: string
+  tool_name: string;
   tool_input: {
-    file_path?: string
-    content?: string
-  }
-  tool_output: string
+    file_path?: string;
+    content?: string;
+    command?: string;
+  };
+  tool_output: string;
 }
 
-async function runValidator(input: TestInput): Promise<{ exitCode: number; stderr: string }> {
-  const inputJson = JSON.stringify(input)
+async function runValidator(
+  input: TestInput,
+): Promise<{ exitCode: number; stderr: string }> {
+  const inputJson = JSON.stringify(input);
 
-  const proc = Bun.spawn(['bun', VALIDATOR_PATH], {
+  const proc = Bun.spawn(["bun", VALIDATOR_PATH], {
     stdin: new Blob([inputJson]),
-    stdout: 'pipe',
-    stderr: 'pipe',
-  })
+    stdout: "pipe",
+    stderr: "pipe",
+  });
 
-  const exitCode = await proc.exited
-  const stderr = await new Response(proc.stderr).text()
+  const exitCode = await proc.exited;
+  const stderr = await new Response(proc.stderr).text();
 
-  return { exitCode, stderr }
+  return { exitCode, stderr };
 }
 
-describe('complexity-validator', () => {
-  test('passes for non-TypeScript files', async () => {
+describe("complexity-validator", () => {
+  test("passes for non-TypeScript files", async () => {
     const result = await runValidator({
-      tool_name: 'Write',
+      tool_name: "Write",
       tool_input: {
-        file_path: 'test.js',
+        file_path: "test.js",
         content: 'console.log("hello")',
       },
-      tool_output: 'File written',
-    })
+      tool_output: "File written",
+    });
 
-    expect(result.exitCode).toBe(0)
-  })
+    expect(result.exitCode).toBe(0);
+  });
 
-  test('passes when file_path is not provided', async () => {
+  test("passes when file_path is not provided", async () => {
     const result = await runValidator({
-      tool_name: 'Bash',
+      tool_name: "Bash",
       tool_input: {
-        command: 'echo hello',
+        command: "echo hello",
       },
-      tool_output: 'hello',
-    })
+      tool_output: "hello",
+    });
 
-    expect(result.exitCode).toBe(0)
-  })
+    expect(result.exitCode).toBe(0);
+  });
 
-  test('passes when content is not provided', async () => {
+  test("passes when content is not provided", async () => {
     const result = await runValidator({
-      tool_name: 'Write',
+      tool_name: "Write",
       tool_input: {
-        file_path: 'test.ts',
+        file_path: "test.ts",
       },
-      tool_output: 'File written',
-    })
+      tool_output: "File written",
+    });
 
-    expect(result.exitCode).toBe(0)
-  })
+    expect(result.exitCode).toBe(0);
+  });
 
-  test('passes for simple TypeScript code (low complexity)', async () => {
+  test("passes for simple TypeScript code (low complexity)", async () => {
     const simpleCode = `
 function add(a: number, b: number): number {
   return a + b
@@ -74,20 +77,20 @@ function add(a: number, b: number): number {
 function greet(name: string): string {
   return \`Hello, \${name}!\`
 }
-`
+`;
     const result = await runValidator({
-      tool_name: 'Write',
+      tool_name: "Write",
       tool_input: {
-        file_path: 'simple.ts',
+        file_path: "simple.ts",
         content: simpleCode,
       },
-      tool_output: 'File written',
-    })
+      tool_output: "File written",
+    });
 
-    expect(result.exitCode).toBe(0)
-  })
+    expect(result.exitCode).toBe(0);
+  });
 
-  test('passes for moderate complexity code (under threshold)', async () => {
+  test("passes for moderate complexity code (under threshold)", async () => {
     // This code has complexity around 10-15
     const moderateCode = `
 function processData(data: unknown[]): Result {
@@ -114,20 +117,20 @@ function processData(data: unknown[]): Result {
 
   return { success: true }
 }
-`
+`;
     const result = await runValidator({
-      tool_name: 'Write',
+      tool_name: "Write",
       tool_input: {
-        file_path: 'moderate.ts',
+        file_path: "moderate.ts",
         content: moderateCode,
       },
-      tool_output: 'File written',
-    })
+      tool_output: "File written",
+    });
 
-    expect(result.exitCode).toBe(0)
-  })
+    expect(result.exitCode).toBe(0);
+  });
 
-  test('blocks for high complexity code (over threshold)', async () => {
+  test("blocks for high complexity code (over threshold)", async () => {
     // Generate code with complexity > 20
     const highComplexityCode = `
 function processComplexData(data: unknown[], options: Options): Result {
@@ -174,22 +177,22 @@ function processComplexData(data: unknown[], options: Options): Result {
   }
   return { success: true }
 }
-`
+`;
     const result = await runValidator({
-      tool_name: 'Write',
+      tool_name: "Write",
       tool_input: {
-        file_path: 'complex.ts',
+        file_path: "complex.ts",
         content: highComplexityCode,
       },
-      tool_output: 'File written',
-    })
+      tool_output: "File written",
+    });
 
-    expect(result.exitCode).toBe(2)
-    expect(result.stderr).toContain('Cyclomatic complexity')
-    expect(result.stderr).toContain('exceeds threshold')
-  })
+    expect(result.exitCode).toBe(2);
+    expect(result.stderr).toContain("Cyclomatic complexity");
+    expect(result.stderr).toContain("exceeds threshold");
+  });
 
-  test('handles .tsx files', async () => {
+  test("handles .tsx files", async () => {
     const tsxCode = `
 function Component({ items }: Props): JSX.Element {
   if (!items) {
@@ -204,20 +207,20 @@ function Component({ items }: Props): JSX.Element {
     </ul>
   )
 }
-`
+`;
     const result = await runValidator({
-      tool_name: 'Write',
+      tool_name: "Write",
       tool_input: {
-        file_path: 'component.tsx',
+        file_path: "component.tsx",
         content: tsxCode,
       },
-      tool_output: 'File written',
-    })
+      tool_output: "File written",
+    });
 
-    expect(result.exitCode).toBe(0)
-  })
+    expect(result.exitCode).toBe(0);
+  });
 
-  test('counts if statements correctly', async () => {
+  test("counts if statements correctly", async () => {
     // 1 base + 5 if = 6
     const code = `
 function test(a: number): string {
@@ -228,20 +231,20 @@ function test(a: number): string {
   if (a > 0) { return 'tiny' }
   return 'zero'
 }
-`
+`;
     const result = await runValidator({
-      tool_name: 'Write',
+      tool_name: "Write",
       tool_input: {
-        file_path: 'ifs.ts',
+        file_path: "ifs.ts",
         content: code,
       },
-      tool_output: 'File written',
-    })
+      tool_output: "File written",
+    });
 
-    expect(result.exitCode).toBe(0)
-  })
+    expect(result.exitCode).toBe(0);
+  });
 
-  test('counts logical operators correctly', async () => {
+  test("counts logical operators correctly", async () => {
     // 1 base + 2 if + 4 && + 4 || = 11
     const code = `
 function validate(a: boolean, b: boolean, c: boolean, d: boolean): boolean {
@@ -253,20 +256,20 @@ function validate(a: boolean, b: boolean, c: boolean, d: boolean): boolean {
   }
   return true
 }
-`
+`;
     const result = await runValidator({
-      tool_name: 'Write',
+      tool_name: "Write",
       tool_input: {
-        file_path: 'logical.ts',
+        file_path: "logical.ts",
         content: code,
       },
-      tool_output: 'File written',
-    })
+      tool_output: "File written",
+    });
 
-    expect(result.exitCode).toBe(0)
-  })
+    expect(result.exitCode).toBe(0);
+  });
 
-  test('counts switch/case correctly', async () => {
+  test("counts switch/case correctly", async () => {
     // 1 base + 1 switch + 4 case = 6
     const code = `
 function getColor(status: string): string {
@@ -283,20 +286,20 @@ function getColor(status: string): string {
       return 'gray'
   }
 }
-`
+`;
     const result = await runValidator({
-      tool_name: 'Write',
+      tool_name: "Write",
       tool_input: {
-        file_path: 'switch.ts',
+        file_path: "switch.ts",
         content: code,
       },
-      tool_output: 'File written',
-    })
+      tool_output: "File written",
+    });
 
-    expect(result.exitCode).toBe(0)
-  })
+    expect(result.exitCode).toBe(0);
+  });
 
-  test('counts loops correctly', async () => {
+  test("counts loops correctly", async () => {
     // 1 base + 1 for + 1 while + 1 do = 4
     const code = `
 function loops(): void {
@@ -316,20 +319,20 @@ function loops(): void {
     k++
   } while (k < 3)
 }
-`
+`;
     const result = await runValidator({
-      tool_name: 'Write',
+      tool_name: "Write",
       tool_input: {
-        file_path: 'loops.ts',
+        file_path: "loops.ts",
         content: code,
       },
-      tool_output: 'File written',
-    })
+      tool_output: "File written",
+    });
 
-    expect(result.exitCode).toBe(0)
-  })
+    expect(result.exitCode).toBe(0);
+  });
 
-  test('counts ternary operators correctly', async () => {
+  test("counts ternary operators correctly", async () => {
     // 1 base + 2 ternary = 3
     const code = `
 function ternary(a: boolean, b: boolean): string {
@@ -337,20 +340,20 @@ function ternary(a: boolean, b: boolean): string {
   const y = b ? 'true' : 'false'
   return x + y
 }
-`
+`;
     const result = await runValidator({
-      tool_name: 'Write',
+      tool_name: "Write",
       tool_input: {
-        file_path: 'ternary.ts',
+        file_path: "ternary.ts",
         content: code,
       },
-      tool_output: 'File written',
-    })
+      tool_output: "File written",
+    });
 
-    expect(result.exitCode).toBe(0)
-  })
+    expect(result.exitCode).toBe(0);
+  });
 
-  test('counts catch blocks correctly', async () => {
+  test("counts catch blocks correctly", async () => {
     // 1 base + 2 catch = 3
     const code = `
 async function fetchData(): Promise<Data> {
@@ -366,20 +369,20 @@ async function fetchData(): Promise<Data> {
     }
   }
 }
-`
+`;
     const result = await runValidator({
-      tool_name: 'Write',
+      tool_name: "Write",
       tool_input: {
-        file_path: 'trycatch.ts',
+        file_path: "trycatch.ts",
         content: code,
       },
-      tool_output: 'File written',
-    })
+      tool_output: "File written",
+    });
 
-    expect(result.exitCode).toBe(0)
-  })
+    expect(result.exitCode).toBe(0);
+  });
 
-  test('stderr contains refactoring suggestions when blocked', async () => {
+  test("stderr contains refactoring suggestions when blocked", async () => {
     // Generate extremely complex code to ensure it exceeds threshold of 25
     const veryComplexCode = `
 function mega(a: number, b: number, c: number): number {
@@ -398,19 +401,19 @@ function mega(a: number, b: number, c: number): number {
   try { console.log(x + y) } catch (e) { console.error(e) }
   return a && b && c && (a || b || c) ? 1 : 0
 }
-`
+`;
     const result = await runValidator({
-      tool_name: 'Write',
+      tool_name: "Write",
       tool_input: {
-        file_path: 'mega.ts',
+        file_path: "mega.ts",
         content: veryComplexCode,
       },
-      tool_output: 'File written',
-    })
+      tool_output: "File written",
+    });
 
-    expect(result.exitCode).toBe(2)
-    expect(result.stderr).toContain('Extracting complex logic')
-    expect(result.stderr).toContain('early returns')
-    expect(result.stderr).toContain('lookup objects')
-  })
-})
+    expect(result.exitCode).toBe(2);
+    expect(result.stderr).toContain("Extracting complex logic");
+    expect(result.stderr).toContain("early returns");
+    expect(result.stderr).toContain("lookup objects");
+  });
+});

@@ -1,0 +1,38 @@
+{
+  "$schema": "cost-budget",
+  "version": "1.0",
+  "budgets": {
+    "session": {
+      "warning": 1.00,
+      "limit": 5.00,
+      "currency": "USD"
+    },
+    "daily": {
+      "warning": 20.00,
+      "limit": 50.00,
+      "currency": "USD"
+    }
+  },
+  "modelPricing": {
+    "opus": {
+      "inputPer1M": 15.00,
+      "outputPer1M": 75.00
+    },
+    "sonnet": {
+      "inputPer1M": 3.00,
+      "outputPer1M": 15.00
+    },
+    "haiku": {
+      "inputPer1M": 0.25,
+      "outputPer1M": 1.25
+    }
+  },
+  "agentDefaults": {
+    "scout": "haiku",
+    "reviewer": "sonnet",
+    "builder": "sonnet",
+    "planner": "opus",
+    "architect": "opus",
+    "error-analyzer": "sonnet"
+  }
+}

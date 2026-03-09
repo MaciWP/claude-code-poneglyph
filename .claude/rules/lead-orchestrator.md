@@ -52,6 +52,119 @@ graph TD
 | `AskUserQuestion` | Clarificar requisitos |
 | `TaskList/TaskCreate/TaskUpdate` | Gestionar lista de tareas |
 
+## Worktree Isolation
+
+Activar `isolation: "worktree"` en el Agent tool para aislar trabajo paralelo.
+
+### Routing Rules
+
+| Condicion | Usar Worktree | Prioridad |
+|-----------|--------------|-----------|
+| 2+ builders delegados en paralelo | Si (cada uno su worktree) | Alta |
+| Tarea experimental/riesgo marcada por planner | Si | Alta |
+| Reviewer necesita diff limpio | Si (builder en worktree) | Media |
+| Single builder, archivos conocidos, sin overlap | No | Baja |
+| Archivos target desconocidos (sin planner output) | Si (default seguro) | Media |
+
+### Merge Strategy
+
+| Escenario | Estrategia | Agente |
+|-----------|-----------|--------|
+| Fast-forward limpio | Auto-merge via builder | builder |
+| Merge sin conflictos | `git merge --no-ff` via builder | builder |
+| Conflictos detectados | Delegar a merge-resolver | merge-resolver |
+| merge-resolver falla (confidence <50%) | Escalar al usuario | AskUserQuestion |
+| Builder sin cambios | Skip merge, cleanup | Automatico |
+
+### Cleanup Policy
+
+| Condicion | Accion | Timing |
+|-----------|--------|--------|
+| Worktree merged OK | Eliminar worktree + branch | Inmediato |
+| Builder sin cambios | Eliminar worktree + branch | Inmediato |
+| Builder fallo | Preservar para 1 retry | Post error-analyzer |
+| Retry tambien fallo | Eliminar + escalar | Post escalacion |
+| Session termina con worktrees no-merged | Log warning, preservar | Fin de session |
+
+### Naming Convention
+
+| Componente | Formato | Ejemplo |
+|-----------|---------|---------|
+| Branch | `wt/<agent>/<task-hash>` | `wt/builder/a3f8c2` |
+| Directorio | `.worktrees/<agent>-<task-hash>` | `.worktrees/builder-a3f8c2` |
+
+## Continuous Validation Pipeline
+
+Validacion continua durante implementacion. El Lead supervisa checkpoints de calidad.
+
+### Validation Checkpoints
+
+| Checkpoint | Trigger | Agente | Accion si Falla |
+|-----------|---------|--------|-----------------|
+| Pre-implementation | Antes de delegar a builder | planner | Re-planificar con restricciones |
+| Mid-implementation | Builder reporta progreso parcial | reviewer (background) | Feedback temprano al builder |
+| Post-implementation | Builder completa tarea | reviewer | NEEDS_CHANGES → re-delegar |
+| Pre-merge | Worktree listo para merge | reviewer + test-watcher | Bloquear merge si falla |
+| Post-merge | Despues de merge exitoso | test-watcher (background) | Rollback si tests fallan |
+
+### Validation Feedback Loop
+
+```mermaid
+graph TD
+    B[Builder implementa] --> V1{Checkpoint?}
+    V1 -->|Mid| R1[Reviewer background]
+    R1 -->|Feedback| B
+    V1 -->|Post| R2[Reviewer formal]
+    R2 -->|APPROVED| M[Merge/Done]
+    R2 -->|NEEDS_CHANGES| FB[Feedback al builder]
+    FB --> B
+    R2 -->|BLOCKED| P[Re-planificar]
+    P --> B
+```
+
+### Validacion por Tipo de Cambio
+
+| Tipo de Cambio | Validaciones Requeridas |
+|----------------|------------------------|
+| Single file, low complexity | Post-implementation reviewer |
+| Multi-file, same domain | Post-implementation reviewer + test-watcher |
+| Multi-file, cross-domain | Mid-checkpoint + Post reviewer + test-watcher |
+| Security-related | Pre + Post reviewer + security-auditor |
+| Infrastructure/config | Pre + Post reviewer + test-watcher + manual approval |
+
+### Feedback Template
+
+Al enviar feedback de reviewer a builder, incluir:
+
+| Campo | Contenido |
+|-------|-----------|
+| **Status** | APPROVED / NEEDS_CHANGES / BLOCKED |
+| **Issues found** | Lista de problemas especificos |
+| **Suggested fixes** | Acciones concretas para resolver |
+| **Files affected** | Archivos que necesitan cambios |
+| **Priority** | Critical / Major / Minor |
+
+## Model Selection
+
+Optimizar costos seleccionando modelo apropiado por agente y tarea.
+
+### Reglas de Seleccion
+
+| Regla | Condicion | Modelo |
+|-------|-----------|--------|
+| Default | Cualquier agente sin regla especifica | sonnet |
+| High-stakes | Arquitectura, planificacion compleja | opus |
+| Read-only | Scout explorando codebase | haiku/sonnet |
+| Budget mode | Usuario solicita optimizar costos | Downgrade un nivel |
+
+### Aplicacion
+
+El Lead NO controla el modelo directamente (Claude Code lo gestiona), pero SI puede:
+
+1. Indicar en el prompt del Task la complejidad esperada
+2. Sugerir al usuario cambiar modelo con `/model` si el budget lo requiere
+3. Paralelizar con agents mas baratos (scout con haiku) para tareas de lectura
+
 ## Delegacion por Tipo de Tarea
 
 | Tipo de Tarea | Agente(s) |
