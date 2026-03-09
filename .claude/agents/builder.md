@@ -14,6 +14,7 @@ skills:
   - code-style-enforcer
   - testing-strategy
   - api-design
+  - anti-hallucination
 hooks:
   Stop:
     - hooks:
