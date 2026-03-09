@@ -13,9 +13,9 @@ import {
   getRoutingSuggestion,
 } from "./agent-scorer";
 import type { AgentScore, AgentMetrics } from "./agent-scorer";
-import type { TraceEntry } from "../trace-logger";
+import type { ResolvedTraceEntry } from "../trace-logger";
 
-function mockTrace(overrides: Partial<TraceEntry> = {}): TraceEntry {
+function mockTrace(overrides: Partial<ResolvedTraceEntry> = {}): ResolvedTraceEntry {
   return {
     ts: "2026-03-08T10:00:00Z",
     sessionId: "test-session",

@@ -4,7 +4,7 @@
  */
 import { homedir } from "os";
 import { join } from "path";
-import type { TraceEntry } from "../trace-logger";
+import type { TraceEntry, ResolvedTraceEntry } from "../trace-logger";
 import { aggregateTraces } from "./trace-aggregation";
 import type { TraceAggregation } from "./trace-aggregation";
 
@@ -24,7 +24,7 @@ export interface TraceQuery {
   model?: string;
 }
 
-const TRACE_DEFAULTS: TraceEntry = {
+const RESOLVED_DEFAULTS: ResolvedTraceEntry = {
   ts: "",
   sessionId: "unknown",
   prompt: "unknown",
@@ -41,13 +41,24 @@ const TRACE_DEFAULTS: TraceEntry = {
   filesChanged: 0,
 };
 
-function normalizeEntry(entry: Partial<TraceEntry>): TraceEntry {
+function normalizeEntry(entry: Partial<TraceEntry>): ResolvedTraceEntry {
   return {
-    ...TRACE_DEFAULTS,
-    ...entry,
-    ts: entry.ts ? entry.ts : new Date().toISOString(),
-    agents: entry.agents ? entry.agents : [],
-    skills: entry.skills ? entry.skills : [],
+    ...RESOLVED_DEFAULTS,
+    ts: entry.ts ?? new Date().toISOString(),
+    sessionId: entry.sessionId ?? "unknown",
+    prompt: entry.prompt ?? "unknown",
+    agents: entry.agents ?? [],
+    skills: entry.skills ?? [],
+    tokens: entry.tokens ?? 0,
+    inputTokens: entry.inputTokens ?? 0,
+    outputTokens: entry.outputTokens ?? 0,
+    costUsd: entry.costUsd ?? 0,
+    durationMs: entry.durationMs ?? 0,
+    model: entry.model ?? "unknown",
+    status: entry.status ?? "unknown",
+    toolCalls: entry.toolCalls ?? 0,
+    filesChanged: entry.filesChanged ?? 0,
+    rawInput: entry.rawInput,
   };
 }
 
@@ -71,7 +82,7 @@ function matchesArrayFilter(
   return entryValues.some((v) => filterValues.includes(v));
 }
 
-function matchesQuery(entry: TraceEntry, query: TraceQuery): boolean {
+function matchesQuery(entry: ResolvedTraceEntry, query: TraceQuery): boolean {
   if (!matchesDateRange(entry.ts, query.from, query.to)) return false;
   if (!matchesArrayFilter(entry.agents, query.agents)) return false;
   if (!matchesArrayFilter(entry.skills, query.skills)) return false;
@@ -118,9 +129,9 @@ async function parseTraceFile(
 
 export async function loadTraces(
   query: TraceQuery = {},
-): Promise<TraceEntry[]> {
+): Promise<ResolvedTraceEntry[]> {
   const tracesDir = join(homedir(), ".claude", "traces");
-  const entries: TraceEntry[] = [];
+  const entries: ResolvedTraceEntry[] = [];
   const dates = getDateRange(query.from, query.to);
 
   for (const dateStr of dates) {

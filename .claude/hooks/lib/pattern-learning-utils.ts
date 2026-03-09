@@ -2,10 +2,10 @@
  * Utility functions for Pattern Learning module.
  */
 
-import type { TraceEntry } from "../trace-logger";
+import type { ResolvedTraceEntry } from "../trace-logger";
 import type { PatternOutcome } from "./pattern-learning-types";
 
-export function estimateComplexity(trace: TraceEntry): number {
+export function estimateComplexity(trace: ResolvedTraceEntry): number {
   const agentCount = trace.agents.length;
   const tokenNormalized = Math.min(trace.tokens / 50000, 1);
   const raw = agentCount * 20 + tokenNormalized * 20 + trace.filesChanged * 5;
@@ -59,7 +59,7 @@ export function generateSubsets(arr: string[], k: number): string[][] {
   return results;
 }
 
-export function calculateOutcome(traces: TraceEntry[]): PatternOutcome {
+export function calculateOutcome(traces: ResolvedTraceEntry[]): PatternOutcome {
   const count = traces.length;
   if (count === 0) {
     return {

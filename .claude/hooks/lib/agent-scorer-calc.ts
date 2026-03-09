@@ -1,5 +1,5 @@
 import type {
-  TraceEntry,
+  ResolvedTraceEntry,
   AgentMetrics,
   TaskType,
   Trend,
@@ -17,7 +17,7 @@ export function classifyTaskType(agent: string): TaskType {
 }
 
 export function extractMetrics(
-  traces: TraceEntry[],
+  traces: ResolvedTraceEntry[],
   agent: string,
 ): AgentMetrics {
   const agentTraces = traces.filter((t) => t.agents.includes(agent));

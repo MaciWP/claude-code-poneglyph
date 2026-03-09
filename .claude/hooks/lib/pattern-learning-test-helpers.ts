@@ -2,7 +2,7 @@
  * Shared test helpers for pattern learning test suites.
  */
 
-import type { TraceEntry } from "../trace-logger";
+import type { ResolvedTraceEntry } from "../trace-logger";
 
 interface TraceOverrides {
   sessionId?: string;
@@ -14,7 +14,7 @@ interface TraceOverrides {
   ts?: string;
 }
 
-export function makeTrace(overrides: TraceOverrides = {}): TraceEntry {
+export function makeTrace(overrides: TraceOverrides = {}): ResolvedTraceEntry {
   return {
     ts: overrides.ts ?? new Date().toISOString(),
     sessionId:
@@ -38,8 +38,8 @@ export function makeTrace(overrides: TraceOverrides = {}): TraceEntry {
 export function makeTraces(
   count: number,
   overrides: TraceOverrides = {},
-): TraceEntry[] {
-  const traces: TraceEntry[] = [];
+): ResolvedTraceEntry[] {
+  const traces: ResolvedTraceEntry[] = [];
   for (let i = 0; i < count; i++) {
     traces.push(
       makeTrace({

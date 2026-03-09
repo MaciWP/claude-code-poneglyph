@@ -8,7 +8,7 @@ import type {
   RoutingSuggestion,
   TaskType,
   Trend,
-  TraceEntry,
+  ResolvedTraceEntry,
 } from "./agent-scorer-types";
 import { SCORES_PATH_SEGMENT, MIN_SAMPLE_SIZE } from "./agent-scorer-types";
 import {
@@ -68,7 +68,7 @@ export function saveScores(scores: AgentScore[]): void {
   }
 }
 
-function collectAgents(traces: TraceEntry[]): string[] {
+function collectAgents(traces: ResolvedTraceEntry[]): string[] {
   const agents = new Set<string>();
   for (const trace of traces) {
     for (const agent of trace.agents) {
@@ -130,7 +130,7 @@ function applyMetrics(
   entry.trend = detectTrend(entry.recentScores);
 }
 
-export function updateScores(traces: TraceEntry[]): AgentScore[] {
+export function updateScores(traces: ResolvedTraceEntry[]): AgentScore[] {
   const scores = loadScores();
   const agents = collectAgents(traces);
 

@@ -1,6 +1,6 @@
-import type { TraceEntry } from "../trace-logger";
+import type { ResolvedTraceEntry } from "../trace-logger";
 
-export type { TraceEntry };
+export type { ResolvedTraceEntry };
 
 export type TaskType =
   | "implementation"

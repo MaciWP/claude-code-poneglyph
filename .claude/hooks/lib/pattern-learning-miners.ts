@@ -3,7 +3,7 @@
  * and decomposition patterns.
  */
 
-import type { TraceEntry } from "../trace-logger";
+import type { ResolvedTraceEntry } from "../trace-logger";
 import type { WorkflowPattern } from "./pattern-learning-types";
 import { generateId } from "./pattern-learning-types";
 import {
@@ -15,10 +15,10 @@ import {
 
 export interface CountEntry {
   count: number;
-  traces: TraceEntry[];
+  traces: ResolvedTraceEntry[];
 }
 
-export function computeBaselineRate(traces: TraceEntry[]): number {
+export function computeBaselineRate(traces: ResolvedTraceEntry[]): number {
   if (traces.length === 0) return 0;
   const successes = traces.filter((t) => t.status === "completed").length;
   return successes / traces.length;
@@ -38,7 +38,7 @@ function buildSequenceKeys(agents: string[]): string[] {
 export function accumulateCounts(
   map: Map<string, CountEntry>,
   key: string,
-  trace: TraceEntry,
+  trace: ResolvedTraceEntry,
 ): void {
   const entry = map.get(key);
   if (entry) {
@@ -94,7 +94,7 @@ function collectPatterns(
 }
 
 export function mineAgentSequences(
-  traces: TraceEntry[],
+  traces: ResolvedTraceEntry[],
   minSupport: number = 5,
 ): WorkflowPattern[] {
   const counts = new Map<string, CountEntry>();
@@ -111,7 +111,7 @@ export function mineAgentSequences(
 }
 
 export function mineSkillCombinations(
-  traces: TraceEntry[],
+  traces: ResolvedTraceEntry[],
   minSupport: number = 5,
 ): WorkflowPattern[] {
   const counts = new Map<string, CountEntry>();
@@ -134,7 +134,7 @@ export function mineSkillCombinations(
   );
 }
 
-function findTopAgent(traces: TraceEntry[]): string {
+function findTopAgent(traces: ResolvedTraceEntry[]): string {
   const agentCounts: Record<string, number> = {};
   for (const t of traces) {
     for (const a of t.agents) {
@@ -153,13 +153,13 @@ function findTopAgent(traces: TraceEntry[]): string {
   return topAgent;
 }
 
-function isInRange(trace: TraceEntry, low: number, high: number): boolean {
+function isInRange(trace: ResolvedTraceEntry, low: number, high: number): boolean {
   const c = estimateComplexity(trace);
   return c >= low && c <= high;
 }
 
 export function mineDecompositionPatterns(
-  traces: TraceEntry[],
+  traces: ResolvedTraceEntry[],
 ): WorkflowPattern[] {
   const ranges: Array<[number, number]> = [
     [0, 29],

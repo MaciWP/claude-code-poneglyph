@@ -1,8 +1,8 @@
 /**
  * Trace aggregation functions.
- * Computes statistics from arrays of TraceEntry objects.
+ * Computes statistics from arrays of ResolvedTraceEntry objects.
  */
-import type { TraceEntry } from "../trace-logger";
+import type { ResolvedTraceEntry } from "../trace-logger";
 
 export interface AgentStats {
   count: number;
@@ -39,7 +39,7 @@ function ensureAgentStats(
   return map[key];
 }
 
-function addAgentStats(agg: TraceAggregation, entry: TraceEntry): void {
+function addAgentStats(agg: TraceAggregation, entry: ResolvedTraceEntry): void {
   for (const agent of entry.agents) {
     const stats = ensureAgentStats(agg.byAgent, agent);
     stats.count++;
@@ -48,21 +48,21 @@ function addAgentStats(agg: TraceAggregation, entry: TraceEntry): void {
   }
 }
 
-function addSkillStats(agg: TraceAggregation, entry: TraceEntry): void {
+function addSkillStats(agg: TraceAggregation, entry: ResolvedTraceEntry): void {
   for (const skill of entry.skills) {
     if (!agg.bySkill[skill]) agg.bySkill[skill] = { count: 0 };
     agg.bySkill[skill].count++;
   }
 }
 
-function addModelStats(agg: TraceAggregation, entry: TraceEntry): void {
+function addModelStats(agg: TraceAggregation, entry: ResolvedTraceEntry): void {
   const stats = ensureAgentStats(agg.byModel, entry.model);
   stats.count++;
   stats.tokens += entry.tokens;
   stats.cost += entry.costUsd;
 }
 
-function addDayStats(agg: TraceAggregation, entry: TraceEntry): void {
+function addDayStats(agg: TraceAggregation, entry: ResolvedTraceEntry): void {
   const day = entry.ts.split("T")[0];
   if (!agg.byDay[day]) agg.byDay[day] = { sessions: 0, tokens: 0, cost: 0 };
   agg.byDay[day].sessions++;
@@ -70,14 +70,14 @@ function addDayStats(agg: TraceAggregation, entry: TraceEntry): void {
   agg.byDay[day].cost += entry.costUsd;
 }
 
-function addEntryStats(agg: TraceAggregation, entry: TraceEntry): void {
+function addEntryStats(agg: TraceAggregation, entry: ResolvedTraceEntry): void {
   addAgentStats(agg, entry);
   addSkillStats(agg, entry);
   addModelStats(agg, entry);
   addDayStats(agg, entry);
 }
 
-export function aggregateTraces(entries: TraceEntry[]): TraceAggregation {
+export function aggregateTraces(entries: ResolvedTraceEntry[]): TraceAggregation {
   const agg: TraceAggregation = {
     totalSessions: entries.length,
     totalTokens: 0,

@@ -51,6 +51,24 @@ export {
 export interface TraceEntry {
   ts: string;
   sessionId: string;
+  prompt: string | null;
+  agents: string[] | null;
+  skills: string[] | null;
+  tokens: number | null;
+  inputTokens: number | null;
+  outputTokens: number | null;
+  costUsd: number | null;
+  durationMs: number | null;
+  model: string | null;
+  status: string;
+  toolCalls: number | null;
+  filesChanged: number | null;
+  rawInput?: Record<string, unknown>;
+}
+
+export interface ResolvedTraceEntry {
+  ts: string;
+  sessionId: string;
   prompt: string;
   agents: string[];
   skills: string[];
@@ -63,12 +81,15 @@ export interface TraceEntry {
   status: string;
   toolCalls: number;
   filesChanged: number;
+  rawInput?: Record<string, unknown>;
 }
 
 export interface StopHookInput {
   session_id?: string;
   last_assistant_message?: string;
   transcript?: TranscriptMessage[];
+  stop_hook_event?: string;
+  [key: string]: unknown;
 }
 
 async function consumeStdin(): Promise<string> {
@@ -84,7 +105,17 @@ async function consumeStdin(): Promise<string> {
   });
 }
 
-function buildTrace(
+function buildRawInput(input: StopHookInput): Record<string, unknown> {
+  const raw: Record<string, unknown> = {};
+  for (const key of Object.keys(input)) {
+    if (key !== "transcript") {
+      raw[key] = input[key];
+    }
+  }
+  return raw;
+}
+
+function buildTraceWithTranscript(
   input: StopHookInput,
   transcript: TranscriptMessage[],
 ): TraceEntry {
@@ -96,20 +127,51 @@ function buildTrace(
 
   return {
     ts: new Date().toISOString(),
-    sessionId: input.session_id || "unknown",
-    prompt,
-    agents,
-    skills,
+    sessionId: input.session_id ?? null,
+    prompt: prompt === "unknown" ? null : prompt,
+    agents: agents.length > 0 ? agents : null,
+    skills: skills.length > 0 ? skills : null,
     tokens,
     inputTokens,
     outputTokens,
     costUsd: calculateCost(inputTokens, outputTokens, model),
     durationMs: calculateDuration(tokens),
     model,
-    status: detectStatus(transcript, input.last_assistant_message || ""),
+    status: detectStatus(transcript, input.last_assistant_message ?? ""),
     toolCalls: countToolCalls(transcript),
     filesChanged: countFilesChanged(transcript),
+    rawInput: buildRawInput(input),
   };
+}
+
+function buildTraceMinimal(input: StopHookInput): TraceEntry {
+  return {
+    ts: new Date().toISOString(),
+    sessionId: input.session_id ?? null,
+    prompt: null,
+    agents: null,
+    skills: null,
+    tokens: null,
+    inputTokens: null,
+    outputTokens: null,
+    costUsd: null,
+    durationMs: null,
+    model: null,
+    status: input.stop_hook_event ?? "unknown",
+    toolCalls: null,
+    filesChanged: null,
+    rawInput: buildRawInput(input),
+  };
+}
+
+function buildTrace(
+  input: StopHookInput,
+  transcript: TranscriptMessage[],
+): TraceEntry {
+  if (transcript.length === 0) {
+    return buildTraceMinimal(input);
+  }
+  return buildTraceWithTranscript(input, transcript);
 }
 
 async function writeTrace(trace: TraceEntry): Promise<void> {

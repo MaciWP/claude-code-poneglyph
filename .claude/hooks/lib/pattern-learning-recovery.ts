@@ -3,7 +3,7 @@
  * from error traces followed by successful completions.
  */
 
-import type { TraceEntry } from "../trace-logger";
+import type { ResolvedTraceEntry } from "../trace-logger";
 import type { ErrorPattern } from "./error-patterns";
 import type { WorkflowPattern } from "./pattern-learning-types";
 import { generateId } from "./pattern-learning-types";
@@ -15,17 +15,17 @@ import { computeBaselineRate } from "./pattern-learning-miners";
 
 interface RecoveryEntry {
   count: number;
-  traces: TraceEntry[];
+  traces: ResolvedTraceEntry[];
 }
 
-function sortByTimestamp(traces: TraceEntry[]): TraceEntry[] {
+function sortByTimestamp(traces: ResolvedTraceEntry[]): ResolvedTraceEntry[] {
   return traces
     .slice()
     .sort((a, b) => new Date(a.ts).getTime() - new Date(b.ts).getTime());
 }
 
 function isRecoveryCandidate(
-  candidate: TraceEntry,
+  candidate: ResolvedTraceEntry,
   errorSessionId: string,
 ): boolean {
   if (candidate.sessionId === errorSessionId) return false;
@@ -34,7 +34,7 @@ function isRecoveryCandidate(
   return true;
 }
 
-function buildRecoveryMap(sorted: TraceEntry[]): Map<string, RecoveryEntry> {
+function buildRecoveryMap(sorted: ResolvedTraceEntry[]): Map<string, RecoveryEntry> {
   const recoveryMap = new Map<string, RecoveryEntry>();
 
   for (let i = 0; i < sorted.length; i++) {
@@ -87,7 +87,7 @@ function buildRecoveryPattern(
 }
 
 export function mineRecoveryPatterns(
-  traces: TraceEntry[],
+  traces: ResolvedTraceEntry[],
   _errorPatterns: ErrorPattern[],
 ): WorkflowPattern[] {
   const sorted = sortByTimestamp(traces);
