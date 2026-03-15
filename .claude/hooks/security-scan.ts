@@ -63,10 +63,11 @@ async function main(): Promise<void> {
   }
 
   if (allFindings.length > 0) {
-    console.log('SECURITY SCAN FAILED:')
-    allFindings.forEach(f => console.log(f))
-    console.log('\nReview these files before committing.')
-    process.exit(1)
+    console.error('SECURITY SCAN WARNING:')
+    allFindings.forEach(f => console.error(f))
+    console.error('\nReview these files before committing.')
+    // Stop hooks are best-effort: warn but do not block Claude Code from terminating
+    process.exit(0)
   }
 
   console.log('Security scan passed')

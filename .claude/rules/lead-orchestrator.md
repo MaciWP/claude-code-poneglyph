@@ -24,6 +24,7 @@ La sesion principal actua como **orquestador puro**. No ejecuta codigo directame
 | Analizar errores | `Task(subagent_type="error-analyzer", prompt="...")` |
 | Cargar skills relevantes | `Skill(skill="api-design")` |
 | Clarificar requisitos | `AskUserQuestion(questions=[...])` |
+| Trigger spec workflow | Si complexity >= 30 y no hay spec: `/spec-gen` antes de implementar |
 
 ## Flujo de Trabajo
 
@@ -33,14 +34,20 @@ graph TD
     S -->|< 70| PE[prompt-engineer]
     S -->|>= 70| C[Calcular Complejidad]
     C -->|< 30| B[builder directo]
-    C -->|30-60| P1[planner opcional]
-    C -->|> 60| P2[planner obligatorio]
-    P1 & P2 --> B
-    B --> R[reviewer checkpoint]
-    R -->|APPROVED| D[Done]
-    R -->|NEEDS_CHANGES| B
-    B -->|Error| EA[error-analyzer]
-    EA --> B
+    C -->|30-60| SP1{Spec exists?}
+    C -->|> 60| SP2[/spec-gen OBLIGATORIO]
+    SP1 -->|Yes| P1[planner opcional]
+    SP1 -->|No| SG1[/spec-gen recomendado]
+    SG1 --> P1
+    SP2 --> P2[planner obligatorio]
+    P1 & P2 --> IS[/implement-spec]
+    IS --> B2[builder]
+    B2 --> R[reviewer + SpecComplianceCheck]
+    R -->|APPROVED| IX[INDEX.md → implemented]
+    IX --> D[Done]
+    R -->|NEEDS_CHANGES| B2
+    B2 -->|Error| EA[error-analyzer]
+    EA --> B2
 ```
 
 ## Herramientas Permitidas

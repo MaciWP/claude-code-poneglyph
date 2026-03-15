@@ -43,6 +43,23 @@ Ejemplo:
 | **30-60** | planner opcional | Considerar plan si hay incertidumbre |
 | **> 60** | planner obligatorio | Requiere roadmap estructurado |
 
+## Spec-Driven Development Trigger
+
+| Score | Spec Requerido | Accion |
+|-------|---------------|--------|
+| **< 30** | No | Builder directo, sin spec |
+| **30-60** | Recomendado | Si hay incertidumbre, invocar `/spec-gen` antes de builder |
+| **> 60** | Obligatorio | SIEMPRE invocar `/spec-gen` antes de planner/builder |
+
+### Proceso con Spec
+
+1. Calcular complejidad
+2. Si score >= 30: verificar si existe spec en `.specs/` para esta feature
+3. Si no existe: invocar `/spec-gen` para crear spec (status: draft)
+4. Esperar a que spec llegue a status `approved`
+5. Invocar `/implement-spec SPEC-NNN` para delegar a builder con BDD
+6. Tras implementacion: actualizar INDEX.md a `implemented`
+
 ## Worktree Decision
 
 Independiente del score de complejidad, evaluar necesidad de worktree:

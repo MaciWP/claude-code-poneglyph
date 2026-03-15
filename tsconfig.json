@@ -12,5 +12,5 @@
     "moduleDetection": "force"
   },
   "include": [".claude/hooks/**/*.ts"],
-  "exclude": ["node_modules", "**/__test_temp__/**"]
+  "exclude": ["node_modules", "**/__test_temp__/**", "**/__test_temp_ast__/**"]
 }

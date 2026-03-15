@@ -1,6 +1,6 @@
 # Poneglyph Specs Registry
 
-> Especificaciones formales del roadmap v1.1 → v2.0
+> Especificaciones formales del roadmap v1.1 → v2.1
 
 ## Status Legend
 
@@ -32,6 +32,9 @@
 | SPEC-013 | Graduated Autonomy | v2.0 | 60 | SPEC-002, SPEC-006, SPEC-010 | `implemented` | [v2.0/SPEC-013-graduated-autonomy.md](v2.0/SPEC-013-graduated-autonomy.md) |
 | SPEC-014 | Skill Synthesis | v2.0 | 68 | SPEC-005, SPEC-011 | `implemented` | [v2.0/SPEC-014-skill-synthesis.md](v2.0/SPEC-014-skill-synthesis.md) |
 | SPEC-015 | Self-Optimizing Orchestration | v2.0 | 72 | SPEC-007→014 | `implemented` | [v2.0/SPEC-015-self-optimizing-orchestration.md](v2.0/SPEC-015-self-optimizing-orchestration.md) |
+| SPEC-016 | Spec-Driven Development Workflow | v2.1 | 96 | SPEC-006 | `implemented` | [v2.1/SPEC-016-spec-driven-development-workflow.md](v2.1/SPEC-016-spec-driven-development-workflow.md) |
+| SPEC-017 | AST Hallucination Detection | v2.1 | 132 | SPEC-009 | `implemented` | [v2.1/SPEC-017-ast-hallucination-detection.md](v2.1/SPEC-017-ast-hallucination-detection.md) |
+| SPEC-018 | Context Virtualization | v2.1 | 172 | SPEC-008, SPEC-004, SPEC-012 | `implemented` | [v2.1/SPEC-018-context-virtualization.md](v2.1/SPEC-018-context-virtualization.md) |
 
 ## Dependency Graph
 
@@ -60,3 +63,4 @@ SPEC-005 ──┬──► SPEC-007 ──────────────�
 | 1 | v1.1 | 001-005 | Todas (zero deps) |
 | 2 | v1.5 | 006-010 | 006/007/009/010 paralelas; 008 espera 001+004 |
 | 3 | v2.0 | 011-015 | 011/012/013 paralelas; 014 tras 011; 015 ultima |
+| 4 | v2.1 | 016-018 | 016/017 paralelas; 018 espera 008+004+012 |

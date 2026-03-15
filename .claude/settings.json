@@ -106,6 +106,16 @@
         "hooks": [
           {
             "type": "command",
+            "command": "bun run .claude/hooks/validators/ast/hallucination-detector.ts",
+            "timeout": 10000
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
             "command": "bun run .claude/hooks/validators/typescript/syntax-validator.ts",
             "timeout": 10000
           }
@@ -138,6 +148,16 @@
             "command": "bun run .claude/hooks/validators/context/update-after-write.ts"
           }
         ]
+      },
+      {
+        "matcher": "Read|Grep|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun run .claude/hooks/context-virtualizer.ts",
+            "timeout": 5000
+          }
+        ]
       }
     ],
     "Stop": [
@@ -167,6 +187,34 @@
             "type": "command",
             "command": "bun run .claude/hooks/session-digest.ts",
             "timeout": 10000
+          }
+        ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun run .claude/hooks/security-scan.ts",
+            "timeout": 15000
+          }
+        ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun run .claude/hooks/validators/stop/validate-file-contains.ts"
+          }
+        ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun run .claude/hooks/validators/stop/validate-new-file.ts"
           }
         ]
       }

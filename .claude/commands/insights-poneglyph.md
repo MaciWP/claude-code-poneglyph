@@ -11,6 +11,7 @@ Lee y renderiza los datos acumulados del sistema de orquestacion como un dashboa
 | `~/.claude/traces/*.jsonl` | Traces de ejecucion (1 linea JSON por sesion) |
 | `~/.claude/error-patterns.jsonl` | Patrones de error conocidos |
 | `~/.claude/agent-scores.jsonl` | Scores de rendimiento por agente |
+| `~/.claude/agent-trust.jsonl` | Niveles de confianza por agente y tipo de tarea |
 | `~/.claude/patterns.jsonl` | Patrones de workflow descubiertos |
 
 ## Instrucciones
@@ -51,7 +52,24 @@ Si el archivo no existe o esta vacio: mostrar "Sin patrones de error registrados
 
 Si el archivo no existe o esta vacio: mostrar "Sin scores de agentes aun."
 
-### 4. Patrones descubiertos
+### 4. Agent trust levels
+
+1. Lee `~/.claude/agent-trust.jsonl`
+2. Parsea cada linea como JSON con campos: `agent`, `taskType`, `level`, `score`, `consecutiveSuccesses`, `totalSessions`, `lastActivity`
+3. Ordena por `level` descendente, luego por `score` descendente
+4. Para el campo Level, muestra nombre descriptivo segun valor numerico:
+   - 0 → `0 — Nuevo`
+   - 1 → `1 — Basico`
+   - 2 → `2 — Intermedio`
+   - 3 → `3 — Confiable`
+5. Muestra tabla:
+
+| Agente | Tipo de tarea | Level | Score | Sesiones | Ultima actividad |
+|--------|---------------|-------|-------|----------|-----------------|
+
+Si el archivo no existe o esta vacio: mostrar "Sin datos de agent trust aun."
+
+### 5. Patrones descubiertos
 
 1. Lee `~/.claude/patterns.jsonl`
 2. Parsea cada linea como JSON con campos: `type`, `pattern` (objeto con `agents`, `skills`, `taskType`), `confidence`, `effectSize`, `sampleSize`
@@ -63,13 +81,14 @@ Si el archivo no existe o esta vacio: mostrar "Sin scores de agentes aun."
 
 Si el archivo no existe o esta vacio: mostrar "Sin patrones descubiertos aun."
 
-### 5. Resumen final
+### 6. Resumen final
 
 Al final, muestra un bloque de resumen:
 
 - Total de traces registrados
 - Total de patrones de error conocidos
 - Agentes con score disponible
+- Entradas de agent trust registradas
 - Patrones de workflow descubiertos
 
 Si TODOS los archivos estan vacios o no existen, mostrar:

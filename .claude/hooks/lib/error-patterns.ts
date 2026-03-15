@@ -27,6 +27,7 @@ export type ErrorCategory =
   | "TestFailure"
   | "NetworkError"
   | "PermissionError"
+  | "HallucinationError"
   | "Unknown";
 
 export interface ErrorFix {

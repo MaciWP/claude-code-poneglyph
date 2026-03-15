@@ -14,6 +14,7 @@ skills:
   - performance-review
   - testing-strategy
   - anti-hallucination
+  - spec-driven
 hooks:
   post_tool_use:
     - .claude/hooks/validators/security/secrets-validator.ts
@@ -152,7 +153,22 @@ Check for performance issues:
 | Memory | Large arrays, memory leaks |
 | Caching | Missing cache for repeated ops |
 
-### Step 6: Generate Review
+### Step 6: Spec Compliance Review
+
+When reviewing implementation tied to a spec (SPEC-NNN), validate compliance:
+
+| Check | How | Verdict Impact |
+|-------|-----|----------------|
+| All BDD scenarios have tests | Grep for scenario names in test files | NEEDS_CHANGES if missing |
+| Implementation matches Design (Section 4) | Compare interfaces/patterns | NEEDS_CHANGES if diverged |
+| Spec status is valid | Check INDEX.md status | Warning if inconsistent |
+| overallCompliance >= 70 | Run SpecComplianceCheck | NEEDS_CHANGES if <70 |
+
+**When to activate**: If the builder prompt mentions a SPEC-ID, or if `.specs/` files were modified.
+
+**Spec drift detection**: If implementation introduces types/patterns NOT in Section 4 Design, flag as `spec_drift` (severity: major).
+
+### Step 7: Generate Review
 
 Produce structured review with verdict.
 

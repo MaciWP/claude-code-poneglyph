@@ -5,7 +5,7 @@
  * Runs tsc --noEmit to check for syntax errors in TypeScript files.
  */
 
-import { dirname, join } from "path";
+import { dirname, join } from "node:path";
 import {
   EXIT_CODES,
   readStdin,
@@ -35,6 +35,8 @@ async function main(): Promise<void> {
       "--isolatedModules",
       "--skipLibCheck",
       "--target",
+      "ESNext",
+      "--module",
       "ESNext",
       "--moduleResolution",
       "bundler",

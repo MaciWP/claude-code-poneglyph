@@ -23,6 +23,7 @@ Antes de delegar a builder/reviewer, detectar keywords y cargar skills relevante
 | definition, references, hover, symbols, implementation, calls, lsp | `lsp-operations` |
 | code quality, code smells, SOLID, complexity, duplication, clean code | `code-quality` |
 | validate, verify, check, exists, hallucination, confidence, claim | `anti-hallucination` |
+| spec, specification, sdd, compliance, lifecycle, spec-gen, implement-spec | `spec-driven` |
 
 ## Proceso de Matching
 

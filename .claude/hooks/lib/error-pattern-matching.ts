@@ -37,6 +37,11 @@ const CATEGORY_REGEXES: Array<{ category: ErrorCategory; regex: RegExp }> = [
     category: "PermissionError",
     regex: /EACCES|permission denied|access denied/i,
   },
+  {
+    category: "HallucinationError",
+    regex:
+      /phantom_import|phantom_symbol|phantom_property|phantom_type|wrong_arity|type_mismatch|hallucination detected/i,
+  },
 ];
 
 // ============================================================================
