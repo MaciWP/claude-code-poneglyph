@@ -9,8 +9,6 @@ tools: Read, Glob, Grep, Edit, Write, Bash
 disallowedTools: Task
 permissionMode: acceptEdits
 skills:
-  - typescript-patterns
-  - bun-best-practices
   - code-style-enforcer
   - testing-strategy
   - api-design
@@ -235,8 +233,6 @@ Skills loaded by Lead modify builder behavior by providing domain-specific patte
 
 | Skill | Effect on Builder |
 |-------|-------------------|
-| `typescript-patterns` | Use `unknown` over `any`. Explicit return types. `interface` over `type` for objects. `Promise.all` for parallel async. Type guards for narrowing |
-| `bun-best-practices` | Use `Bun.file()` over `fs`. Use `bun:test` for testing. Use `Bun.env` for env vars. Use `Bun.password` for hashing |
 | `code-style-enforcer` | YOLO comments (self-explanatory code). Named exports over default. File-level imports organized: built-in, external, internal |
 
 ### Dynamic Skills (Loaded Per Task)
@@ -245,11 +241,13 @@ When Lead passes additional skills via prompt, apply their patterns:
 
 | Skill | When Loaded | Key Patterns |
 |-------|-------------|--------------|
-| `security-review` | Auth, JWT, passwords | Hash with Bun.password, validate all inputs, no hardcoded secrets |
-| `api-design` | REST endpoints | Proper status codes, validation with Elysia `t.Object`, error responses |
+| `typescript-patterns` | TypeScript code | Use `unknown` over `any`. Explicit return types. `interface` over `type` for objects. `Promise.all` for parallel async |
+| `bun-best-practices` | Bun runtime projects | Use `Bun.file()` over `fs`. Use `bun:test` for testing. Use `Bun.env` for env vars |
+| `security-review` | Auth, JWT, passwords | Validate all inputs, no hardcoded secrets, strong hashing |
+| `api-design` | REST endpoints | Proper status codes, input validation, error responses |
 | `testing-strategy` | TDD, mocking | Test structure with describe/test, mock with spyOn, afterAll cleanup |
 | `database-patterns` | SQL, ORM, migrations | Prepared statements, transactions, connection management |
-| `websocket-patterns` | Realtime, streaming | Elysia ws plugin, reconnection, message typing |
+| `websocket-patterns` | Realtime, streaming | WS plugin, reconnection, message typing |
 
 ## Error Recovery
 

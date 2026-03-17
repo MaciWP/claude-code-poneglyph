@@ -23,7 +23,7 @@ version: "1.0"
 
 # Performance Review Patterns
 
-Performance audit checklist for TypeScript/Bun applications.
+Performance audit checklist. Ejemplos adaptables a cualquier stack. Patterns son language-agnostic.
 
 ## When to Use
 
@@ -77,13 +77,13 @@ Performance audit checklist for TypeScript/Bun applications.
 - [ ] Background tasks don't block response
 - [ ] Streaming instead of buffering large data
 
-### Bun-Specific (5 items)
+### Runtime-Specific (adapt to your stack)
 
-- [ ] Using Bun.file() for file operations
-- [ ] Using Bun.spawn() for child processes
-- [ ] Using Bun.serve() WebSocket for real-time
-- [ ] Not importing unused Node.js polyfills
-- [ ] Using Bun's native SQLite when appropriate
+- [ ] Using runtime-native file APIs when available
+- [ ] Using runtime-native process spawning
+- [ ] Using native WebSocket support when available
+- [ ] Not importing unnecessary polyfills
+- [ ] Using runtime-native database drivers when appropriate
 
 ## Red Flags
 
@@ -160,10 +160,10 @@ app.get('/file', () => {
 
 **AFTER**:
 ```typescript
-// GOOD: Async with Bun's optimized file API
+// GOOD: Async file read (use your runtime's async file API)
 app.get('/file', async () => {
-  const file = Bun.file('large-file.json')
-  return file.json()
+  const data = await readFile('large-file.json', 'utf-8')
+  return JSON.parse(data)
 })
 ```
 
@@ -343,14 +343,9 @@ CREATE INDEX idx_posts_user_id ON posts(user_id);
 CREATE INDEX idx_orders_created_at ON orders(created_at DESC);
 ```
 
-```typescript
-// In Drizzle schema
-export const users = pgTable('users', {
-  id: serial('id').primaryKey(),
-  email: varchar('email', { length: 255 }).notNull(),
-}, (table) => ({
-  emailIdx: index('idx_users_email').on(table.email),
-}))
+```
+// In your ORM schema, define indexes alongside table definitions
+// (syntax varies by ORM — Drizzle, Prisma, Sequelize, etc.)
 ```
 
 ### Large Object Serialization
@@ -467,68 +462,17 @@ app.get('/stream', ({ params }) => {
 })
 ```
 
-## Bun-Specific Optimizations
+## Runtime-Specific Optimizations
 
-### File Operations
+Use your runtime's native APIs when available for best performance:
 
-```typescript
-// GOOD: Bun's lazy file API
-const file = Bun.file('./data.json')
-const content = await file.json()
-const text = await file.text()
-const buffer = await file.arrayBuffer()
-
-// Streaming large files
-const stream = file.stream()
-for await (const chunk of stream) {
-  process(chunk)
-}
-```
-
-### HTTP Client
-
-```typescript
-// Bun's fetch is highly optimized
-const response = await fetch(url)
-
-// Use streaming for large responses
-const reader = response.body?.getReader()
-while (true) {
-  const { done, value } = await reader.read()
-  if (done) break
-  await process(value)
-}
-```
-
-### Child Processes
-
-```typescript
-// GOOD: Bun.spawn is faster
-const proc = Bun.spawn(['command', 'arg'], {
-  stdout: 'pipe',
-  stderr: 'pipe',
-})
-
-const output = await new Response(proc.stdout).text()
-await proc.exited
-```
-
-### WebSocket
-
-```typescript
-// GOOD: Bun's native WebSocket support
-Bun.serve({
-  fetch(req, server) {
-    if (server.upgrade(req)) return
-    return new Response('Not a WebSocket request', { status: 400 })
-  },
-  websocket: {
-    message(ws, message) {
-      ws.send(`Echo: ${message}`)
-    },
-  },
-})
-```
+| Operation | Principle | Example |
+|-----------|-----------|---------|
+| File I/O | Use native async file API | Runtime-specific file readers |
+| HTTP client | Use native fetch with streaming | `response.body.getReader()` for large responses |
+| Child processes | Use native process spawning | Runtime-specific spawn API |
+| WebSocket | Use native WS support | Runtime-specific WebSocket server |
+| Database | Use native drivers | Runtime-specific SQLite/DB bindings |
 
 ## Severity Levels
 
@@ -593,6 +537,7 @@ Bun.serve({
 
 ---
 
-**Version**: 1.0
+**Version**: 1.1
 **Spec**: SPEC-020
 **For**: reviewer agent
+**Patterns**: Language-agnostic

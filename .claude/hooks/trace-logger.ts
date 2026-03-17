@@ -10,9 +10,9 @@
  *   - transcript: Array<{role, content}>  (when available)
  */
 
-import { mkdirSync } from "fs";
-import { homedir } from "os";
-import { join } from "path";
+import { mkdirSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
 
 import type { TranscriptMessage } from "./lib/trace-extract";
 import {
@@ -50,7 +50,7 @@ export {
 
 export interface TraceEntry {
   ts: string;
-  sessionId: string;
+  sessionId: string | null;
   prompt: string | null;
   agents: string[] | null;
   skills: string[] | null;

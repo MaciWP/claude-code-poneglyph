@@ -1,10 +1,4 @@
-import {
-  describe,
-  test,
-  expect,
-  beforeEach,
-  afterEach,
-} from "bun:test";
+import { describe, test, expect, beforeEach, afterEach } from "bun:test";
 import { writeFileSync, unlinkSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
@@ -46,22 +40,58 @@ const BDD_CONTENT =
 const SOURCES_CONTENT =
   "| # | Source | URL |\n|---|--------|-----|\n| 1 | Example | https://example.com |\n| 2 | Docs | https://docs.example.com |";
 
-const LONG_FILLER = "and additional context is provided here to ensure the word count exceeds the minimum threshold required for a complete quality assessment by the validation engine which checks content length carefully across all sections";
+const LONG_FILLER =
+  "and additional context is provided here to ensure the word count exceeds the minimum threshold required for a complete quality assessment by the validation engine which checks content length carefully across all sections";
 
 const SECTION_DEFAULTS: Array<{ n: number; name: string; content: string }> = [
-  { n: 0, name: "Research Summary", content: `Research was conducted across multiple sources to validate the approach and identify best practices for implementation across the entire stack ${LONG_FILLER}.` },
-  { n: 1, name: "Vision", content: `This feature will provide users with an enhanced experience by implementing automated validation and feedback mechanisms across the platform ${LONG_FILLER}.` },
-  { n: 2, name: "Goals & Non-Goals", content: `The primary goal is to automate the validation pipeline and the non-goals include manual review processes and external integrations that are out of scope ${LONG_FILLER}.` },
-  { n: 3, name: "Alternatives Considered", content: `Three alternatives were evaluated including manual processes automated scripts and third party services before selecting the current approach ${LONG_FILLER}.` },
-  { n: 4, name: "Design", content: `The system architecture follows a modular pattern with clear separation of concerns between validation scoring and reporting components in the pipeline ${LONG_FILLER}.` },
-  { n: 5, name: "FAQ", content: `Common questions about the implementation include how to handle edge cases and what happens when validation fails unexpectedly during processing of inputs ${LONG_FILLER}.` },
+  {
+    n: 0,
+    name: "Research Summary",
+    content: `Research was conducted across multiple sources to validate the approach and identify best practices for implementation across the entire stack ${LONG_FILLER}.`,
+  },
+  {
+    n: 1,
+    name: "Vision",
+    content: `This feature will provide users with an enhanced experience by implementing automated validation and feedback mechanisms across the platform ${LONG_FILLER}.`,
+  },
+  {
+    n: 2,
+    name: "Goals & Non-Goals",
+    content: `The primary goal is to automate the validation pipeline and the non-goals include manual review processes and external integrations that are out of scope ${LONG_FILLER}.`,
+  },
+  {
+    n: 3,
+    name: "Alternatives Considered",
+    content: `Three alternatives were evaluated including manual processes automated scripts and third party services before selecting the current approach ${LONG_FILLER}.`,
+  },
+  {
+    n: 4,
+    name: "Design",
+    content: `The system architecture follows a modular pattern with clear separation of concerns between validation scoring and reporting components in the pipeline ${LONG_FILLER}.`,
+  },
+  {
+    n: 5,
+    name: "FAQ",
+    content: `Common questions about the implementation include how to handle edge cases and what happens when validation fails unexpectedly during processing of inputs ${LONG_FILLER}.`,
+  },
   { n: 6, name: "Acceptance Criteria", content: BDD_CONTENT },
-  { n: 7, name: "Open Questions", content: `Remaining questions include performance targets and integration timeline with existing infrastructure components in production environments for deployment ${LONG_FILLER}.` },
+  {
+    n: 7,
+    name: "Open Questions",
+    content: `Remaining questions include performance targets and integration timeline with existing infrastructure components in production environments for deployment ${LONG_FILLER}.`,
+  },
   { n: 8, name: "Sources", content: SOURCES_CONTENT },
-  { n: 9, name: "Next Steps", content: `Implementation will proceed in three phases starting with core validation followed by integration testing and production deployment across all environments ${LONG_FILLER}.` },
+  {
+    n: 9,
+    name: "Next Steps",
+    content: `Implementation will proceed in three phases starting with core validation followed by integration testing and production deployment across all environments ${LONG_FILLER}.`,
+  },
 ];
 
-function resolveSectionContent(s: typeof SECTION_DEFAULTS[0], opts: MockSpecOptions): string {
+function resolveSectionContent(
+  s: (typeof SECTION_DEFAULTS)[0],
+  opts: MockSpecOptions,
+): string {
   const overrides: Record<number, string> = {};
   if (opts.emptyBdd) overrides[6] = "";
   if (opts.noSources) overrides[8] = "";
@@ -74,7 +104,10 @@ function buildMockFrontmatter(status: string, confidence: string): string {
 
 function createMockSpec(options?: MockSpecOptions): string {
   const opts = options ?? {};
-  let spec = buildMockFrontmatter(opts.status ?? "draft", opts.confidence ?? "high");
+  let spec = buildMockFrontmatter(
+    opts.status ?? "draft",
+    opts.confidence ?? "high",
+  );
   const skip = new Set(opts.skipSections ?? []);
 
   for (const s of SECTION_DEFAULTS) {
@@ -208,9 +241,7 @@ describe("spec-compliance", () => {
       const content = createMockSpec();
       const sections = validateSections(content);
 
-      const completeSections = sections.filter(
-        (s) => s.quality === "complete",
-      );
+      const completeSections = sections.filter((s) => s.quality === "complete");
       expect(completeSections.length).toBeGreaterThan(0);
     });
 
@@ -523,13 +554,21 @@ describe("spec-compliance", () => {
 
   describe("runComplianceCheck (integration)", () => {
     test("runs on real SPEC-016 file", () => {
-      const specPath =
-        "D:\\PYTHON\\claude-code-poneglyph\\.specs\\v2.1\\SPEC-016-spec-driven-development-workflow.md";
+      const specPath = join(
+        import.meta.dir,
+        "..",
+        "..",
+        "..",
+        "..",
+        ".specs",
+        "v2.1",
+        "SPEC-016-spec-driven-development-workflow.md",
+      );
       const result = runComplianceCheck(specPath);
 
       expect(result.specId).toBe("SPEC-016");
       expect(result.specPath).toBe(specPath);
-      expect(result.status).toBe("draft");
+      expect(result.status).toBe("implemented");
       expect(result.overallCompliance).toBeGreaterThan(0);
       expect(result.sections).toHaveLength(10);
       expect(result.bddScenarios.length).toBeGreaterThan(0);
@@ -537,8 +576,16 @@ describe("spec-compliance", () => {
     });
 
     test("real spec has all 10 sections present", () => {
-      const specPath =
-        "D:\\PYTHON\\claude-code-poneglyph\\.specs\\v2.1\\SPEC-016-spec-driven-development-workflow.md";
+      const specPath = join(
+        import.meta.dir,
+        "..",
+        "..",
+        "..",
+        "..",
+        ".specs",
+        "v2.1",
+        "SPEC-016-spec-driven-development-workflow.md",
+      );
       const result = runComplianceCheck(specPath);
 
       for (const sec of result.sections) {
@@ -547,10 +594,7 @@ describe("spec-compliance", () => {
     });
 
     test("runs on mock spec via temp file", () => {
-      const tmpPath = join(
-        tmpdir(),
-        `SPEC-042-mock-test-${Date.now()}.md`,
-      );
+      const tmpPath = join(tmpdir(), `SPEC-042-mock-test-${Date.now()}.md`);
       writeFileSync(tmpPath, createMockSpec());
 
       try {
@@ -565,10 +609,7 @@ describe("spec-compliance", () => {
     });
 
     test("minimal mock spec generates issues for missing sections", () => {
-      const tmpPath = join(
-        tmpdir(),
-        `SPEC-TEST-${Date.now()}-minimal.md`,
-      );
+      const tmpPath = join(tmpdir(), `SPEC-TEST-${Date.now()}-minimal.md`);
       const minimalSpec = createMockSpec({
         skipSections: [0, 3, 5, 7, 9],
         emptyBdd: true,
@@ -718,7 +759,8 @@ describe("spec-compliance", () => {
     });
 
     test("returns null for header separator row", () => {
-      const line = "|-----|------|---------|-----------|-----------|--------|------|";
+      const line =
+        "|-----|------|---------|-----------|-----------|--------|------|";
       expect(parseIndexEntry(line)).toBeNull();
     });
 
@@ -738,10 +780,7 @@ describe("spec-compliance", () => {
     let tmpIndexPath: string;
 
     beforeEach(() => {
-      tmpIndexPath = join(
-        tmpdir(),
-        `INDEX-test-${Date.now()}.md`,
-      );
+      tmpIndexPath = join(tmpdir(), `INDEX-test-${Date.now()}.md`);
       writeFileSync(tmpIndexPath, createMockIndex());
     });
 
@@ -770,11 +809,7 @@ describe("spec-compliance", () => {
         "utf-8",
       );
 
-      const result = updateIndexStatus(
-        tmpIndexPath,
-        "SPEC-002",
-        "implemented",
-      );
+      const result = updateIndexStatus(tmpIndexPath, "SPEC-002", "implemented");
 
       expect(result.success).toBe(false);
       expect(result.error).toContain("Invalid transition");
@@ -794,11 +829,7 @@ describe("spec-compliance", () => {
     });
 
     test("approved -> in_progress transition works", () => {
-      const result = updateIndexStatus(
-        tmpIndexPath,
-        "SPEC-003",
-        "in_progress",
-      );
+      const result = updateIndexStatus(tmpIndexPath, "SPEC-003", "in_progress");
 
       expect(result.success).toBe(true);
 

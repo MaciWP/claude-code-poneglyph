@@ -3,120 +3,131 @@
 /**
  * Secrets Validator - PostToolUse Hook
  *
- * Detects hardcoded secrets in code files to prevent accidental commits.
- * Scans for AWS keys, GitHub tokens, API keys, private keys, JWTs, and passwords.
+ * Detects hardcoded secrets, API keys, and credentials in code files.
+ * All detected patterns block the operation (high severity).
  */
 
-import { readStdin, reportError, isCodeFile, EXIT_CODES } from '../config'
+import { readStdin, reportError, isCodeFile, EXIT_CODES } from "../config";
 
 // =============================================================================
 // Secret Patterns
 // =============================================================================
 
 interface SecretPattern {
-  name: string
-  pattern: RegExp
+  name: string;
+  pattern: RegExp;
 }
 
 const SECRET_PATTERNS: SecretPattern[] = [
-  { name: 'AWS Access Key', pattern: /AKIA[0-9A-Z]{16}/g },
-  { name: 'AWS Secret Key', pattern: /(?:aws[_-]?secret|secret[_-]?access[_-]?key)['":\s]*[=:]\s*['"]?[A-Za-z0-9/+=]{40}/gi },
-  { name: 'GitHub Token', pattern: /gh[ps]_[A-Za-z0-9]{36,}/g },
   {
-    name: 'Generic API Key',
-    pattern: /api[_-]?key['":\s]*[=:]\s*['"][A-Za-z0-9]{20,}['"]/gi,
+    name: "AWS Access Key",
+    pattern: /AKIA[0-9A-Z]{16}/g,
   },
   {
-    name: 'Private Key',
-    pattern: /-----BEGIN (RSA |EC |DSA )?PRIVATE KEY-----/g,
+    name: "Private Key",
+    pattern: /-----BEGIN.*PRIVATE KEY-----/g,
   },
   {
-    name: 'JWT Token',
-    pattern: /eyJ[A-Za-z0-9-_]+\.eyJ[A-Za-z0-9-_]+\.[A-Za-z0-9-_.+/=]*/g,
+    name: "JWT Token",
+    pattern: /eyJ[a-zA-Z0-9_-]+\.eyJ/g,
   },
-  { name: 'Password Assignment', pattern: /password\s*[=:]\s*['"][^'"]{8,}['"]/gi },
-]
+  {
+    name: "Hardcoded Secret",
+    pattern: /(password|secret|api_key|token)\s*[:=]\s*['"][^'"]{8,}/gi,
+  },
+  {
+    name: "MongoDB Connection String",
+    pattern: /mongodb(\+srv)?:\/\/[^:]+:[^@]+@/g,
+  },
+  {
+    name: "PostgreSQL Connection String",
+    pattern: /postgres:\/\/[^:]+:[^@]+@/g,
+  },
+  {
+    name: "API Key (Stripe/OpenAI)",
+    pattern: /(sk-|pk_live_|sk_live_)[a-zA-Z0-9]{20,}/g,
+  },
+  {
+    name: "GitHub Token",
+    pattern: /ghp_[a-zA-Z0-9]{36}/g,
+  },
+];
 
 // =============================================================================
 // Path Ignore Patterns
 // =============================================================================
 
 const IGNORE_PATH_PATTERNS = [
-  'test',
-  'spec',
-  'mock',
-  'fixture',
-  'node_modules',
-]
+  "test",
+  "spec",
+  "mock",
+  "fixture",
+  "node_modules",
+  ".env.example",
+];
 
 // =============================================================================
 // Detection Logic
 // =============================================================================
 
 interface SecretFinding {
-  patternName: string
-  match: string
+  patternName: string;
+  match: string;
 }
 
 /**
  * Checks if a file path should be ignored for secrets scanning.
- *
- * @param path - File path to check
- * @returns True if path contains any ignore patterns
  */
 function shouldIgnorePath(path: string): boolean {
-  const normalizedPath = path.toLowerCase().replace(/\\/g, '/')
-  return IGNORE_PATH_PATTERNS.some((pattern) => normalizedPath.includes(pattern))
+  const normalizedPath = path.toLowerCase().replace(/\\/g, "/");
+  return IGNORE_PATH_PATTERNS.some((pattern) =>
+    normalizedPath.includes(pattern),
+  );
 }
 
 /**
  * Scans content for hardcoded secrets.
- *
- * @param content - File content to scan
- * @returns Array of findings with pattern name and matched text
  */
 function detectSecrets(content: string): SecretFinding[] {
-  const findings: SecretFinding[] = []
+  const findings: SecretFinding[] = [];
 
   for (const { name, pattern } of SECRET_PATTERNS) {
-    // Reset regex lastIndex for global patterns
-    pattern.lastIndex = 0
-    const matches = content.match(pattern)
+    pattern.lastIndex = 0;
+    const matches = content.match(pattern);
 
     if (matches) {
       for (const match of matches) {
-        // Truncate long matches for readability
-        const displayMatch = match.length > 50 ? `${match.slice(0, 50)}...` : match
-        findings.push({ patternName: name, match: displayMatch })
+        const displayMatch =
+          match.length > 60 ? `${match.slice(0, 60)}...` : match;
+        findings.push({ patternName: name, match: displayMatch });
       }
     }
   }
 
-  return findings
+  return findings;
 }
 
 /**
  * Formats findings into a human-readable error message.
- *
- * @param findings - Array of secret findings
- * @param filePath - Path of the file containing secrets
- * @returns Formatted error message
  */
 function formatFindings(findings: SecretFinding[], filePath: string): string {
   const lines = [
-    `SECURITY: Potential secrets detected in ${filePath}`,
-    '',
-    'Findings:',
-  ]
+    `SECURITY: Hardcoded secrets detected in ${filePath}`,
+    "",
+    "BLOCKED (all secrets are high severity):",
+  ];
 
   for (const { patternName, match } of findings) {
-    lines.push(`  - ${patternName}: ${match}`)
+    lines.push(`  - ${patternName}: ${match}`);
   }
 
-  lines.push('')
-  lines.push('Please remove hardcoded secrets and use environment variables instead.')
+  lines.push("");
+  lines.push("Recommendations:");
+  lines.push("  - Use environment variables for secrets");
+  lines.push("  - Use a secrets manager (Vault, AWS Secrets Manager)");
+  lines.push("  - Never commit credentials to version control");
 
-  return lines.join('\n')
+  return lines.join("\n");
 }
 
 // =============================================================================
@@ -125,53 +136,53 @@ function formatFindings(findings: SecretFinding[], filePath: string): string {
 
 async function main(): Promise<void> {
   try {
-    const input = await readStdin()
+    const input = await readStdin();
 
     // Only validate Write and Edit tools
-    if (input.tool_name !== 'Write' && input.tool_name !== 'Edit') {
-      process.exit(EXIT_CODES.PASS)
+    if (input.tool_name !== "Write" && input.tool_name !== "Edit") {
+      process.exit(EXIT_CODES.PASS);
     }
 
-    const filePath = input.tool_input.file_path
+    const filePath = input.tool_input.file_path;
     if (!filePath) {
-      process.exit(EXIT_CODES.PASS)
+      process.exit(EXIT_CODES.PASS);
     }
 
     // Skip non-code files
     if (!isCodeFile(filePath)) {
-      process.exit(EXIT_CODES.PASS)
+      process.exit(EXIT_CODES.PASS);
     }
 
     // Skip test/mock/fixture files
     if (shouldIgnorePath(filePath)) {
-      process.exit(EXIT_CODES.PASS)
+      process.exit(EXIT_CODES.PASS);
     }
 
     // Get content from tool_input or read from file
-    let content = input.tool_input.content
+    let content = input.tool_input.content;
 
     if (!content) {
-      const file = Bun.file(filePath)
+      const file = Bun.file(filePath);
       if (await file.exists()) {
-        content = await file.text()
+        content = await file.text();
       } else {
-        // File does not exist, nothing to validate
-        process.exit(EXIT_CODES.PASS)
+        process.exit(EXIT_CODES.PASS);
       }
     }
 
     // Scan for secrets
-    const findings = detectSecrets(content)
+    const findings = detectSecrets(content);
 
-    if (findings.length > 0) {
-      reportError(formatFindings(findings, filePath))
+    if (findings.length === 0) {
+      process.exit(EXIT_CODES.PASS);
     }
 
-    process.exit(EXIT_CODES.PASS)
+    // All secrets are high severity — block
+    reportError(formatFindings(findings, filePath));
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error'
-    reportError(`secrets-validator failed: ${message}`)
+    const message = error instanceof Error ? error.message : "Unknown error";
+    reportError(`secrets-validator failed: ${message}`);
   }
 }
 
-main()
+main();

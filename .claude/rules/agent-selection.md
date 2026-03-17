@@ -17,7 +17,7 @@
 | >3 subtasks, decompose | task-decomposer | planner | - |
 | architecture, RFC, design system | architect | planner | simple features |
 | code quality, code smells | code-quality | reviewer | - |
-| UI testing, browser, e2e | browser-qa | builder | - |
+| UI testing, browser, e2e | builder | - | Load playwright-browser skill |
 | bug documentation, knowledge base | bug-documenter | builder | - |
 
 ## Multi-Agent Patterns

@@ -20,7 +20,7 @@ version: "1.0"
 
 # Security Review Checklist
 
-OWASP Top 10 based security audit for TypeScript/Bun applications.
+OWASP Top 10 based security audit. Ejemplos adaptables a cualquier stack. Patterns son language-agnostic.
 
 ## When to Use
 
@@ -56,7 +56,7 @@ OWASP Top 10 based security audit for TypeScript/Bun applications.
 
 ### Input Validation (7 items)
 
-- [ ] All user input validated with schema (Zod/TypeBox)
+- [ ] All user input validated with schema validation library
 - [ ] File uploads validated (type, size, content)
 - [ ] No raw SQL queries with string concatenation
 - [ ] HTML output escaped/sanitized (DOMPurify)
@@ -158,12 +158,8 @@ const JWT_SECRET = 'my-secret-key'
 
 **AFTER**:
 ```typescript
-// GOOD: Strong hashing with Bun
-const hash = await Bun.password.hash(password, {
-  algorithm: 'argon2id',
-  memoryCost: 65536,
-  timeCost: 3
-})
+// GOOD: Strong hashing (use argon2id or bcrypt with cost >= 10)
+const hash = await hashPassword(password, { algorithm: 'argon2id' })
 
 // GOOD: Environment variable
 const JWT_SECRET = process.env.JWT_SECRET
@@ -195,8 +191,8 @@ eval(userProvidedCode)
 
 **AFTER**:
 ```typescript
-// GOOD: Parameterized query
-db.select().from(users).where(eq(users.id, userId))
+// GOOD: Parameterized query (use your ORM or prepared statements)
+db.query('SELECT * FROM users WHERE id = ?', [userId])
 
 // GOOD: Validated command
 const safeUrl = validateGitUrl(userUrl)
@@ -228,14 +224,8 @@ app.post('/api/login', async ({ body }) => {
 
 **AFTER**:
 ```typescript
-// GOOD: Rate limiting + account lockout
-import { rateLimit } from 'elysia-rate-limit'
-
-app.use(rateLimit({
-  max: 5,
-  duration: 60000,
-  key: (req) => req.body.email
-}))
+// GOOD: Rate limiting + account lockout (use your framework's rate limiter)
+app.use(rateLimit({ max: 5, window: '1m', keyBy: 'body.email' }))
 
 app.post('/api/login', async ({ body }) => {
   const attempts = await getFailedAttempts(body.email)
@@ -281,15 +271,11 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE']
 }))
 
-// GOOD: Security headers
-app.use((app) => {
-  app.onResponse(({ set }) => {
-    set.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
-    set.headers['X-Frame-Options'] = 'DENY'
-    set.headers['X-Content-Type-Options'] = 'nosniff'
-    set.headers['Content-Security-Policy'] = "default-src 'self'"
-  })
-})
+// GOOD: Security headers (use your framework's middleware)
+// Strict-Transport-Security: max-age=31536000; includeSubDomains
+// X-Frame-Options: DENY
+// X-Content-Type-Options: nosniff
+// Content-Security-Policy: default-src 'self'
 ```
 
 ### A06: Vulnerable Components
@@ -312,14 +298,14 @@ app.use((app) => {
 
 **AFTER**:
 ```bash
-# Regular security audits
-bun audit
+# Regular security audits (use your package manager)
+npm audit / bun audit / yarn audit
 
 # Update dependencies
-bun update
+npm update / bun update
 
 # Use exact versions in lock file
-bun install --frozen-lockfile
+npm ci / bun install --frozen-lockfile
 ```
 
 ### A07: Authentication Failures
@@ -350,13 +336,16 @@ cookie.set('session', crypto.randomUUID(), {
   maxAge: 3600
 })
 
-// GOOD: Strong password requirements
-const passwordSchema = z.string()
-  .min(12, 'Password must be at least 12 characters')
-  .regex(/[A-Z]/, 'Must contain uppercase')
-  .regex(/[a-z]/, 'Must contain lowercase')
-  .regex(/[0-9]/, 'Must contain number')
-  .regex(/[^A-Za-z0-9]/, 'Must contain special character')
+// GOOD: Strong password requirements (validate with your schema library)
+// - Minimum 12 characters
+// - Must contain uppercase, lowercase, number, and special character
+function validatePassword(password: string): boolean {
+  return password.length >= 12
+    && /[A-Z]/.test(password)
+    && /[a-z]/.test(password)
+    && /[0-9]/.test(password)
+    && /[^A-Za-z0-9]/.test(password)
+}
 ```
 
 ### A08: Data Integrity Failures
@@ -383,12 +372,8 @@ const order = JSON.parse(body.order) // Could be manipulated
 import { verify } from 'jsonwebtoken'
 const payload = verify(token, process.env.JWT_SECRET)
 
-// GOOD: Validate and verify
-const orderSchema = z.object({
-  items: z.array(itemSchema),
-  total: z.number()
-})
-const order = orderSchema.parse(body)
+// GOOD: Validate input with schema validation, then verify server-side
+const order = validateSchema(body, orderSchema)
 // Recalculate total server-side, don't trust client
 order.total = calculateTotal(order.items)
 ```
@@ -493,7 +478,7 @@ app.get('/proxy', async ({ query }) => {
 ### Critical Issues
 - **A03 Injection**: SQL injection in `userService.ts:45`
   - Line: `db.query(\`SELECT * FROM users WHERE id = '\${id}'\`)`
-  - Fix: Use parameterized query with Drizzle ORM
+  - Fix: Use parameterized query or ORM
   - CVSS: 9.8
 
 ### High Severity
@@ -508,17 +493,18 @@ app.get('/proxy', async ({ query }) => {
 
 ### Low Severity
 - **A06 Components**: Outdated dependency `lodash@4.17.15`
-  - Fix: Run `bun update lodash`
+  - Fix: Update dependency to latest version
 
 ### Passed Checks
 - [x] Password hashing uses argon2id
 - [x] CORS properly configured
 - [x] JWT from environment variable
-- [x] Input validation with Zod schemas
+- [x] Input validation with schema library
 ```
 
 ---
 
-**Version**: 1.0
+**Version**: 1.1
 **Spec**: SPEC-020
 **For**: reviewer agent
+**Patterns**: Language-agnostic

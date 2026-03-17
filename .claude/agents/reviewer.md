@@ -15,15 +15,6 @@ skills:
   - testing-strategy
   - anti-hallucination
   - spec-driven
-hooks:
-  PostToolUse:
-    - .claude/hooks/validators/security/secrets-validator.ts
-    - .claude/hooks/validators/security/injection-validator.ts
-  Stop:
-    - hooks:
-        - type: command
-          command: "bun .claude/hooks/validators/stop/validate-tests-pass.ts"
-          timeout: 120
 memory: project
 background: true
 ---

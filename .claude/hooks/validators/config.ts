@@ -14,13 +14,13 @@
  * Contains information about the tool that was executed.
  */
 export interface HookInput {
-  tool_name: string
+  tool_name: string;
   tool_input: {
-    file_path?: string
-    content?: string
-    command?: string
-  }
-  tool_output: string
+    file_path?: string;
+    content?: string;
+    command?: string;
+  };
+  tool_output: string;
 }
 
 // =============================================================================
@@ -35,9 +35,9 @@ export interface HookInput {
 export const EXIT_CODES = {
   PASS: 0,
   BLOCK: 2,
-} as const
+} as const;
 
-export type ExitCode = (typeof EXIT_CODES)[keyof typeof EXIT_CODES]
+export type ExitCode = (typeof EXIT_CODES)[keyof typeof EXIT_CODES];
 
 // =============================================================================
 // Utility Functions
@@ -51,22 +51,22 @@ export type ExitCode = (typeof EXIT_CODES)[keyof typeof EXIT_CODES]
  */
 async function readStdinRaw(): Promise<string> {
   return new Promise((resolve, reject) => {
-    const chunks: string[] = []
+    const chunks: string[] = [];
 
-    process.stdin.setEncoding('utf8')
+    process.stdin.setEncoding("utf8");
 
-    process.stdin.on('data', (chunk: string) => {
-      chunks.push(chunk)
-    })
+    process.stdin.on("data", (chunk: string) => {
+      chunks.push(chunk);
+    });
 
-    process.stdin.on('end', () => {
-      resolve(chunks.join(''))
-    })
+    process.stdin.on("end", () => {
+      resolve(chunks.join(""));
+    });
 
-    process.stdin.on('error', reject)
+    process.stdin.on("error", reject);
 
-    process.stdin.resume()
-  })
+    process.stdin.resume();
+  });
 }
 
 /**
@@ -78,22 +78,22 @@ async function readStdinRaw(): Promise<string> {
  */
 export async function readStdin(): Promise<HookInput> {
   try {
-    const stdin = await readStdinRaw()
+    const stdin = await readStdinRaw();
 
     if (!stdin.trim()) {
-      throw new Error('Empty stdin received')
+      throw new Error("Empty stdin received");
     }
 
-    const input = JSON.parse(stdin) as HookInput
+    const input = JSON.parse(stdin) as HookInput;
 
     if (!input.tool_name) {
-      throw new Error('Missing tool_name in input')
+      throw new Error("Missing tool_name in input");
     }
 
-    return input
+    return input;
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error'
-    throw new Error(`Failed to read stdin: ${message}`)
+    const message = error instanceof Error ? error.message : "Unknown error";
+    throw new Error(`Failed to read stdin: ${message}`);
   }
 }
 
@@ -105,8 +105,8 @@ export async function readStdin(): Promise<HookInput> {
  * @returns Never (process exits)
  */
 export function reportError(message: string): never {
-  console.error(message)
-  process.exit(EXIT_CODES.BLOCK)
+  console.error(message);
+  process.exit(EXIT_CODES.BLOCK);
 }
 
 /**
@@ -116,8 +116,8 @@ export function reportError(message: string): never {
  * @returns True if path ends with .ts or .tsx
  */
 export function isTypeScriptFile(path: string): boolean {
-  const normalized = path.toLowerCase()
-  return normalized.endsWith('.ts') || normalized.endsWith('.tsx')
+  const normalized = path.toLowerCase();
+  return normalized.endsWith(".ts") || normalized.endsWith(".tsx");
 }
 
 /**
@@ -127,7 +127,7 @@ export function isTypeScriptFile(path: string): boolean {
  * @returns True if path ends with .json
  */
 export function isJsonFile(path: string): boolean {
-  return path.toLowerCase().endsWith('.json')
+  return path.toLowerCase().endsWith(".json");
 }
 
 /**
@@ -137,18 +137,37 @@ export function isJsonFile(path: string): boolean {
  * @returns True if path ends with .js or .jsx
  */
 export function isJavaScriptFile(path: string): boolean {
-  const normalized = path.toLowerCase()
-  return normalized.endsWith('.js') || normalized.endsWith('.jsx')
+  const normalized = path.toLowerCase();
+  return normalized.endsWith(".js") || normalized.endsWith(".jsx");
 }
 
+const CODE_EXTENSIONS = new Set([
+  "ts",
+  "tsx",
+  "js",
+  "jsx",
+  "py",
+  "go",
+  "java",
+  "rs",
+  "c",
+  "cpp",
+  "cs",
+  "rb",
+  "php",
+  "swift",
+  "kt",
+]);
+
 /**
- * Checks if a file path is a code file (TypeScript or JavaScript).
+ * Checks if a file path is a code file across supported languages.
  *
  * @param path - File path to check
- * @returns True if path is a .ts, .tsx, .js, or .jsx file
+ * @returns True if path has a recognized code extension
  */
 export function isCodeFile(path: string): boolean {
-  return isTypeScriptFile(path) || isJavaScriptFile(path)
+  const ext = path.split(".").pop()?.toLowerCase();
+  return ext ? CODE_EXTENSIONS.has(ext) : false;
 }
 
 /**
@@ -158,11 +177,11 @@ export function isCodeFile(path: string): boolean {
  * @returns Extension without the dot, or empty string if none
  */
 export function getExtension(path: string): string {
-  const lastDot = path.lastIndexOf('.')
+  const lastDot = path.lastIndexOf(".");
   if (lastDot === -1 || lastDot === path.length - 1) {
-    return ''
+    return "";
   }
-  return path.slice(lastDot + 1).toLowerCase()
+  return path.slice(lastDot + 1).toLowerCase();
 }
 
 /**
@@ -173,5 +192,5 @@ export function getExtension(path: string): string {
  * @returns Normalized path
  */
 export function normalizePath(path: string): string {
-  return path.replace(/\\/g, '/').toLowerCase()
+  return path.replace(/\\/g, "/").toLowerCase();
 }

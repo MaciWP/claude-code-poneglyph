@@ -11,7 +11,7 @@
  * Exit 0 = tests pass, Exit 2 = tests fail (last 30 lines in stderr).
  */
 
-import { resolve } from "path";
+import { resolve } from "node:path";
 import { EXIT_CODES } from "../config";
 
 const TEST_TIMEOUT_MS = 120_000;
@@ -80,11 +80,68 @@ async function getSubProjects(root: string): Promise<SubProject[]> {
 }
 
 // =============================================================================
+// Test Runner Detection
+// =============================================================================
+
+interface TestRunner {
+  cmd: string[];
+  name: string;
+}
+
+async function detectTestRunner(
+  projectRoot: string,
+): Promise<TestRunner | null> {
+  const exists = async (rel: string): Promise<boolean> =>
+    Bun.file(resolve(projectRoot, rel)).exists();
+
+  if (
+    (await exists("bun.lockb")) ||
+    (await exists("bun.lock")) ||
+    (await exists("bunfig.toml"))
+  ) {
+    return { cmd: [process.execPath, "test"], name: "bun test" };
+  }
+
+  if (
+    (await exists("pyproject.toml")) ||
+    (await exists("pytest.ini")) ||
+    (await exists("setup.py"))
+  ) {
+    return { cmd: ["pytest", "--tb=short", "-q"], name: "pytest" };
+  }
+
+  if (await exists("go.mod")) {
+    return { cmd: ["go", "test", "./..."], name: "go test" };
+  }
+
+  if (await exists("Cargo.toml")) {
+    return { cmd: ["cargo", "test"], name: "cargo test" };
+  }
+
+  if (await exists("package.json")) {
+    try {
+      const pkg = await Bun.file(resolve(projectRoot, "package.json")).json();
+      const testScript = pkg?.scripts?.test;
+      if (
+        typeof testScript === "string" &&
+        testScript !== 'echo "Error: no test specified" && exit 1'
+      ) {
+        return { cmd: ["npm", "test"], name: "npm test" };
+      }
+    } catch {
+      // malformed package.json — skip
+    }
+  }
+
+  return null;
+}
+
+// =============================================================================
 // Test Execution
 // =============================================================================
 
-function buildTestCommand(testPath?: string): string[] {
-  const args = [process.execPath, "test"];
+function buildTestCommand(runner: TestRunner, testPath?: string): string[] {
+  const args = [...runner.cmd];
   if (testPath) {
     args.push(testPath);
   }
@@ -120,9 +177,10 @@ function hasNewFailures(result: TestResult): boolean {
 
 async function runTestsInProject(
   project: SubProject,
+  runner: TestRunner,
   testPath?: string,
 ): Promise<TestResult> {
-  const command = buildTestCommand(testPath || project.testPath);
+  const command = buildTestCommand(runner, testPath || project.testPath);
 
   const proc = Bun.spawn(command, {
     cwd: project.cwd,
@@ -176,11 +234,15 @@ async function main(): Promise<void> {
   const subProjects = await getSubProjects(root);
 
   if (subProjects.length === 0) {
-    // No subprojects and no root tests found — nothing to validate
     process.exit(EXIT_CODES.PASS);
   }
 
-  // If VALIDATE_TEST_PATH is set, determine which subproject it belongs to
+  const runner = await detectTestRunner(root);
+  if (!runner) {
+    console.error("[stop-hook] No test runner detected, skipping validation.");
+    process.exit(EXIT_CODES.PASS);
+  }
+
   if (testPath) {
     const normalizedPath = testPath.replace(/\\/g, "/");
     const matched = subProjects.find((sp) => {
@@ -192,7 +254,7 @@ async function main(): Promise<void> {
     });
 
     if (matched) {
-      const result = await runTestsInProject(matched, testPath);
+      const result = await runTestsInProject(matched, runner, testPath);
       if (!hasNewFailures(result)) {
         process.exit(EXIT_CODES.PASS);
       }
@@ -204,11 +266,10 @@ async function main(): Promise<void> {
     }
   }
 
-  // Run tests in each subproject sequentially
   const newFailures: TestResult[] = [];
 
   for (const project of subProjects) {
-    const result = await runTestsInProject(project);
+    const result = await runTestsInProject(project, runner);
     if (hasNewFailures(result)) {
       newFailures.push(result);
     }

@@ -18,7 +18,7 @@ version: "1.0"
 
 # Retry Patterns
 
-Patrones de resiliencia para manejo de fallos transitorios en TypeScript/Bun.
+Patrones de resiliencia para manejo de fallos transitorios. Ejemplos adaptables a cualquier stack. Patterns son language-agnostic.
 
 ## When to Use
 
@@ -142,7 +142,7 @@ async function withExponentialBackoff<T>(
       }
 
       console.log(`Retry ${attempt + 1} after ${Math.round(delay)}ms`)
-      await Bun.sleep(delay)
+      await sleep(delay) // Use your runtime's sleep/delay function
     }
   }
 
@@ -198,7 +198,7 @@ async function withRetryOnTransient<T>(
       if (attempt < maxRetries - 1) {
         const delay = baseDelayMs * Math.pow(2, attempt) * (0.5 + Math.random())
         console.log(`Transient error, retry ${attempt + 1} after ${Math.round(delay)}ms`)
-        await Bun.sleep(delay)
+        await sleep(delay) // Use your runtime's sleep/delay function
       }
     }
   }
@@ -369,7 +369,7 @@ class ResilientClient {
         if (jitter) delay = delay * (0.5 + Math.random())
 
         console.log(`Retry ${attempt + 1}/${maxRetries} after ${Math.round(delay)}ms`)
-        await Bun.sleep(delay)
+        await sleep(delay) // Use your runtime's sleep/delay function
       }
     }
 
@@ -404,53 +404,40 @@ export function createResilientClient(config?: Partial<ResilienceConfig>): Resil
 
 ## Integration Examples
 
-### Elysia Plugin Integration
+### Resilient HTTP Fetch (framework-agnostic)
 
 ```typescript
-import { Elysia } from 'elysia'
-import { createResilientClient } from './resilient-client'
+// Wrap fetch with resilience — adapt to your framework's middleware pattern
+const client = createResilientClient()
 
-const resilientPlugin = new Elysia({ name: 'resilient' })
-  .decorate('resilient', createResilientClient())
-  .derive(({ resilient }) => ({
-    fetchWithResilience: async <T>(url: string, options?: RequestInit): Promise<T> => {
-      return resilient.execute(
-        async () => {
-          const response = await fetch(url, options)
-          if (!response.ok) {
-            const error = new Error(`HTTP ${response.status}`)
-            ;(error as any).status = response.status
-            throw error
-          }
-          return response.json()
-        },
-        url // Use URL as cache key
-      )
-    }
-  }))
-
-// Usage in routes
-const app = new Elysia()
-  .use(resilientPlugin)
-  .get('/external-data', async ({ fetchWithResilience }) => {
-    return fetchWithResilience('https://api.example.com/data')
-  })
+async function fetchWithResilience<T>(url: string, options?: RequestInit): Promise<T> {
+  return client.execute(
+    async () => {
+      const response = await fetch(url, options)
+      if (!response.ok) {
+        const error = new Error(`HTTP ${response.status}`)
+        ;(error as any).status = response.status
+        throw error
+      }
+      return response.json()
+    },
+    url
+  )
+}
 ```
 
-### Database Connection with Retry
+### Database Connection with Retry (generic)
 
 ```typescript
-import { drizzle } from 'drizzle-orm/bun-sqlite'
-
+// Adapt to your ORM/driver
 async function createDatabaseConnection(
-  dbPath: string,
+  connectionString: string,
   maxRetries = 5
-): Promise<ReturnType<typeof drizzle>> {
+): Promise<DatabaseClient> {
   return withExponentialBackoff(
     async () => {
-      const db = drizzle(dbPath)
-      // Test connection
-      await db.run('SELECT 1')
+      const db = createClient(connectionString)
+      await db.query('SELECT 1')
       return db
     },
     { maxRetries, baseDelayMs: 1000, maxDelayMs: 30000, jitter: true }
@@ -510,7 +497,7 @@ class RateLimitedClient {
           const retryAfter = (error as any).headers?.['retry-after']
           if (retryAfter) {
             console.log(`Rate limited, waiting ${retryAfter}s`)
-            await Bun.sleep(parseInt(retryAfter) * 1000)
+            await sleep(parseInt(retryAfter) * 1000)
             return fn()
           }
         }
@@ -527,7 +514,7 @@ class RateLimitedClient {
       const oldestRequest = this.requests[0]
       const waitTime = this.rateLimit.windowMs - (now - oldestRequest)
       console.log(`Rate limit reached, waiting ${waitTime}ms`)
-      await Bun.sleep(waitTime)
+      await sleep(waitTime)
     }
 
     this.requests.push(now)
@@ -569,6 +556,7 @@ class RateLimitedClient {
 
 ---
 
-**Version**: 1.0
+**Version**: 1.1
 **Spec**: SPEC-018
 **For**: error-analyzer agent
+**Patterns**: Language-agnostic

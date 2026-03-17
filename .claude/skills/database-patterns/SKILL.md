@@ -10,9 +10,11 @@ disable-model-invocation: false
 
 # Database Patterns Skill
 
+Ejemplos adaptables a cualquier stack. Patterns son language-agnostic.
+
 ## Cuándo Usar
 
-Activar cuando el prompt contenga: database, sql, drizzle, prisma, migration, transaction, query, orm, schema, index.
+Activar cuando el prompt contenga: database, sql, migration, transaction, query, orm, schema, index.
 
 ## Schema Design
 
@@ -39,63 +41,48 @@ CREATE INDEX idx_active_users ON users(email) WHERE status = 'active';
 
 ### Relaciones
 
-| Tipo | Implementación Drizzle |
-|------|------------------------|
-| 1:1 | `references()` con unique |
-| 1:N | `references()` en tabla hija |
-| N:M | Tabla intermedia |
+| Tipo | Implementación |
+|------|----------------|
+| 1:1 | Foreign key con unique constraint |
+| 1:N | Foreign key en tabla hija |
+| N:M | Tabla intermedia (junction table) |
 
-## Drizzle ORM Patterns
+## ORM Patterns
 
-### Definición de Schema
+### Definición de Schema (pseudocode — adapt to your ORM)
 
-```typescript
-import { pgTable, serial, text, timestamp, integer } from 'drizzle-orm/pg-core';
+```sql
+-- Schema definition (SQL — universal)
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW() NOT NULL
+);
 
-export const users = pgTable('users', {
-  id: serial('id').primaryKey(),
-  email: text('email').notNull().unique(),
-  name: text('name').notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-});
-
-export const posts = pgTable('posts', {
-  id: serial('id').primaryKey(),
-  title: text('title').notNull(),
-  content: text('content'),
-  authorId: integer('author_id').references(() => users.id).notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-});
+CREATE TABLE posts (
+  id SERIAL PRIMARY KEY,
+  title TEXT NOT NULL,
+  content TEXT,
+  author_id INTEGER NOT NULL REFERENCES users(id),
+  created_at TIMESTAMP DEFAULT NOW() NOT NULL
+);
 ```
 
-### Type-Safe Queries
+### Type-Safe Queries (ORM pseudocode)
 
-```typescript
-import { db } from './db';
-import { users, posts } from './schema';
-import { eq, and, gt, desc } from 'drizzle-orm';
+```sql
+-- Select con filtros
+SELECT * FROM users WHERE status = 'active';
 
-// Select con filtros
-const activeUsers = await db
-  .select()
-  .from(users)
-  .where(eq(users.status, 'active'));
+-- Join
+SELECT u.name, p.title
+FROM users u
+INNER JOIN posts p ON u.id = p.author_id
+WHERE p.created_at > '2024-01-01';
 
-// Join
-const userPosts = await db
-  .select({
-    userName: users.name,
-    postTitle: posts.title,
-  })
-  .from(users)
-  .innerJoin(posts, eq(users.id, posts.authorId))
-  .where(gt(posts.createdAt, new Date('2024-01-01')));
-
-// Insert returning
-const [newUser] = await db
-  .insert(users)
-  .values({ email: 'test@example.com', name: 'Test' })
-  .returning();
+-- Insert returning
+INSERT INTO users (email, name) VALUES ('test@example.com', 'Test') RETURNING *;
 ```
 
 ## Migrations
@@ -110,17 +97,17 @@ drizzle/
     └── _journal.json
 ```
 
-### Comandos
+### Comandos (adapt to your ORM/migration tool)
 
 ```bash
 # Generar migración desde cambios en schema
-bun drizzle-kit generate
+<orm-cli> generate
 
 # Aplicar migraciones pendientes
-bun drizzle-kit migrate
+<orm-cli> migrate
 
 # Push directo (desarrollo)
-bun drizzle-kit push
+<orm-cli> push
 ```
 
 ### Rollback Pattern
@@ -147,37 +134,29 @@ export async function down(db: Database) {
 | Isolation | Sin interferencia |
 | Durability | Persistente |
 
-### Implementación
+### Implementación (pseudocode — adapt to your ORM/driver)
 
-```typescript
-import { db } from './db';
+```sql
+-- Transacción básica
+BEGIN;
+  INSERT INTO users (email, name) VALUES ('new@example.com', 'New User') RETURNING *;
+  -- use returned user.id
+  INSERT INTO posts (title, author_id) VALUES ('Welcome Post', <user.id>);
+COMMIT;
+-- Si hay error, ROLLBACK automático
+```
 
-// Transacción básica
-await db.transaction(async (tx) => {
-  const [user] = await tx
-    .insert(users)
-    .values({ email: 'new@example.com', name: 'New User' })
-    .returning();
-  
-  await tx.insert(posts).values({
-    title: 'Welcome Post',
-    authorId: user.id,
-  });
-  
-  // Si hay error, rollback automático
-});
-
-// Con manejo de errores explícito
+```
+// Generic transaction pattern (any language/ORM)
 try {
-  await db.transaction(async (tx) => {
-    // operaciones...
-    if (someCondition) {
-      throw new Error('Rollback needed');
-    }
-  });
+  db.transaction((tx) => {
+    user = tx.insert(users, { email: 'new@example.com', name: 'New User' })
+    tx.insert(posts, { title: 'Welcome Post', authorId: user.id })
+    // If error occurs, automatic rollback
+  })
 } catch (error) {
-  // Transacción ya hizo rollback
-  console.error('Transaction failed:', error);
+  // Transaction already rolled back
+  log('Transaction failed:', error)
 }
 ```
 
@@ -194,25 +173,18 @@ try {
 
 ### N+1 Prevention
 
-```typescript
-// ❌ N+1 Problem
-const users = await db.select().from(users);
-for (const user of users) {
-  const posts = await db.select().from(posts).where(eq(posts.authorId, user.id));
-}
+```sql
+-- N+1 Problem (BAD)
+SELECT * FROM users;
+-- Then for EACH user:
+SELECT * FROM posts WHERE author_id = <user.id>;
 
-// ✅ Single Query con Join
-const usersWithPosts = await db
-  .select()
-  .from(users)
-  .leftJoin(posts, eq(users.id, posts.authorId));
+-- Single Query con Join (GOOD)
+SELECT * FROM users LEFT JOIN posts ON users.id = posts.author_id;
 
-// ✅ Batch Loading
-const userIds = users.map(u => u.id);
-const allPosts = await db
-  .select()
-  .from(posts)
-  .where(inArray(posts.authorId, userIds));
+-- Batch Loading (GOOD)
+SELECT * FROM users;
+SELECT * FROM posts WHERE author_id IN (<all_user_ids>);
 ```
 
 ### Query Analysis
@@ -227,17 +199,12 @@ EXPLAIN SELECT * FROM orders WHERE user_id = 1 AND created_at > '2024-01-01';
 
 ### Pagination Eficiente
 
-```typescript
-// ❌ Offset lento para páginas grandes
-const page10 = await db.select().from(posts).offset(9000).limit(100);
+```sql
+-- Offset lento para páginas grandes (BAD)
+SELECT * FROM posts OFFSET 9000 LIMIT 100;
 
-// ✅ Cursor-based (keyset pagination)
-const nextPage = await db
-  .select()
-  .from(posts)
-  .where(gt(posts.id, lastSeenId))
-  .orderBy(posts.id)
-  .limit(100);
+-- Cursor-based / keyset pagination (GOOD)
+SELECT * FROM posts WHERE id > <last_seen_id> ORDER BY id LIMIT 100;
 ```
 
 ## Checklist para Reviewer
@@ -247,4 +214,4 @@ const nextPage = await db
 - [ ] Transacciones para operaciones múltiples
 - [ ] N+1 queries eliminados
 - [ ] Migraciones con up/down
-- [ ] Types correctos en Drizzle schema
+- [ ] Types/schema correctos en ORM

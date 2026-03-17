@@ -20,7 +20,7 @@ version: "2.0"
 
 # Code Quality Review
 
-Code quality analysis patterns for TypeScript/Bun applications.
+Code quality analysis patterns. Ejemplos adaptables a cualquier stack. Patterns son language-agnostic.
 
 ## When to Use
 

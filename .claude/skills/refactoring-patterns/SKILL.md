@@ -22,7 +22,7 @@ version: "2.0"
 
 # Refactoring Patterns
 
-Safe refactoring techniques for TypeScript/Bun codebases with SOLID principles.
+Safe refactoring techniques with SOLID principles. Ejemplos adaptables a cualquier stack. Patterns son language-agnostic.
 
 ## When to Use
 
@@ -106,17 +106,9 @@ graph LR
 | Over-abstract first occurrence | Rule of 3: abstract on repetition |
 | Premature optimization | Clarity first, optimize if needed |
 
-## Project-Specific Routing (claude-code-poneglyph)
-
-| Location | Apply | Target |
-|----------|-------|--------|
-| `src/routes/*.ts` | Extract Service | `services/` directory |
-| Long route handlers | Extract Function | Named helpers |
-| Repeated validation | Parameter Object | Shared schemas |
-| Direct DB in routes | Dependency Injection | Service constructors |
-
 ---
 
-**Version**: 2.0
+**Version**: 2.1
 **Spec**: SPEC-018
 **For**: builder agent
+**Patterns**: Language-agnostic

@@ -20,6 +20,7 @@ interface HookInput {
 async function runValidator(input: HookInput): Promise<{
   exitCode: number
   stderr: string
+  stdout: string
 }> {
   const proc = Bun.spawn([process.execPath, 'run', VALIDATOR_PATH], {
     stdin: new Blob([JSON.stringify(input)]),
@@ -29,9 +30,16 @@ async function runValidator(input: HookInput): Promise<{
 
   const exitCode = await proc.exited
   const stderr = await new Response(proc.stderr).text()
+  const stdout = await new Response(proc.stdout).text()
 
-  return { exitCode, stderr }
+  return { exitCode, stderr, stdout }
 }
+
+// Test fake keys — intentionally short/invalid to avoid GitHub Push Protection
+const FAKE_AWS_KEY = 'AKIAIOSFODNN7EXAMPLE'
+const FAKE_STRIPE_KEY = 'sk_live_' + 'a'.repeat(20)
+const FAKE_OPENAI_KEY = 'sk-' + 'a'.repeat(20)
+const FAKE_GITHUB_TOKEN = 'ghp_' + 'A'.repeat(36)
 
 describe('secrets-validator', () => {
   describe('tool filtering', () => {
@@ -65,7 +73,33 @@ describe('secrets-validator', () => {
         tool_name: 'Write',
         tool_input: {
           file_path: 'src/auth.test.ts',
-          content: 'const apiKey = "sk_test_12345678901234567890"',
+          content: `const token = "${FAKE_OPENAI_KEY}"`,
+        },
+        tool_output: 'success',
+      })
+
+      expect(exitCode).toBe(0)
+    })
+
+    test('ignores spec files', async () => {
+      const { exitCode } = await runValidator({
+        tool_name: 'Write',
+        tool_input: {
+          file_path: 'src/auth.spec.ts',
+          content: `const key = "${FAKE_AWS_KEY}"`,
+        },
+        tool_output: 'success',
+      })
+
+      expect(exitCode).toBe(0)
+    })
+
+    test('ignores mock files', async () => {
+      const { exitCode } = await runValidator({
+        tool_name: 'Write',
+        tool_input: {
+          file_path: 'src/__mocks__/config.ts',
+          content: 'password = "testpassword123"',
         },
         tool_output: 'success',
       })
@@ -77,8 +111,21 @@ describe('secrets-validator', () => {
       const { exitCode } = await runValidator({
         tool_name: 'Write',
         tool_input: {
-          file_path: 'node_modules/some-package/index.ts',
-          content: 'const secret = "AKIAIOSFODNN7EXAMPLE"',
+          file_path: 'node_modules/some-pkg/index.ts',
+          content: `const key = "${FAKE_AWS_KEY}"`,
+        },
+        tool_output: 'success',
+      })
+
+      expect(exitCode).toBe(0)
+    })
+
+    test('ignores .env.example files', async () => {
+      const { exitCode } = await runValidator({
+        tool_name: 'Write',
+        tool_input: {
+          file_path: '.env.example.ts',
+          content: 'password = "placeholder1234"',
         },
         tool_output: 'success',
       })
@@ -87,46 +134,30 @@ describe('secrets-validator', () => {
     })
   })
 
-  describe('AWS key detection', () => {
-    test('detects AWS Access Key', async () => {
+  describe('AWS Access Key', () => {
+    test('blocks AWS access key', async () => {
       const { exitCode, stderr } = await runValidator({
         tool_name: 'Write',
         tool_input: {
           file_path: 'src/config.ts',
-          content: 'const AWS_KEY = "AKIAIOSFODNN7EXAMPLE"',
+          content: `const key = "${FAKE_AWS_KEY}"`,
         },
         tool_output: 'success',
       })
 
       expect(exitCode).toBe(2)
       expect(stderr).toContain('AWS Access Key')
-      expect(stderr).toContain('AKIAIOSFODNN7EXAMPLE')
+      expect(stderr).toContain('BLOCKED')
     })
   })
 
-  describe('GitHub token detection', () => {
-    test('detects GitHub personal access token (ghp_)', async () => {
+  describe('Private Key', () => {
+    test('blocks private key', async () => {
       const { exitCode, stderr } = await runValidator({
         tool_name: 'Write',
         tool_input: {
-          file_path: 'src/api.ts',
-          content: 'const token = "ghp_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghij"',
-        },
-        tool_output: 'success',
-      })
-
-      expect(exitCode).toBe(2)
-      expect(stderr).toContain('GitHub Token')
-    })
-  })
-
-  describe('Private key detection', () => {
-    test('detects RSA private key', async () => {
-      const { exitCode, stderr } = await runValidator({
-        tool_name: 'Write',
-        tool_input: {
-          file_path: 'src/keys.ts',
-          content: 'const key = "-----BEGIN RSA PRIVATE KEY-----"',
+          file_path: 'src/crypto.ts',
+          content: '-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAK...',
         },
         tool_output: 'success',
       })
@@ -136,14 +167,13 @@ describe('secrets-validator', () => {
     })
   })
 
-  describe('JWT detection', () => {
-    test('detects JWT token', async () => {
-      const jwt = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U'
+  describe('JWT Token', () => {
+    test('blocks JWT token', async () => {
       const { exitCode, stderr } = await runValidator({
         tool_name: 'Write',
         tool_input: {
           file_path: 'src/auth.ts',
-          content: 'const token = "' + jwt + '"',
+          content: 'const token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.abc"',
         },
         tool_output: 'success',
       })
@@ -153,27 +183,55 @@ describe('secrets-validator', () => {
     })
   })
 
-  describe('Password detection', () => {
-    test('detects password assignment', async () => {
+  describe('Hardcoded Secret', () => {
+    test('blocks hardcoded password', async () => {
       const { exitCode, stderr } = await runValidator({
         tool_name: 'Write',
         tool_input: {
           file_path: 'src/db.ts',
-          content: 'const password = "supersecret123"',
+          content: 'password = "mySecretPassword123"',
         },
         tool_output: 'success',
       })
 
       expect(exitCode).toBe(2)
-      expect(stderr).toContain('Password Assignment')
+      expect(stderr).toContain('Hardcoded Secret')
     })
 
-    test('passes for short passwords (under 8 chars)', async () => {
+    test('blocks hardcoded api_key', async () => {
+      const { exitCode, stderr } = await runValidator({
+        tool_name: 'Write',
+        tool_input: {
+          file_path: 'src/api.ts',
+          content: "api_key = 'abcdefghijklmnop'",
+        },
+        tool_output: 'success',
+      })
+
+      expect(exitCode).toBe(2)
+      expect(stderr).toContain('Hardcoded Secret')
+    })
+
+    test('blocks hardcoded token', async () => {
+      const { exitCode, stderr } = await runValidator({
+        tool_name: 'Write',
+        tool_input: {
+          file_path: 'src/service.ts',
+          content: 'token: "a1b2c3d4e5f6g7h8"',
+        },
+        tool_output: 'success',
+      })
+
+      expect(exitCode).toBe(2)
+      expect(stderr).toContain('Hardcoded Secret')
+    })
+
+    test('passes short values (< 8 chars)', async () => {
       const { exitCode } = await runValidator({
         tool_name: 'Write',
         tool_input: {
           file_path: 'src/config.ts',
-          content: 'const password = "short"',
+          content: 'password = "short"',
         },
         tool_output: 'success',
       })
@@ -182,18 +240,120 @@ describe('secrets-validator', () => {
     })
   })
 
+  describe('MongoDB Connection String', () => {
+    test('blocks MongoDB connection string', async () => {
+      const { exitCode, stderr } = await runValidator({
+        tool_name: 'Write',
+        tool_input: {
+          file_path: 'src/db.ts',
+          content: 'const uri = "mongodb+srv://admin:pass1234@cluster.example.net"',
+        },
+        tool_output: 'success',
+      })
+
+      expect(exitCode).toBe(2)
+      expect(stderr).toContain('MongoDB Connection String')
+    })
+  })
+
+  describe('PostgreSQL Connection String', () => {
+    test('blocks PostgreSQL connection string', async () => {
+      const { exitCode, stderr } = await runValidator({
+        tool_name: 'Write',
+        tool_input: {
+          file_path: 'src/db.ts',
+          content: 'const uri = "postgres://user:pass@localhost:5432/db"',
+        },
+        tool_output: 'success',
+      })
+
+      expect(exitCode).toBe(2)
+      expect(stderr).toContain('PostgreSQL Connection String')
+    })
+  })
+
+  describe('API Key (Stripe/OpenAI)', () => {
+    test('blocks Stripe secret key', async () => {
+      const { exitCode, stderr } = await runValidator({
+        tool_name: 'Write',
+        tool_input: {
+          file_path: 'src/payment.ts',
+          content: `const key = "${FAKE_STRIPE_KEY}"`,
+        },
+        tool_output: 'success',
+      })
+
+      expect(exitCode).toBe(2)
+      expect(stderr).toContain('API Key (Stripe/OpenAI)')
+    })
+
+    test('blocks OpenAI key', async () => {
+      const { exitCode, stderr } = await runValidator({
+        tool_name: 'Write',
+        tool_input: {
+          file_path: 'src/ai.ts',
+          content: `const key = "${FAKE_OPENAI_KEY}"`,
+        },
+        tool_output: 'success',
+      })
+
+      expect(exitCode).toBe(2)
+      expect(stderr).toContain('API Key (Stripe/OpenAI)')
+    })
+  })
+
+  describe('GitHub Token', () => {
+    test('blocks GitHub personal access token', async () => {
+      const { exitCode, stderr } = await runValidator({
+        tool_name: 'Write',
+        tool_input: {
+          file_path: 'src/github.ts',
+          content: `const token = "${FAKE_GITHUB_TOKEN}"`,
+        },
+        tool_output: 'success',
+      })
+
+      expect(exitCode).toBe(2)
+      expect(stderr).toContain('GitHub Token')
+    })
+  })
+
   describe('clean code', () => {
-    test('passes for clean TypeScript code', async () => {
-      const { exitCode } = await runValidator({
+    test('passes clean TypeScript code', async () => {
+      const { exitCode, stderr } = await runValidator({
         tool_name: 'Write',
         tool_input: {
           file_path: 'src/service.ts',
-          content: 'export function getApiKey(): string { return process.env.API_KEY ?? "" }',
+          content: `
+            import { config } from './config'
+
+            export function getDbUrl(): string {
+              return process.env.DATABASE_URL ?? 'localhost'
+            }
+          `,
         },
         tool_output: 'success',
       })
 
       expect(exitCode).toBe(0)
+      expect(stderr).toBe('')
+    })
+
+    test('passes environment variable usage', async () => {
+      const { exitCode, stderr } = await runValidator({
+        tool_name: 'Write',
+        tool_input: {
+          file_path: 'src/config.ts',
+          content: `
+            const password = process.env.DB_PASSWORD
+            const apiKey = Bun.env.API_KEY
+          `,
+        },
+        tool_output: 'success',
+      })
+
+      expect(exitCode).toBe(0)
+      expect(stderr).toBe('')
     })
   })
 
@@ -203,7 +363,7 @@ describe('secrets-validator', () => {
         tool_name: 'Edit',
         tool_input: {
           file_path: 'src/config.ts',
-          content: 'const secret = "AKIAIOSFODNN7EXAMPLE"',
+          content: `const key = "${FAKE_AWS_KEY}"`,
         },
         tool_output: 'success',
       })

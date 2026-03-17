@@ -1,6 +1,6 @@
 ---
 name: logging-strategy
-description: "Structured logging with context, log levels, and JSON output for Bun/TypeScript apps.\n\
+description: "Structured logging with context, log levels, and JSON output.\n\
   Use proactively when: setting up logging, adding request tracing, debugging production.\n\
   Keywords - log, logging, logger, structured, json logs, pino, contextual logging"
 type: knowledge-base
@@ -15,12 +15,12 @@ activation:
     - pino
     - contextual logging
 for_agents: [builder]
-version: "1.0"
+version: "1.1"
 ---
 
 # Logging Strategy
 
-Structured logging patterns for Bun/TypeScript applications with contextual information and production-ready output.
+Structured logging patterns with contextual information and production-ready output. Ejemplos adaptables a cualquier stack. Patterns son language-agnostic.
 
 ## When to Use This Skill
 
@@ -50,138 +50,59 @@ logger.error('Database connection failed', { error: error.message, retryCount: 3
 logger.debug('Processing request', { userId, action: 'update_profile' })
 ```
 
-### 2. Bun Native Logger (Zero Dependencies)
+### 2. Logger Implementation (adapt to your runtime's logger)
 
-```typescript
-// WRONG - External logging library for simple cases
-import winston from 'winston' // Heavy, Node-focused
+```
+// Logger interface — implement with your runtime's preferred logger
+// (pino, winston, console-based, or built-in runtime logger)
 
-// CORRECT - Bun native logger
-// logger.ts
-type LogLevel = 'debug' | 'info' | 'warn' | 'error'
+LogLevel = 'debug' | 'info' | 'warn' | 'error'
 
-interface LogContext {
+LogContext = {
   requestId?: string
-  userId?: number
+  userId?: number | string
   [key: string]: unknown
 }
 
-const LOG_LEVEL = (Bun.env.LOG_LEVEL || 'info') as LogLevel
-const IS_PRODUCTION = Bun.env.NODE_ENV === 'production'
+// Key principles:
+// - LOG_LEVEL from environment variable (default: 'info')
+// - JSON output in production (machine-readable)
+// - Pretty print in development (human-readable)
+// - Child loggers with base context for request scoping
+// - Level filtering: only log if level >= configured level
 
-const LEVELS: Record<LogLevel, number> = {
-  debug: 0,
-  info: 1,
-  warn: 2,
-  error: 3,
-}
-
-function shouldLog(level: LogLevel): boolean {
-  return LEVELS[level] >= LEVELS[LOG_LEVEL]
-}
-
-function formatLog(level: LogLevel, message: string, context?: LogContext): string {
-  const timestamp = new Date().toISOString()
-  const data = { timestamp, level, message, ...context }
-
-  if (IS_PRODUCTION) {
-    // JSON for production (machine-readable)
-    return JSON.stringify(data)
-  }
-
-  // Pretty print for development
-  const colors: Record<LogLevel, string> = {
-    debug: '\x1b[36m', // cyan
-    info: '\x1b[32m',  // green
-    warn: '\x1b[33m',  // yellow
-    error: '\x1b[31m', // red
-  }
-  const reset = '\x1b[0m'
-  const ctx = context ? ` ${JSON.stringify(context)}` : ''
-  return `${colors[level]}[${level.toUpperCase()}]${reset} ${timestamp} ${message}${ctx}`
-}
-
-export const logger = {
-  debug: (message: string, context?: LogContext) => {
-    if (shouldLog('debug')) console.log(formatLog('debug', message, context))
-  },
-  info: (message: string, context?: LogContext) => {
-    if (shouldLog('info')) console.log(formatLog('info', message, context))
-  },
-  warn: (message: string, context?: LogContext) => {
-    if (shouldLog('warn')) console.warn(formatLog('warn', message, context))
-  },
-  error: (message: string, context?: LogContext) => {
-    if (shouldLog('error')) console.error(formatLog('error', message, context))
-  },
-
-  // Child logger with base context
-  child: (baseContext: LogContext) => ({
-    debug: (msg: string, ctx?: LogContext) => logger.debug(msg, { ...baseContext, ...ctx }),
-    info: (msg: string, ctx?: LogContext) => logger.info(msg, { ...baseContext, ...ctx }),
-    warn: (msg: string, ctx?: LogContext) => logger.warn(msg, { ...baseContext, ...ctx }),
-    error: (msg: string, ctx?: LogContext) => logger.error(msg, { ...baseContext, ...ctx }),
-  }),
+logger = {
+  debug(message, context?)   // Verbose dev info
+  info(message, context?)    // Important events
+  warn(message, context?)    // Potential issues
+  error(message, context?)   // Errors needing investigation
+  child(baseContext) -> logger  // Scoped logger with inherited context
 }
 ```
 
-### 3. Request Context - Middleware Pattern
+### 3. Request Context - Middleware Pattern (framework-agnostic)
 
-```typescript
+```
 // WRONG - No request context in logs
-app.get('/users/:id', async (req, res) => {
-  console.log('Fetching user') // No context
-  const user = await getUser(req.params.id)
-  console.log('Found user') // Can't trace request
-  res.json(user)
-})
+handler(request):
+  log('Fetching user')       // No context
+  user = getUser(request.id)
+  log('Found user')          // Can't trace request
 
-// CORRECT - Request-scoped logging middleware (framework-agnostic)
-import { logger } from './logger'
-
-function requestLogging(req: Request): {
-  requestId: string
-  log: ReturnType<typeof logger.child>
-  startTime: number
-} {
-  const requestId = req.headers.get('x-request-id') || crypto.randomUUID()
-  const url = new URL(req.url)
-
-  return {
-    requestId,
-    startTime: performance.now(),
-    log: logger.child({
-      requestId,
-      method: req.method,
-      path: url.pathname,
-    }),
-  }
-}
-
-// Usage in any framework
-function handleRequest(req: Request): Response {
-  const { log, startTime, requestId } = requestLogging(req)
+// CORRECT - Request-scoped logging middleware
+handler(request):
+  requestId = request.headers['x-request-id'] || generateUUID()
+  log = logger.child({ requestId, method: request.method, path: request.path })
 
   log.info('Request started')
-  try {
-    const result = processRequest(req)
-    const duration = performance.now() - startTime
-    log.info('Request completed', {
-      statusCode: 200,
-      durationMs: Math.round(duration * 100) / 100,
-    })
-    return new Response(JSON.stringify(result), {
-      headers: { 'x-request-id': requestId },
-    })
-  } catch (error) {
-    const duration = performance.now() - startTime
-    log.error('Request failed', {
-      error: error instanceof Error ? error.message : 'Unknown',
-      durationMs: Math.round(duration * 100) / 100,
-    })
+  try:
+    result = processRequest(request)
+    duration = now() - startTime
+    log.info('Request completed', { statusCode: 200, durationMs: duration })
+    return response(result, headers: { 'x-request-id': requestId })
+  catch error:
+    log.error('Request failed', { error: error.message, durationMs: duration })
     throw error
-  }
-}
 ```
 
 ### 4. Log Levels - When to Use Each
@@ -324,134 +245,6 @@ const users = await timed('fetchUsers', () => db.users.findMany())
 
 ## Examples
 
-### Complete Logger Implementation
-
-```typescript
-// src/logger.ts
-type LogLevel = 'debug' | 'info' | 'warn' | 'error'
-
-interface LogContext {
-  [key: string]: unknown
-}
-
-interface Logger {
-  debug(message: string, context?: LogContext): void
-  info(message: string, context?: LogContext): void
-  warn(message: string, context?: LogContext): void
-  error(message: string, context?: LogContext): void
-  child(baseContext: LogContext): Logger
-}
-
-const LOG_LEVEL = (Bun.env.LOG_LEVEL || 'info') as LogLevel
-const IS_PRODUCTION = Bun.env.NODE_ENV === 'production'
-const SERVICE_NAME = Bun.env.SERVICE_NAME || 'api'
-
-const LEVELS: Record<LogLevel, number> = { debug: 0, info: 1, warn: 2, error: 3 }
-
-function shouldLog(level: LogLevel): boolean {
-  return LEVELS[level] >= LEVELS[LOG_LEVEL]
-}
-
-function createLogEntry(
-  level: LogLevel,
-  message: string,
-  context?: LogContext
-): string {
-  const entry = {
-    timestamp: new Date().toISOString(),
-    level,
-    service: SERVICE_NAME,
-    message,
-    ...context,
-  }
-
-  if (IS_PRODUCTION) {
-    return JSON.stringify(entry)
-  }
-
-  const colors: Record<LogLevel, string> = {
-    debug: '\x1b[36m',
-    info: '\x1b[32m',
-    warn: '\x1b[33m',
-    error: '\x1b[31m',
-  }
-  const ctx = context ? ` ${JSON.stringify(context)}` : ''
-  return `${colors[level]}[${level.toUpperCase()}]\x1b[0m ${entry.timestamp} ${message}${ctx}`
-}
-
-function createLogger(baseContext: LogContext = {}): Logger {
-  return {
-    debug(message: string, context?: LogContext) {
-      if (shouldLog('debug')) {
-        console.log(createLogEntry('debug', message, { ...baseContext, ...context }))
-      }
-    },
-    info(message: string, context?: LogContext) {
-      if (shouldLog('info')) {
-        console.log(createLogEntry('info', message, { ...baseContext, ...context }))
-      }
-    },
-    warn(message: string, context?: LogContext) {
-      if (shouldLog('warn')) {
-        console.warn(createLogEntry('warn', message, { ...baseContext, ...context }))
-      }
-    },
-    error(message: string, context?: LogContext) {
-      if (shouldLog('error')) {
-        console.error(createLogEntry('error', message, { ...baseContext, ...context }))
-      }
-    },
-    child(childContext: LogContext): Logger {
-      return createLogger({ ...baseContext, ...childContext })
-    },
-  }
-}
-
-export const logger = createLogger()
-```
-
-### HTTP Server Integration
-
-```typescript
-// src/middleware/logging.ts
-import { logger } from '../logger'
-
-export function withLogging(handler: (req: Request) => Promise<Response>): (req: Request) => Promise<Response> {
-  return async (req: Request): Promise<Response> => {
-    const requestId = req.headers.get('x-request-id') || crypto.randomUUID()
-    const url = new URL(req.url)
-    const startTime = performance.now()
-    const log = logger.child({
-      requestId,
-      method: req.method,
-      path: url.pathname,
-      query: url.search || undefined,
-    })
-
-    log.info('Request started')
-
-    try {
-      const response = await handler(req)
-      const duration = performance.now() - startTime
-      log.info('Request completed', {
-        statusCode: response.status,
-        durationMs: Math.round(duration * 100) / 100,
-      })
-      return response
-    } catch (error) {
-      const duration = performance.now() - startTime
-      log.error('Request failed', {
-        statusCode: 500,
-        error: error instanceof Error ? error.message : 'Unknown',
-        stack: error instanceof Error ? error.stack : undefined,
-        durationMs: Math.round(duration * 100) / 100,
-      })
-      throw error
-    }
-  }
-}
-```
-
 ### JSON Output Example (Production)
 
 ```json
@@ -477,5 +270,5 @@ export function withLogging(handler: (req: Request) => Promise<Response>): (req:
 
 ---
 
-**Version**: 1.0
-**Stack**: Bun, TypeScript
+**Version**: 1.1
+**Patterns**: Language-agnostic

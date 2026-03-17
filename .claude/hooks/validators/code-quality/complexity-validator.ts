@@ -12,9 +12,9 @@
  * - ternary operators (? but not optional chaining ?:)
  */
 
-import { EXIT_CODES, readStdin, reportError, isTypeScriptFile } from '../config'
+import { EXIT_CODES, readStdin, reportError, isCodeFile } from "../config";
 
-const COMPLEXITY_THRESHOLD = 25
+const COMPLEXITY_THRESHOLD = 25;
 
 /**
  * Regex patterns for complexity-increasing constructs.
@@ -30,7 +30,7 @@ const COMPLEXITY_PATTERNS: RegExp[] = [
   /&&/g,
   /\|\|/g,
   /\?(?!:)/g, // ternary, not optional chaining
-]
+];
 
 /**
  * Calculates the cyclomatic complexity of the given code content.
@@ -40,14 +40,14 @@ const COMPLEXITY_PATTERNS: RegExp[] = [
  * @returns Complexity score (count of branching constructs)
  */
 function calculateComplexity(content: string): number {
-  let complexity = 0
+  let complexity = 0;
 
   for (const pattern of COMPLEXITY_PATTERNS) {
-    const matches = content.match(pattern)
-    complexity += matches?.length ?? 0
+    const matches = content.match(pattern);
+    complexity += matches?.length ?? 0;
   }
 
-  return complexity
+  return complexity;
 }
 
 /**
@@ -55,23 +55,23 @@ function calculateComplexity(content: string): number {
  * Reads stdin for hook input, validates complexity, and exits appropriately.
  */
 async function main(): Promise<void> {
-  const input = await readStdin()
+  const input = await readStdin();
 
-  const filePath = input.tool_input.file_path
+  const filePath = input.tool_input.file_path;
   if (!filePath) {
-    process.exit(EXIT_CODES.PASS)
+    process.exit(EXIT_CODES.PASS);
   }
 
-  if (!isTypeScriptFile(filePath)) {
-    process.exit(EXIT_CODES.PASS)
+  if (!isCodeFile(filePath)) {
+    process.exit(EXIT_CODES.PASS);
   }
 
-  const content = input.tool_input.content
+  const content = input.tool_input.content;
   if (!content) {
-    process.exit(EXIT_CODES.PASS)
+    process.exit(EXIT_CODES.PASS);
   }
 
-  const complexity = calculateComplexity(content)
+  const complexity = calculateComplexity(content);
 
   if (complexity > COMPLEXITY_THRESHOLD) {
     reportError(
@@ -79,14 +79,14 @@ async function main(): Promise<void> {
         `Consider refactoring by:\n` +
         `- Extracting complex logic into smaller functions\n` +
         `- Using early returns to reduce nesting\n` +
-        `- Replacing switch statements with lookup objects`
-    )
+        `- Replacing switch statements with lookup objects`,
+    );
   }
 
-  process.exit(EXIT_CODES.PASS)
+  process.exit(EXIT_CODES.PASS);
 }
 
 main().catch((error: unknown) => {
-  const message = error instanceof Error ? error.message : 'Unknown error'
-  reportError(`Complexity validator failed: ${message}`)
-})
+  const message = error instanceof Error ? error.message : "Unknown error";
+  reportError(`Complexity validator failed: ${message}`);
+});
