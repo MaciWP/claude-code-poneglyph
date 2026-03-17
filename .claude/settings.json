@@ -240,6 +240,17 @@
           }
         ]
       }
+    ],
+    "PostCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun run .claude/hooks/post-compact.ts",
+            "timeout": 5000
+          }
+        ]
+      }
     ]
   },
   "statusLine": {

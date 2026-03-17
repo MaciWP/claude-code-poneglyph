@@ -69,3 +69,6 @@ test-results/
 
 # Windows shell artifact
 nul
+
+# Generated reports (HTML)
+*.html

@@ -18,11 +18,11 @@
 | ID | Nombre | Version | Complejidad | Depende de | Status | Archivo |
 |----|--------|---------|-------------|------------|--------|---------|
 | SPEC-001 | Path-Specific Rules | v1.1 | 24 | — | `implemented` | [v1.1/SPEC-001-path-specific-rules.md](v1.1/SPEC-001-path-specific-rules.md) |
-| SPEC-002 | Git Worktree Isolation | v1.1 | 32 | — | `implemented` | [v1.1/SPEC-002-git-worktree-isolation.md](v1.1/SPEC-002-git-worktree-isolation.md) |
+| SPEC-002 | Git Worktree Isolation | v1.1 | 32 | — | `by-design` | [v1.1/SPEC-002-git-worktree-isolation.md](v1.1/SPEC-002-git-worktree-isolation.md) | Claude Code native `isolation: "worktree"` |
 | SPEC-003 | Trace Analytics | v1.1 | 20 | — | `implemented` | [v1.1/SPEC-003-trace-analytics.md](v1.1/SPEC-003-trace-analytics.md) |
 | SPEC-004 | Stale Context Detection | v1.1 | 24 | — | `implemented` | [v1.1/SPEC-004-stale-context-detection.md](v1.1/SPEC-004-stale-context-detection.md) |
 | SPEC-005 | Agent Skill Enrichment v2 | v1.1 | 28 | — | `implemented` | [v1.1/SPEC-005-agent-skill-enrichment-v2.md](v1.1/SPEC-005-agent-skill-enrichment-v2.md) |
-| SPEC-006 | Continuous Validation Agent | v1.5 | 40 | SPEC-002 | `implemented` | [v1.5/SPEC-006-continuous-validation.md](v1.5/SPEC-006-continuous-validation.md) |
+| SPEC-006 | Continuous Validation Agent | v1.5 | 40 | SPEC-002 | `by-design` | [v1.5/SPEC-006-continuous-validation.md](v1.5/SPEC-006-continuous-validation.md) | Stop hook is available mechanism |
 | SPEC-007 | Cost Optimization Engine | v1.5 | 44 | SPEC-005 | `implemented` | [v1.5/SPEC-007-cost-optimization-engine.md](v1.5/SPEC-007-cost-optimization-engine.md) |
 | SPEC-008 | Agent Attention Mechanisms | v1.5 | 52 | SPEC-001, SPEC-004 | `implemented` | [v1.5/SPEC-008-agent-attention-mechanisms.md](v1.5/SPEC-008-agent-attention-mechanisms.md) |
 | SPEC-009 | Pattern-Based Error Recovery | v1.5 | 40 | SPEC-003 | `implemented` | [v1.5/SPEC-009-pattern-error-recovery.md](v1.5/SPEC-009-pattern-error-recovery.md) |

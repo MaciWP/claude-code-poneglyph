@@ -16,7 +16,7 @@ skills:
   - anti-hallucination
   - spec-driven
 hooks:
-  post_tool_use:
+  PostToolUse:
     - .claude/hooks/validators/security/secrets-validator.ts
     - .claude/hooks/validators/security/injection-validator.ts
   Stop:

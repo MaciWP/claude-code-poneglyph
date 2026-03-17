@@ -53,6 +53,8 @@ Usar Grep como fallback cuando: LSP no disponible, busqueda de texto literal, ar
 
 ## Token Budget
 
+> **GUIDELINE**: Esta distribucion es orientativa. No se mide ni se enforce por hooks — el Lead la sigue intuitivamente.
+
 | Fase | Budget | Descripcion |
 |------|--------|-------------|
 | Exploracion | 20% | Glob, Grep, Read inicial |
@@ -60,6 +62,8 @@ Usar Grep como fallback cuando: LSP no disponible, busqueda de texto literal, ar
 | Verificacion | 20% | Tests, review, docs |
 
 ## Parallel Efficiency Score
+
+> **GUIDELINE**: Este score es orientativo. No se calcula realmente en runtime — es una guia mental para el Lead.
 
 | Score | Significado | Accion |
 |-------|-------------|--------|
@@ -70,6 +74,8 @@ Usar Grep como fallback cuando: LSP no disponible, busqueda de texto literal, ar
 **Calculo**: (operaciones paralelas) / (total que PODRIAN ser paralelas) x 100
 
 ## Cache Strategy
+
+> **GUIDELINE**: No hay mecanismo de cache real en el runtime. Estas duraciones son orientativas para evitar repetir operaciones innecesariamente.
 
 | Resultado | Cache Duration | Condicion |
 |-----------|----------------|-----------|

@@ -39,7 +39,8 @@ Ejemplo:
 
 | Score | Routing | Razon |
 |-------|---------|-------|
-| **< 30** | builder directo | Tarea simple, sin planificacion |
+| **< 15** | builder directo, skip scoring/skills | Tarea trivial (rename, typo, single-line) |
+| **15-30** | builder directo | Tarea simple, sin planificacion |
 | **30-60** | planner opcional | Considerar plan si hay incertidumbre |
 | **> 60** | planner obligatorio | Requiere roadmap estructurado |
 
@@ -75,6 +76,8 @@ Independiente del score de complejidad, evaluar necesidad de worktree:
 
 Seleccion de modelo por agente y complejidad para optimizar costos.
 
+> **Mecanismo real**: El model routing se implementa via campo `model:` en el frontmatter YAML de cada agente (`.claude/agents/*.md`). No existe `modelOverrides` en settings.json. El Lead puede overridear pasando `model:` en el Agent tool call para tareas especificas.
+
 ### Model Selection Matrix
 
 | Agente | Complejidad <30 | Complejidad 30-60 | Complejidad >60 |
@@ -97,6 +100,8 @@ Seleccion de modelo por agente y complejidad para optimizar costos.
 | architect | opus | Decisiones de arquitectura criticas |
 
 ### Budget Alerts
+
+> **GUIDELINE**: Esta regla es orientativa. No esta enforced por hooks — el Lead no tiene visibilidad real del costo en runtime.
 
 | Condicion | Accion |
 |-----------|--------|

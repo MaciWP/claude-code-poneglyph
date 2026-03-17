@@ -24,6 +24,7 @@ Antes de delegar a builder/reviewer, detectar keywords y cargar skills relevante
 | code quality, code smells, SOLID, complexity, duplication, clean code | `code-quality` |
 | validate, verify, check, exists, hallucination, confidence, claim | `anti-hallucination` |
 | spec, specification, sdd, compliance, lifecycle, spec-gen, implement-spec | `spec-driven` |
+| recovery, rollback, compensation, saga, checkpoint, dead letter queue | `recovery-strategies` |
 
 ## Proceso de Matching
 
@@ -126,12 +127,11 @@ Si hay mas de 3 matches:
 
 ## Skills Sin Keywords
 
-Las siguientes 7 skills NO estan en la tabla de keywords — se cargan por otros mecanismos:
+Las siguientes 6 skills NO estan en la tabla de keywords — se cargan por otros mecanismos:
 
 | Skill | Mecanismo de Carga |
 |-------|-------------------|
 | `code-style-enforcer` | Frontmatter del builder |
-| `recovery-strategies` | Base skill de error-analyzer |
 | `meta-create-agent` | Solo via comando `/meta-create-agent` |
 | `meta-create-skill` | Solo via comando `/meta-create-skill` |
 | `prompt-engineer` | Cargada por Lead cuando prompt score <70 |
