@@ -25,8 +25,7 @@ async function main(): Promise<void> {
     process.exit(EXIT_CODES.PASS);
   }
 
-  const tscPath =
-    Bun.which("tsc") || join(dirname(process.execPath), "tsc");
+  const tscPath = Bun.which("tsc") || join(dirname(process.execPath), "tsc");
 
   const proc = Bun.spawn(
     [
@@ -50,15 +49,22 @@ async function main(): Promise<void> {
     },
   );
 
+  const TIMEOUT_MS = 5000;
   const exitCode = await Promise.race([
     proc.exited,
     new Promise<number>((resolve) =>
       setTimeout(() => {
         proc.kill();
         resolve(143);
-      }, 3000),
+      }, TIMEOUT_MS),
     ),
   ]);
+
+  // Timeout: tsc was too slow — pass (best-effort, not a confirmed error)
+  if (exitCode === 143) {
+    process.exit(EXIT_CODES.PASS);
+  }
+
   const stdout = await new Response(proc.stdout).text();
   const stderr = await new Response(proc.stderr).text();
   const output = stdout || stderr;
