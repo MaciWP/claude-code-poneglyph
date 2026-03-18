@@ -1,20 +1,49 @@
 #!/usr/bin/env bun
-import { $ } from 'bun'
 
-const input = JSON.parse(await Bun.stdin.text())
-const filePath = input.tool_input?.file_path ?? ''
-const ext = filePath.split('.').pop()?.toLowerCase()
+/**
+ * Format Code - PostToolUse Hook
+ *
+ * Language-aware code formatter. Detects file type and runs the appropriate
+ * formatter. Missing tools are silently skipped (best-effort).
+ */
 
-const CODE_EXTENSIONS = ['ts', 'tsx', 'js', 'jsx']
+import { $ } from "bun";
+import { getLanguageFamily } from "./validators/config";
 
-if (ext && CODE_EXTENSIONS.includes(ext)) {
-  try {
-    await $`bunx eslint --fix --quiet ${filePath}`.quiet().nothrow()
-  } catch { /* ignore */ }
+const input = JSON.parse(await Bun.stdin.text());
+const filePath = input.tool_input?.file_path ?? "";
+const family = getLanguageFamily(filePath);
 
-  try {
-    await $`bunx prettier --write --log-level silent ${filePath}`.quiet().nothrow()
-  } catch { /* ignore */ }
+switch (family) {
+  case "typescript":
+  case "javascript":
+    try {
+      await $`bunx eslint --fix --quiet ${filePath}`.quiet().nothrow();
+    } catch {}
+    try {
+      await $`bunx prettier --write --log-level silent ${filePath}`
+        .quiet()
+        .nothrow();
+    } catch {}
+    break;
+  case "python":
+    try {
+      await $`ruff format ${filePath}`.quiet().nothrow();
+    } catch {}
+    try {
+      await $`ruff check --fix --quiet ${filePath}`.quiet().nothrow();
+    } catch {}
+    break;
+  case "go":
+    try {
+      await $`gofmt -w ${filePath}`.quiet().nothrow();
+    } catch {}
+    break;
+  case "rust":
+    try {
+      await $`rustfmt ${filePath}`.quiet().nothrow();
+    } catch {}
+    break;
 }
 
-process.exit(0)
+process.exit(0);

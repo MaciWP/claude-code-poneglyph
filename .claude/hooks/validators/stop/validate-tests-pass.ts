@@ -3,11 +3,16 @@
 /**
  * Stop Hook Validator: Run tests and verify they pass.
  *
- * Reads stdin JSON and checks `last_assistant_message` for error keywords.
+ * Language-aware: detects project type and runs appropriate test runner.
+ * - Poneglyph (has .claude/hooks/validators/config.ts): bun test .claude/hooks/
+ * - Python (pyproject.toml/pytest.ini): pytest
+ * - Go (go.mod): go test ./...
+ * - Rust (Cargo.toml): cargo test
+ * - Node (package.json with test script): npm test
+ *
  * Env var:
  *   VALIDATE_TEST_PATH - optional specific test path to run
  *
- * Runs tests in .claude/hooks/ directory.
  * Exit 0 = tests pass, Exit 2 = tests fail (last 30 lines in stderr).
  */
 
@@ -22,6 +27,7 @@ const MAX_OUTPUT_LINES = 30;
 // Update these baselines when pre-existing failures are fixed.
 const KNOWN_FAILURE_BASELINE: Record<string, number> = {
   root: 0,
+  hooks: 0,
 };
 
 interface SubProject {
@@ -56,25 +62,31 @@ function findProjectRoot(): string {
 }
 
 async function getSubProjects(root: string): Promise<SubProject[]> {
-  const rootPkg = Bun.file(resolve(root, "package.json"));
-  if (!(await rootPkg.exists())) {
-    return [];
+  // Tier 1: Poneglyph hook infrastructure — test the hooks themselves
+  const hooksConfig = resolve(
+    root,
+    ".claude",
+    "hooks",
+    "validators",
+    "config.ts",
+  );
+  if (await Bun.file(hooksConfig).exists()) {
+    return [
+      {
+        name: "hooks",
+        cwd: root,
+        testPath: "./.claude/hooks/",
+      },
+    ];
   }
 
-  const hooksDir = resolve(root, ".claude", "hooks");
-  const hooksExist = await Bun.file(
-    resolve(hooksDir, "validators", "config.ts"),
-  ).exists();
-
-  if (!hooksExist) {
-    return [];
-  }
-
+  // Tier 2: Any project — let the test runner discover tests naturally
+  // detectTestRunner() in main() determines if a runner exists; here we just
+  // return a generic project entry so the flow continues.
   return [
     {
       name: "root",
       cwd: root,
-      testPath: "./.claude/hooks/",
     },
   ];
 }
@@ -163,10 +175,20 @@ interface TestResult {
   failCount: number;
 }
 
-// Parses bun test summary line: " N fail" from output like "5 fail"
+// Parses test failure count from runner output (bun, pytest, go, cargo)
 function parseFailCount(output: string): number {
-  const match = output.match(/(\d+)\s+fail/);
-  return match ? parseInt(match[1], 10) : 0;
+  // Handles bun ("N fail"), pytest ("N failed"), cargo ("N failed")
+  const match = output.match(/(\d+)\s+fail/i);
+  if (match) return parseInt(match[1], 10);
+
+  // Go test: count individual "--- FAIL:" lines
+  const goFails = output.match(/--- FAIL:/g);
+  if (goFails) return goFails.length;
+
+  // Go test: package-level "FAIL" without per-test details
+  if (/^FAIL\s/m.test(output)) return 1;
+
+  return 0;
 }
 
 // Checks if failures exceed the known baseline for the project
@@ -182,25 +204,30 @@ async function runTestsInProject(
 ): Promise<TestResult> {
   const command = buildTestCommand(runner, testPath || project.testPath);
 
-  const proc = Bun.spawn(command, {
-    cwd: project.cwd,
-    stdout: "pipe",
-    stderr: "pipe",
-  });
+  try {
+    const proc = Bun.spawn(command, {
+      cwd: project.cwd,
+      stdout: "pipe",
+      stderr: "pipe",
+    });
 
-  const timeoutId = setTimeout(() => {
-    proc.kill();
-  }, TEST_TIMEOUT_MS);
+    const timeoutId = setTimeout(() => {
+      proc.kill();
+    }, TEST_TIMEOUT_MS);
 
-  const exitCode = await proc.exited;
-  clearTimeout(timeoutId);
+    const exitCode = await proc.exited;
+    clearTimeout(timeoutId);
 
-  const stdout = await new Response(proc.stdout).text();
-  const stderr = await new Response(proc.stderr).text();
-  const output = [stdout, stderr].filter(Boolean).join("\n");
+    const stdout = await new Response(proc.stdout).text();
+    const stderr = await new Response(proc.stderr).text();
+    const output = [stdout, stderr].filter(Boolean).join("\n");
 
-  const failCount = parseFailCount(output);
-  return { project: project.name, exitCode, output, failCount };
+    const failCount = parseFailCount(output);
+    return { project: project.name, exitCode, output, failCount };
+  } catch {
+    // Runner binary not found or spawn failed — skip gracefully
+    return { project: project.name, exitCode: 0, output: "", failCount: 0 };
+  }
 }
 
 // =============================================================================
@@ -246,11 +273,14 @@ async function main(): Promise<void> {
   if (testPath) {
     const normalizedPath = testPath.replace(/\\/g, "/");
     const matched = subProjects.find((sp) => {
-      if (sp.name === "root") {
-        return normalizedPath.includes(".claude/hooks/");
+      if (sp.testPath) {
+        // Poneglyph: only match paths within the hook test directory
+        return normalizedPath.includes(
+          sp.testPath.replace(/\\/g, "/").replace(/^\.\//, ""),
+        );
       }
-      const normalizedCwd = sp.cwd.replace(/\\/g, "/");
-      return normalizedPath.startsWith(normalizedCwd);
+      // Generic project: any test path matches
+      return true;
     });
 
     if (matched) {

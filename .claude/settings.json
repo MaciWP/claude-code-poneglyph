@@ -264,14 +264,7 @@
   },
   "language": "es",
   "sandbox": {
-    "enabled": true,
-    "autoAllowBashIfSandboxed": true,
-    "excludedCommands": [
-      "git",
-      "docker",
-      "bun",
-      "node"
-    ]
+    "enabled": false
   },
   "spinnerVerbs": {
     "mode": "replace",

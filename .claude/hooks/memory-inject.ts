@@ -6,53 +6,57 @@ import {
   formatSuggestionsForContext,
 } from "./lib/routing-suggestions";
 import { getSkillsForPath } from "./lib/path-rule-loader";
-import { createStore, closeStore, getSessionDbPath } from "./lib/context-store/store";
+import {
+  createStore,
+  closeStore,
+  getSessionDbPath,
+} from "./lib/context-store/store";
 import { hydrateFromKnowledge } from "./lib/context-store/bridge";
 import { search } from "./lib/context-store/searcher";
 
 interface HookInput {
-  hook_event_name: string
-  prompt: string
-  session_id: string
-  transcript_path: string
-  cwd: string
+  hook_event_name: string;
+  prompt: string;
+  session_id: string;
+  transcript_path: string;
+  cwd: string;
 }
 
 interface MemorySearchResult {
   memory: {
-    id: string
-    content: string
-    type: string
-    laneType?: string
-    title?: string
+    id: string;
+    content: string;
+    type: string;
+    laneType?: string;
+    title?: string;
     confidence: {
-      current: number
-    }
-  }
-  similarity: number
-  relevanceScore: number
+      current: number;
+    };
+  };
+  similarity: number;
+  relevanceScore: number;
 }
 
 interface InjectionResponse {
-  memories: MemorySearchResult[]
-  context: string
+  memories: MemorySearchResult[];
+  context: string;
   metadata: {
-    queryTimeMs: number
-    memoriesConsidered: number
-    memoriesInjected: number
-  }
+    queryTimeMs: number;
+    memoriesConsidered: number;
+    memoriesInjected: number;
+  };
 }
 
 interface HookOutput {
   hookSpecificOutput: {
-    hookEventName: string
-    additionalContext: string
-  }
+    hookEventName: string;
+    additionalContext: string;
+  };
 }
 
-const API_URL = process.env.MEMORY_API_URL || 'http://localhost:8080'
-const TIMEOUT_MS = 4000
-const WARM_START_LIMIT = 5
+const API_URL = process.env.MEMORY_API_URL || "http://localhost:8080";
+const TIMEOUT_MS = 4000;
+const WARM_START_LIMIT = 5;
 
 function recoverWarmStartContext(prompt: string): string {
   try {
@@ -67,7 +71,7 @@ function recoverWarmStartContext(prompt: string): string {
       if (result.chunks.length === 0) return "";
 
       const recoveredContext = result.chunks
-        .map(c => `### ${c.source}\n${c.content}`)
+        .map((c) => `### ${c.source}\n${c.content}`)
         .join("\n\n");
 
       return `\n\n## Recovered Context (from session index)\n${recoveredContext}`;
@@ -79,7 +83,8 @@ function recoverWarmStartContext(prompt: string): string {
   }
 }
 
-const PATH_REGEX = /(?:[\w./\\-]+\.(?:ts|tsx|js|jsx|md|json|yaml|yml))/g;
+const PATH_REGEX =
+  /(?:[\w./\\-]+\.(?:ts|tsx|js|jsx|py|go|rs|java|rb|php|swift|kt|c|cpp|cs|md|json|yaml|yml|toml|cfg|ini))/g;
 
 function extractPathSkills(prompt: string): string[] {
   try {
@@ -122,21 +127,21 @@ function emitOutput(context: string, prompt: string): void {
 
   const output: HookOutput = {
     hookSpecificOutput: {
-      hookEventName: 'UserPromptSubmit',
-      additionalContext: enrichedContext
-    }
-  }
-  console.log(JSON.stringify(output))
+      hookEventName: "UserPromptSubmit",
+      additionalContext: enrichedContext,
+    },
+  };
+  console.log(JSON.stringify(output));
 }
 
 function emitRoutingSuggestionsFallback(prompt: string): void {
   try {
-    const suggestions = loadSuggestions()
-    const context = formatSuggestionsForContext(suggestions)
-    emitOutput(context ?? "", prompt)
+    const suggestions = loadSuggestions();
+    const context = formatSuggestionsForContext(suggestions);
+    emitOutput(context ?? "", prompt);
   } catch {
     try {
-      emitOutput("", prompt)
+      emitOutput("", prompt);
     } catch {
       // best effort - never block Claude Code
     }
@@ -144,57 +149,57 @@ function emitRoutingSuggestionsFallback(prompt: string): void {
 }
 
 async function main(): Promise<void> {
-  let input: HookInput
+  let input: HookInput;
 
   try {
-    const stdin = await Bun.stdin.text()
-    input = JSON.parse(stdin) as HookInput
+    const stdin = await Bun.stdin.text();
+    input = JSON.parse(stdin) as HookInput;
   } catch {
-    process.exit(0)
+    process.exit(0);
   }
 
-  const { prompt, session_id } = input
+  const { prompt, session_id } = input;
 
   if (!prompt || prompt.trim().length < 5) {
-    process.exit(0)
+    process.exit(0);
   }
 
   try {
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
     const response = await fetch(`${API_URL}/api/memory/inject`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         query: prompt,
         sessionId: session_id,
-        maxMemories: 5
+        maxMemories: 5,
       }),
-      signal: controller.signal
-    })
+      signal: controller.signal,
+    });
 
-    clearTimeout(timeoutId)
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
-      emitRoutingSuggestionsFallback(prompt)
-      process.exit(0)
+      emitRoutingSuggestionsFallback(prompt);
+      process.exit(0);
     }
 
-    const result = (await response.json()) as InjectionResponse
+    const result = (await response.json()) as InjectionResponse;
 
     if (!result.context || result.context.trim().length === 0) {
-      emitRoutingSuggestionsFallback(prompt)
-      process.exit(0)
+      emitRoutingSuggestionsFallback(prompt);
+      process.exit(0);
     }
 
-    emitOutput(result.context, prompt)
+    emitOutput(result.context, prompt);
   } catch {
-    emitRoutingSuggestionsFallback(prompt)
-    process.exit(0)
+    emitRoutingSuggestionsFallback(prompt);
+    process.exit(0);
   }
 }
 
-main()
+main();

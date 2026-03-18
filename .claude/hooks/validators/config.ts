@@ -194,3 +194,74 @@ export function getExtension(path: string): string {
 export function normalizePath(path: string): string {
   return path.replace(/\\/g, "/").toLowerCase();
 }
+
+// =============================================================================
+// Language Detection
+// =============================================================================
+
+export type LanguageFamily =
+  | "typescript"
+  | "javascript"
+  | "python"
+  | "go"
+  | "rust"
+  | "java"
+  | "ruby"
+  | "php"
+  | "swift"
+  | "kotlin"
+  | "c"
+  | "csharp"
+  | "unknown";
+
+const EXTENSION_TO_FAMILY: Record<string, LanguageFamily> = {
+  ts: "typescript",
+  tsx: "typescript",
+  js: "javascript",
+  jsx: "javascript",
+  py: "python",
+  go: "go",
+  rs: "rust",
+  java: "java",
+  rb: "ruby",
+  php: "php",
+  swift: "swift",
+  kt: "kotlin",
+  c: "c",
+  cpp: "c",
+  h: "c",
+  cs: "csharp",
+};
+
+/**
+ * Returns the language family for a file based on its extension.
+ */
+export function getLanguageFamily(path: string): LanguageFamily {
+  const ext = getExtension(path);
+  return EXTENSION_TO_FAMILY[ext] ?? "unknown";
+}
+
+const BIOME_EXTENSIONS = new Set([
+  "ts",
+  "tsx",
+  "js",
+  "jsx",
+  "json",
+  "css",
+  "graphql",
+]);
+
+/**
+ * Checks if a file is supported by Biome linter.
+ */
+export function isBiomeSupported(path: string): boolean {
+  const ext = getExtension(path);
+  return BIOME_EXTENSIONS.has(ext);
+}
+
+/**
+ * Checks if a file path has a Python extension.
+ */
+export function isPythonFile(path: string): boolean {
+  return path.toLowerCase().endsWith(".py");
+}
