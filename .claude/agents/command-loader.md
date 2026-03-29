@@ -6,7 +6,6 @@ description: |
   Use when: loading commands, loading skills, expanding file references, context enrichment.
   Keywords - load, command, skill, context, expand, reference, enrich
 tools: Read, Glob, Bash
-model: sonnet
 permissionMode: plan
 disallowedTools: Edit, Write, Task, NotebookEdit
 skills: []

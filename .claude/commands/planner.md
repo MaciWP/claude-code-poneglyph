@@ -132,9 +132,9 @@ Si encuentras estos patrones en docs/ejemplos, **buscar alternativa**:
 | bun, runtime, server | Skill: `bun-best-practices` |
 | test, coverage, vitest | `/load-testing-strategy` |
 | security, auth, jwt | `/load-security` |
-| prompt, agent, orchestrator | Skill: `prompt-engineer` |
+| prompt, agent, orchestrator | AskUserQuestion for clarification |
 | config, env, settings | Skill: `config-validator` |
-| refactor, clean, simplify | Agent: `refactor-agent` |
+| refactor, clean, simplify | Agent: `builder` |
 
 ### Cuándo usar Razonamiento Estructurado
 
@@ -215,13 +215,13 @@ Antes de cada Execution Roadmap, completar esta tabla:
 | Trigger | Agent | Model | Background? |
 |---------|-------|-------|-------------|
 | Diseño de feature | architect | opus | No |
-| Documentar bug | bug-documenter | sonnet | No |
 | Implementar código | builder | sonnet | No |
-| Análisis de calidad | code-quality | opus | ✅ Sí |
-| Refactoring | refactor-agent | sonnet | No |
+| Refactoring | builder | sonnet | No |
 | Code review | reviewer | sonnet | ✅ Sí |
+| Análisis de calidad | reviewer | sonnet | ✅ Sí |
 | Explorar codebase | scout | sonnet | No |
-| Descomponer tarea | task-decomposer | opus | No |
+| Diagnosticar errores | error-analyzer | sonnet | No |
+| Descomponer tarea | planner | opus | No |
 | **Explorar general** | **Explore** | sonnet | No |
 
 ### Cuándo usar Task:Explore vs Glob/Grep
@@ -240,7 +240,7 @@ Antes de cada Execution Roadmap, completar esta tabla:
 |-----------------|-------|
 | *.ts, *.tsx, async, Promise | typescript-patterns |
 | Bun, bun:test, runtime | bun-best-practices |
-| prompt, agent, mejorar | prompt-engineer |
+| prompt, agent, mejorar | AskUserQuestion for clarification |
 | .env, config, settings | config-validator |
 | import, export, type | code-style-enforcer |
 | log, logger, winston | logging-strategy |
@@ -478,9 +478,9 @@ sequenceDiagram
 | Tarea | Generador | Validador |
 |-------|-----------|-----------|
 | Arquitectura nueva | `architect` | `reviewer` |
-| Refactoring complejo | `refactor-agent` | `code-quality` |
-| Feature con seguridad | `builder` | `security-auditor` |
-| Tests críticos | `builder` | `test-watcher` |
+| Refactoring complejo | `builder` | `reviewer` |
+| Feature con seguridad | `builder` | `reviewer` |
+| Tests críticos | `builder` | `reviewer` |
 
 ---
 

@@ -1,87 +1,76 @@
 # Stack Trace Analysis
 
-Parsing and analysis utilities for JavaScript/TypeScript stack traces.
+Parsing and analysis patterns for stack traces.
 
-## Interfaces
+## Data Structures
 
-```typescript
-interface StackFrame {
-  function: string
-  file: string
-  line: number
-  column: number
-  isInternal: boolean
-  isNodeModules: boolean
-}
+```pseudocode
+StackFrame:
+    function = string
+    file = string
+    line = number
+    column = number
+    isInternal = boolean      // Framework/runtime internal frames
+    isThirdParty = boolean    // Dependency/library frames
 
-interface StackAnalysis {
-  frames: StackFrame[]
-  originatingFrame: StackFrame | null
-  involvedFiles: string[]
-  errorPath: string[]
-}
+StackAnalysis:
+    frames = list of StackFrame
+    originatingFrame = StackFrame or null   // First user-code frame
+    involvedFiles = list of strings          // Unique user-code files
+    errorPath = list of strings              // Reverse call path
 ```
 
 ## analyzeStackTrace
 
-Parses a raw stack trace string into structured `StackAnalysis`. Separates user frames from internal/node_modules frames and identifies the originating frame.
+Parses a raw stack trace string into structured StackAnalysis. Separates user frames from internal/third-party frames and identifies the originating frame.
 
-```typescript
-function analyzeStackTrace(stack: string): StackAnalysis {
-  const lines = stack.split('\n').slice(1) // Skip error message
-  const frames: StackFrame[] = []
+```pseudocode
+function analyzeStackTrace(stack):
+    lines = stack.split("\n").skip(1)  // Skip error message line
+    frames = []
 
-  for (const line of lines) {
-    const match = line.match(/at (.+?) \((.+?):(\d+):(\d+)\)/)
-    if (match) {
-      frames.push({
-        function: match[1],
-        file: match[2],
-        line: parseInt(match[3]),
-        column: parseInt(match[4]),
-        isInternal: match[2].startsWith('node:'),
-        isNodeModules: match[2].includes('node_modules')
-      })
+    for each line in lines:
+        match = parse line for pattern: "at FUNCTION (FILE:LINE:COLUMN)"
+        if match:
+            frames.append({
+                function: match.function,
+                file: match.file,
+                line: match.line,
+                column: match.column,
+                isInternal: match.file starts with runtime prefix (e.g., "node:", "bun:"),
+                isThirdParty: match.file contains dependency directory (e.g., "node_modules", "vendor")
+            })
+
+    userFrames = filter(frames, f => NOT f.isInternal AND NOT f.isThirdParty)
+    involvedFiles = unique(map(userFrames, f => f.file))
+
+    return {
+        frames: frames,
+        originatingFrame: userFrames[0] or null,
+        involvedFiles: involvedFiles,
+        errorPath: reverse(map(userFrames, f => "{f.function} ({f.file}:{f.line})"))
     }
-  }
-
-  const userFrames = frames.filter(f => !f.isInternal && !f.isNodeModules)
-  const involvedFiles = [...new Set(userFrames.map(f => f.file))]
-
-  return {
-    frames,
-    originatingFrame: userFrames[0] || null,
-    involvedFiles,
-    errorPath: userFrames.map(f => `${f.function} (${f.file}:${f.line})`).reverse()
-  }
-}
 ```
 
 ## formatStackAnalysis
 
-Formats a `StackAnalysis` into a readable Markdown string.
+Formats a StackAnalysis into a readable report.
 
-```typescript
-function formatStackAnalysis(analysis: StackAnalysis): string {
-  const lines: string[] = ['## Stack Trace Analysis', '']
+```pseudocode
+function formatStackAnalysis(analysis):
+    output = "## Stack Trace Analysis\n"
 
-  if (analysis.originatingFrame) {
-    const { file, line, function: fn } = analysis.originatingFrame
-    lines.push(`**Origin**: \`${fn}\` at \`${file}:${line}\``)
-    lines.push('')
-  }
+    if analysis.originatingFrame:
+        frame = analysis.originatingFrame
+        output += "**Origin**: `{frame.function}` at `{frame.file}:{frame.line}`\n"
 
-  lines.push('### Call Path')
-  for (const step of analysis.errorPath) {
-    lines.push(`- ${step}`)
-  }
-  lines.push('')
+    output += "### Call Path\n"
+    for each step in analysis.errorPath:
+        output += "- {step}\n"
 
-  lines.push('### Involved Files')
-  for (const file of analysis.involvedFiles) {
-    lines.push(`- \`${file}\``)
-  }
+    output += "### Involved Files\n"
+    for each file in analysis.involvedFiles:
+        output += "- `{file}`\n"
 
-  return lines.join('\n')
-}
+    return output
 ```

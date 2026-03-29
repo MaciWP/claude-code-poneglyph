@@ -48,8 +48,7 @@ Usar Grep como fallback cuando: LSP no disponible, busqueda de texto literal, ar
 
 | Agent | Cuando |
 |-------|--------|
-| code-quality | Despues de implementar, refactoring |
-| reviewer | Antes de commit, cambios significativos |
+| reviewer | Despues de implementar, refactoring, antes de commit, cambios significativos |
 
 ## Token Budget
 
@@ -99,7 +98,7 @@ Usar Grep como fallback cuando: LSP no disponible, busqueda de texto literal, ar
 
 | Trigger | Tool/Agent |
 |---------|------------|
-| >3 subtasks o complejidad >60 | task-decomposer |
-| Prompt vago | prompt-engineer |
+| >3 subtasks o complejidad >60 | planner |
+| Prompt vago | AskUserQuestion para clarificar |
 | Feature design | architect |
 | Pre-implementacion | scout |

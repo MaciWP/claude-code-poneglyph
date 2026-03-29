@@ -8,11 +8,8 @@ description: |
 tools: Read, Glob, Grep
 disallowedTools: Edit, Write, Bash, Task
 permissionMode: plan
-model: sonnet
 skills:
-  - retry-patterns
   - diagnostic-patterns
-  - recovery-strategies
 memory: project
 ---
 
@@ -139,8 +136,8 @@ sequenceDiagram
 
 ### Paso 4: Recommend
 
-1. Seleccionar estrategia de recovery usando recovery-strategies skill
-2. Aplicar retry-patterns si es TRANSIENT
+1. Seleccionar estrategia de recovery usando diagnostic-patterns skill
+2. Aplicar diagnostic-patterns retry strategies si es TRANSIENT
 3. Proporcionar pasos concretos
 4. Listar alternativas
 
@@ -202,7 +199,7 @@ sequenceDiagram
 
 ## Aplicacion de Skills
 
-### retry-patterns
+### Retry Patterns (via diagnostic-patterns)
 
 Usar cuando:
 - Error es TRANSIENT
@@ -228,7 +225,7 @@ Proporciona:
 - Stack trace analysis
 - Root cause patterns
 
-### recovery-strategies
+### Recovery Strategies (via diagnostic-patterns)
 
 Usar cuando:
 - Workflow fallo parcialmente

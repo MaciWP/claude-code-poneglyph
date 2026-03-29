@@ -1,6 +1,20 @@
 # Common Issues
 
-7 code smell patterns with before/after examples.
+Code smell patterns with detection criteria and before/after examples.
+
+## Quick Smell Catalog
+
+| Smell | Detection | Fix | Example |
+|-------|-----------|-----|---------|
+| Long Method | > 20 lines | Extract Function | Split `calculateTotal()` |
+| Large Class | > 200 lines | Extract Class | Split `UserManager` |
+| Long Parameter List | > 4 params | Parameter Object | `CreateUserParams` |
+| Duplicated Code | 2+ identical blocks | Extract Function | `validateEmail()` |
+| Feature Envy | Uses other object's data | Move Method | Move to data owner |
+| Data Clumps | Same params together | Extract Value Object | `Address`, `Money` |
+| Primitive Obsession | Primitives for concepts | Value Object | `Email`, `UserId` |
+| Switch Statements | Repeated type checks | Polymorphism | Strategy pattern |
+| Shotgun Surgery | One change, many files | Move/Inline | Consolidate |
 
 ## 1. Long Method (> 20 lines)
 
@@ -9,85 +23,66 @@
 **Detection**: Count lines, check for multiple responsibilities.
 
 **BEFORE**:
-```typescript
+```pseudocode
 // BAD: 50+ lines doing multiple things
-function processOrder(order: Order) {
-  // Validation (10 lines)
-  if (!order.items || order.items.length === 0) {
-    throw new Error('Order must have items')
-  }
-  if (!order.customer) {
-    throw new Error('Order must have customer')
-  }
-  for (const item of order.items) {
-    if (!item.productId || !item.quantity) {
-      throw new Error('Invalid item')
-    }
-  }
+function processOrder(order):
+    // Validation (10 lines)
+    if order.items is empty:
+        throw Error("Order must have items")
+    if not order.customer:
+        throw Error("Order must have customer")
+    for each item in order.items:
+        if not item.productId or not item.quantity:
+            throw Error("Invalid item")
 
-  // Calculation (15 lines)
-  let subtotal = 0
-  for (const item of order.items) {
-    const product = await db.products.find(item.productId)
-    subtotal += product.price * item.quantity
-  }
-  const tax = subtotal * 0.1
-  const shipping = subtotal > 100 ? 0 : 10
-  const total = subtotal + tax + shipping
+    // Calculation (15 lines)
+    subtotal = 0
+    for each item in order.items:
+        product = database.products.find(item.productId)
+        subtotal += product.price * item.quantity
+    tax = subtotal * 0.1
+    shipping = 0 if subtotal > 100 else 10
+    total = subtotal + tax + shipping
 
-  // Persistence (10 lines)
-  const savedOrder = await db.orders.create({
-    ...order,
-    subtotal,
-    tax,
-    shipping,
-    total,
-    status: 'pending'
-  })
+    // Persistence (10 lines)
+    savedOrder = database.orders.create(
+        merge(order, {subtotal, tax, shipping, total, status: "pending"})
+    )
 
-  // Notification (10 lines)
-  await emailService.send({
-    to: order.customer.email,
-    subject: 'Order Confirmation',
-    body: `Your order #${savedOrder.id} has been received`
-  })
+    // Notification (10 lines)
+    emailService.send({
+        to: order.customer.email,
+        subject: "Order Confirmation",
+        body: "Your order #" + savedOrder.id + " has been received"
+    })
 
-  // Logging (5 lines)
-  logger.info('Order processed', { orderId: savedOrder.id })
-
-  return savedOrder
-}
+    return savedOrder
 ```
 
 **AFTER**:
-```typescript
+```pseudocode
 // GOOD: Single responsibility per function
-async function processOrder(order: Order): Promise<SavedOrder> {
-  validateOrder(order)
-  const totals = await calculateTotals(order)
-  const savedOrder = await saveOrder(order, totals)
-  await notifyCustomer(savedOrder)
-  return savedOrder
-}
+function processOrder(order) -> SavedOrder:
+    validateOrder(order)
+    totals = calculateTotals(order)
+    savedOrder = saveOrder(order, totals)
+    notifyCustomer(savedOrder)
+    return savedOrder
 
-function validateOrder(order: Order): void {
-  if (!order.items?.length) throw new ValidationError('Order must have items')
-  if (!order.customer) throw new ValidationError('Order must have customer')
-  order.items.forEach(validateItem)
-}
+function validateOrder(order):
+    if order.items is empty: throw ValidationError("Order must have items")
+    if not order.customer: throw ValidationError("Order must have customer")
+    for each item in order.items: validateItem(item)
 
-function validateItem(item: OrderItem): void {
-  if (!item.productId || !item.quantity) {
-    throw new ValidationError('Invalid item')
-  }
-}
+function validateItem(item):
+    if not item.productId or not item.quantity:
+        throw ValidationError("Invalid item")
 
-async function calculateTotals(order: Order): Promise<OrderTotals> {
-  const subtotal = await calculateSubtotal(order.items)
-  const tax = subtotal * TAX_RATE
-  const shipping = subtotal > FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST
-  return { subtotal, tax, shipping, total: subtotal + tax + shipping }
-}
+function calculateTotals(order) -> OrderTotals:
+    subtotal = calculateSubtotal(order.items)
+    tax = subtotal * TAX_RATE
+    shipping = 0 if subtotal > FREE_SHIPPING_THRESHOLD else SHIPPING_COST
+    return {subtotal, tax, shipping, total: subtotal + tax + shipping}
 ```
 
 ## 2. Long Parameter List (> 4 params)
@@ -97,47 +92,32 @@ async function calculateTotals(order: Order): Promise<OrderTotals> {
 **Detection**: Count function parameters.
 
 **BEFORE**:
-```typescript
+```pseudocode
 // BAD: 6 parameters, order matters
-function createUser(
-  name: string,
-  email: string,
-  age: number,
-  role: string,
-  department: string,
-  isActive: boolean
-) {
-  // ...
-}
+function createUser(name, email, age, role, department, isActive):
+    ...
 
 // Easy to mix up parameters
-createUser('John', 'john@example.com', 30, 'Engineering', 'admin', true) // Wrong order!
+createUser("John", "john@example.com", 30, "Engineering", "admin", true)
+// Wrong order: role and department swapped!
 ```
 
 **AFTER**:
-```typescript
-// GOOD: Object parameter with named properties
-interface CreateUserParams {
-  name: string
-  email: string
-  age: number
-  role: UserRole
-  department: string
-  isActive?: boolean // Optional with default
-}
+```pseudocode
+// GOOD: Parameter object with named properties
+structure CreateUserParams:
+    name, email, age, role, department, isActive (default: true)
 
-function createUser(params: CreateUserParams): User {
-  const { name, email, age, role, department, isActive = true } = params
-  // ...
-}
+function createUser(params: CreateUserParams) -> User:
+    ...
 
 // Clear and order doesn't matter
 createUser({
-  name: 'John',
-  email: 'john@example.com',
-  role: 'admin',
-  department: 'Engineering',
-  age: 30,
+    name: "John",
+    email: "john@example.com",
+    role: "admin",
+    department: "Engineering",
+    age: 30
 })
 ```
 
@@ -148,72 +128,49 @@ createUser({
 **Detection**: Count lines, check for unrelated methods.
 
 **BEFORE**:
-```typescript
+```pseudocode
 // BAD: Class does everything
-class UserService {
-  // User CRUD (50 lines)
-  createUser() {}
-  updateUser() {}
-  deleteUser() {}
-  getUser() {}
-  listUsers() {}
+class UserService:
+    // User CRUD (50 lines)
+    createUser(), updateUser(), deleteUser(), getUser(), listUsers()
 
-  // Validation (30 lines)
-  validateEmail() {}
-  validatePassword() {}
-  validateUsername() {}
+    // Validation (30 lines)
+    validateEmail(), validatePassword(), validateUsername()
 
-  // Email sending (40 lines)
-  sendWelcomeEmail() {}
-  sendPasswordResetEmail() {}
-  sendNotificationEmail() {}
+    // Email sending (40 lines)
+    sendWelcomeEmail(), sendPasswordResetEmail(), sendNotificationEmail()
 
-  // Reporting (30 lines)
-  generateUserReport() {}
-  exportUsersToCSV() {}
+    // Reporting (30 lines)
+    generateUserReport(), exportUsersToCSV()
 
-  // Authentication (50 lines)
-  login() {}
-  logout() {}
-  refreshToken() {}
-}
+    // Authentication (50 lines)
+    login(), logout(), refreshToken()
 ```
 
 **AFTER**:
-```typescript
+```pseudocode
 // GOOD: Split by responsibility
-class UserService {
-  constructor(
-    private userRepository: UserRepository,
-    private validator: UserValidator,
-    private emailService: EmailService
-  ) {}
+class UserService:
+    constructor(userRepository, validator, emailService)
 
-  async createUser(params: CreateUserParams): Promise<User> {
-    this.validator.validate(params)
-    const user = await this.userRepository.create(params)
-    await this.emailService.sendWelcome(user)
-    return user
-  }
+    function createUser(params) -> User:
+        validator.validate(params)
+        user = userRepository.create(params)
+        emailService.sendWelcome(user)
+        return user
 
-  // ... other user CRUD methods
-}
+class UserValidator:
+    function validate(params) ...
+    function validateEmail(email) ...
+    function validatePassword(password) ...
 
-class UserValidator {
-  validate(params: CreateUserParams): void { /* ... */ }
-  validateEmail(email: string): boolean { /* ... */ }
-  validatePassword(password: string): boolean { /* ... */ }
-}
+class EmailService:
+    function sendWelcome(user) ...
+    function sendPasswordReset(user, token) ...
 
-class EmailService {
-  sendWelcome(user: User): Promise<void> { /* ... */ }
-  sendPasswordReset(user: User, token: string): Promise<void> { /* ... */ }
-}
-
-class UserReportService {
-  generate(filters: ReportFilters): Promise<Report> { /* ... */ }
-  exportToCSV(users: User[]): string { /* ... */ }
-}
+class UserReportService:
+    function generate(filters) -> Report ...
+    function exportToCSV(users) -> string ...
 ```
 
 ## 4. Duplicated Code
@@ -223,111 +180,94 @@ class UserReportService {
 **Detection**: Similar code blocks, copy-paste patterns.
 
 **BEFORE**:
-```typescript
-// BAD: Duplicated validation logic
-// In user.service.ts
-function validateUserEmail(email: string): boolean {
-  if (!email) return false
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-}
+```pseudocode
+// BAD: Duplicated validation logic in 3 different files
+// In user.service
+function validateUserEmail(email) -> boolean:
+    if not email: return false
+    return email matches pattern "x@x.x"
 
-// In signup.controller.ts
-function isValidEmail(email: string): boolean {
-  if (!email) return false
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-}
+// In signup.controller
+function isValidEmail(email) -> boolean:
+    if not email: return false
+    return email matches pattern "x@x.x"
 
-// In contact.service.ts
-function checkEmail(email: string): boolean {
-  if (!email) return false
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-}
+// In contact.service
+function checkEmail(email) -> boolean:
+    if not email: return false
+    return email matches pattern "x@x.x"
 ```
 
 **AFTER**:
-```typescript
-// GOOD: Single source of truth
-// In utils/validation.ts
-export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+```pseudocode
+// GOOD: Single source of truth in shared utility
+// In utils/validation
+EMAIL_PATTERN = "x@x.x"
 
-export function isValidEmail(email: string): boolean {
-  return Boolean(email) && EMAIL_REGEX.test(email)
-}
+function isValidEmail(email) -> boolean:
+    return email is not empty and email matches EMAIL_PATTERN
 
-// Usage everywhere
-import { isValidEmail } from '@/utils/validation'
-
-if (!isValidEmail(user.email)) {
-  throw new ValidationError('Invalid email')
-}
+// Usage everywhere: import and call isValidEmail(email)
 ```
 
 ## 5. Feature Envy
 
 **Problem**: Method uses another object's data more than its own.
 
-**Detection**: Excessive dot notation accessing other objects.
+**Detection**: Excessive property access on other objects (deep dot chains).
 
 **BEFORE**:
-```typescript
+```pseudocode
 // BAD: OrderProcessor uses Order's internal data excessively
-class OrderProcessor {
-  calculateTotal(order: Order): number {
-    let total = 0
+class OrderProcessor:
+    function calculateTotal(order) -> number:
+        total = 0
 
-    // Accessing order.customer deeply
-    const discount = order.customer.loyaltyPoints > 100
-      ? order.customer.membershipLevel === 'gold'
-        ? 0.15
-        : 0.10
-      : 0
+        // Accessing order.customer deeply
+        discount = 0
+        if order.customer.loyaltyPoints > 100:
+            if order.customer.membershipLevel == "gold":
+                discount = 0.15
+            else:
+                discount = 0.10
 
-    // Accessing order.items deeply
-    for (const item of order.items) {
-      const itemTotal = item.product.price * item.quantity
-      const itemDiscount = item.product.category.discountRate
-      total += itemTotal * (1 - itemDiscount)
-    }
+        // Accessing order.items deeply
+        for each item in order.items:
+            itemTotal = item.product.price * item.quantity
+            itemDiscount = item.product.category.discountRate
+            total += itemTotal * (1 - itemDiscount)
 
-    // Accessing order.shipping deeply
-    const shippingCost = order.shipping.method === 'express'
-      ? order.shipping.zone.expressRate
-      : order.shipping.zone.standardRate
+        // Accessing order.shipping deeply
+        if order.shipping.method == "express":
+            shippingCost = order.shipping.zone.expressRate
+        else:
+            shippingCost = order.shipping.zone.standardRate
 
-    return total * (1 - discount) + shippingCost
-  }
-}
+        return total * (1 - discount) + shippingCost
 ```
 
 **AFTER**:
-```typescript
+```pseudocode
 // GOOD: Move logic to where data lives
-class Order {
-  calculateTotal(): number {
-    const subtotal = this.calculateSubtotal()
-    const discount = this.customer.calculateDiscount()
-    const shipping = this.shipping.calculateCost()
-    return subtotal * (1 - discount) + shipping
-  }
+class Order:
+    function calculateTotal() -> number:
+        subtotal = this.calculateSubtotal()
+        discount = this.customer.calculateDiscount()
+        shipping = this.shipping.calculateCost()
+        return subtotal * (1 - discount) + shipping
 
-  private calculateSubtotal(): number {
-    return this.items.reduce((sum, item) => sum + item.calculateTotal(), 0)
-  }
-}
+    private function calculateSubtotal() -> number:
+        return sum(item.calculateTotal() for item in this.items)
 
-class Customer {
-  calculateDiscount(): number {
-    if (this.loyaltyPoints <= 100) return 0
-    return this.membershipLevel === 'gold' ? 0.15 : 0.10
-  }
-}
+class Customer:
+    function calculateDiscount() -> number:
+        if this.loyaltyPoints <= 100: return 0
+        return 0.15 if this.membershipLevel == "gold" else 0.10
 
-class OrderItem {
-  calculateTotal(): number {
-    const basePrice = this.product.price * this.quantity
-    return basePrice * (1 - this.product.category.discountRate)
-  }
-}
+class OrderItem:
+    function calculateTotal() -> number:
+        basePrice = this.product.price * this.quantity
+        return basePrice * (1 - this.product.category.discountRate)
 ```
 
 ## 6. Deep Nesting
@@ -337,43 +277,33 @@ class OrderItem {
 **Detection**: Count indentation levels.
 
 **BEFORE**:
-```typescript
+```pseudocode
 // BAD: Deep nesting (5 levels)
-function processUsers(users: User[]) {
-  if (users) {
-    for (const user of users) {
-      if (user.isActive) {
-        if (user.email) {
-          if (isValidEmail(user.email)) {
-            if (user.role === 'admin') {
-              // Finally doing something...
-              sendAdminNotification(user)
-            }
-          }
-        }
-      }
-    }
-  }
-}
+function processUsers(users):
+    if users:
+        for each user in users:
+            if user.isActive:
+                if user.email:
+                    if isValidEmail(user.email):
+                        if user.role == "admin":
+                            // Finally doing something...
+                            sendAdminNotification(user)
 ```
 
 **AFTER**:
-```typescript
+```pseudocode
 // GOOD: Early returns, extracted functions
-function processUsers(users: User[]): void {
-  if (!users) return
+function processUsers(users):
+    if not users: return
+    users
+        .filter(isActiveAdminWithValidEmail)
+        .forEach(sendAdminNotification)
 
-  users
-    .filter(isActiveAdminWithValidEmail)
-    .forEach(sendAdminNotification)
-}
-
-function isActiveAdminWithValidEmail(user: User): boolean {
-  return user.isActive
-    && user.email
-    && isValidEmail(user.email)
-    && user.role === 'admin'
-}
+function isActiveAdminWithValidEmail(user) -> boolean:
+    return user.isActive
+        and user.email is not empty
+        and isValidEmail(user.email)
+        and user.role == "admin"
 ```
 
 ## 7. Magic Numbers/Strings
@@ -383,39 +313,82 @@ function isActiveAdminWithValidEmail(user: User): boolean {
 **Detection**: Numbers or strings that aren't self-explanatory.
 
 **BEFORE**:
-```typescript
+```pseudocode
 // BAD: What do these numbers mean?
-if (user.age >= 18 && user.score > 75) {
-  setTimeout(callback, 86400000)
-  if (status === 'A') {
-    discount = 0.15
-  }
-}
+if user.age >= 18 and user.score > 75:
+    setTimeout(callback, 86400000)
+    if status == "A":
+        discount = 0.15
 ```
 
 **AFTER**:
-```typescript
+```pseudocode
 // GOOD: Named constants with meaning
-const MINIMUM_AGE = 18
-const PASSING_SCORE = 75
-const ONE_DAY_MS = 24 * 60 * 60 * 1000
+MINIMUM_AGE = 18
+PASSING_SCORE = 75
+ONE_DAY_MS = 24 * 60 * 60 * 1000
 
-const OrderStatus = {
-  ACTIVE: 'A',
-  CANCELLED: 'C',
-  COMPLETED: 'D',
-} as const
+OrderStatus = {ACTIVE: "A", CANCELLED: "C", COMPLETED: "D"}
 
-const DISCOUNT_RATES = {
-  STANDARD: 0.10,
-  PREMIUM: 0.15,
-  VIP: 0.20,
-} as const
+DISCOUNT_RATES = {STANDARD: 0.10, PREMIUM: 0.15, VIP: 0.20}
 
-if (user.age >= MINIMUM_AGE && user.score > PASSING_SCORE) {
-  setTimeout(callback, ONE_DAY_MS)
-  if (status === OrderStatus.ACTIVE) {
-    discount = DISCOUNT_RATES.PREMIUM
-  }
-}
+if user.age >= MINIMUM_AGE and user.score > PASSING_SCORE:
+    setTimeout(callback, ONE_DAY_MS)
+    if status == OrderStatus.ACTIVE:
+        discount = DISCOUNT_RATES.PREMIUM
+```
+
+## 8. Parameter Object (Fix Pattern)
+
+When multiple functions share the same group of parameters, extract them into a named structure.
+
+**BEFORE**:
+```pseudocode
+// BAD: Long parameter list repeated across functions
+function createUser(name, email, password, role, department, managerId, startDate) -> User ...
+function updateUser(name, email, password, role, department, managerId, startDate) -> User ...
+```
+
+**AFTER**:
+```pseudocode
+// GOOD: Parameter object
+structure CreateUserParams:
+    name, email, password, role, department, managerId, startDate
+
+function createUser(params: CreateUserParams) -> User:
+    // destructure: name, email, password, etc. = params
+    ...
+```
+
+## 9. Value Object (Fix Pattern)
+
+When primitive types represent domain concepts, wrap them in value objects that enforce invariants.
+
+**BEFORE**:
+```pseudocode
+// BAD: Primitive obsession - validation scattered everywhere
+function sendEmail(to, from):
+    if not to contains "@": throw Error("Invalid to")
+    if not from contains "@": throw Error("Invalid from")
+    ...
+```
+
+**AFTER**:
+```pseudocode
+// GOOD: Value object with validation at construction
+class Email:
+    constructor(email):
+        if not email contains "@" or not email contains ".":
+            throw ValidationError("Invalid email: " + email)
+        this.value = lowercase(email)
+
+    function toString() -> string:
+        return this.value
+
+    function equals(other: Email) -> boolean:
+        return this.value == other.value
+
+function sendEmail(to: Email, from: Email):
+    // Validation already done by Email constructor
+    ...
 ```

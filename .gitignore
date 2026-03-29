@@ -70,5 +70,28 @@ test-results/
 # Windows shell artifact
 nul
 
-# Generated reports (HTML)
+# Generated reports
 *.html
+poneglyph-analysis.md
+
+# Specs (design documents, not part of distributed config)
+.specs/
+
+# Poneglyph self-referential (only for developing Poneglyph itself)
+.claude/commands/insights-poneglyph.md
+
+# Project-level skills (not deployed globally)
+.claude/skills/bun-best-practices/
+.claude/skills/typescript-patterns/
+.claude/skills/testing-strategy/
+.claude/skills/websocket-patterns/
+.claude/skills/code-style-enforcer/
+.claude/skills/api-design/
+.claude/skills/config-validator/
+.claude/rules/skill-matching.md
+
+# Project-level TS hooks (not deployed globally)
+.claude/hooks/typecheck-guard.ts
+.claude/hooks/validators/ast/
+.claude/hooks/validators/typescript/
+.claude/hooks/validators/code-quality/lint-validator.ts

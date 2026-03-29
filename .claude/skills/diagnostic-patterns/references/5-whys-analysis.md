@@ -2,99 +2,98 @@
 
 Root cause analysis technique that drills down through layers of causation.
 
-## Interfaces
+## Data Structures
 
-```typescript
-interface WhyAnalysis {
-  level: number
-  question: string
-  answer: string
-  evidence?: string
-}
+```pseudocode
+WhyAnalysis:
+    level = number         // 1 through 5
+    question = string      // "Why did X happen?"
+    answer = string
+    evidence = string (optional)
 
-interface RootCauseAnalysis {
-  problem: string
-  whys: WhyAnalysis[]
-  rootCause: string
-  preventiveMeasures: string[]
-}
+RootCauseAnalysis:
+    problem = string
+    whys = list of WhyAnalysis
+    rootCause = string
+    preventiveMeasures = list of strings
 ```
 
 ## analyze5Whys
 
-Takes a problem statement, a list of answers (each answering "why" for the previous), and optional evidence. Returns a structured `RootCauseAnalysis`.
+Takes a problem statement, a list of answers (each answering "why" for the previous), and optional evidence. Returns a structured RootCauseAnalysis.
 
-```typescript
-function analyze5Whys(
-  problem: string,
-  answers: string[],
-  evidence?: string[]
-): RootCauseAnalysis {
-  const whys: WhyAnalysis[] = answers.map((answer, index) => ({
-    level: index + 1,
-    question: index === 0
-      ? `Why did ${problem}?`
-      : `Why ${answers[index - 1]}?`,
-    answer,
-    evidence: evidence?.[index]
-  }))
+```pseudocode
+function analyze5Whys(problem, answers, evidence = []):
+    whys = []
 
-  return {
-    problem,
-    whys,
-    rootCause: answers[answers.length - 1],
-    preventiveMeasures: generatePreventiveMeasures(answers[answers.length - 1])
-  }
-}
+    for index, answer in enumerate(answers):
+        question = (index == 0)
+            ? "Why did {problem}?"
+            : "Why {answers[index - 1]}?"
+
+        whys.append({
+            level: index + 1,
+            question: question,
+            answer: answer,
+            evidence: evidence[index] (if present)
+        })
+
+    return {
+        problem: problem,
+        whys: whys,
+        rootCause: last(answers),
+        preventiveMeasures: generatePreventiveMeasures(last(answers))
+    }
 ```
 
 ## generatePreventiveMeasures
 
 Generates preventive measures based on root cause keywords.
 
-```typescript
-function generatePreventiveMeasures(rootCause: string): string[] {
-  const measures: string[] = []
+```pseudocode
+function generatePreventiveMeasures(rootCause):
+    measures = []
 
-  if (rootCause.includes('test')) {
-    measures.push('Add integration tests for edge cases')
-    measures.push('Implement test coverage requirements')
-  }
-  if (rootCause.includes('validation')) {
-    measures.push('Add input validation layer')
-    measures.push('Use TypeScript strict mode')
-  }
-  if (rootCause.includes('null') || rootCause.includes('undefined')) {
-    measures.push('Enable strict null checks in TypeScript')
-    measures.push('Use optional chaining consistently')
-  }
-  if (rootCause.includes('timeout') || rootCause.includes('network')) {
-    measures.push('Implement circuit breaker pattern')
-    measures.push('Add retry logic with backoff')
-  }
+    if rootCause contains "test":
+        measures.add("Add integration tests for edge cases")
+        measures.add("Implement test coverage requirements")
 
-  return measures.length > 0 ? measures : ['Document and monitor for recurrence']
-}
+    if rootCause contains "validation":
+        measures.add("Add input validation layer")
+        measures.add("Enable strict type checking")
+
+    if rootCause contains "null" or "undefined":
+        measures.add("Enable strict null checks")
+        measures.add("Use optional chaining consistently")
+
+    if rootCause contains "timeout" or "network":
+        measures.add("Implement circuit breaker pattern")
+        measures.add("Add retry logic with backoff")
+
+    if measures is empty:
+        measures.add("Document and monitor for recurrence")
+
+    return measures
 ```
 
 ## Usage Example
 
-```typescript
-const analysis = analyze5Whys(
-  'API returned 500 error',
-  [
-    'Database query failed',
-    'Connection pool was exhausted',
-    'Too many concurrent requests during peak',
-    'No connection pooling limit was configured',
-    'Production config was not reviewed for scale'
-  ],
-  [
-    'Error log: "SequelizeConnectionError"',
-    'Pool stats: 100/100 connections used',
-    'Metrics: 500 req/s vs normal 50 req/s',
-    'Config file: pool.max = 100 (default)',
-    'No load testing performed before launch'
-  ]
+```pseudocode
+analysis = analyze5Whys(
+    problem: "API returned 500 error",
+    answers: [
+        "Database query failed",
+        "Connection pool was exhausted",
+        "Too many concurrent requests during peak",
+        "No connection pooling limit was configured",
+        "Production config was not reviewed for scale"
+    ],
+    evidence: [
+        "Error log: 'ConnectionError'",
+        "Pool stats: 100/100 connections used",
+        "Metrics: 500 req/s vs normal 50 req/s",
+        "Config file: pool.max = 100 (default)",
+        "No load testing performed before launch"
+    ]
 )
 ```

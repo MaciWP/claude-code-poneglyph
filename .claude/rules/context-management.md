@@ -7,12 +7,12 @@ Reglas para carga de skills y contexto a agentes. Evitar sobrecarga de contexto 
 | Agent | Base Skills (gratis) | Max Adicionales | Total Max | Notes |
 |-------|---------------------|-----------------|-----------|-------|
 | builder | anti-hallucination | 5 | 6 | Base gratis, no cuenta contra max |
-| reviewer | code-quality, testing-strategy, anti-hallucination | 2 | 5 | Base son gratis |
-| error-analyzer | retry-patterns | 2 | 3 | + matched skills |
-| architect | — | 4 | 4 | + api-design, expert-patterns |
+| reviewer | code-quality, security-review, performance-review, anti-hallucination | 2 | 6 | Base son gratis |
+| error-analyzer | diagnostic-patterns | 2 | 3 | + matched skills |
+| architect | — | 4 | 4 | + api-design |
 | planner | — | 2 | 2 | High-level only |
 | scout | — | 1 | 1 | Minimal context |
-| security-auditor | security-review | 2 | 3 | + matched skills |
+| command-loader | — | 0 | 0 | Infrastructure only |
 
 ## Precedence Rules
 

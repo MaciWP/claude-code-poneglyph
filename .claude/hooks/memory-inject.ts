@@ -1,10 +1,8 @@
 #!/usr/bin/env bun
 
 import { existsSync } from "node:fs";
-import {
-  loadSuggestions,
-  formatSuggestionsForContext,
-} from "./lib/routing-suggestions";
+import { loadPatterns } from "./lib/pattern-learning";
+import { loadScores } from "./lib/agent-scorer";
 import { getSkillsForPath } from "./lib/path-rule-loader";
 import {
   createStore,
@@ -134,11 +132,39 @@ function emitOutput(context: string, prompt: string): void {
   console.log(JSON.stringify(output));
 }
 
-function emitRoutingSuggestionsFallback(prompt: string): void {
+async function buildEnrichmentContext(): Promise<string> {
   try {
-    const suggestions = loadSuggestions();
-    const context = formatSuggestionsForContext(suggestions);
-    emitOutput(context ?? "", prompt);
+    const [patterns, scores] = await Promise.all([loadPatterns(), Promise.resolve(loadScores())]);
+    const lines: string[] = [];
+
+    if (patterns.length > 0) {
+      lines.push("## Learned Patterns");
+      for (const p of patterns) {
+        const taskType = p.pattern.taskType ?? p.type;
+        const agents = p.pattern.agents?.join("→") ?? p.pattern.skills?.join("+") ?? "unknown";
+        const successPct = Math.round(p.outcome.successRate * 100);
+        lines.push(`- Task type "${taskType}": ${agents}, ${successPct}% success (${p.sampleSize} samples)`);
+      }
+    }
+
+    if (scores.length > 0) {
+      lines.push("\n## Agent Success Rates");
+      for (const s of scores) {
+        const successPct = Math.round(s.successRate * 100);
+        lines.push(`- ${s.agent}: ${successPct}% success (${s.sampleSize} tasks)`);
+      }
+    }
+
+    return lines.length > 0 ? lines.join("\n") : "";
+  } catch {
+    return "";
+  }
+}
+
+async function emitRoutingSuggestionsFallback(prompt: string): Promise<void> {
+  try {
+    const context = await buildEnrichmentContext();
+    emitOutput(context, prompt);
   } catch {
     try {
       emitOutput("", prompt);
@@ -184,20 +210,20 @@ async function main(): Promise<void> {
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      emitRoutingSuggestionsFallback(prompt);
+      await emitRoutingSuggestionsFallback(prompt);
       process.exit(0);
     }
 
     const result = (await response.json()) as InjectionResponse;
 
     if (!result.context || result.context.trim().length === 0) {
-      emitRoutingSuggestionsFallback(prompt);
+      await emitRoutingSuggestionsFallback(prompt);
       process.exit(0);
     }
 
     emitOutput(result.context, prompt);
   } catch {
-    emitRoutingSuggestionsFallback(prompt);
+    await emitRoutingSuggestionsFallback(prompt);
     process.exit(0);
   }
 }

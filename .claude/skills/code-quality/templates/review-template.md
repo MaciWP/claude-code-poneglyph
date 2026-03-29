@@ -9,17 +9,17 @@ Use this format for code quality review output.
 
 ### Code Smells
 - **[Smell Name]**: `functionName()` (N lines)
-  - Location: `file.ts:startLine-endLine`
+  - Location: `file:startLine-endLine`
   - Complexity: Cyclomatic N, Cognitive N
   - Fix: [Brief description of fix]
 
 - **[Smell Name]**: [Description]
-  - Locations: `file1.ts:line`, `file2.ts:line`, `file3.ts:line`
+  - Locations: `file1:line`, `file2:line`, `file3:line`
   - Fix: [Brief description of fix]
 
 ### SOLID Violations
 - **[Principle] Violation**: [Description]
-  - Location: `file.ts`
+  - Location: `file`
   - Fix: [Brief description of fix]
 
 ### Complexity Analysis

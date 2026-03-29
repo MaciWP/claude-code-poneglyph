@@ -59,6 +59,7 @@ export function loadScores(): AgentScore[] {
 }
 
 export function saveScores(scores: AgentScore[]): void {
+  if (scores.length === 0) return;
   try {
     mkdirSync(join(homedir(), ".claude"), { recursive: true });
     const content = scores.map((s) => JSON.stringify(s)).join("\n") + "\n";

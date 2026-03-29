@@ -155,4 +155,4 @@ Siguiente paso:
 ---
 
 **Version**: 1.0.0
-**Relacionado**: `/expert-patterns`, `/compare-pattern`
+**Relacionado**: `/compare-pattern`

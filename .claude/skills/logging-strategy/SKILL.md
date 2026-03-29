@@ -1,8 +1,8 @@
 ---
 name: logging-strategy
-description: "Structured logging with context, log levels, and JSON output.\n\
+description: "Structured logging patterns with context, log levels, and best practices.\n\
   Use proactively when: setting up logging, adding request tracing, debugging production.\n\
-  Keywords - log, logging, logger, structured, json logs, pino, contextual logging"
+  Keywords - log, logging, logger, structured, contextual logging, correlation, trace id, log levels"
 type: knowledge-base
 disable-model-invocation: false
 activation:
@@ -11,241 +11,207 @@ activation:
     - logging
     - logger
     - structured
-    - json logs
-    - pino
     - contextual logging
+    - correlation
+    - trace id
+    - log levels
 for_agents: [builder]
-version: "1.1"
+version: "2.0"
 ---
 
 # Logging Strategy
 
-Structured logging patterns with contextual information and production-ready output. Ejemplos adaptables a cualquier stack. Patterns son language-agnostic.
+Structured logging patterns with contextual information and production-ready output. Language and framework agnostic.
 
-## When to Use This Skill
+## When to Use
 
 - Setting up application logging infrastructure
-- Need structured JSON logs for production
+- Need structured logs (JSON) for production
 - Implementing request tracing (request ID, correlation ID)
 - Adding contextual logging (user ID, tenant ID)
-- Integrating with log aggregation (ELK, Datadog, CloudWatch)
-- Debugging issues in production
+- Integrating with log aggregation systems
+- Debugging production issues
 - Adding appropriate log levels to code
 
-## Patterns
+## Log Levels
 
-### 1. Basic Logger - Console vs Structured
+### When to Use Each Level
 
-```typescript
-// WRONG - Plain console.log
-console.log('User logged in')
-console.log('Error:', error)
-console.log('Processing request for user', userId)
+| Level | Purpose | Examples | Production Default |
+|-------|---------|----------|-------------------|
+| DEBUG | Verbose development info | Cache hits, variable state, flow tracing | Off |
+| INFO | Important business events | User created, order placed, server started | On |
+| WARN | Potential issues, degraded state | Rate limit approaching, deprecated API used, retry attempt | On |
+| ERROR | Failures needing investigation | Payment failed, DB query error, external service down | On |
+| FATAL | Unrecoverable, process must exit | DB connection lost permanently, corrupt config | On |
 
-// CORRECT - Structured logger with context
-import { logger } from './logger'
+### Level Selection Decision
 
-logger.info('User logged in', { userId: 123, ip: '192.168.1.1' })
-logger.error('Database connection failed', { error: error.message, retryCount: 3 })
-logger.debug('Processing request', { userId, action: 'update_profile' })
+| Question | If Yes | If No |
+|----------|--------|-------|
+| Is this a normal, expected event? | INFO | Continue |
+| Could this become a problem later? | WARN | Continue |
+| Did something fail? | ERROR | Continue |
+| Must the process stop? | FATAL | Continue |
+| Is this only useful during development? | DEBUG | INFO |
+
+## Structured Logging Concepts
+
+### Unstructured vs Structured
+
+```pseudocode
+// BAD - Unstructured plain text
+log("User 123 logged in from 192.168.1.1")
+
+// GOOD - Structured key-value context
+log.info("User logged in", { userId: 123, ip: "192.168.1.1" })
 ```
 
-### 2. Logger Implementation (adapt to your runtime's logger)
+### Why Structured
 
-```
-// Logger interface — implement with your runtime's preferred logger
-// (pino, winston, console-based, or built-in runtime logger)
+| Benefit | Detail |
+|---------|--------|
+| Machine-parseable | Log aggregators can index fields |
+| Filterable | Query by userId, requestId, etc. |
+| Consistent | Same fields across all log entries |
+| Searchable | Find all logs for a specific request |
 
-LogLevel = 'debug' | 'info' | 'warn' | 'error'
+### Logger Interface (Conceptual)
 
-LogContext = {
-  requestId?: string
-  userId?: number | string
-  [key: string]: unknown
-}
+```pseudocode
+Logger:
+  debug(message, context?)    // Verbose dev info
+  info(message, context?)     // Important events
+  warn(message, context?)     // Potential issues
+  error(message, context?)    // Failures
+  fatal(message, context?)    // Unrecoverable
+  child(baseContext) -> Logger // Scoped logger with inherited context
 
-// Key principles:
-// - LOG_LEVEL from environment variable (default: 'info')
-// - JSON output in production (machine-readable)
-// - Pretty print in development (human-readable)
-// - Child loggers with base context for request scoping
-// - Level filtering: only log if level >= configured level
-
-logger = {
-  debug(message, context?)   // Verbose dev info
-  info(message, context?)    // Important events
-  warn(message, context?)    // Potential issues
-  error(message, context?)   // Errors needing investigation
-  child(baseContext) -> logger  // Scoped logger with inherited context
-}
+Configuration:
+  level: from environment variable (default: "info")
+  format: JSON in production, pretty-print in development
+  output: stdout (let infrastructure handle routing)
 ```
 
-### 3. Request Context - Middleware Pattern (framework-agnostic)
+## Request Context / Correlation IDs
 
-```
-// WRONG - No request context in logs
-handler(request):
-  log('Fetching user')       // No context
-  user = getUser(request.id)
-  log('Found user')          // Can't trace request
+### Why Correlation IDs
 
-// CORRECT - Request-scoped logging middleware
-handler(request):
-  requestId = request.headers['x-request-id'] || generateUUID()
+| Problem | Solution |
+|---------|----------|
+| Cannot trace a request across log lines | Attach requestId to every log in that request |
+| Cannot trace across services | Use correlationId passed via headers |
+| Cannot group logs by user session | Attach sessionId or userId |
+
+### Request-Scoped Logging
+
+```pseudocode
+// Middleware pattern (any framework)
+handleRequest(request):
+  requestId = request.headers["x-request-id"] or generateUUID()
   log = logger.child({ requestId, method: request.method, path: request.path })
 
-  log.info('Request started')
+  log.info("Request started")
+  startTime = now()
+
   try:
     result = processRequest(request)
-    duration = now() - startTime
-    log.info('Request completed', { statusCode: 200, durationMs: duration })
-    return response(result, headers: { 'x-request-id': requestId })
+    log.info("Request completed", { statusCode: 200, durationMs: elapsed(startTime) })
+    return response(result, headers: { "x-request-id": requestId })
   catch error:
-    log.error('Request failed', { error: error.message, durationMs: duration })
+    log.error("Request failed", { error: error.message, durationMs: elapsed(startTime) })
     throw error
 ```
 
-### 4. Log Levels - When to Use Each
+### Cross-Service Tracing
 
-```typescript
-// WRONG - Everything is console.log
-console.log('Starting server')
-console.log('Warning: rate limit approaching')
-console.log('Error: database connection failed')
-
-// CORRECT - Appropriate log levels
-// DEBUG: Verbose development info, not in production
-logger.debug('Cache lookup', { key: 'user:123', hit: true, ttl: 300 })
-
-// INFO: Important events that should be logged
-logger.info('Server started', { port: 8080, env: 'production' })
-logger.info('User created', { userId: 456, email: 'user@example.com' })
-logger.info('Order placed', { orderId: 789, total: 99.99 })
-
-// WARN: Potential issues that need attention
-logger.warn('Rate limit approaching', { current: 95, limit: 100, userId: 123 })
-logger.warn('Deprecated API used', { endpoint: '/v1/users', suggestUse: '/v2/users' })
-
-// ERROR: Errors that need investigation
-logger.error('Payment failed', { orderId: 789, reason: 'Card declined' })
-logger.error('Database query failed', { query: 'SELECT...', error: error.message })
+```pseudocode
+// When calling another service, forward the correlation ID
+callExternalService(url, data, correlationId):
+  log.info("Calling external service", { url, correlationId })
+  response = httpPost(url, data, headers: { "x-correlation-id": correlationId })
+  log.info("External service responded", { url, statusCode: response.status, correlationId })
+  return response
 ```
 
-### 5. Sensitive Data - What NOT to Log
+## What to Log / What NOT to Log
 
-```typescript
-// WRONG - Logging sensitive data
-logger.info('User login', { email, password }) // NEVER log passwords
-logger.info('Payment processed', { cardNumber }) // NEVER log card numbers
-logger.info('API call', { apiKey }) // NEVER log API keys
-logger.info('Token issued', { token }) // NEVER log tokens
+### NEVER Log (Sensitive Data)
 
-// CORRECT - Log safely
-logger.info('User login', { email, passwordProvided: !!password })
-logger.info('Payment processed', { cardLast4: cardNumber.slice(-4) })
-logger.info('API call', { apiKeyPrefix: apiKey.slice(0, 8) + '...' })
-logger.info('Token issued', { tokenId: token.split('.')[0], expiresIn: '30m' })
-```
+| Data Type | Why | What to Log Instead |
+|-----------|-----|---------------------|
+| Passwords | Security breach | `passwordProvided: true/false` |
+| Credit card numbers | PCI compliance | `cardLast4: "1234"` |
+| API keys / secrets | Credential exposure | `apiKeyPrefix: "sk-abc..."` |
+| Auth tokens (JWT, etc.) | Session hijacking | `tokenId` or `tokenHash` |
+| PII (SSN, health data) | Privacy regulations | Anonymized or omitted |
+| Full request bodies | May contain secrets | Specific safe fields only |
 
-### 6. Error Logging - Include Stack Traces
+### ALWAYS Log
 
-```typescript
-// WRONG - Losing error details
-try {
-  await riskyOperation()
-} catch (error) {
-  logger.error('Operation failed') // No details
-}
+| Data | Why |
+|------|-----|
+| Request ID / Correlation ID | Traceability |
+| Timestamp | Ordering and correlation |
+| Log level | Filtering |
+| Service/module name | Source identification |
+| Error messages + stack traces | Debugging |
+| Duration of operations | Performance monitoring |
+| Status codes | Success/failure tracking |
 
-// CORRECT - Full error context
-try {
-  await riskyOperation()
-} catch (error) {
-  logger.error('Operation failed', {
-    error: error instanceof Error ? error.message : 'Unknown error',
-    stack: error instanceof Error ? error.stack : undefined,
-    operation: 'riskyOperation',
-    input: { id: 123 }, // Safe input data only
+## Error Logging Best Practices
+
+```pseudocode
+// BAD - Losing error details
+try:
+  riskyOperation()
+catch error:
+  log.error("Operation failed")     // No details at all
+
+// GOOD - Full error context
+try:
+  riskyOperation()
+catch error:
+  log.error("Operation failed", {
+    error: error.message,
+    stack: error.stackTrace,
+    operation: "riskyOperation",
+    input: { id: 123 }       // Only safe, non-sensitive input
   })
-  throw error // Re-throw if needed
-}
+  throw error   // Re-throw if caller needs to handle
 ```
 
-### 7. Performance Logging
+## Performance Logging
 
-```typescript
-// WRONG - No timing information
-logger.info('Query completed')
+```pseudocode
+// BAD - No timing information
+log.info("Query completed")
 
-// CORRECT - Include duration
-const start = performance.now()
-const result = await db.query(sql)
-const duration = performance.now() - start
+// GOOD - Include duration and flag slow operations
+startTime = now()
+result = db.query(sql)
+duration = elapsed(startTime)
 
-logger.info('Query completed', {
-  query: sql.slice(0, 100), // Truncate long queries
+log.info("Query completed", {
+  query: truncate(sql, 100),
   rowCount: result.length,
-  durationMs: Math.round(duration * 100) / 100,
-  slow: duration > 1000, // Flag slow queries
+  durationMs: round(duration, 2),
+  slow: duration > 1000
 })
-
-// Helper function
-async function timed<T>(
-  operation: string,
-  fn: () => Promise<T>,
-  log = logger
-): Promise<T> {
-  const start = performance.now()
-  try {
-    const result = await fn()
-    log.info(`${operation} completed`, {
-      durationMs: Math.round((performance.now() - start) * 100) / 100,
-    })
-    return result
-  } catch (error) {
-    log.error(`${operation} failed`, {
-      durationMs: Math.round((performance.now() - start) * 100) / 100,
-      error: error instanceof Error ? error.message : 'Unknown',
-    })
-    throw error
-  }
-}
-
-// Usage
-const users = await timed('fetchUsers', () => db.users.findMany())
 ```
 
-## Checklist
+### Slow Operation Thresholds
 
-- [ ] Using structured logger (not console.log)
-- [ ] JSON output in production
-- [ ] Pretty output in development
-- [ ] Request ID included in all request logs
-- [ ] Appropriate log level for each message
-- [ ] No sensitive data logged (passwords, tokens, cards)
-- [ ] Error stack traces included
-- [ ] Performance timing for slow operations
-- [ ] Child loggers for request context
-- [ ] LOG_LEVEL configurable via env var
-- [ ] Correlation ID for cross-service tracing
-- [ ] Log rotation configured (if file logging)
+| Operation | Warn Threshold | Error Threshold |
+|-----------|----------------|-----------------|
+| DB query | > 1s | > 5s |
+| HTTP call | > 2s | > 10s |
+| File I/O | > 500ms | > 3s |
+| Cache lookup | > 100ms | > 1s |
 
-## Anti-Patterns
+## JSON Output Format
 
-| Anti-Pattern | Problem | Solution |
-|--------------|---------|----------|
-| `console.log` everywhere | No structure, levels, context | Use structured logger |
-| Logging passwords | Security breach | Never log secrets |
-| No request ID | Cannot trace requests | Add request context |
-| All logs same level | Cannot filter | Use appropriate levels |
-| No timestamps | Cannot correlate | Always include timestamp |
-| Logging full objects | Performance, secrets | Log specific fields |
-| No error stack | Cannot debug | Include error.stack |
-| String concatenation | Breaks JSON structure | Use context objects |
-
-## Examples
-
-### JSON Output Example (Production)
+### Production (Machine-Readable)
 
 ```json
 {
@@ -261,14 +227,55 @@ const users = await timed('fetchUsers', () => db.users.findMany())
 }
 ```
 
-### Development Output Example
+### Development (Human-Readable)
 
 ```
-[INFO] 2025-01-24T10:30:45.123Z Request started {"requestId":"abc-123","method":"POST","path":"/api/users"}
-[INFO] 2025-01-24T10:30:45.168Z Request completed {"requestId":"abc-123","statusCode":201,"durationMs":45.23}
+[INFO] 2025-01-24T10:30:45 Request completed  requestId=abc-123 method=POST path=/api/users status=201 duration=45ms
 ```
+
+## Anti-Patterns
+
+| Anti-Pattern | Problem | Solution |
+|--------------|---------|----------|
+| Plain print statements everywhere | No structure, levels, or context | Use structured logger |
+| Logging passwords or tokens | Security breach | Never log secrets |
+| No request ID | Cannot trace requests | Add request context middleware |
+| All logs at same level | Cannot filter in production | Use appropriate levels |
+| No timestamps | Cannot correlate events | Always include timestamp |
+| Logging full objects | Performance hit, may leak secrets | Log specific safe fields |
+| No error stack trace | Cannot debug root cause | Include stack on errors |
+| String concatenation for context | Breaks structured format | Use context objects/maps |
+| Logging in tight loops | Performance degradation | Log summary after loop |
+| Not configuring log level from env | Cannot adjust in production | Read level from environment |
+
+## Log Aggregation Integration
+
+| Aspect | Recommendation |
+|--------|---------------|
+| Output target | stdout (let infrastructure route) |
+| Format | JSON in production |
+| Field naming | Consistent across services (camelCase or snake_case, pick one) |
+| Timestamp format | ISO 8601 (UTC) |
+| Correlation | Forward x-request-id / x-correlation-id headers |
+| Sampling | Consider sampling DEBUG logs in high-traffic systems |
+
+## Checklist
+
+- [ ] Using structured logger (not plain print statements)
+- [ ] JSON output in production
+- [ ] Pretty output in development
+- [ ] Log level configurable via environment variable
+- [ ] Request ID / correlation ID in all request-scoped logs
+- [ ] Appropriate log level for each message
+- [ ] No sensitive data logged (passwords, tokens, cards, PII)
+- [ ] Error stack traces included
+- [ ] Performance timing for slow operations
+- [ ] Child/scoped loggers for request context
+- [ ] Correlation ID forwarded across service calls
+- [ ] Consistent field naming across services
+- [ ] Log rotation or aggregation configured for production
 
 ---
 
-**Version**: 1.1
+**Version**: 2.0
 **Patterns**: Language-agnostic

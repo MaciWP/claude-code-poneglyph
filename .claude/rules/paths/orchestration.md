@@ -4,8 +4,6 @@ globs:
   - ".claude/rules/**"
   - ".claude/skills/**"
 priority: 15
-skills:
-  - expert-patterns
 ---
 
 ## Orchestration Context

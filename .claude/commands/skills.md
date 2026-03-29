@@ -54,24 +54,17 @@ Segun SPEC-009, las skills deben organizarse asi:
 
 ```
 .claude/skills/
-|-- builder/              # Skills para builder
-|   |-- typescript-patterns/
-|   |-- bun-best-practices/
-|   |-- websocket-patterns/
-|   |-- security-review/
-|   |-- refactoring-patterns/
-|-- reviewer/             # Skills para reviewer
-|   |-- security-review/
-|   |-- performance-review/
-|   |-- code-quality/
-|-- error-analyzer/       # Skills para error-analyzer
-|   |-- retry-patterns/
-|   |-- diagnostic-patterns/
-|   |-- recovery-strategies/
-|-- shared/               # Skills compartidas
-|   |-- anti-hallucination/
-|   |-- lsp-operations/
-|   |-- logging-strategy/
+|-- anti-hallucination/       # Validation patterns
+|-- code-quality/             # Code quality + refactoring
+|-- database-patterns/        # Database access patterns
+|-- diagnostic-patterns/      # Debugging + retry + recovery
+|-- logging-strategy/         # Structured logging
+|-- lsp-operations/           # LSP navigation
+|-- meta-create-agent/        # Create new agents
+|-- meta-create-skill/        # Create new skills
+|-- performance-review/       # Performance analysis
+|-- security-review/          # Security audit
+|-- sync-claude/              # Sync claude config
 ```
 
 ---
@@ -135,40 +128,21 @@ TIP: Usa las keywords para auto-trigger de skills
 
 ## 4. TABLA DE SKILLS POR AGENTE
 
-### Builder Skills (Implementacion)
+### Global Skills (11 disponibles)
 
 | Skill | Proposito | Keywords |
 |-------|-----------|----------|
-| `typescript-patterns` | Type safety, async/await, generics | typescript, async, promise, interface |
-| `bun-best-practices` | Bun runtime, Elysia patterns | bun, elysia, test, shell |
-| `websocket-patterns` | Real-time, streaming | websocket, ws, realtime, streaming |
-| `security-review` | Secure auth, validation, encryption | security, auth, jwt, password |
-| `refactoring-patterns` | SOLID, extract, clean code | refactor, extract, SOLID, clean |
-| `config-validator` | Env vars, Zod validation | env, config, zod, validation |
+| `anti-hallucination` | Validate claims, verify facts | validate, verify, check, exists, hallucination |
+| `code-quality` | Code smells, SOLID, refactoring | quality, smells, complexity, refactor, extract, SOLID |
+| `database-patterns` | Database access, queries, migrations | database, sql, drizzle, migration, query |
+| `diagnostic-patterns` | Debugging, retry, recovery, 5 whys | debug, diagnose, trace, retry, recovery, rollback |
 | `logging-strategy` | Structured logging, context | log, logging, structured, json |
-
-### Reviewer Skills (Revision)
-
-| Skill | Proposito | Keywords |
-|-------|-----------|----------|
-| `security-review` | OWASP Top 10 audit | security, owasp, vulnerability, injection |
+| `lsp-operations` | Semantic code navigation | definition, references, hover, symbols |
+| `meta-create-agent` | Create new agents | (manual invocation) |
+| `meta-create-skill` | Create new skills | (manual invocation) |
 | `performance-review` | N+1, memory leaks, bottlenecks | performance, memory, slow, n+1 |
-| `code-quality` | Code smells, SOLID violations | quality, smells, complexity, duplication |
-
-### Error-Analyzer Skills (Diagnostico)
-
-| Skill | Proposito | Keywords |
-|-------|-----------|----------|
-| `retry-patterns` | Transient errors, backoff, circuit breaker | retry, timeout, backoff, circuit breaker |
-| `diagnostic-patterns` | Debugging, 5 whys, stack trace | debug, diagnose, trace, root cause |
-| `recovery-strategies` | Saga, rollback, compensation | recovery, rollback, saga, checkpoint |
-
-### Shared Skills (Multi-Agente)
-
-| Skill | Proposito | Agentes |
-|-------|-----------|---------|
-| `anti-hallucination` | Validate claims, verify facts | builder, reviewer, error-analyzer, scout, architect |
-| `lsp-operations` | Semantic code navigation | builder, reviewer, error-analyzer, scout, architect |
+| `security-review` | OWASP Top 10, auth, encryption | security, auth, jwt, password, owasp |
+| `sync-claude` | Sync claude configuration | (manual invocation) |
 
 ---
 

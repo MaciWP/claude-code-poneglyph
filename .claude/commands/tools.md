@@ -41,52 +41,31 @@ When you run `/tools`, display:
 🛠️  AVAILABLE TOOLS
 ═══════════════════════════════════════════════════════════════════════════════
 
-## 🎯 SKILLS (24 available)
+## 🎯 SKILLS (11 available)
 
 1. anti-hallucination - Validation patterns to prevent hallucination
-2. api-design - REST API design patterns
-3. bun-best-practices - Bun runtime best practices
-4. code-quality - Code quality analysis
-5. code-style-enforcer - Code style enforcement
-6. config-validator - Configuration validation
+2. code-quality - Code quality analysis and refactoring patterns
+3. database-patterns - Database access patterns
+4. diagnostic-patterns - Diagnostic, debugging, retry, and recovery patterns
+5. logging-strategy - Logging strategy
+6. lsp-operations - LSP navigation operations
 7. meta-create-agent - Create new agents
 8. meta-create-skill - Create new skills
-9. database-patterns - Database access patterns
-10. diagnostic-patterns - Diagnostic and debugging patterns
-11. expert-patterns - Best practices comparison from authoritative sources
-12. logging-strategy - Logging strategy
-13. lsp-operations - LSP navigation operations
-14. performance-review - Performance review patterns
-15. playwright-browser - Browser automation with Playwright
-16. prompt-engineer - Prompt engineering patterns
-17. recovery-strategies - Recovery strategies for failures
-18. refactoring-patterns - Refactoring patterns
-19. retry-patterns - Retry and circuit breaker patterns
-20. security-review - Security review patterns
-21. sync-claude - Sync claude configuration
-22. testing-strategy - Testing strategy and patterns
-23. typescript-patterns - TypeScript best practices
-24. websocket-patterns - WebSocket patterns
+9. performance-review - Performance review patterns
+10. security-review - Security review patterns
+11. sync-claude - Sync claude configuration
 
 ---
 
-## 🤖 AGENTS (15 available)
+## 🤖 AGENTS (7 available)
 
-1. architect - Feature design and architecture
-2. bug-documenter - Document bugs, root causes, solutions
-3. builder - Implement code changes
-4. code-quality - Code quality analysis (background)
-5. command-loader - Load and manage commands
-6. error-analyzer - Analyze and diagnose errors
-7. knowledge-sync - Sync knowledge across sessions
-8. merge-resolver - Resolve merge conflicts
-9. planner - Plan complex implementations
-10. refactor-agent - Refactoring operations
-11. reviewer - Code review (background)
-12. scout - Explore and discover codebase
-13. security-auditor - Security vulnerability detection
-14. task-decomposer - Break complex tasks into subtasks
-15. test-watcher - Watch and validate tests
+1. architect - Design architecture and delegate implementation
+2. builder - Implement code, refactoring, docs, merge conflict resolution
+3. command-loader - Load commands and skills (infrastructure)
+4. error-analyzer - Diagnose errors without fixing
+5. planner - Plan implementation and task decomposition (DAG, critical path)
+6. reviewer - Validate quality (standard, security, code quality, coverage, performance)
+7. scout - Explore codebase read-only
 
 ---
 
@@ -148,41 +127,24 @@ const commands = await Glob({ pattern: '.claude/commands/*.md' });
 ### `/tools skills`
 
 ```
-🎯 SKILLS (24 available)
+🎯 SKILLS (11 available)
 
-Core Patterns:
-• typescript-patterns - TypeScript best practices
-• bun-best-practices - Bun runtime patterns
-• api-design - REST API design
-• code-style-enforcer - Code style enforcement
-• code-quality - Code quality analysis
-
-Security & Reliability:
+Quality & Validation:
+• anti-hallucination - Validation patterns to prevent hallucination
+• code-quality - Code quality analysis and refactoring patterns
 • security-review - Security review patterns
-• retry-patterns - Retry and circuit breaker
-• recovery-strategies - Recovery strategies
-• config-validator - Configuration validation
+• performance-review - Performance review patterns
 
-Testing & Debugging:
-• testing-strategy - Testing patterns
-• diagnostic-patterns - Debugging patterns
-• logging-strategy - Logging strategy
-• anti-hallucination - Validation patterns
-• performance-review - Performance review
-
-Data & Communication:
+Debugging & Data:
+• diagnostic-patterns - Diagnostic, debugging, retry, and recovery patterns
 • database-patterns - Database access patterns
-• websocket-patterns - WebSocket patterns
+• logging-strategy - Logging strategy
 
-Tooling:
-• playwright-browser - Browser automation
+Navigation & Tooling:
 • lsp-operations - LSP navigation
 • meta-create-agent - Create new agents
 • meta-create-skill - Create new skills
 • sync-claude - Sync claude config
-• prompt-engineer - Prompt engineering
-• expert-patterns - Best practices comparison
-• refactoring-patterns - Refactoring patterns
 
 Activation: Skill(name)
 Example: Skill(typescript-patterns)
@@ -191,32 +153,24 @@ Example: Skill(typescript-patterns)
 ### `/tools agents`
 
 ```
-🤖 AGENTS (15 available)
+🤖 AGENTS (7 available)
 
 Implementation:
-• builder - Implement code changes
-• refactor-agent - Refactoring operations
-• merge-resolver - Resolve merge conflicts
+• builder - Implement code, refactoring, docs, merge conflict resolution
 
 Planning & Design:
-• architect - Feature design and architecture
-• planner - Plan complex implementations
-• task-decomposer - Break tasks into subtasks
+• architect - Design architecture and delegate implementation
+• planner - Plan implementation and task decomposition (DAG, critical path)
 
 Review & Quality:
-• reviewer - Code review
-• code-quality - Code quality analysis
-• security-auditor - Security vulnerability detection
-• test-watcher - Watch and validate tests
+• reviewer - Validate quality (standard, security, code quality, coverage, performance)
 
 Analysis & Discovery:
-• scout - Explore codebase
-• error-analyzer - Analyze errors
-• bug-documenter - Document bugs
+• scout - Explore codebase read-only
+• error-analyzer - Diagnose errors without fixing
 
 Utilities:
-• command-loader - Load and manage commands
-• knowledge-sync - Sync knowledge across sessions
+• command-loader - Load commands and skills (infrastructure)
 
 Activation: Task(subagent_type='agent-name', prompt='task description')
 Example: Task(subagent_type='builder', prompt='Implement validation logic')

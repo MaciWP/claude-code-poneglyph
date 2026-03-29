@@ -1,6 +1,6 @@
 {
   "skills": ["code-quality"],
-  "query": "Review naming conventions and code readability in this TypeScript module",
+  "query": "Review naming conventions and code readability in this module",
   "expected_behavior": [
     "Checks variable/function naming clarity",
     "Identifies abbreviations and unclear names",

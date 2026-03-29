@@ -1,62 +1,67 @@
-# Request Tracing Middleware
+# Request Tracing
 
-Framework-agnostic pattern for assigning request IDs, injecting a scoped logger, and logging request completion with timing.
+Pattern for assigning request IDs, injecting a scoped logger, and logging request completion with timing.
 
-```typescript
-import { logger } from './logger'
+## Data Structure
 
-interface RequestTrace {
-  requestId: string
-  log: ReturnType<typeof logger.withRequestId>
-  timing: {
-    start: number
-    elapsed: () => number
-  }
-}
+```pseudocode
+RequestTrace:
+    requestId = string
+    log = Logger (scoped to this requestId)
+    timing:
+        start = timestamp (milliseconds)
+        elapsed() -> milliseconds since start
+```
 
-function createTrace(req: Request): RequestTrace {
-  const requestId = req.headers.get('x-request-id') || crypto.randomUUID()
-  const startTime = Date.now()
+## createTrace
 
-  return {
-    requestId,
-    log: logger.withRequestId(requestId),
-    timing: {
-      start: startTime,
-      elapsed: () => Date.now() - startTime,
-    },
-  }
-}
+```pseudocode
+function createTrace(request):
+    requestId = request.headers["x-request-id"] or generateUniqueId()
+    startTime = currentTimeMs()
 
-async function tracedHandler(
-  req: Request,
-  handler: (req: Request, trace: RequestTrace) => Promise<Response>
-): Promise<Response> {
-  const trace = createTrace(req)
-  trace.log.info('Request started', {
-    method: req.method,
-    path: new URL(req.url).pathname,
-  })
+    return {
+        requestId: requestId,
+        log: logger.withRequestId(requestId),
+        timing: {
+            start: startTime,
+            elapsed: () => currentTimeMs() - startTime
+        }
+    }
+```
 
-  try {
-    const response = await handler(req, trace)
-    trace.log.info('Request completed', {
-      method: req.method,
-      path: new URL(req.url).pathname,
-      status: response.status,
-      durationMs: trace.timing.elapsed(),
+## tracedHandler
+
+Wraps a request handler with automatic tracing: logs start, success with status/duration, or failure with error/duration.
+
+```pseudocode
+function tracedHandler(request, handler):
+    trace = createTrace(request)
+    path = parseURL(request.url).pathname
+
+    trace.log.info("Request started", {
+        method: request.method,
+        path: path
     })
-    return response
-  } catch (error) {
-    trace.log.error('Request failed', {
-      method: req.method,
-      path: new URL(req.url).pathname,
-      error: error instanceof Error ? error.message : 'Unknown',
-      durationMs: trace.timing.elapsed(),
-    })
-    throw error
-  }
-}
 
-export { createTrace, tracedHandler }
+    try:
+        response = handler(request, trace)
+
+        trace.log.info("Request completed", {
+            method: request.method,
+            path: path,
+            status: response.status,
+            durationMs: trace.timing.elapsed()
+        })
+
+        return response
+
+    catch error:
+        trace.log.error("Request failed", {
+            method: request.method,
+            path: path,
+            error: error.message if error is Error else "Unknown",
+            durationMs: trace.timing.elapsed()
+        })
+        throw error
 ```

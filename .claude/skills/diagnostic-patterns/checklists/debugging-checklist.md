@@ -30,7 +30,7 @@
 - [ ] Binary search for intermittent issues
 - [ ] Diff debugging for regressions
 - [ ] Verify environment configuration
-- [ ] Review recent changes (`git log`)
+- [ ] Review recent changes (version control history)
 
 ## Post-Mortem
 
@@ -39,3 +39,53 @@
 - [ ] Document applied fix
 - [ ] Add tests to prevent recurrence
 - [ ] Update runbooks if applicable
+
+## Retry Implementation
+
+- [ ] Identify all transient failure points
+- [ ] Classify errors as transient vs permanent
+- [ ] Define appropriate retry values (not too aggressive)
+- [ ] Consider rate limits of external services
+- [ ] Use exponential backoff (not linear)
+- [ ] Add jitter to prevent thundering herd
+- [ ] Implement circuit breaker for external services
+- [ ] Add timeouts to all network calls
+- [ ] Only retry transient errors
+- [ ] Respect Retry-After headers
+- [ ] Log all retry attempts
+- [ ] Monitor circuit breaker state
+
+## Recovery / Saga Implementation
+
+- [ ] Identify all failure points in the workflow
+- [ ] Define compensation actions for each step
+- [ ] Each step has execute and compensate
+- [ ] Compensations execute in reverse order
+- [ ] Handle compensation failures (log + alert)
+- [ ] Consider retries for transient steps
+- [ ] Detailed logging at each step
+- [ ] Define idempotency strategy
+
+## DLQ Implementation
+
+- [ ] Max retries configured appropriately
+- [ ] Exponential backoff between retries
+- [ ] Alerts for new DLQ entries
+- [ ] API/UI to inspect DLQ
+- [ ] Process to reprocess DLQ items
+
+## Checkpoint Implementation
+
+- [ ] Checkpoints persisted to durable storage
+- [ ] TTL defined for checkpoints
+- [ ] Automatic resume on restart
+- [ ] Cleanup of completed checkpoints
+- [ ] Monitoring for stalled workflows
+
+## Post-Recovery
+
+- [ ] Log all compensations executed
+- [ ] Metrics for recovery success rate
+- [ ] Alerts on failed compensations
+- [ ] Runbook for manual recovery
+- [ ] Tests for recovery scenarios

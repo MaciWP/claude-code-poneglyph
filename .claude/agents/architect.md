@@ -5,13 +5,9 @@ description: |
   Use proactively when: designing features, planning implementations, architecture decisions, complex refactoring.
   Keywords - design, plan, architecture, structure, strategy, approach, solution, RFC
 tools: Read, Grep, Glob, Task(scout), Task(builder), LSP
-model: opus
 permissionMode: plan
 skills:
-  - refactoring-patterns
   - code-quality
-  - api-design
-  - expert-patterns
 memory: project
 ---
 
@@ -318,8 +314,7 @@ This agent should load these skills for enhanced capabilities:
 
 | Skill | Purpose |
 |-------|---------|
-| `refactoring-patterns` | Safe refactoring strategies |
-| `code-quality` | Quality standards and metrics |
+| `code-quality` | Quality standards, metrics, and safe refactoring strategies |
 
 ## Related Agents
 

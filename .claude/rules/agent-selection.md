@@ -2,23 +2,23 @@
 
 ## Selection Matrix
 
-| Signal | Agent | Fallback | NOT when |
-|--------|-------|----------|----------|
-| implement, create, fix | builder | - | complexity >60 (planner first) |
-| review, validate, check | reviewer | - | - |
-| plan, design, decompose complex | planner | architect | complexity <30 |
-| find, explore, search codebase | scout | Explore agent | - |
-| error, failing, debug | error-analyzer | builder (obvious fix) | - |
-| refactor, extract, simplify | refactor-agent | builder (small change) | - |
-| security, audit, vulnerability | security-auditor | reviewer | - |
-| merge conflict, git conflict | merge-resolver | builder (trivial) | - |
-| test coverage, missing tests | test-watcher | builder | - |
-| docs, sync, documentation | knowledge-sync | builder | - |
-| >3 subtasks, decompose | task-decomposer | planner | - |
-| architecture, RFC, design system | architect | planner | simple features |
-| code quality, code smells | code-quality | reviewer | - |
-| UI testing, browser, e2e | builder | - | Load playwright-browser skill |
-| bug documentation, knowledge base | bug-documenter | builder | - |
+| Signal | Agent | Skill/Mode | Fallback |
+|--------|-------|------------|----------|
+| implement, create, fix, build | builder | (by prompt) | — |
+| refactor, extract, simplify, restructure | builder | code-quality | — |
+| merge conflict, git conflict | builder | (prompt context) | — |
+| docs, sync, documentation | builder | (doc task) | — |
+| bug documentation, knowledge base | builder | diagnostic-patterns | — |
+| review, validate, check | reviewer | standard mode | — |
+| security, audit, vulnerability, owasp | reviewer | security-review | — |
+| code quality, smells, SOLID, complexity | reviewer | code-quality | — |
+| test coverage, missing tests | reviewer | coverage mode | — |
+| performance, slow, bottleneck, N+1 | reviewer | performance-review | — |
+| plan, design, decompose, workflow | planner | — | architect |
+| >3 subtasks, breakdown, dependencies | planner | (decomposition built-in) | — |
+| find, explore, search codebase | scout | — | Explore agent |
+| error, failing, debug, diagnose | error-analyzer | diagnostic-patterns | builder (obvious fix) |
+| architecture, RFC, design system | architect | — | planner |
 
 ## Multi-Agent Patterns
 
@@ -28,15 +28,15 @@
 | **Plan then Build** | planner -> N builders parallel | complexity >60 |
 | **Build then Review** | builder -> reviewer | mandatory for multi-file changes |
 | **Error then Fix** | error-analyzer -> builder | diagnosis before fix |
-| **Worktree Parallel** | 2+ builders + merge-resolver | Parallel builders con file overlap potencial |
+| **Worktree Parallel** | 2+ builders in worktrees | Parallel builders with file overlap potential |
+| **Security Review** | reviewer (security mode, model: opus) | Auth/security changes |
 
 ## Anti-Patterns
 
 | Anti-Pattern | Problem | Use Instead |
 |--------------|---------|-------------|
 | builder for exploration | misses context, wastes tokens | scout |
-| builder for security review | lacks audit checklist | security-auditor |
 | planner for complexity <30 | overkill, slows execution | builder directo |
 | skipping reviewer after multi-file changes | quality risk | reviewer checkpoint |
 | single builder for >60 complexity without planner | uncoordinated, error-prone | planner -> N builders |
-| 2+ builders paralelos sin worktree en archivos solapados | Conflictos de escritura | Activar `isolation: "worktree"` para cada builder |
+| 2+ builders paralelos sin worktree en archivos solapados | Conflictos de escritura | Activar `isolation: "worktree"` |

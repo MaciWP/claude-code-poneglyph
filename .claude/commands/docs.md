@@ -221,5 +221,5 @@ Si argumento contiene '../' o '..\' o path absoluto:
 
 ---
 
-**Relacionado**: `/load-anti-hallucination`, `/load-security`, `/load-testing-strategy`, `/load-refactoring`
+**Relacionado**: `/load-anti-hallucination`, `/load-security`
 **Source**: `.claude/docs/` directory (escaneado en tiempo real)

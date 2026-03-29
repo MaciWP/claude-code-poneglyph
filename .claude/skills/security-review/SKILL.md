@@ -14,13 +14,14 @@ activation:
     - csrf
     - audit
     - secrets
+    - auth
 for_agents: [reviewer, builder]
-version: "1.0"
+version: "2.0"
 ---
 
 # Security Review Checklist
 
-OWASP Top 10 based security audit. Ejemplos adaptables a cualquier stack. Patterns son language-agnostic.
+OWASP Top 10 based security audit. Language-agnostic patterns applicable to any stack.
 
 ## When to Use
 
@@ -59,8 +60,8 @@ OWASP Top 10 based security audit. Ejemplos adaptables a cualquier stack. Patter
 - [ ] All user input validated with schema validation library
 - [ ] File uploads validated (type, size, content)
 - [ ] No raw SQL queries with string concatenation
-- [ ] HTML output escaped/sanitized (DOMPurify)
-- [ ] JSON parsing with try/catch
+- [ ] HTML output escaped/sanitized
+- [ ] JSON parsing with error handling
 - [ ] URL/path traversal prevention
 - [ ] Regex DoS prevention (no catastrophic backtracking)
 
@@ -68,7 +69,7 @@ OWASP Top 10 based security audit. Ejemplos adaptables a cualquier stack. Patter
 
 - [ ] Sensitive data encrypted at rest (AES-256)
 - [ ] No secrets in source code or logs
-- [ ] .env files in .gitignore
+- [ ] Environment files excluded from version control
 - [ ] Database credentials secure and rotated
 - [ ] PII minimized and retention policies applied
 - [ ] Secure deletion of sensitive data
@@ -94,18 +95,18 @@ OWASP Top 10 based security audit. Ejemplos adaptables a cualquier stack. Patter
 
 | Pattern | Severity | Risk | Detection |
 |---------|----------|------|-----------|
-| `eval(userInput)` | Critical | Code injection | Grep for `eval\(` |
-| `${userInput}` in SQL | Critical | SQL injection | Check string interpolation in queries |
-| `innerHTML = userInput` | Critical | XSS | Grep for `innerHTML` |
-| `exec(userInput)` | Critical | Command injection | Grep for `exec\(`, `spawn\(` with variables |
-| `md5(password)` or `sha1` | High | Weak hashing | Grep for `createHash\(['"]md5` |
-| `JWT_SECRET = "..."` | High | Hardcoded secret | Grep for secrets in code |
-| `cors({ origin: '*' })` | High | Open CORS | Check CORS config |
-| `cookie without httpOnly` | High | Session hijacking | Check cookie options |
-| `console.log(password)` | Medium | Data leak | Grep for sensitive vars in logs |
-| `http://` URLs in prod | Medium | MitM attack | Check for hardcoded URLs |
-| No rate limiting | Medium | Brute force | Check auth endpoints |
-| `JSON.parse` without try | Low | DoS | Check error handling |
+| `eval(userInput)` | Critical | Code injection | Grep for `eval(` or equivalent |
+| User input interpolated in SQL | Critical | SQL injection | Check string interpolation in queries |
+| Raw user input in HTML output | Critical | XSS | Grep for unsanitized output |
+| Shell exec with user input | Critical | Command injection | Grep for exec/spawn with variables |
+| MD5 or SHA1 for passwords | High | Weak hashing | Grep for weak hash algorithms |
+| Hardcoded secrets in source | High | Secret exposure | Grep for secrets in code |
+| CORS allows all origins | High | Open CORS | Check CORS config |
+| Session cookie without httpOnly | High | Session hijacking | Check cookie options |
+| Sensitive data in log output | Medium | Data leak | Grep for sensitive vars in logs |
+| HTTP URLs in production | Medium | MitM attack | Check for hardcoded URLs |
+| No rate limiting on auth | Medium | Brute force | Check auth endpoints |
+| JSON parsing without error handling | Low | DoS | Check error handling |
 
 ## Common Issues
 
@@ -118,24 +119,23 @@ OWASP Top 10 based security audit. Ejemplos adaptables a cualquier stack. Patter
 - No ownership verification on resource access
 - Role checks missing on admin operations
 
-**BEFORE**:
-```typescript
-// BAD: No authorization check
-app.get('/api/users/:id', async ({ params }) => {
-  return db.users.findById(params.id) // Anyone can access any user
-})
+**BEFORE** (vulnerable):
+```pseudocode
+ENDPOINT GET /api/users/{id}:
+    user = database.findUserById(id)
+    RETURN user
+    // Anyone can access any user's data — no auth check
 ```
 
-**AFTER**:
-```typescript
-// GOOD: Check ownership and role
-app.get('/api/users/:id', async ({ params, user }) => {
-  if (!user) throw new UnauthorizedError()
-  if (params.id !== user.id && user.role !== 'admin') {
-    throw new ForbiddenError('Cannot access other users')
-  }
-  return db.users.findById(params.id)
-})
+**AFTER** (secure):
+```pseudocode
+ENDPOINT GET /api/users/{id}:
+    IF currentUser IS NOT authenticated:
+        THROW UnauthorizedError
+    IF id != currentUser.id AND currentUser.role != "admin":
+        THROW ForbiddenError("Cannot access other users")
+    user = database.findUserById(id)
+    RETURN user
 ```
 
 ### A02: Cryptographic Failures
@@ -143,29 +143,28 @@ app.get('/api/users/:id', async ({ params, user }) => {
 **Problem**: Weak hashing or exposed secrets.
 
 **Detection**:
-- md5, sha1 for passwords
-- Hardcoded secrets
+- MD5, SHA1 used for passwords
+- Hardcoded secrets in source code
 - Unencrypted sensitive data
 
-**BEFORE**:
-```typescript
-// BAD: Weak hashing
-const hash = crypto.createHash('md5').update(password).digest('hex')
+**BEFORE** (vulnerable):
+```pseudocode
+// Weak hashing — MD5 is trivially reversible
+hash = MD5(password)
 
-// BAD: Hardcoded secret
-const JWT_SECRET = 'my-secret-key'
+// Hardcoded secret — exposed in version control
+JWT_SECRET = "my-secret-key"
 ```
 
-**AFTER**:
-```typescript
-// GOOD: Strong hashing (use argon2id or bcrypt with cost >= 10)
-const hash = await hashPassword(password, { algorithm: 'argon2id' })
+**AFTER** (secure):
+```pseudocode
+// Strong hashing — use argon2id or bcrypt with cost >= 10
+hash = hashPassword(password, algorithm="argon2id")
 
-// GOOD: Environment variable
-const JWT_SECRET = process.env.JWT_SECRET
-if (!JWT_SECRET || JWT_SECRET.length < 32) {
-  throw new Error('JWT_SECRET must be at least 32 characters')
-}
+// Secret from environment variable
+JWT_SECRET = environment.get("JWT_SECRET")
+IF JWT_SECRET IS EMPTY OR length(JWT_SECRET) < 32:
+    THROW Error("JWT_SECRET must be at least 32 characters")
 ```
 
 ### A03: Injection
@@ -174,34 +173,33 @@ if (!JWT_SECRET || JWT_SECRET.length < 32) {
 
 **Detection**:
 - String concatenation in queries
-- eval() or Function() with user input
-- exec/spawn with user input
+- eval() or equivalent with user input
+- Shell exec with user input
 
-**BEFORE**:
-```typescript
-// BAD: SQL injection
-db.query(`SELECT * FROM users WHERE id = '${userId}'`)
+**BEFORE** (vulnerable):
+```pseudocode
+// SQL injection — user input interpolated into query
+database.query("SELECT * FROM users WHERE id = '" + userId + "'")
 
-// BAD: Command injection
-exec(`git clone ${userUrl}`)
+// Command injection — unsanitized input passed to shell
+shell.exec("git clone " + userUrl)
 
-// BAD: Code injection
-eval(userProvidedCode)
+// Code injection — arbitrary code execution
+evaluate(userProvidedCode)
 ```
 
-**AFTER**:
-```typescript
-// GOOD: Parameterized query (use your ORM or prepared statements)
-db.query('SELECT * FROM users WHERE id = ?', [userId])
+**AFTER** (secure):
+```pseudocode
+// Parameterized query — input treated as data, not SQL
+database.query("SELECT * FROM users WHERE id = ?", [userId])
 
-// GOOD: Validated command
-const safeUrl = validateGitUrl(userUrl)
-if (!safeUrl.match(/^https:\/\/github\.com\/[\w-]+\/[\w-]+\.git$/)) {
-  throw new Error('Invalid repository URL')
-}
+// Validated command — allowlist pattern
+IF userUrl DOES NOT MATCH pattern "^https://github.com/[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+.git$":
+    THROW Error("Invalid repository URL")
+safeClone(userUrl)
 
-// GOOD: Never eval user input - use safe alternatives
-const result = JSON.parse(userProvidedJson)
+// Never evaluate user input — use safe alternatives like JSON parsing
+result = parseJSON(userProvidedJson)
 ```
 
 ### A04: Insecure Design
@@ -213,35 +211,31 @@ const result = JSON.parse(userProvidedJson)
 - No account lockout
 - Insecure password reset flow
 
-**BEFORE**:
-```typescript
-// BAD: No rate limiting
-app.post('/api/login', async ({ body }) => {
-  const user = await authenticate(body.email, body.password)
-  return { token: generateToken(user) }
-})
+**BEFORE** (vulnerable):
+```pseudocode
+ENDPOINT POST /api/login:
+    user = authenticate(body.email, body.password)
+    RETURN { token: generateToken(user) }
+    // No rate limiting — attacker can brute force passwords
 ```
 
-**AFTER**:
-```typescript
-// GOOD: Rate limiting + account lockout (use your framework's rate limiter)
-app.use(rateLimit({ max: 5, window: '1m', keyBy: 'body.email' }))
+**AFTER** (secure):
+```pseudocode
+// Apply rate limiting: max 5 attempts per minute per email
+RATE_LIMIT(max=5, window="1m", keyBy=body.email)
 
-app.post('/api/login', async ({ body }) => {
-  const attempts = await getFailedAttempts(body.email)
-  if (attempts >= 5) {
-    throw new TooManyRequestsError('Account locked. Try again in 15 minutes.')
-  }
+ENDPOINT POST /api/login:
+    attempts = getFailedAttempts(body.email)
+    IF attempts >= 5:
+        THROW TooManyRequestsError("Account locked. Try again in 15 minutes.")
 
-  const user = await authenticate(body.email, body.password)
-  if (!user) {
-    await incrementFailedAttempts(body.email)
-    throw new UnauthorizedError('Invalid credentials')
-  }
+    user = authenticate(body.email, body.password)
+    IF user IS NULL:
+        incrementFailedAttempts(body.email)
+        THROW UnauthorizedError("Invalid credentials")
 
-  await clearFailedAttempts(body.email)
-  return { token: generateToken(user) }
-})
+    clearFailedAttempts(body.email)
+    RETURN { token: generateToken(user) }
 ```
 
 ### A05: Security Misconfiguration
@@ -253,29 +247,29 @@ app.post('/api/login', async ({ body }) => {
 - Missing security headers
 - Debug mode in production
 
-**BEFORE**:
-```typescript
-// BAD: Open CORS
-app.use(cors({ origin: '*' }))
+**BEFORE** (vulnerable):
+```pseudocode
+// Open CORS — any origin can make requests
+setCORS(origin="*")
 
-// BAD: No security headers
-app.listen(3000)
+// No security headers — browser protections disabled
+server.start(port=3000)
 ```
 
-**AFTER**:
-```typescript
-// GOOD: Restricted CORS
-app.use(cors({
-  origin: ['https://myapp.com'],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE']
-}))
+**AFTER** (secure):
+```pseudocode
+// Restricted CORS — only trusted origins
+setCORS(
+    origin=["https://myapp.com"],
+    credentials=true,
+    methods=["GET", "POST", "PUT", "DELETE"]
+)
 
-// GOOD: Security headers (use your framework's middleware)
-// Strict-Transport-Security: max-age=31536000; includeSubDomains
-// X-Frame-Options: DENY
-// X-Content-Type-Options: nosniff
-// Content-Security-Policy: default-src 'self'
+// Security headers via middleware or server config
+setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+setHeader("X-Frame-Options", "DENY")
+setHeader("X-Content-Type-Options", "nosniff")
+setHeader("Content-Security-Policy", "default-src 'self'")
 ```
 
 ### A06: Vulnerable Components
@@ -287,25 +281,16 @@ app.use(cors({
 - Known CVEs in packages
 - Missing lock file
 
-**BEFORE**:
-```json
-{
-  "dependencies": {
-    "lodash": "4.17.15"
-  }
-}
-```
+**Fix pattern**:
+```pseudocode
+// Regular security audits (use your package manager's audit command)
+packageManager audit
 
-**AFTER**:
-```bash
-# Regular security audits (use your package manager)
-npm audit / bun audit / yarn audit
+// Update dependencies
+packageManager update
 
-# Update dependencies
-npm update / bun update
-
-# Use exact versions in lock file
-npm ci / bun install --frozen-lockfile
+// Use lock files and exact versions
+packageManager install --frozen-lockfile
 ```
 
 ### A07: Authentication Failures
@@ -317,35 +302,34 @@ npm ci / bun install --frozen-lockfile
 - Predictable session tokens
 - Missing session invalidation
 
-**BEFORE**:
-```typescript
-// BAD: Weak session
-cookie.set('session', String(userId)) // Predictable
+**BEFORE** (vulnerable):
+```pseudocode
+// Predictable session — user ID as token
+setCookie("session", toString(userId))
 
-// BAD: No password requirements
-if (password.length >= 4) { /* valid */ }
+// Weak password requirements
+IF length(password) >= 4:
+    accept()
 ```
 
-**AFTER**:
-```typescript
-// GOOD: Secure session
-cookie.set('session', crypto.randomUUID(), {
-  httpOnly: true,
-  secure: true,
-  sameSite: 'strict',
-  maxAge: 3600
-})
+**AFTER** (secure):
+```pseudocode
+// Cryptographically random session token
+sessionToken = generateCryptoRandomUUID()
+setCookie("session", sessionToken,
+    httpOnly=true,
+    secure=true,
+    sameSite="strict",
+    maxAge=3600
+)
 
-// GOOD: Strong password requirements (validate with your schema library)
-// - Minimum 12 characters
-// - Must contain uppercase, lowercase, number, and special character
-function validatePassword(password: string): boolean {
-  return password.length >= 12
-    && /[A-Z]/.test(password)
-    && /[a-z]/.test(password)
-    && /[0-9]/.test(password)
-    && /[^A-Za-z0-9]/.test(password)
-}
+// Strong password requirements
+FUNCTION validatePassword(password):
+    RETURN length(password) >= 12
+        AND containsUppercase(password)
+        AND containsLowercase(password)
+        AND containsDigit(password)
+        AND containsSpecialChar(password)
 ```
 
 ### A08: Data Integrity Failures
@@ -357,25 +341,23 @@ function validatePassword(password: string): boolean {
 - Deserializing untrusted data
 - Missing input validation
 
-**BEFORE**:
-```typescript
-// BAD: No JWT verification
-const payload = JSON.parse(atob(token.split('.')[1]))
+**BEFORE** (vulnerable):
+```pseudocode
+// No JWT verification — just decode and trust
+payload = base64Decode(token.split(".")[1])
 
-// BAD: Trusting client data
-const order = JSON.parse(body.order) // Could be manipulated
+// Trusting client-submitted total
+order = parseJSON(body.order)  // Client could manipulate price
 ```
 
-**AFTER**:
-```typescript
-// GOOD: Verify JWT signature
-import { verify } from 'jsonwebtoken'
-const payload = verify(token, process.env.JWT_SECRET)
+**AFTER** (secure):
+```pseudocode
+// Verify JWT signature with secret
+payload = verifyJWT(token, environment.get("JWT_SECRET"))
 
-// GOOD: Validate input with schema validation, then verify server-side
-const order = validateSchema(body, orderSchema)
-// Recalculate total server-side, don't trust client
-order.total = calculateTotal(order.items)
+// Validate schema, then recalculate server-side
+order = validateSchema(body, orderSchema)
+order.total = calculateTotal(order.items)  // Never trust client-computed values
 ```
 
 ### A09: Logging Failures
@@ -387,31 +369,31 @@ order.total = calculateTotal(order.items)
 - Missing auth event logging
 - Logs accessible publicly
 
-**BEFORE**:
-```typescript
-// BAD: Sensitive data logged
-console.log('Login attempt:', { email, password, token })
+**BEFORE** (vulnerable):
+```pseudocode
+// Sensitive data in logs — password and token exposed
+log("Login attempt:", { email, password, token })
 
-// BAD: No audit logging
-await createUser(userData)
+// No audit trail
+createUser(userData)
 ```
 
-**AFTER**:
-```typescript
-// GOOD: Safe logging
-logger.info('Login attempt', {
-  email,
-  success: false,
-  ip: request.ip,
-  userAgent: request.headers['user-agent']
+**AFTER** (secure):
+```pseudocode
+// Safe logging — only non-sensitive fields
+logger.info("Login attempt", {
+    email: email,
+    success: false,
+    ip: request.ip,
+    userAgent: request.userAgent
 })
 
-// GOOD: Audit logging
-await createUser(userData)
-logger.audit('user.created', {
-  userId: user.id,
-  createdBy: currentUser.id,
-  timestamp: new Date().toISOString()
+// Audit logging for security-relevant operations
+createUser(userData)
+logger.audit("user.created", {
+    userId: user.id,
+    createdBy: currentUser.id,
+    timestamp: now()
 })
 ```
 
@@ -420,45 +402,38 @@ logger.audit('user.created', {
 **Problem**: Server makes requests to user-controlled URLs.
 
 **Detection**:
-- fetch() with user-provided URL
+- HTTP request with user-provided URL
 - No URL validation
 - Access to internal network
 
-**BEFORE**:
-```typescript
-// BAD: User-controlled URL
-const data = await fetch(userProvidedUrl)
+**BEFORE** (vulnerable):
+```pseudocode
+// User-controlled URL — can target internal services
+data = httpGet(userProvidedUrl)
 
-// BAD: Internal URL access possible
-app.get('/proxy', async ({ query }) => {
-  return fetch(query.url)
-})
+ENDPOINT GET /proxy:
+    RETURN httpGet(query.url)  // Can reach internal network
 ```
 
-**AFTER**:
-```typescript
-// GOOD: Validate URL against allowlist
-const ALLOWED_HOSTS = ['api.github.com', 'api.stripe.com']
+**AFTER** (secure):
+```pseudocode
+ALLOWED_HOSTS = ["api.github.com", "api.stripe.com"]
 
-app.get('/proxy', async ({ query }) => {
-  const url = new URL(query.url)
+ENDPOINT GET /proxy:
+    url = parseURL(query.url)
 
-  if (!ALLOWED_HOSTS.includes(url.host)) {
-    throw new BadRequestError('Host not allowed')
-  }
+    IF url.host NOT IN ALLOWED_HOSTS:
+        THROW BadRequestError("Host not allowed")
 
-  if (url.protocol !== 'https:') {
-    throw new BadRequestError('HTTPS required')
-  }
+    IF url.protocol != "https":
+        THROW BadRequestError("HTTPS required")
 
-  // Block internal IPs
-  const ip = await dns.resolve(url.hostname)
-  if (isPrivateIP(ip)) {
-    throw new BadRequestError('Internal hosts not allowed')
-  }
+    // Block internal/private IP addresses
+    ip = dnsResolve(url.hostname)
+    IF isPrivateIP(ip):
+        THROW BadRequestError("Internal hosts not allowed")
 
-  return fetch(url.toString())
-})
+    RETURN httpGet(url)
 ```
 
 ## Severity Levels
@@ -477,7 +452,7 @@ app.get('/proxy', async ({ query }) => {
 
 ### Critical Issues
 - **A03 Injection**: SQL injection in `userService.ts:45`
-  - Line: `db.query(\`SELECT * FROM users WHERE id = '\${id}'\`)`
+  - Line: `db.query("SELECT * FROM users WHERE id = '" + id + "'")`
   - Fix: Use parameterized query or ORM
   - CVSS: 9.8
 
@@ -492,7 +467,7 @@ app.get('/proxy', async ({ query }) => {
   - Fix: Sanitize error objects before logging
 
 ### Low Severity
-- **A06 Components**: Outdated dependency `lodash@4.17.15`
+- **A06 Components**: Outdated dependency with known CVE
   - Fix: Update dependency to latest version
 
 ### Passed Checks
@@ -504,7 +479,6 @@ app.get('/proxy', async ({ query }) => {
 
 ---
 
-**Version**: 1.1
-**Spec**: SPEC-020
+**Version**: 2.0
 **For**: reviewer agent
 **Patterns**: Language-agnostic

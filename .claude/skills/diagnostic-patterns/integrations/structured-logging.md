@@ -1,75 +1,71 @@
 # Structured Logging
 
-JSON-based logging with request context, severity levels, and error capture.
+JSON-based logging pattern with request context, severity levels, and error capture.
 
-```typescript
-interface StructuredLog {
-  level: 'debug' | 'info' | 'warn' | 'error'
-  message: string
-  timestamp: string
-  context: Record<string, unknown>
-  error?: {
-    type: string
-    message: string
-    stack?: string
-  }
-}
+## Data Structure
 
-class Logger {
-  private requestId?: string
+```pseudocode
+StructuredLog:
+    level = DEBUG | INFO | WARN | ERROR
+    message = string
+    timestamp = ISO 8601 string
+    context = map of key-value pairs
+    error (optional):
+        type = string
+        message = string
+        stack = string (optional)
+```
 
-  withRequestId(requestId: string): Logger {
-    const logger = new Logger()
-    logger.requestId = requestId
-    return logger
-  }
+## Logger
 
-  error(message: string, error: Error, context: Record<string, unknown> = {}): void {
-    const log: StructuredLog = {
-      level: 'error',
-      message,
-      timestamp: new Date().toISOString(),
-      context: {
-        ...context,
-        requestId: this.requestId
-      },
-      error: {
-        type: error.constructor.name,
-        message: error.message,
-        stack: error.stack
-      }
-    }
-    console.error(JSON.stringify(log))
-  }
+```pseudocode
+Logger:
+    requestId = null (optional)
 
-  info(message: string, context: Record<string, unknown> = {}): void {
-    const log: StructuredLog = {
-      level: 'info',
-      message,
-      timestamp: new Date().toISOString(),
-      context: {
-        ...context,
-        requestId: this.requestId
-      }
-    }
-    console.log(JSON.stringify(log))
-  }
+    function withRequestId(requestId):
+        newLogger = new Logger()
+        newLogger.requestId = requestId
+        return newLogger
 
-  debug(message: string, context: Record<string, unknown> = {}): void {
-    if (process.env.DEBUG) {
-      const log: StructuredLog = {
-        level: 'debug',
-        message,
-        timestamp: new Date().toISOString(),
-        context: {
-          ...context,
-          requestId: this.requestId
+    function error(message, error, context = {}):
+        log = {
+            level: ERROR,
+            message: message,
+            timestamp: now().toISO8601(),
+            context: {
+                ...context,
+                requestId: requestId
+            },
+            error: {
+                type: error.constructorName,
+                message: error.message,
+                stack: error.stack
+            }
         }
-      }
-      console.log(JSON.stringify(log))
-    }
-  }
-}
+        writeToStderr(toJSON(log))
 
-export const logger = new Logger()
+    function info(message, context = {}):
+        log = {
+            level: INFO,
+            message: message,
+            timestamp: now().toISO8601(),
+            context: {
+                ...context,
+                requestId: requestId
+            }
+        }
+        writeToStdout(toJSON(log))
+
+    function debug(message, context = {}):
+        if debugModeEnabled():
+            log = {
+                level: DEBUG,
+                message: message,
+                timestamp: now().toISO8601(),
+                context: {
+                    ...context,
+                    requestId: requestId
+                }
+            }
+            writeToStdout(toJSON(log))
 ```

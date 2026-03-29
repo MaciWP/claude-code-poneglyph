@@ -58,8 +58,8 @@ Seleccionar agentes segun estas reglas:
 | `builder` | Implementacion de codigo | SIEMPRE |
 | `reviewer` | Validacion de calidad | SIEMPRE |
 | `architect` | Complejidad > 40 | CONDICIONAL |
-| `security-auditor` | Keywords: auth, token, password, jwt, api-key, data, encryption, sanitize | CONDICIONAL |
-| `code-quality` | Keywords: refactor, cleanup, simplify O archivos > 5 | CONDICIONAL |
+| `reviewer` | Keywords: auth, token, password, jwt, api-key, data, encryption, sanitize | CONDICIONAL |
+| `reviewer` | Keywords: refactor, cleanup, simplify O archivos > 5 | CONDICIONAL |
 
 ### Model Assignment
 
@@ -69,8 +69,8 @@ Seleccionar agentes segun estas reglas:
 | `builder` | sonnet | Arquitectura critica |
 | `reviewer` | sonnet | Review de seguridad |
 | `architect` | opus | Siempre |
-| `security-auditor` | sonnet | Auth/crypto |
-| `code-quality` | sonnet | Refactoring > 10 archivos |
+| `reviewer` | sonnet | Auth/crypto |
+| `reviewer` | sonnet | Refactoring > 10 archivos |
 
 ### Skill Matching
 
@@ -84,7 +84,7 @@ Detectar keywords en `$ARGUMENTS` y asignar skills:
 | api, endpoint, route, rest, openapi | `api-design` |
 | typescript, async, promise, generic | `typescript-patterns` |
 | websocket, realtime, ws, streaming | `websocket-patterns` |
-| refactor, extract, SOLID, clean | `refactoring-patterns` |
+| refactor, extract, SOLID, clean | `code-quality` (skill) |
 | config, env, validation, settings | `config-validator` |
 | bun, elysia, runtime, server | `bun-best-practices` |
 
@@ -196,7 +196,7 @@ Ejecutar despues de Grupo 1:
 
 ### Grupo 3: Validation (PARALELO)
 Ejecutar despues de Grupo 2:
-- Task 5 (reviewer) + Task 6 (code-quality) [en paralelo]
+- Task 5 (reviewer) + Task 6 (reviewer) [en paralelo]
 
 ### Env vars necesarias
 | Variable | Requerida | Default |
@@ -219,7 +219,7 @@ Ejecutar despues de Grupo 2:
 | NEEDS_CHANGES del reviewer | Aplicar feedback, re-submit a reviewer | builder -> reviewer |
 | BLOCKED por dependencia externa | Escalar al Lead con contexto del bloqueo | Lead |
 | Arquitectura inadecuada | Re-disenar con architect, re-implementar | architect -> builder |
-| Fallo de seguridad detectado | security-auditor analiza, builder corrige | security-auditor -> builder |
+| Fallo de seguridad detectado | reviewer analiza, builder corrige | reviewer -> builder |
 
 ### Loop de Correccion
 

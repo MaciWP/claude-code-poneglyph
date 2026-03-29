@@ -76,28 +76,33 @@ Independiente del score de complejidad, evaluar necesidad de worktree:
 
 Seleccion de modelo por agente y complejidad para optimizar costos.
 
-> **Mecanismo real**: El model routing se implementa via campo `model:` en el frontmatter YAML de cada agente (`.claude/agents/*.md`). No existe `modelOverrides` en settings.json. El Lead puede overridear pasando `model:` en el Agent tool call para tareas especificas.
+> **Mecanismo**: El Lead determina el modelo pasando `model:` en el Agent tool call. Los agentes NO tienen model hardcoded en frontmatter — el routing es dinámico basado en la complejidad de la tarea.
 
-### Model Selection Matrix
+### Model Selection by Agent Category
 
-| Agente | Complejidad <30 | Complejidad 30-60 | Complejidad >60 |
-|--------|----------------|-------------------|-----------------|
-| builder | sonnet | sonnet | opus |
-| reviewer | sonnet | sonnet | sonnet |
-| planner | sonnet | opus | opus |
-| scout | haiku | sonnet | sonnet |
-| error-analyzer | sonnet | sonnet | opus |
-| architect | opus | opus | opus |
+**Code agents** (builder, reviewer, error-analyzer) — produce or analyze code:
 
-### Cost-per-Agent Defaults
+| Complejidad | Modelo | Rationale |
+|-------------|--------|-----------|
+| <30 | sonnet | Calidad mínima garantizada para código |
+| 30-50 | sonnet | Buen balance para tareas medianas |
+| >50 | opus | Razonamiento profundo para tareas complejas |
 
-| Agente | Model Default | Razon |
-|--------|--------------|-------|
-| scout | haiku | Solo lectura/exploracion, no genera codigo |
-| reviewer | sonnet | Analisis de calidad, no implementacion |
-| builder | sonnet | Balance costo/calidad para implementacion |
-| planner | opus | Requiere razonamiento profundo |
-| architect | opus | Decisiones de arquitectura criticas |
+**Read-only agents** (scout, command-loader) — only read, don't produce:
+
+| Complejidad | Modelo | Rationale |
+|-------------|--------|-----------|
+| <30 | haiku | Leer archivos no requiere razonamiento profundo |
+| 30-50 | haiku | Exploración más amplia, aún barata |
+| >50 | sonnet | Exploración compleja requiere mejor comprensión |
+
+**Strategic agents** (planner, architect) — high-impact decisions:
+
+| Complejidad | Modelo | Rationale |
+|-------------|--------|-----------|
+| Cualquiera | opus | La calidad del plan determina la calidad de la ejecución |
+
+> Model defaults are determined dynamically by the Lead based on agent category and task complexity. See table above.
 
 ### Budget Alerts
 

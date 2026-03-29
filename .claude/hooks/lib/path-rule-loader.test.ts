@@ -269,11 +269,10 @@ describe("loadPathRules", () => {
     expect(auth?.priority).toBe(20);
   });
 
-  test("each rule has at least one glob and one skill", () => {
+  test("each rule has at least one glob", () => {
     const rules = loadPathRules();
     for (const rule of rules) {
       expect(rule.globs.length).toBeGreaterThanOrEqual(1);
-      expect(rule.skills.length).toBeGreaterThanOrEqual(1);
     }
   });
 });

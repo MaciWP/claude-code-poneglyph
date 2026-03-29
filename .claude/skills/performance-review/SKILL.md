@@ -18,12 +18,12 @@ activation:
 for_agents: [reviewer]
 type: knowledge-base
 disable-model-invocation: false
-version: "1.0"
+version: "2.0"
 ---
 
 # Performance Review Patterns
 
-Performance audit checklist. Ejemplos adaptables a cualquier stack. Patterns son language-agnostic.
+Performance audit checklist. Language-agnostic patterns applicable to any stack.
 
 ## When to Use
 
@@ -62,17 +62,17 @@ Performance audit checklist. Ejemplos adaptables a cualquier stack. Patterns son
 
 - [ ] No growing collections without bounds
 - [ ] Streams used for large data processing
-- [ ] WeakMap/WeakSet for object-keyed caches
+- [ ] Weak references for object-keyed caches (when available)
 - [ ] Intervals/timeouts cleared on shutdown
 - [ ] Event listeners removed when not needed
-- [ ] Large objects nullified after use
+- [ ] Large objects released after use
 - [ ] No closure memory leaks
 
 ### Async Patterns (6 items)
 
 - [ ] No synchronous I/O in request handlers
-- [ ] Promise.all for independent parallel operations
-- [ ] No await in loops (use Promise.all + map)
+- [ ] Parallel execution for independent operations
+- [ ] No sequential await in loops (use parallel + map)
 - [ ] Proper error handling doesn't block
 - [ ] Background tasks don't block response
 - [ ] Streaming instead of buffering large data
@@ -89,18 +89,18 @@ Performance audit checklist. Ejemplos adaptables a cualquier stack. Patterns son
 
 | Pattern | Severity | Impact | Detection |
 |---------|----------|--------|-----------|
-| `for...await db.query` in loop | Critical | O(n) queries, 100x slower | Grep for queries in loops |
-| `readFileSync` in handler | Critical | Blocks event loop | Grep for `Sync` functions |
-| `Array.push` without limit | High | Memory leak | Check growing collections |
+| Query inside a loop | Critical | O(n) queries, 100x slower | Grep for queries in loops |
+| Synchronous I/O in request handler | Critical | Blocks all concurrent requests | Grep for sync file/network ops |
+| Collection grows without limit | High | Memory leak, OOM crash | Check growing collections |
 | `SELECT *` on large tables | High | Excess memory/bandwidth | Check query columns |
 | No pagination on list API | High | Unbounded memory | Check list endpoints |
-| `await` in forEach/map | High | Sequential instead of parallel | Check async patterns |
+| Sequential await in loop | High | Total time = sum, not max | Check async patterns |
 | Missing connection pool | High | Connection exhaustion | Check DB config |
 | No response compression | Medium | 3-5x larger responses | Check middleware |
-| `JSON.stringify` large objects | Medium | CPU spike | Check serialization |
+| Serializing large objects | Medium | CPU spike, blocks processing | Check serialization paths |
 | Missing indexes | Medium | Full table scans | Check query plans |
 | Regex with backtracking | Medium | ReDoS | Check complex regex |
-| Console.log in production | Low | I/O overhead | Grep for console.log |
+| Debug logging in production | Low | I/O overhead | Grep for debug log calls |
 
 ## Common Issues
 
@@ -112,59 +112,56 @@ Performance audit checklist. Ejemplos adaptables a cualquier stack. Patterns son
 
 **Detection**: Query in a loop, lazy loading in iteration.
 
-**BEFORE**:
-```typescript
-// BAD: N+1 queries - 1 for users, N for posts
-const users = await db.select().from(users)
-for (const user of users) {
-  user.posts = await db.select().from(posts).where(eq(posts.userId, user.id))
-}
+**BEFORE** (slow):
+```pseudocode
+// N+1 queries — 1 for users, N for posts
+users = database.query("SELECT * FROM users")
+FOR EACH user IN users:
+    user.posts = database.query("SELECT * FROM posts WHERE user_id = ?", [user.id])
 // 101 queries for 100 users!
 ```
 
-**AFTER**:
-```typescript
-// GOOD: Single query with join
-const usersWithPosts = await db
-  .select()
-  .from(users)
-  .leftJoin(posts, eq(users.id, posts.userId))
+**AFTER** (fast):
+```pseudocode
+// Option A: Single query with JOIN
+usersWithPosts = database.query(
+    "SELECT * FROM users LEFT JOIN posts ON users.id = posts.user_id"
+)
 
-// OR: Two queries with batch loading
-const userList = await db.select().from(users)
-const userIds = userList.map(u => u.id)
-const allPosts = await db.select().from(posts).where(inArray(posts.userId, userIds))
+// Option B: Two queries with batch loading
+userList = database.query("SELECT * FROM users")
+userIds = userList.map(u => u.id)
+allPosts = database.query("SELECT * FROM posts WHERE user_id IN (?)", [userIds])
 
 // Group posts by userId
-const postsByUser = groupBy(allPosts, 'userId')
-userList.forEach(u => u.posts = postsByUser[u.id] || [])
+postsByUser = groupBy(allPosts, "userId")
+FOR EACH user IN userList:
+    user.posts = postsByUser[user.id] OR []
 // Only 2 queries regardless of user count!
 ```
 
 ### Synchronous Blocking
 
-**Problem**: Sync I/O blocks the event loop.
+**Problem**: Synchronous I/O blocks the main thread / event loop.
 
 **Impact**: All concurrent requests wait, throughput drops to 1.
 
-**Detection**: Any `*Sync` function in request path.
+**Detection**: Any synchronous file, network, or database call in a request handler.
 
-**BEFORE**:
-```typescript
-// BAD: Blocks entire server
-app.get('/file', () => {
-  const data = fs.readFileSync('large-file.json')
-  return JSON.parse(data)
-})
+**BEFORE** (slow):
+```pseudocode
+// Blocks entire server while reading file
+ENDPOINT GET /file:
+    data = readFileSync("large-file.json")
+    RETURN parseJSON(data)
 ```
 
-**AFTER**:
-```typescript
-// GOOD: Async file read (use your runtime's async file API)
-app.get('/file', async () => {
-  const data = await readFile('large-file.json', 'utf-8')
-  return JSON.parse(data)
-})
+**AFTER** (fast):
+```pseudocode
+// Async file read — other requests can proceed during I/O
+ENDPOINT GET /file:
+    data = AWAIT readFileAsync("large-file.json")
+    RETURN parseJSON(data)
 ```
 
 ### Memory Leaks - Growing Collections
@@ -173,40 +170,34 @@ app.get('/file', async () => {
 
 **Impact**: Memory exhaustion, OOM crash, GC pauses.
 
-**Detection**: Arrays/Maps without cleanup, module-level state.
+**Detection**: Maps/dictionaries/lists without cleanup, module-level state.
 
-**BEFORE**:
-```typescript
-// BAD: Unbounded cache growth
-const cache: Map<string, unknown> = new Map()
+**BEFORE** (leaks):
+```pseudocode
+// Unbounded cache — grows forever
+cache = new Map()
 
-app.get('/data/:id', async ({ params }) => {
-  if (!cache.has(params.id)) {
-    cache.set(params.id, await fetchData(params.id))
-  }
-  return cache.get(params.id)
-})
-// Cache grows forever!
+ENDPOINT GET /data/{id}:
+    IF NOT cache.has(id):
+        cache.set(id, AWAIT fetchData(id))
+    RETURN cache.get(id)
+// Cache grows forever — no eviction!
 ```
 
-**AFTER**:
-```typescript
-// GOOD: LRU cache with size limit and TTL
-import { LRUCache } from 'lru-cache'
+**AFTER** (bounded):
+```pseudocode
+// LRU cache with size limit and TTL
+cache = new LRUCache(
+    maxEntries=1000,
+    ttl=5 minutes
+)
 
-const cache = new LRUCache<string, unknown>({
-  max: 1000,          // Max 1000 entries
-  ttl: 1000 * 60 * 5, // 5 minute TTL
-})
-
-app.get('/data/:id', async ({ params }) => {
-  let data = cache.get(params.id)
-  if (!data) {
-    data = await fetchData(params.id)
-    cache.set(params.id, data)
-  }
-  return data
-})
+ENDPOINT GET /data/{id}:
+    data = cache.get(id)
+    IF data IS NULL:
+        data = AWAIT fetchData(id)
+        cache.set(id, data)
+    RETURN data
 ```
 
 ### Unbatched Operations
@@ -217,26 +208,25 @@ app.get('/data/:id', async ({ params }) => {
 
 **Detection**: Insert/update in loop.
 
-**BEFORE**:
-```typescript
-// BAD: 1000 individual inserts
-for (const item of items) {
-  await db.insert(products).values(item)
-}
+**BEFORE** (slow):
+```pseudocode
+// 1000 individual inserts
+FOR EACH item IN items:
+    AWAIT database.insert("products", item)
 // 1000 database round trips!
 ```
 
-**AFTER**:
-```typescript
-// GOOD: Single batch insert
-await db.insert(products).values(items)
+**AFTER** (fast):
+```pseudocode
+// Single batch insert
+AWAIT database.batchInsert("products", items)
 // 1 database round trip!
 
 // For very large batches, chunk it
-const BATCH_SIZE = 1000
-for (let i = 0; i < items.length; i += BATCH_SIZE) {
-  await db.insert(products).values(items.slice(i, i + BATCH_SIZE))
-}
+BATCH_SIZE = 1000
+FOR i FROM 0 TO length(items) STEP BATCH_SIZE:
+    chunk = items[i : i + BATCH_SIZE]
+    AWAIT database.batchInsert("products", chunk)
 ```
 
 ### Sequential Await in Loop
@@ -245,37 +235,29 @@ for (let i = 0; i < items.length; i += BATCH_SIZE) {
 
 **Impact**: Total time = sum of all operations instead of max.
 
-**Detection**: await inside for/forEach/map.
+**Detection**: Await inside for/forEach/map loop.
 
-**BEFORE**:
-```typescript
-// BAD: Sequential - takes 10 seconds for 10 items
-const results = []
-for (const url of urls) {
-  const result = await fetch(url) // 1 second each
-  results.push(await result.json())
-}
+**BEFORE** (slow):
+```pseudocode
+// Sequential — takes 10 seconds for 10 items (1s each)
+results = []
+FOR EACH url IN urls:
+    response = AWAIT httpGet(url)         // 1 second each
+    results.append(response.body)
 ```
 
-**AFTER**:
-```typescript
-// GOOD: Parallel - takes 1 second for 10 items
-const results = await Promise.all(
-  urls.map(async (url) => {
-    const response = await fetch(url)
-    return response.json()
-  })
+**AFTER** (fast):
+```pseudocode
+// Parallel — takes 1 second for 10 items
+results = AWAIT parallelAll(
+    FOR EACH url IN urls:
+        httpGet(url).then(response => response.body)
 )
 
-// With concurrency limit for rate limiting
-import pLimit from 'p-limit'
-const limit = pLimit(5) // Max 5 concurrent
-
-const results = await Promise.all(
-  urls.map((url) => limit(async () => {
-    const response = await fetch(url)
-    return response.json()
-  }))
+// With concurrency limit for rate-limited APIs
+results = AWAIT parallelAll(
+    FOR EACH url IN urls:
+        withConcurrencyLimit(5, () => httpGet(url))
 )
 ```
 
@@ -287,37 +269,34 @@ const results = await Promise.all(
 
 **Detection**: List endpoint without LIMIT.
 
-**BEFORE**:
-```typescript
-// BAD: Returns all records
-app.get('/api/users', async () => {
-  return db.select().from(users)
-})
-// Could return millions of rows!
+**BEFORE** (slow):
+```pseudocode
+// Returns all records — could be millions of rows
+ENDPOINT GET /api/users:
+    RETURN database.query("SELECT * FROM users")
 ```
 
-**AFTER**:
-```typescript
-// GOOD: Paginated with validation
-app.get('/api/users', async ({ query }) => {
-  const page = Math.max(1, Number(query.page) || 1)
-  const limit = Math.min(Math.max(1, Number(query.limit) || 20), 100)
+**AFTER** (fast):
+```pseudocode
+// Paginated with validation
+ENDPOINT GET /api/users:
+    page = max(1, query.page OR 1)
+    limit = clamp(query.limit OR 20, min=1, max=100)
 
-  const [data, countResult] = await Promise.all([
-    db.select().from(users).limit(limit).offset((page - 1) * limit),
-    db.select({ count: sql`count(*)` }).from(users)
-  ])
+    data, countResult = AWAIT parallel(
+        database.query("SELECT * FROM users LIMIT ? OFFSET ?", [limit, (page-1)*limit]),
+        database.query("SELECT count(*) FROM users")
+    )
 
-  return {
-    data,
-    pagination: {
-      page,
-      limit,
-      total: countResult[0].count,
-      pages: Math.ceil(countResult[0].count / limit)
+    RETURN {
+        data: data,
+        pagination: {
+            page: page,
+            limit: limit,
+            total: countResult,
+            pages: ceil(countResult / limit)
+        }
     }
-  }
-})
 ```
 
 ### Missing Indexes
@@ -328,67 +307,55 @@ app.get('/api/users', async ({ query }) => {
 
 **Detection**: Slow queries, high CPU during queries.
 
-**BEFORE**:
-```typescript
-// Missing index on email column
-await db.select().from(users).where(eq(users.email, email))
-// Full table scan on every login!
+**BEFORE** (slow):
+```pseudocode
+// No index on email column — full table scan on every login
+database.query("SELECT * FROM users WHERE email = ?", [email])
 ```
 
-**AFTER**:
+**AFTER** (fast):
 ```sql
--- Add index for frequently queried columns
+-- Add indexes for frequently queried columns
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_posts_user_id ON posts(user_id);
 CREATE INDEX idx_orders_created_at ON orders(created_at DESC);
 ```
 
-```
-// In your ORM schema, define indexes alongside table definitions
-// (syntax varies by ORM — Drizzle, Prisma, Sequelize, etc.)
-```
+Define indexes in your ORM schema alongside table definitions (syntax varies by ORM).
 
 ### Large Object Serialization
 
-**Problem**: JSON.stringify on large objects blocks CPU.
+**Problem**: Serializing large objects blocks CPU.
 
-**Impact**: Event loop blocked, all requests delayed.
+**Impact**: Main thread blocked, all requests delayed.
 
 **Detection**: Large objects in response, slow endpoint.
 
-**BEFORE**:
-```typescript
-// BAD: Serialize entire object graph
-app.get('/export', async () => {
-  const allData = await db.select().from(data)
-  return JSON.stringify(allData) // Blocks for large data
-})
+**BEFORE** (slow):
+```pseudocode
+// Serialize entire dataset at once — blocks CPU for large data
+ENDPOINT GET /export:
+    allData = AWAIT database.query("SELECT * FROM data")
+    RETURN serialize(allData)  // Blocks for large datasets
 ```
 
-**AFTER**:
-```typescript
-// GOOD: Stream large responses
-app.get('/export', async () => {
-  const stream = new ReadableStream({
-    async start(controller) {
-      controller.enqueue('[')
-      let first = true
+**AFTER** (fast):
+```pseudocode
+// Stream large responses — process one row at a time
+ENDPOINT GET /export:
+    stream = createResponseStream()
+    stream.write("[")
+    first = true
 
-      for await (const row of db.select().from(data).stream()) {
-        if (!first) controller.enqueue(',')
-        controller.enqueue(JSON.stringify(row))
+    FOR EACH row IN database.streamQuery("SELECT * FROM data"):
+        IF NOT first:
+            stream.write(",")
+        stream.write(serialize(row))
         first = false
-      }
 
-      controller.enqueue(']')
-      controller.close()
-    }
-  })
-
-  return new Response(stream, {
-    headers: { 'Content-Type': 'application/json' }
-  })
-})
+    stream.write("]")
+    stream.close()
+    RETURN stream
 ```
 
 ### Missing Connection Pool
@@ -399,32 +366,29 @@ app.get('/export', async () => {
 
 **Detection**: No pool configuration, connection errors under load.
 
-**BEFORE**:
-```typescript
-// BAD: New connection each time
-app.get('/data', async () => {
-  const client = new Client(connectionString)
-  await client.connect()
-  const result = await client.query('SELECT * FROM data')
-  await client.end()
-  return result.rows
-})
+**BEFORE** (slow):
+```pseudocode
+// New connection each request — expensive setup every time
+ENDPOINT GET /data:
+    connection = database.createConnection(connectionString)
+    AWAIT connection.open()
+    result = AWAIT connection.query("SELECT * FROM data")
+    connection.close()
+    RETURN result
 ```
 
-**AFTER**:
-```typescript
-// GOOD: Connection pool
-import postgres from 'postgres'
+**AFTER** (fast):
+```pseudocode
+// Connection pool — reuse connections across requests
+pool = database.createPool(connectionString,
+    maxConnections=20,
+    idleTimeout=20s,
+    connectTimeout=10s
+)
 
-const sql = postgres(connectionString, {
-  max: 20,              // Max connections
-  idle_timeout: 20,     // Close idle connections after 20s
-  connect_timeout: 10,  // Connection timeout 10s
-})
-
-app.get('/data', async () => {
-  return sql`SELECT * FROM data`
-})
+ENDPOINT GET /data:
+    RETURN AWAIT pool.query("SELECT * FROM data")
+    // Connection automatically returned to pool
 ```
 
 ### Event Listener Leak
@@ -433,55 +397,48 @@ app.get('/data', async () => {
 
 **Impact**: Memory leak, duplicate handlers.
 
-**Detection**: addEventListener without removeEventListener.
+**Detection**: Listener added without corresponding removal.
 
-**BEFORE**:
-```typescript
-// BAD: Listener added on every request
-app.get('/stream', ({ params }) => {
-  emitter.on('data', handleData) // Never removed!
-  return stream
-})
+**BEFORE** (leaks):
+```pseudocode
+// Listener added on every request — never removed!
+ENDPOINT GET /stream:
+    emitter.on("data", handleData)
+    RETURN stream
 ```
 
-**AFTER**:
-```typescript
-// GOOD: Proper cleanup
-app.get('/stream', ({ params }) => {
-  const handler = (data) => handleData(data)
-  emitter.on('data', handler)
+**AFTER** (clean):
+```pseudocode
+// Proper cleanup when stream closes
+ENDPOINT GET /stream:
+    handler = (data) => handleData(data)
+    emitter.on("data", handler)
 
-  // Clean up on close
-  return new Response(
-    new ReadableStream({
-      cancel() {
-        emitter.off('data', handler)
-      }
-    })
-  )
-})
+    RETURN createStream(
+        onClose: () => emitter.off("data", handler)
+    )
 ```
 
 ## Runtime-Specific Optimizations
 
 Use your runtime's native APIs when available for best performance:
 
-| Operation | Principle | Example |
-|-----------|-----------|---------|
-| File I/O | Use native async file API | Runtime-specific file readers |
-| HTTP client | Use native fetch with streaming | `response.body.getReader()` for large responses |
-| Child processes | Use native process spawning | Runtime-specific spawn API |
-| WebSocket | Use native WS support | Runtime-specific WebSocket server |
-| Database | Use native drivers | Runtime-specific SQLite/DB bindings |
+| Operation | Principle | Guidance |
+|-----------|-----------|----------|
+| File I/O | Use native async file API | Prefer runtime-provided async readers over polyfills |
+| HTTP client | Use native fetch with streaming | Use streaming body readers for large responses |
+| Child processes | Use native process spawning | Use runtime-specific spawn API for subprocesses |
+| WebSocket | Use native WS support | Prefer built-in WebSocket server over libraries |
+| Database | Use native drivers | Use runtime-optimized database bindings |
 
 ## Severity Levels
 
 | Level | Definition | Metric Impact | Examples |
 |-------|------------|---------------|----------|
-| Critical | System unusable, crashes | > 10x slowdown, OOM | Sync I/O, N+1 in loops, memory leak |
+| Critical | System unusable, crashes | > 10x slowdown, OOM | Sync I/O in handlers, N+1 in loops, memory leak |
 | High | Significant degradation | 3-10x slowdown | Missing pagination, no connection pool |
 | Medium | Noticeable impact | 1.5-3x slowdown | Missing indexes, no compression |
-| Low | Minor optimization | < 1.5x impact | Console.log in prod, suboptimal caching |
+| Low | Minor optimization | < 1.5x impact | Debug logging in prod, suboptimal caching |
 
 ## Performance Metrics
 
@@ -517,7 +474,7 @@ Use your runtime's native APIs when available for best performance:
   - Fix: Add LRU cache with 5min TTL
 
 ### Low Impact
-- **Console.log**: Debug statements in production
+- **Debug Logging**: Debug statements in production
   - Files: Multiple
   - Fix: Use proper logger with level control
 
@@ -537,7 +494,6 @@ Use your runtime's native APIs when available for best performance:
 
 ---
 
-**Version**: 1.1
-**Spec**: SPEC-020
+**Version**: 2.0
 **For**: reviewer agent
 **Patterns**: Language-agnostic

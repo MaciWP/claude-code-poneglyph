@@ -4,7 +4,6 @@ description: |
   Read-only exploration agent. Finds files, searches code, and gathers context.
   Use proactively when: exploring codebase, finding files, searching patterns, pre-implementation research.
   Keywords - explore, find, search, locate, investigate, discover, scout, context, codebase
-model: haiku
 tools: Read, Grep, Glob, WebFetch, WebSearch
 disallowedTools: Task, Edit, Write
 permissionMode: default

@@ -1,58 +1,76 @@
 ---
 name: database-patterns
-version: 1.0.0
-keywords: [database, sql, drizzle, prisma, migration, transaction, query, orm, schema, index]
+version: 2.0.0
+keywords: [database, sql, migration, transaction, query, orm, schema, index, normalization, acid, isolation]
 for_agents: [builder, reviewer]
-description: Patrones de base de datos para SQL, Drizzle ORM, transacciones y optimización.
+description: Database patterns for SQL, transactions, query optimization, and schema design. Language and ORM agnostic.
 type: knowledge-base
 disable-model-invocation: false
 ---
 
 # Database Patterns Skill
 
-Ejemplos adaptables a cualquier stack. Patterns son language-agnostic.
+Universal database patterns. Language and ORM agnostic.
 
-## Cuándo Usar
+## When to Use
 
-Activar cuando el prompt contenga: database, sql, migration, transaction, query, orm, schema, index.
+Activate when prompt contains: database, sql, migration, transaction, query, orm, schema, index, normalization, acid, isolation.
 
 ## Schema Design
 
-### Normalización
+### Normalization
 
-| Forma Normal | Regla | Ejemplo |
-|--------------|-------|---------|
-| 1NF | Valores atómicos | No arrays en columnas |
-| 2NF | Sin dependencias parciales | Separar tablas |
-| 3NF | Sin dependencias transitivas | Eliminar redundancia |
+| Normal Form | Rule | Example |
+|-------------|------|---------|
+| 1NF | Atomic values | No arrays in columns |
+| 2NF | No partial dependencies | Separate tables for partial key deps |
+| 3NF | No transitive dependencies | Eliminate redundancy |
+| BCNF | Every determinant is a candidate key | Stricter 3NF |
 
-### Índices
+### When to Denormalize
+
+| Scenario | Reason | Trade-off |
+|----------|--------|-----------|
+| Read-heavy reporting | Avoid expensive joins | Write complexity increases |
+| Caching layer | Pre-computed aggregates | Staleness risk |
+| Event sourcing | Materialized views | Eventual consistency |
+
+### Indexes
 
 ```sql
--- Índice simple para búsquedas frecuentes
+-- Simple index for frequent lookups
 CREATE INDEX idx_users_email ON users(email);
 
--- Índice compuesto para queries con múltiples columnas
+-- Composite index for multi-column queries
 CREATE INDEX idx_orders_user_date ON orders(user_id, created_at);
 
--- Índice parcial para subconjuntos
+-- Partial index for subsets
 CREATE INDEX idx_active_users ON users(email) WHERE status = 'active';
+
+-- Covering index (all columns needed by query)
+CREATE INDEX idx_posts_author_cover ON posts(author_id) INCLUDE (title, created_at);
 ```
 
-### Relaciones
+### Index Guidelines
 
-| Tipo | Implementación |
+| Guideline | Detail |
+|-----------|--------|
+| Index columns in WHERE/JOIN/ORDER BY | Frequent filter/sort targets |
+| Composite index column order matters | Most selective column first |
+| Avoid over-indexing | Each index slows writes |
+| Use EXPLAIN to verify usage | Ensure index is actually used |
+
+### Relationships
+
+| Type | Implementation |
 |------|----------------|
-| 1:1 | Foreign key con unique constraint |
-| 1:N | Foreign key en tabla hija |
-| N:M | Tabla intermedia (junction table) |
+| 1:1 | Foreign key with UNIQUE constraint |
+| 1:N | Foreign key on child table |
+| N:M | Junction table with composite PK or surrogate key |
 
-## ORM Patterns
-
-### Definición de Schema (pseudocode — adapt to your ORM)
+## Schema Definition
 
 ```sql
--- Schema definition (SQL — universal)
 CREATE TABLE users (
   id SERIAL PRIMARY KEY,
   email TEXT NOT NULL UNIQUE,
@@ -64,15 +82,15 @@ CREATE TABLE posts (
   id SERIAL PRIMARY KEY,
   title TEXT NOT NULL,
   content TEXT,
-  author_id INTEGER NOT NULL REFERENCES users(id),
+  author_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   created_at TIMESTAMP DEFAULT NOW() NOT NULL
 );
 ```
 
-### Type-Safe Queries (ORM pseudocode)
+## Common Queries
 
 ```sql
--- Select con filtros
+-- Filtered select
 SELECT * FROM users WHERE status = 'active';
 
 -- Join
@@ -83,91 +101,109 @@ WHERE p.created_at > '2024-01-01';
 
 -- Insert returning
 INSERT INTO users (email, name) VALUES ('test@example.com', 'Test') RETURNING *;
+
+-- Upsert (ON CONFLICT)
+INSERT INTO users (email, name)
+VALUES ('test@example.com', 'Test')
+ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name;
 ```
 
 ## Migrations
 
-### Estructura de Archivos
+### Folder Structure
 
 ```
-drizzle/
-├── 0000_initial.sql
-├── 0001_add_posts.sql
-└── meta/
-    └── _journal.json
+migrations/
+  0001_initial.sql
+  0002_add_posts.sql
+  0003_add_user_avatar.sql
 ```
 
-### Comandos (adapt to your ORM/migration tool)
+### Migration Commands
 
-```bash
-# Generar migración desde cambios en schema
-<orm-cli> generate
+Use your ORM or migration tool CLI. Common operations:
 
-# Aplicar migraciones pendientes
-<orm-cli> migrate
-
-# Push directo (desarrollo)
-<orm-cli> push
-```
+| Operation | Description |
+|-----------|-------------|
+| Generate | Create migration file from schema diff |
+| Migrate | Apply pending migrations |
+| Rollback | Revert last migration |
+| Status | Show applied/pending migrations |
 
 ### Rollback Pattern
 
-```typescript
-// migrations/0002_add_column.ts
-export async function up(db: Database) {
-  await db.execute(sql`ALTER TABLE users ADD COLUMN avatar_url TEXT`);
-}
+Every migration should have an UP and a DOWN:
 
-export async function down(db: Database) {
-  await db.execute(sql`ALTER TABLE users DROP COLUMN avatar_url`);
-}
+```sql
+-- UP: 0003_add_user_avatar.sql
+ALTER TABLE users ADD COLUMN avatar_url TEXT;
+
+-- DOWN: 0003_add_user_avatar_down.sql
+ALTER TABLE users DROP COLUMN avatar_url;
 ```
+
+### Migration Best Practices
+
+| Practice | Reason |
+|----------|--------|
+| Never edit applied migrations | Already in production databases |
+| Test rollbacks | Ensure DOWN works before deploying UP |
+| Keep migrations small | Easier to debug failures |
+| Use transactions when supported | Atomic migration application |
+| Avoid data migrations in schema files | Separate schema from data transforms |
 
 ## Transactions
 
 ### ACID Properties
 
-| Propiedad | Garantía |
-|-----------|----------|
-| Atomicity | Todo o nada |
-| Consistency | Estado válido |
-| Isolation | Sin interferencia |
-| Durability | Persistente |
+| Property | Guarantee |
+|----------|-----------|
+| Atomicity | All or nothing |
+| Consistency | Valid state transitions only |
+| Isolation | Concurrent txns don't interfere |
+| Durability | Committed data survives crashes |
 
-### Implementación (pseudocode — adapt to your ORM/driver)
+### Transaction SQL
 
 ```sql
--- Transacción básica
 BEGIN;
-  INSERT INTO users (email, name) VALUES ('new@example.com', 'New User') RETURNING *;
-  -- use returned user.id
-  INSERT INTO posts (title, author_id) VALUES ('Welcome Post', <user.id>);
+  INSERT INTO users (email, name) VALUES ('new@example.com', 'New User') RETURNING id;
+  -- use returned id
+  INSERT INTO posts (title, author_id) VALUES ('Welcome Post', <returned_id>);
 COMMIT;
--- Si hay error, ROLLBACK automático
+-- On error: ROLLBACK
 ```
 
-```
-// Generic transaction pattern (any language/ORM)
-try {
-  db.transaction((tx) => {
-    user = tx.insert(users, { email: 'new@example.com', name: 'New User' })
-    tx.insert(posts, { title: 'Welcome Post', authorId: user.id })
-    // If error occurs, automatic rollback
-  })
-} catch (error) {
-  // Transaction already rolled back
-  log('Transaction failed:', error)
-}
+### Transaction Pseudocode (ORM)
+
+```pseudocode
+try:
+  db.beginTransaction(tx =>
+    user = tx.insert("users", { email: "new@example.com", name: "New User" })
+    tx.insert("posts", { title: "Welcome Post", authorId: user.id })
+  )
+catch error:
+  // transaction already rolled back automatically
+  log("Transaction failed:", error)
 ```
 
 ### Isolation Levels
 
-| Nivel | Phantom Reads | Non-Repeatable | Dirty Reads |
-|-------|---------------|----------------|-------------|
-| Read Uncommitted | ✓ | ✓ | ✓ |
-| Read Committed | ✓ | ✓ | ✗ |
-| Repeatable Read | ✓ | ✗ | ✗ |
-| Serializable | ✗ | ✗ | ✗ |
+| Level | Dirty Reads | Non-Repeatable Reads | Phantom Reads |
+|-------|-------------|----------------------|---------------|
+| Read Uncommitted | Possible | Possible | Possible |
+| Read Committed | No | Possible | Possible |
+| Repeatable Read | No | No | Possible |
+| Serializable | No | No | No |
+
+### Choosing Isolation Level
+
+| Use Case | Recommended Level |
+|----------|------------------|
+| General CRUD operations | Read Committed (default in most DBs) |
+| Financial transactions | Serializable |
+| Report generation | Repeatable Read or Snapshot |
+| High-throughput, tolerant of stale reads | Read Committed |
 
 ## Query Optimization
 
@@ -179,10 +215,10 @@ SELECT * FROM users;
 -- Then for EACH user:
 SELECT * FROM posts WHERE author_id = <user.id>;
 
--- Single Query con Join (GOOD)
-SELECT * FROM users LEFT JOIN posts ON users.id = posts.author_id;
+-- Single query with JOIN (GOOD)
+SELECT u.*, p.* FROM users u LEFT JOIN posts p ON u.id = p.author_id;
 
--- Batch Loading (GOOD)
+-- Batch loading (GOOD)
 SELECT * FROM users;
 SELECT * FROM posts WHERE author_id IN (<all_user_ids>);
 ```
@@ -190,28 +226,57 @@ SELECT * FROM posts WHERE author_id IN (<all_user_ids>);
 ### Query Analysis
 
 ```sql
--- Analizar plan de ejecución
+-- Analyze execution plan
 EXPLAIN ANALYZE SELECT * FROM users WHERE email = 'test@example.com';
 
--- Verificar uso de índices
+-- Check index usage
 EXPLAIN SELECT * FROM orders WHERE user_id = 1 AND created_at > '2024-01-01';
 ```
 
-### Pagination Eficiente
+### EXPLAIN Output Indicators
+
+| Indicator | Meaning | Action |
+|-----------|---------|--------|
+| Seq Scan | Full table scan | Add index on filter columns |
+| Index Scan | Using index | Good |
+| Nested Loop | Join strategy | Check join column indexes |
+| High cost/rows | Expensive query | Optimize or add indexes |
+
+### Efficient Pagination
 
 ```sql
--- Offset lento para páginas grandes (BAD)
-SELECT * FROM posts OFFSET 9000 LIMIT 100;
+-- Offset pagination (BAD for large offsets)
+SELECT * FROM posts ORDER BY id OFFSET 9000 LIMIT 100;
 
--- Cursor-based / keyset pagination (GOOD)
+-- Cursor/keyset pagination (GOOD)
 SELECT * FROM posts WHERE id > <last_seen_id> ORDER BY id LIMIT 100;
 ```
 
-## Checklist para Reviewer
+### Pagination Trade-offs
 
-- [ ] Schema normalizado apropiadamente
-- [ ] Índices en columnas de búsqueda frecuente
-- [ ] Transacciones para operaciones múltiples
-- [ ] N+1 queries eliminados
-- [ ] Migraciones con up/down
-- [ ] Types/schema correctos en ORM
+| Method | Pros | Cons |
+|--------|------|------|
+| Offset | Simple, supports "jump to page" | Slow for large offsets, inconsistent with inserts |
+| Cursor/Keyset | Fast regardless of position, consistent | No "jump to page", requires sortable column |
+
+## Connection Management
+
+| Practice | Reason |
+|----------|--------|
+| Use connection pooling | Avoid connection creation overhead |
+| Set pool size limits | Prevent database overload |
+| Handle connection timeouts | Graceful recovery from DB restarts |
+| Close connections on shutdown | Prevent resource leaks |
+
+## Checklist for Reviewer
+
+- [ ] Schema normalized appropriately (3NF minimum)
+- [ ] Indexes on frequently queried columns (WHERE, JOIN, ORDER BY)
+- [ ] Transactions for multi-statement operations
+- [ ] N+1 queries eliminated (use JOINs or batch loading)
+- [ ] Migrations have UP and DOWN
+- [ ] EXPLAIN used for complex queries
+- [ ] Connection pooling configured
+- [ ] Appropriate isolation level for use case
+- [ ] No raw user input in queries (use parameterized/prepared statements)
+- [ ] Foreign keys with appropriate ON DELETE behavior

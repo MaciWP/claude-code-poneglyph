@@ -18,7 +18,7 @@ Antes de cualquier accion, evaluar el prompt del usuario con 5 criterios.
 |-------|--------|
 | 80-100 | Proceder directamente |
 | 70-79 | Proceder con precaucion |
-| **< 70** | **Cargar skill `prompt-engineer` y mejorar** |
+| **< 70** | **Usar `AskUserQuestion` para pedir al usuario que clarifique** |
 
 ## Ejemplos
 
@@ -44,5 +44,5 @@ Antes de cualquier accion, evaluar el prompt del usuario con 5 criterios.
 
 1. Recibir prompt del usuario
 2. Evaluar contra los 5 criterios
-3. Si score < 70: usar `prompt-engineer` skill para mejorar
+3. Si score < 70: usar `AskUserQuestion` para pedir clarificacion al usuario
 4. Si score >= 70: proceder con analisis de complejidad

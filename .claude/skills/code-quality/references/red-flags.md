@@ -12,11 +12,11 @@ Patterns that indicate code quality problems, ordered by severity.
 | Cyclomatic complexity > 15 | High | Too many paths, untestable | Count branches |
 | Nesting depth > 4 | High | Hard to follow logic | Count indentation |
 | Duplicate code blocks | High | Maintenance nightmare | Compare blocks |
-| `any` type | Medium | Type safety disabled | Grep for `any` |
+| Untyped escape hatches | Medium | Type safety disabled | Search for "any" equivalents |
 | Magic numbers/strings | Medium | Unclear meaning | Check literals |
-| `console.log` debugging | Medium | Not production ready | Grep console |
+| Debug logging left in | Medium | Not production ready | Search for debug output |
 | Commented-out code | Low | Dead code, confusing | Check comments |
-| TODO without ticket | Low | Forgotten work | Grep TODO |
+| TODO without ticket | Low | Forgotten work | Search for TODO |
 | Long import list > 10 | Low | File doing too much | Count imports |
 
 ## Severity Levels

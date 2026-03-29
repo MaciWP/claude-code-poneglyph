@@ -11,7 +11,6 @@ import {
   filterByConfidence,
   filterByAge,
 } from "./query";
-import { buildIndex, updateIndex, resolveIds } from "./index-builder";
 import type { KnowledgeEntry } from "./types";
 
 function makeTmpDir(): string {
@@ -234,57 +233,6 @@ describe("Knowledge Graph", () => {
 
     const freshEntry = buildFullEntry(makePartial({ ttl: 30 }));
     expect(checkStaleness(freshEntry)).toBe(false);
-  });
-
-  it("should build index with correct mappings", () => {
-    const gp = graphPath(tmpDir);
-    writeEntry(
-      makePartial({
-        category: "pattern",
-        subject: "barrel-exports",
-        content: "barrel content",
-        scope: { domains: ["auth"], files: ["src/auth.ts"] },
-      }),
-      gp,
-    );
-    writeEntry(
-      makePartial({
-        category: "gotcha",
-        subject: "mock-leak",
-        content: "mock content",
-        scope: { domains: ["testing"], project: "poneglyph" },
-      }),
-      gp,
-    );
-
-    const entries = loadGraph(gp);
-    const index = buildIndex(entries);
-
-    expect(index.entryCount).toBe(2);
-    expect(index.byCategory["pattern"].length).toBe(1);
-    expect(index.byCategory["gotcha"].length).toBe(1);
-    expect(index.bySubject["barrel-exports"].length).toBe(1);
-    expect(index.byDomain["auth"].length).toBe(1);
-    expect(index.byFile["src/auth.ts"].length).toBe(1);
-    expect(index.byProject["poneglyph"].length).toBe(1);
-  });
-
-  it("should incrementally update index", () => {
-    const entries = [
-      buildFullEntry(
-        makePartial({ category: "pattern", subject: "p1", content: "c1" }),
-      ),
-    ];
-    const index = buildIndex(entries);
-    expect(index.entryCount).toBe(1);
-
-    const newEntry = buildFullEntry(
-      makePartial({ category: "gotcha", subject: "g1", content: "c2" }),
-    );
-    updateIndex(index, newEntry);
-
-    expect(index.entryCount).toBe(2);
-    expect(index.byCategory["gotcha"].length).toBe(1);
   });
 
   it("should handle corrupt JSONL lines", () => {

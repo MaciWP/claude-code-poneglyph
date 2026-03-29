@@ -3,7 +3,7 @@
   "env": {
     "BASH_DEFAULT_TIMEOUT_MS": "300000",
     "ENABLE_LSP_TOOL": "1",
-    "PATH": "/opt/homebrew/bin:/usr/local/bin:/c/Program Files/nodejs:./node_modules/.bin:${PATH}",
+    "PATH": "/c/Users/Maci/.bun/bin:${HOME}/.bun/bin:/opt/homebrew/bin:/usr/local/bin:/c/Program Files/nodejs:./node_modules/.bin:${PATH}",
     "CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS": "50000",
     "CLAUDE_LEAD_MODE": "true",
     "CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD": "1"
@@ -48,11 +48,6 @@
           {
             "type": "command",
             "command": "bun .claude/hooks/format-code.ts"
-          },
-          {
-            "type": "command",
-            "command": "bun .claude/hooks/typecheck-guard.ts",
-            "timeout": 30000
           }
         ]
       },
@@ -80,44 +75,6 @@
           {
             "type": "command",
             "command": "bun run .claude/hooks/validators/security/injection-validator.ts"
-          }
-        ]
-      },
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bun run .claude/hooks/validators/code-quality/lint-validator.ts"
-          }
-        ]
-      },
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bun run .claude/hooks/validators/typescript/import-validator.ts"
-          }
-        ]
-      },
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bun run .claude/hooks/validators/ast/hallucination-detector.ts",
-            "timeout": 10000
-          }
-        ]
-      },
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bun run .claude/hooks/validators/typescript/syntax-validator.ts",
-            "timeout": 10000
           }
         ]
       },
@@ -195,26 +152,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun run .claude/hooks/security-scan.ts",
-            "timeout": 15000
-          }
-        ]
-      },
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
             "command": "bun run .claude/hooks/validators/stop/validate-file-contains.ts"
-          }
-        ]
-      },
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bun run .claude/hooks/validators/stop/validate-new-file.ts"
           }
         ]
       }

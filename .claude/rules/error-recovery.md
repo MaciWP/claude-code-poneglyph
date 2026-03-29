@@ -11,7 +11,7 @@ Guia de recuperacion cuando agentes fallan. Define retry budgets, escalacion y d
 | Agent timeout | 1 | Double timeout | Escalate to user |
 | Reviewer BLOCKED | 0 | - | Re-plan with planner |
 | Reviewer NEEDS_CHANGES | 2 | Apply feedback | Escalate to user |
-| Worktree merge conflict | 1 | merge-resolver | Escalate to user |
+| Worktree merge conflict | 1 | builder | Escalate to user |
 
 ## Escalation Decision Tree
 
@@ -102,8 +102,8 @@ Cuando se detecta bloqueo, preguntar al usuario:
 | Builder en worktree falla | Preservar worktree, delegar a error-analyzer |
 | Error-analyzer diagnostica fix | Reintentar builder en MISMO worktree |
 | Retry falla | Eliminar worktree + branch, escalar al usuario |
-| Merge conflict en worktree | Delegar a merge-resolver |
-| merge-resolver falla | Preservar worktree, escalar al usuario con diff |
+| Merge conflict en worktree | Delegar a builder |
+| builder falla en merge | Preservar worktree, escalar al usuario con diff |
 
 ## Proceso
 

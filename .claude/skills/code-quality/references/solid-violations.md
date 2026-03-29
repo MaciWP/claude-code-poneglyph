@@ -1,243 +1,231 @@
 # SOLID Violations
 
-5 SOLID principle violations with detection and fixes.
+5 SOLID principle violations with detection, examples, and fixes.
 
 ## 1. Single Responsibility Violation
 
 **Problem**: Class has multiple reasons to change.
 
-**BEFORE**:
-```typescript
+**Detection**: Class contains methods spanning unrelated concerns (data access, email, validation, reporting).
+
+```pseudocode
 // BAD: Multiple responsibilities
-class UserService {
-  async createUser(data: UserData): Promise<User> { /* ... */ }
-  validateEmail(email: string): boolean { /* ... */ }  // Should be ValidationService
-  sendWelcomeEmail(user: User): Promise<void> { /* ... */ }  // Should be EmailService
-  generateUserReport(): Report { /* ... */ }  // Should be ReportService
-  formatUserForAPI(user: User): APIUser { /* ... */ }  // Should be UserSerializer
-}
-```
+class UserService:
+    function createUser(data)      // data access
+    function validateEmail(email)  // validation concern
+    function sendWelcomeEmail(user) // email concern
+    function generateUserReport()  // reporting concern
+    function formatUserForAPI(user) // serialization concern
 
-**AFTER**:
-```typescript
-// GOOD: Single responsibility
-class UserService {
-  constructor(
-    private validator: UserValidator,
-    private emailService: EmailService,
-    private repository: UserRepository
-  ) {}
+// GOOD: Single responsibility per class
+class UserService:
+    constructor(validator, emailService, repository)
 
-  async createUser(data: UserData): Promise<User> {
-    this.validator.validateUserData(data)
-    const user = await this.repository.create(data)
-    await this.emailService.sendWelcome(user)
-    return user
-  }
-}
+    function createUser(data) -> User:
+        validator.validateUserData(data)
+        user = repository.create(data)
+        emailService.sendWelcome(user)
+        return user
+
+class UserValidator:
+    function validateUserData(data) ...
+    function validateEmail(email) ...
+
+class EmailService:
+    function sendWelcome(user) ...
+    function sendPasswordReset(user, token) ...
+
+class UserReportService:
+    function generateReport(userId) -> Report ...
 ```
 
 ## 2. Open/Closed Violation
 
 **Problem**: Must modify existing code to add new behavior.
 
-**BEFORE**:
-```typescript
+**Detection**: Growing switch/if-else chains that check types or categories.
+
+```pseudocode
 // BAD: Must modify for every new payment type
-function processPayment(type: string, amount: number) {
-  switch (type) {
-    case 'credit':
-      return processCreditCard(amount)
-    case 'paypal':
-      return processPayPal(amount)
-    case 'crypto':
-      return processCrypto(amount)
-    // Must add case for every new type
-  }
-}
-```
+function processPayment(type, amount):
+    switch type:
+        case "credit": return processCreditCard(amount)
+        case "paypal": return processPayPal(amount)
+        case "crypto": return processCrypto(amount)
+        // Must add case for every new type
 
-**AFTER**:
-```typescript
 // GOOD: Open for extension, closed for modification
-interface PaymentProcessor {
-  process(amount: number): Promise<PaymentResult>
-}
+interface PaymentProcessor:
+    function process(amount) -> PaymentResult
 
-class CreditCardProcessor implements PaymentProcessor {
-  async process(amount: number): Promise<PaymentResult> { /* ... */ }
-}
+class CreditCardProcessor implements PaymentProcessor:
+    function process(amount) -> PaymentResult ...
 
-class PayPalProcessor implements PaymentProcessor {
-  async process(amount: number): Promise<PaymentResult> { /* ... */ }
-}
+class PayPalProcessor implements PaymentProcessor:
+    function process(amount) -> PaymentResult ...
 
 // Registry pattern - add new processors without modifying existing code
-const processors = new Map<string, PaymentProcessor>([
-  ['credit', new CreditCardProcessor()],
-  ['paypal', new PayPalProcessor()],
-])
+class PaymentRegistry:
+    processors = map of (string -> PaymentProcessor)
 
-function processPayment(type: string, amount: number): Promise<PaymentResult> {
-  const processor = processors.get(type)
-  if (!processor) throw new Error(`Unknown payment type: ${type}`)
-  return processor.process(amount)
-}
+    function register(type, processor):
+        processors[type] = processor
 
-// Adding new type doesn't require modifying processPayment
-processors.set('crypto', new CryptoProcessor())
+    function process(type, amount) -> PaymentResult:
+        processor = processors[type]
+        if not processor: throw Error("Unknown payment type: " + type)
+        return processor.process(amount)
+
+// Adding a new type requires no modification to existing code
+registry.register("crypto", new CryptoProcessor())
 ```
 
 ## 3. Liskov Substitution Violation
 
 **Problem**: Subclass changes base class behavior in unexpected ways.
 
-**Detection**: Overridden methods that throw or change semantics.
+**Detection**: Overridden methods that throw exceptions, silently skip behavior, or change semantics.
 
-**BEFORE**:
-```typescript
+```pseudocode
 // BAD: Square violates Rectangle contract
-class Rectangle {
-  constructor(protected width: number, protected height: number) {}
+class Rectangle:
+    width, height
 
-  setWidth(w: number): void { this.width = w }
-  setHeight(h: number): void { this.height = h }
-  area(): number { return this.width * this.height }
-}
+    function setWidth(w): this.width = w
+    function setHeight(h): this.height = h
+    function area() -> number: return this.width * this.height
 
-class Square extends Rectangle {
-  setWidth(w: number): void {
-    this.width = w
-    this.height = w  // Unexpected side effect!
-  }
-  setHeight(h: number): void {
-    this.width = h
-    this.height = h  // Unexpected side effect!
-  }
-}
-```
+class Square extends Rectangle:
+    function setWidth(w):
+        this.width = w
+        this.height = w  // Unexpected side effect!
+    function setHeight(h):
+        this.width = h
+        this.height = h  // Unexpected side effect!
 
-**AFTER**:
-```typescript
-// GOOD: Separate interfaces for different shapes
-interface Shape {
-  area(): number
-}
+// GOOD: Separate types implementing a common interface
+interface Shape:
+    function area() -> number
 
-class Rectangle implements Shape {
-  constructor(private width: number, private height: number) {}
-  area(): number { return this.width * this.height }
-}
+class Rectangle implements Shape:
+    constructor(width, height)
+    function area() -> number: return width * height
 
-class Square implements Shape {
-  constructor(private side: number) {}
-  area(): number { return this.side * this.side }
-}
+class Square implements Shape:
+    constructor(side)
+    function area() -> number: return side * side
+
+// Both can be used wherever Shape is expected
+function printArea(shape):
+    print("Area: " + shape.area())
 ```
 
 ## 4. Interface Segregation Violation
 
 **Problem**: Clients forced to implement methods they don't need.
 
-**Detection**: Interfaces with methods throwing `NotImplemented`.
+**Detection**: Interfaces with methods that some implementations throw `NotImplemented` for, or leave as no-ops.
 
-**BEFORE**:
-```typescript
+```pseudocode
 // BAD: Fat interface
-interface Worker {
-  work(): void
-  eat(): void
-  sleep(): void
-  attendMeeting(): void
-}
+interface Worker:
+    function work()
+    function eat()
+    function sleep()
+    function attendMeeting()
 
-class Robot implements Worker {
-  work(): void { /* ... */ }
-  eat(): void { throw new Error('Robots do not eat') }  // Violation!
-  sleep(): void { throw new Error('Robots do not sleep') }  // Violation!
-  attendMeeting(): void { throw new Error('Not applicable') }  // Violation!
-}
-```
+class Robot implements Worker:
+    function work() ...       // OK
+    function eat(): throw Error("Robots do not eat")      // Violation!
+    function sleep(): throw Error("Robots do not sleep")   // Violation!
+    function attendMeeting() ...  // OK
 
-**AFTER**:
-```typescript
 // GOOD: Segregated interfaces
-interface Workable {
-  work(): void
-}
+interface Workable:
+    function work()
 
-interface Feedable {
-  eat(): void
-}
+interface Feedable:
+    function eat()
 
-interface Restable {
-  sleep(): void
-}
+interface Restable:
+    function sleep()
 
-class Robot implements Workable {
-  work(): void { /* ... */ }
-}
+interface Meetable:
+    function attendMeeting()
 
-class Human implements Workable, Feedable, Restable {
-  work(): void { /* ... */ }
-  eat(): void { /* ... */ }
-  sleep(): void { /* ... */ }
-}
+class Human implements Workable, Feedable, Restable, Meetable:
+    function work() ...
+    function eat() ...
+    function sleep() ...
+    function attendMeeting() ...
+
+class Robot implements Workable, Meetable:
+    function work() ...
+    function attendMeeting() ...
+    // No need to implement eat/sleep
 ```
 
 ## 5. Dependency Inversion Violation
 
-**Problem**: High-level module depends on low-level implementation.
+**Problem**: High-level module depends on low-level implementation details.
 
-**BEFORE**:
-```typescript
-// BAD: Direct dependency on concrete implementation
-class UserService {
-  private db = new PostgresDatabase()  // Tight coupling
-  private cache = new RedisCache()     // Can't swap implementations
+**Detection**: Classes instantiating their own dependencies (using `new` for collaborators), making them impossible to swap or test.
 
-  async getUser(id: string): Promise<User> {
-    const cached = await this.cache.get(`user:${id}`)
-    if (cached) return cached
-    return this.db.query('SELECT * FROM users WHERE id = $1', [id])
-  }
-}
-```
+```pseudocode
+// BAD: Direct dependency on concrete implementations
+class UserService:
+    db = new PostgresDatabase()    // Tight coupling
+    cache = new RedisCache()       // Can't swap implementations
+    mailer = new SendGridMailer()  // Can't mock for tests
 
-**AFTER**:
-```typescript
-// GOOD: Depend on abstractions
-interface Database {
-  query<T>(sql: string, params: unknown[]): Promise<T>
-}
+    function getUser(id) -> User:
+        cached = cache.get("user:" + id)
+        if cached: return cached
+        return db.query("SELECT * FROM users WHERE id = ?", [id])
 
-interface Cache {
-  get<T>(key: string): Promise<T | null>
-  set<T>(key: string, value: T, ttl?: number): Promise<void>
-}
+    function createUser(data) -> User:
+        user = db.insert("users", data)
+        mailer.send(user.email, "Welcome!")
+        return user
 
-class UserService {
-  constructor(
-    private db: Database,
-    private cache: Cache
-  ) {}
+// GOOD: Depend on abstractions, inject dependencies
+interface Database:
+    function query(sql, params) -> results
+    function insert(table, data) -> record
 
-  async getUser(id: string): Promise<User> {
-    const cached = await this.cache.get<User>(`user:${id}`)
-    if (cached) return cached
+interface Cache:
+    function get(key) -> value or null
+    function set(key, value, ttl)
 
-    const user = await this.db.query<User>(
-      'SELECT * FROM users WHERE id = $1',
-      [id]
-    )
-    await this.cache.set(`user:${id}`, user, 3600)
-    return user
-  }
-}
+interface Mailer:
+    function send(to, subject, body)
 
-// Easy to swap implementations for testing
-const userService = new UserService(
-  new PostgresDatabase(),  // or MockDatabase for tests
-  new RedisCache()         // or InMemoryCache for tests
+class UserService:
+    constructor(db: Database, cache: Cache, mailer: Mailer)
+
+    function getUser(id) -> User:
+        cached = cache.get("user:" + id)
+        if cached: return cached
+        user = db.query("SELECT * FROM users WHERE id = ?", [id])
+        cache.set("user:" + id, user, 3600)
+        return user
+
+    function createUser(data) -> User:
+        user = db.insert("users", data)
+        mailer.send(user.email, "Welcome!", "Thanks for joining")
+        return user
+
+// Easy to swap implementations
+productionService = new UserService(
+    new PostgresDatabase(),  // or MongoDatabase
+    new RedisCache(),        // or MemcachedCache
+    new SendGridMailer()     // or MailgunMailer
+)
+
+// Easy to test with mocks
+testService = new UserService(
+    createMockDatabase(),
+    createMockCache(),
+    createMockMailer()
 )
 ```

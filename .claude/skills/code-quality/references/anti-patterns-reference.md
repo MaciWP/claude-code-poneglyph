@@ -1,6 +1,6 @@
 # Anti-Patterns Reference
 
-Common anti-patterns in TypeScript applications with detection and fixes.
+Common anti-patterns with detection and fixes, applicable to any language or framework.
 
 ## Anti-Patterns Table
 
@@ -49,20 +49,27 @@ Using primitive types (string, number) for domain concepts that deserve their ow
 - Passing around raw strings that represent specific domain concepts
 - Multiple functions accepting the same group of primitives
 
-**Example Fix**:
-```typescript
+**Fix**:
+
+```pseudocode
 // BAD: Primitive obsession
-function sendEmail(to: string, from: string, subject: string): void { /* ... */ }
+function sendEmail(to, from, subject):
+    // validation scattered everywhere
+    ...
 
 // GOOD: Value objects
-class EmailAddress {
-  constructor(private readonly value: string) {
-    if (!isValidEmail(value)) throw new ValidationError('Invalid email')
-  }
-  toString(): string { return this.value }
-}
+class EmailAddress:
+    constructor(value):
+        if not isValidEmail(value):
+            throw ValidationError("Invalid email")
+        this.value = value
 
-function sendEmail(to: EmailAddress, from: EmailAddress, subject: string): void { /* ... */ }
+    function toString() -> string:
+        return this.value
+
+function sendEmail(to: EmailAddress, from: EmailAddress, subject):
+    // validation already handled by EmailAddress constructor
+    ...
 ```
 
 ### Data Clumps
@@ -74,23 +81,21 @@ Groups of data that frequently appear together in parameters, fields, or returns
 - Related fields always used together
 - Parallel arrays of related data
 
-**Example Fix**:
-```typescript
+**Fix**:
+
+```pseudocode
 // BAD: Data clump
-function createEvent(startDate: Date, endDate: Date, timezone: string): void { /* ... */ }
-function updateEvent(startDate: Date, endDate: Date, timezone: string): void { /* ... */ }
-function validateEvent(startDate: Date, endDate: Date, timezone: string): boolean { /* ... */ }
+function createEvent(startDate, endDate, timezone) ...
+function updateEvent(startDate, endDate, timezone) ...
+function validateEvent(startDate, endDate, timezone) ...
 
 // GOOD: Extract parameter object
-interface DateRange {
-  startDate: Date
-  endDate: Date
-  timezone: string
-}
+structure DateRange:
+    startDate, endDate, timezone
 
-function createEvent(range: DateRange): void { /* ... */ }
-function updateEvent(range: DateRange): void { /* ... */ }
-function validateEvent(range: DateRange): boolean { /* ... */ }
+function createEvent(range: DateRange) ...
+function updateEvent(range: DateRange) ...
+function validateEvent(range: DateRange) ...
 ```
 
 ### Speculative Generality
