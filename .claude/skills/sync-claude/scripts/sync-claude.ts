@@ -40,7 +40,15 @@ interface Config {
   status: boolean;
   force: boolean;
   check: boolean;
+  validateHooks: boolean;
   method: "auto" | "symlink" | "junction" | "copy";
+}
+
+interface HookEntry {
+  phase: string;
+  matcher: string;
+  filePath: string;
+  exists: boolean;
 }
 
 interface SystemInfo {
@@ -60,7 +68,14 @@ interface SystemInfo {
 async function getSystemInfo(): Promise<SystemInfo> {
   const platform = process.platform;
   const info: SystemInfo = {
-    os: platform === "win32" ? "windows" : platform === "darwin" ? "macos" : platform === "linux" ? "linux" : "unknown",
+    os:
+      platform === "win32"
+        ? "windows"
+        : platform === "darwin"
+          ? "macos"
+          : platform === "linux"
+            ? "linux"
+            : "unknown",
     osVersion: os.release(),
     isAdmin: false,
     canSymlink: false,
@@ -91,7 +106,10 @@ async function checkWindowsCapabilities(info: SystemInfo): Promise<void> {
 
   // Verificar Developer Mode (Windows 10+)
   try {
-    const result = await $`reg query "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AppModelUnlock" /v AllowDevelopmentWithoutDevLicense 2>&1`.quiet().nothrow();
+    const result =
+      await $`reg query "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AppModelUnlock" /v AllowDevelopmentWithoutDevLicense 2>&1`
+        .quiet()
+        .nothrow();
     const output = result.stdout.toString();
     info.devModeEnabled = output.includes("0x1");
   } catch {
@@ -110,7 +128,9 @@ async function checkWindowsCapabilities(info: SystemInfo): Promise<void> {
   } catch {
     info.canSymlink = false;
   } finally {
-    try { fs.rmdirSync(testDir); } catch {}
+    try {
+      fs.rmdirSync(testDir);
+    } catch {}
   }
 
   // Test de junction (siempre funciona en Windows sin permisos especiales)
@@ -123,7 +143,9 @@ async function checkWindowsCapabilities(info: SystemInfo): Promise<void> {
   } catch {
     info.canJunction = false;
   } finally {
-    try { fs.rmdirSync(testDir); } catch {}
+    try {
+      fs.rmdirSync(testDir);
+    } catch {}
   }
 
   // Recomendaciones
@@ -131,14 +153,14 @@ async function checkWindowsCapabilities(info: SystemInfo): Promise<void> {
     info.recommendations.push(
       "🔧 Activar Developer Mode para symlinks:",
       "   Settings → Privacy & Security → For developers → Developer Mode: ON",
-      "   O ejecutar como Administrador"
+      "   O ejecutar como Administrador",
     );
   }
 
   if (!info.canSymlink && info.canJunction) {
     info.recommendations.push(
       "💡 Se usarán junctions (funcionan sin permisos especiales)",
-      "   Las junctions son equivalentes a symlinks para carpetas"
+      "   Las junctions son equivalentes a symlinks para carpetas",
     );
   }
 }
@@ -159,7 +181,7 @@ async function checkUnixCapabilities(info: SystemInfo): Promise<void> {
   } catch {
     info.recommendations.push(
       "⚠️ No tienes permisos de escritura en tu home directory",
-      `   Verifica permisos de: ${info.homeDir}`
+      `   Verifica permisos de: ${info.homeDir}`,
     );
     info.canSymlink = false;
   }
@@ -172,7 +194,7 @@ async function checkUnixCapabilities(info: SystemInfo): Promise<void> {
       const output = result.stdout.toString();
       if (output.includes("enabled")) {
         info.recommendations.push(
-          "ℹ️ SIP está habilitado (normal, no afecta ~/.claude)"
+          "ℹ️ SIP está habilitado (normal, no afecta ~/.claude)",
         );
       }
     } catch {}
@@ -195,11 +217,19 @@ function printSystemInfo(info: SystemInfo): void {
   console.log(`   Admin/Root:      ${info.isAdmin ? "✅ Sí" : "❌ No"}`);
 
   if (info.os === "windows") {
-    console.log(`   Developer Mode:  ${info.devModeEnabled === true ? "✅ Activado" : info.devModeEnabled === false ? "❌ Desactivado" : "❓ No detectado"}`);
-    console.log(`   Symlinks:        ${info.canSymlink ? "✅ Disponible" : "❌ No disponible"}`);
-    console.log(`   Junctions:       ${info.canJunction ? "✅ Disponible" : "❌ No disponible"}`);
+    console.log(
+      `   Developer Mode:  ${info.devModeEnabled === true ? "✅ Activado" : info.devModeEnabled === false ? "❌ Desactivado" : "❓ No detectado"}`,
+    );
+    console.log(
+      `   Symlinks:        ${info.canSymlink ? "✅ Disponible" : "❌ No disponible"}`,
+    );
+    console.log(
+      `   Junctions:       ${info.canJunction ? "✅ Disponible" : "❌ No disponible"}`,
+    );
   } else {
-    console.log(`   Symlinks:        ${info.canSymlink ? "✅ Disponible" : "❌ No disponible"}`);
+    console.log(
+      `   Symlinks:        ${info.canSymlink ? "✅ Disponible" : "❌ No disponible"}`,
+    );
   }
 
   // Capacidad final
@@ -341,14 +371,14 @@ function printPreview(links: LinkInfo[], method: string): void {
   if (grouped.linked.length) {
     console.log("✅ Ya vinculados:");
     grouped.linked.forEach((l) =>
-      console.log(`   ${path.basename(l.dest)} → ${l.source}`)
+      console.log(`   ${path.basename(l.dest)} → ${l.source}`),
     );
   }
 
   if (grouped.new.length) {
     console.log("\n🆕 Nuevos (se crearán):");
     grouped.new.forEach((l) =>
-      console.log(`   + ${path.basename(l.dest)} → ${l.source}`)
+      console.log(`   + ${path.basename(l.dest)} → ${l.source}`),
     );
   }
 
@@ -368,15 +398,22 @@ function printPreview(links: LinkInfo[], method: string): void {
   const toCreate =
     grouped.new.length + grouped.exists.length + grouped.conflict.length;
   console.log(
-    `\n📊 Resumen: ${grouped.linked.length} ya vinculados, ${toCreate} por crear/actualizar`
+    `\n📊 Resumen: ${grouped.linked.length} ya vinculados, ${toCreate} por crear/actualizar`,
   );
 }
 
 // === CREACIÓN DE SYMLINKS ===
 
-function determineLinkMethod(info: SystemInfo, config: Config): "symlink" | "junction" | "copy" {
+function determineLinkMethod(
+  info: SystemInfo,
+  config: Config,
+): "symlink" | "junction" | "copy" {
   if (config.method !== "auto") {
-    return config.method === "symlink" ? "symlink" : config.method === "junction" ? "junction" : "copy";
+    return config.method === "symlink"
+      ? "symlink"
+      : config.method === "junction"
+        ? "junction"
+        : "copy";
   }
 
   if (info.os === "windows") {
@@ -391,14 +428,14 @@ function determineLinkMethod(info: SystemInfo, config: Config): "symlink" | "jun
 async function createSymlinks(
   links: LinkInfo[],
   config: Config,
-  info: SystemInfo
+  info: SystemInfo,
 ): Promise<void> {
   const homeDir = getHomeDir();
   const destBase = path.join(homeDir, ".claude");
   const backupDir = path.join(
     homeDir,
     ".claude.backup",
-    new Date().toISOString().split("T")[0]
+    new Date().toISOString().split("T")[0],
   );
 
   const method = determineLinkMethod(info, config);
@@ -449,7 +486,11 @@ async function createSymlinks(
       switch (method) {
         case "symlink":
           if (isWindows()) {
-            fs.symlinkSync(link.source, link.dest, link.type === "directory" ? "dir" : "file");
+            fs.symlinkSync(
+              link.source,
+              link.dest,
+              link.type === "directory" ? "dir" : "file",
+            );
           } else {
             fs.symlinkSync(link.source, link.dest);
           }
@@ -471,16 +512,22 @@ async function createSymlinks(
           } else {
             fs.copyFileSync(link.source, link.dest);
           }
-          console.log(`   ⚠️ Copiado (no vinculado - cambios no se sincronizarán)`);
+          console.log(
+            `   ⚠️ Copiado (no vinculado - cambios no se sincronizarán)`,
+          );
           break;
       }
 
       const icon = method === "copy" ? "📄" : "🔗";
-      console.log(`${icon} Creado: ${path.basename(link.dest)} → ${link.source}`);
+      console.log(
+        `${icon} Creado: ${path.basename(link.dest)} → ${link.source}`,
+      );
     } catch (error) {
       if (error instanceof Error) {
         if (error.message.includes("EPERM")) {
-          console.error(`❌ Error de permisos creando ${path.basename(link.dest)}`);
+          console.error(
+            `❌ Error de permisos creando ${path.basename(link.dest)}`,
+          );
           printPermissionHelp(info);
         } else {
           console.error(`❌ Error: ${error.message}`);
@@ -494,9 +541,13 @@ function printPermissionHelp(info: SystemInfo): void {
   if (info.os === "windows") {
     console.log("\n💡 Soluciones para Windows:");
     console.log("   1. Activar Developer Mode:");
-    console.log("      Settings → Privacy & Security → For developers → Developer Mode: ON");
+    console.log(
+      "      Settings → Privacy & Security → For developers → Developer Mode: ON",
+    );
     console.log("   2. O ejecutar terminal como Administrador");
-    console.log("   3. O usar --method junction (no requiere permisos especiales)");
+    console.log(
+      "   3. O usar --method junction (no requiere permisos especiales)",
+    );
   } else if (info.os === "macos") {
     console.log("\n💡 Soluciones para macOS:");
     console.log("   1. Verificar permisos de tu home: ls -la ~");
@@ -558,6 +609,149 @@ function printStatus(links: LinkInfo[]): void {
   }
 }
 
+// === VALIDATE HOOKS ===
+
+function extractBunFilePath(command: string): string | null {
+  // Matches: bun <file>, bun run <file>, bunx <file>
+  const match = command.match(/\bbun(?:x| run)?\s+(\S+\.ts\b)/);
+  return match ? match[1] : null;
+}
+
+function expandHome(p: string): string {
+  if (p.startsWith("$HOME")) {
+    return path.join(os.homedir(), p.slice(5));
+  }
+  if (p.startsWith("~")) {
+    return path.join(os.homedir(), p.slice(1));
+  }
+  return p;
+}
+
+function collectHookEntries(settings: Record<string, unknown>): HookEntry[] {
+  const entries: HookEntry[] = [];
+  const hooks = settings.hooks as Record<string, unknown> | undefined;
+
+  if (hooks && typeof hooks === "object") {
+    for (const [phase, phaseValue] of Object.entries(hooks)) {
+      if (!Array.isArray(phaseValue)) continue;
+      for (const hookGroup of phaseValue) {
+        if (typeof hookGroup !== "object" || hookGroup === null) continue;
+        const group = hookGroup as Record<string, unknown>;
+        const matcher =
+          typeof group.matcher === "string" && group.matcher !== ""
+            ? group.matcher
+            : "(all)";
+        const hooksList = Array.isArray(group.hooks) ? group.hooks : [];
+        for (const hook of hooksList) {
+          if (typeof hook !== "object" || hook === null) continue;
+          const h = hook as Record<string, unknown>;
+          const command = typeof h.command === "string" ? h.command : null;
+          if (!command) continue;
+          const rawPath = extractBunFilePath(command);
+          if (!rawPath) continue;
+          const filePath = expandHome(rawPath);
+          entries.push({
+            phase,
+            matcher,
+            filePath,
+            exists: fs.existsSync(filePath),
+          });
+        }
+      }
+    }
+  }
+
+  const statusLine = settings.statusLine as Record<string, unknown> | undefined;
+  if (statusLine && typeof statusLine === "object") {
+    const command =
+      typeof statusLine.command === "string" ? statusLine.command : null;
+    if (command) {
+      const rawPath = extractBunFilePath(command);
+      if (rawPath) {
+        const filePath = expandHome(rawPath);
+        entries.push({
+          phase: "statusLine",
+          matcher: "-",
+          filePath,
+          exists: fs.existsSync(filePath),
+        });
+      }
+    }
+  }
+
+  return entries;
+}
+
+function validateHooks(): void {
+  const settingsPath = path.join(os.homedir(), ".claude", "settings.json");
+  console.log(
+    `\n[validate-hooks] Verificando hooks en ~/.claude/settings.json...\n`,
+  );
+
+  if (!fs.existsSync(settingsPath)) {
+    console.log(`❌ No se encontró: ${settingsPath}`);
+    process.exit(1);
+  }
+
+  let settings: Record<string, unknown>;
+  try {
+    settings = JSON.parse(fs.readFileSync(settingsPath, "utf-8"));
+  } catch {
+    console.log(`❌ Error parsing settings.json`);
+    process.exit(1);
+  }
+
+  const entries = collectHookEntries(settings);
+
+  if (entries.length === 0) {
+    console.log("  No se encontraron hooks con comandos bun en settings.json");
+    process.exit(0);
+  }
+
+  // Column widths
+  const colPhase = Math.max(
+    "Phase".length,
+    ...entries.map((e) => e.phase.length),
+  );
+  const colMatcher = Math.max(
+    "Matcher".length,
+    ...entries.map((e) => e.matcher.length),
+  );
+  const colPath = Math.max(
+    "Path".length,
+    ...entries.map((e) => e.filePath.length),
+  );
+
+  const pad = (s: string, n: number) => s.padEnd(n);
+
+  console.log(
+    `  ${pad("Phase", colPhase)}  ${pad("Matcher", colMatcher)}  ${pad("Path", colPath)}  Exists`,
+  );
+  console.log(
+    `  ${"─".repeat(colPhase)}  ${"─".repeat(colMatcher)}  ${"─".repeat(colPath)}  ${"─".repeat(6)}`,
+  );
+
+  for (const e of entries) {
+    const icon = e.exists ? "✓" : "✗";
+    console.log(
+      `  ${pad(e.phase, colPhase)}  ${pad(e.matcher, colMatcher)}  ${pad(e.filePath, colPath)}  ${icon}`,
+    );
+  }
+
+  const ok = entries.filter((e) => e.exists).length;
+  const total = entries.length;
+  const missing = total - ok;
+
+  console.log("");
+  if (missing === 0) {
+    console.log(`  Result: ${ok}/${total} hooks OK ✓`);
+    process.exit(0);
+  } else {
+    console.log(`  Result: ${missing} hooks MISSING (${ok}/${total} OK)`);
+    process.exit(1);
+  }
+}
+
 // === CONFIRMACIÓN ===
 
 async function askConfirmation(message: string): Promise<boolean> {
@@ -585,6 +779,7 @@ async function main(): Promise<void> {
       unlink: { type: "boolean", default: false },
       status: { type: "boolean", default: false },
       check: { type: "boolean", default: false },
+      "validate-hooks": { type: "boolean", default: false },
       force: { type: "boolean", short: "f", default: false },
       method: { type: "string", default: "auto" },
       help: { type: "boolean", short: "h", default: false },
@@ -599,14 +794,15 @@ Uso:
   bun run scripts/sync-claude.ts [opciones]
 
 Opciones:
-  --check     Verificar sistema y permisos (recomendado primero)
-  --status    Muestra estado actual de ~/.claude
-  --execute   Crea los symlinks (sin esto solo muestra preview)
-  --backup    Guarda contenido existente antes de reemplazar
-  --unlink    Elimina los symlinks (no borra el origen)
-  --method    Método de vinculación: auto, symlink, junction, copy
-  --force     No pedir confirmación
-  -h, --help  Muestra esta ayuda
+  --check           Verificar sistema y permisos (recomendado primero)
+  --status          Muestra estado actual de ~/.claude
+  --validate-hooks  Verifica que todos los hooks de settings.json son accesibles
+  --execute         Crea los symlinks (sin esto solo muestra preview)
+  --backup          Guarda contenido existente antes de reemplazar
+  --unlink          Elimina los symlinks (no borra el origen)
+  --method          Método de vinculación: auto, symlink, junction, copy
+  --force           No pedir confirmación
+  -h, --help        Muestra esta ayuda
 
 Métodos de vinculación:
   auto        Detecta el mejor método disponible (default)
@@ -622,6 +818,7 @@ Ejemplos:
   bun run scripts/sync-claude.ts --execute --backup  # Con backup
   bun run scripts/sync-claude.ts --method junction --execute  # Forzar junction
   bun run scripts/sync-claude.ts --unlink          # Eliminar symlinks
+  bun run scripts/sync-claude.ts --validate-hooks  # Verificar accesibilidad de hooks
 
 Requisitos por SO:
   Windows:  Developer Mode activado, o usar junction, o Admin
@@ -637,6 +834,7 @@ Requisitos por SO:
     unlink: values.unlink ?? false,
     status: values.status ?? false,
     check: values.check ?? false,
+    validateHooks: values["validate-hooks"] ?? false,
     force: values.force ?? false,
     method: (values.method as Config["method"]) ?? "auto",
   };
@@ -663,6 +861,11 @@ Requisitos por SO:
       console.log("\n❌ Sistema NO puede crear vínculos");
       console.log("   Revisa las recomendaciones arriba");
     }
+    return;
+  }
+
+  if (config.validateHooks) {
+    validateHooks();
     return;
   }
 
@@ -715,7 +918,7 @@ Requisitos por SO:
 
   if (!config.force) {
     const hasExisting = links.some(
-      (l) => l.status === "exists" || l.status === "conflict"
+      (l) => l.status === "exists" || l.status === "conflict",
     );
     const message = hasExisting
       ? `¿Crear ${toModify.length} vínculos? (se reemplazará contenido existente${config.backup ? ", con backup" : ""})`
@@ -738,8 +941,12 @@ Requisitos por SO:
   // Verificar resultado
   console.log("\n📋 Verificación final:");
   const updatedLinks = detectLinks(projectRoot, homeDir);
-  const successCount = updatedLinks.filter((l) => l.status === "already-linked").length;
-  console.log(`   ${successCount}/${updatedLinks.length} carpetas vinculadas correctamente`);
+  const successCount = updatedLinks.filter(
+    (l) => l.status === "already-linked",
+  ).length;
+  console.log(
+    `   ${successCount}/${updatedLinks.length} carpetas vinculadas correctamente`,
+  );
 }
 
 main().catch(console.error);
