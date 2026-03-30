@@ -2,9 +2,6 @@
 globs:
   - ".claude/hooks/**"
 priority: 15
-skills:
-  - typescript-patterns
-  - bun-best-practices
 ---
 
 ## Hooks Context

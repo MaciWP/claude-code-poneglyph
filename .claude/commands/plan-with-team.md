@@ -46,6 +46,12 @@ Analiza la descripcion del trabajo proporcionada en `$ARGUMENTS` y genera un pla
 score = SUM(factor_value x peso x 20)
 ```
 
+3. Evaluar execution mode:
+   - Si score > 60 Y dominios independientes >= 3 Y comunicacion inter-dominio necesaria:
+     `execution_mode = team`
+   - Si no: `execution_mode = subagents` (default)
+   - Ver `complexity-routing.md` seccion "Execution Mode Decision" para criterios completos
+
 ---
 
 ## PASO 2: ENSAMBLAR EQUIPO
@@ -104,6 +110,7 @@ Producir un documento con TODAS las secciones siguientes. Cada seccion es OBLIGA
 **Complejidad calculada**: [score]/60
 **Archivos estimados**: [N]
 **Riesgo**: [BAJO/MEDIO/ALTO]
+**Execution mode**: subagents | team
 ```
 
 ### Seccion 2: Team Members
@@ -202,6 +209,19 @@ Ejecutar despues de Grupo 2:
 | Variable | Requerida | Default |
 |----------|-----------|---------|
 | [var] | Si/No | [valor] |
+
+### Si Execution Mode = team
+
+Cuando el plan recomienda `execution_mode = team`:
+
+| Aspecto | Comportamiento |
+|---------|---------------|
+| Teammates | Cada dominio → un teammate (proceso Claude Code independiente) |
+| Config | Teammates cargan `~/.claude/` automaticamente (reglas, skills, hooks de Poneglyph) |
+| Coordinacion | Via task list compartida (TaskCreate/TaskUpdate/TaskList) |
+| Monitoring | Lead monitorea progreso y maneja integracion final |
+| Requisito | `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` en settings.json |
+| Fallback | Si teammate falla 2x → extraer dominio → ejecutar como builder subagent |
 
 ### Pre-requisitos
 - [ ] [Requisito antes de empezar]

@@ -244,16 +244,9 @@ describe("getKeywordsForPath", () => {
 describe("loadPathRules", () => {
   test("loads rules from .claude/rules/paths/", () => {
     const rules = loadPathRules();
-    expect(rules.length).toBeGreaterThanOrEqual(9);
+    expect(rules.length).toBeGreaterThanOrEqual(2);
 
     const names = rules.map((r) => r.name);
-    expect(names).toContain("api-routes");
-    expect(names).toContain("services");
-    expect(names).toContain("auth-security");
-    expect(names).toContain("database");
-    expect(names).toContain("websocket");
-    expect(names).toContain("testing");
-    expect(names).toContain("config");
     expect(names).toContain("orchestration");
     expect(names).toContain("hooks");
   });
@@ -263,10 +256,12 @@ describe("loadPathRules", () => {
     expect(rules).toEqual([]);
   });
 
-  test("auth-security has highest priority", () => {
+  test("orchestration and hooks have priority 15", () => {
     const rules = loadPathRules();
-    const auth = rules.find((r) => r.name === "auth-security");
-    expect(auth?.priority).toBe(20);
+    const orch = rules.find((r) => r.name === "orchestration");
+    expect(orch?.priority).toBe(15);
+    const hooks = rules.find((r) => r.name === "hooks");
+    expect(hooks?.priority).toBe(15);
   });
 
   test("each rule has at least one glob", () => {
@@ -281,23 +276,21 @@ describe("loadPathRules", () => {
 // Migration validation
 // ============================================================================
 
-describe("migration from context-rules.json", () => {
-  test("all 9 original rules are present", () => {
+describe("remaining path rules after cleanup", () => {
+  test("only 2 path rules remain", () => {
     const rules = loadPathRules();
-    expect(rules.length).toBeGreaterThanOrEqual(9);
+    expect(rules.length).toBe(2);
   });
 
-  test("api-routes has correct skills", () => {
+  test("orchestration has no skills", () => {
     const rules = loadPathRules();
-    const apiRoutes = rules.find((r) => r.name === "api-routes");
-    expect(apiRoutes?.skills).toContain("api-design");
-    expect(apiRoutes?.skills).toContain("typescript-patterns");
+    const orch = rules.find((r) => r.name === "orchestration");
+    expect(orch?.skills).toEqual([]);
   });
 
-  test("hooks has correct skills", () => {
+  test("hooks has no skills", () => {
     const rules = loadPathRules();
     const hooks = rules.find((r) => r.name === "hooks");
-    expect(hooks?.skills).toContain("typescript-patterns");
-    expect(hooks?.skills).toContain("bun-best-practices");
+    expect(hooks?.skills).toEqual([]);
   });
 });

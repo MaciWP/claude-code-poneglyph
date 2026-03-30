@@ -12,6 +12,9 @@ Guia de recuperacion cuando agentes fallan. Define retry budgets, escalacion y d
 | Reviewer BLOCKED | 0 | - | Re-plan with planner |
 | Reviewer NEEDS_CHANGES | 2 | Apply feedback | Escalate to user |
 | Worktree merge conflict | 1 | builder | Escalate to user |
+| Teammate failure | 1 | Re-prompt with context | Extract domain → run as builder subagent |
+| Teammate stuck (no progress) | 0 | - | Extract domain → run as builder subagent |
+| Teammate file conflict | 0 | - | Lead resolves boundaries, re-assign |
 
 ## Escalation Decision Tree
 
@@ -104,6 +107,18 @@ Cuando se detecta bloqueo, preguntar al usuario:
 | Retry falla | Eliminar worktree + branch, escalar al usuario |
 | Merge conflict en worktree | Delegar a builder |
 | builder falla en merge | Preservar worktree, escalar al usuario con diff |
+
+## Team Mode Recovery
+
+Recuperacion cuando teammates fallan en team mode. Ver `team-routing.md` para protocolo completo.
+
+| Escenario | Accion |
+|-----------|--------|
+| Single teammate falla | Otros teammates continuan. Dominio fallido se reintenta como builder subagent. |
+| Multiples teammates fallan | Abortar team mode. Fallback a ejecucion completa con subagents. |
+| Conflicto de archivos entre teammates | Lead arbitra via reviewer. Dominio perdedor re-ejecuta con boundaries corregidos. |
+| Env var ausente pero planner recomendo team | Fallback silencioso a subagents. Log warning al usuario. |
+| Teammate sin progreso en task list | Considerar stuck despues de inactividad prolongada. Extraer dominio → builder subagent. |
 
 ## Proceso
 

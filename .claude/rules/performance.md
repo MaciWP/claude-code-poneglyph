@@ -50,38 +50,42 @@ Usar Grep como fallback cuando: LSP no disponible, busqueda de texto literal, ar
 |-------|--------|
 | reviewer | Despues de implementar, refactoring, antes de commit, cambios significativos |
 
-## Token Budget
+## Tips de Distribucion de Esfuerzo
 
-> **GUIDELINE**: Esta distribucion es orientativa. No se mide ni se enforce por hooks — el Lead la sigue intuitivamente.
+- Dedicar suficiente tiempo a explorar ANTES de implementar — entender el contexto evita retrabajo
+- La verificacion (tests, review) no es opcional — reservar tiempo para ella
+- Si llevas mucho rato implementando sin verificar, es momento de un checkpoint
 
-| Fase | Budget | Descripcion |
-|------|--------|-------------|
-| Exploracion | 20% | Glob, Grep, Read inicial |
-| Implementacion | 60% | Edit, Write, codigo |
-| Verificacion | 20% | Tests, review, docs |
+## Tip: Maximizar Paralelismo
 
-## Parallel Efficiency Score
+- Si estas haciendo operaciones secuenciales que podrian ser paralelas, reagrupalas
+- Preguntate: "¿Alguna de estas operaciones depende del resultado de otra?" Si no, batch.
+- El objetivo es minimizar ida y vuelta innecesarios, no optimizar un score numerico
 
-> **GUIDELINE**: Este score es orientativo. No se calcula realmente en runtime — es una guia mental para el Lead.
+## Team Mode Efficiency
 
-| Score | Significado | Accion |
-|-------|-------------|--------|
-| >80% | Excelente | Continuar |
-| 50-80% | Aceptable | Revisar oportunidades |
-| <50% | Pobre | STOP - refactorizar approach |
+> **GUIDELINE**: Estas metricas son orientativas para el Lead cuando el planner recomienda team mode.
 
-**Calculo**: (operaciones paralelas) / (total que PODRIAN ser paralelas) x 100
+| Metrica | Guideline |
+|---------|-----------|
+| Min teammates | 3 (por debajo, subagents son mas baratos) |
+| Max teammates | 5 (por encima, overhead de coordinacion domina) |
+| Multiplicador de tokens | 3-7x vs subagents (cada teammate es instancia completa de Claude Code) |
+| Cuando vale la pena | Dominios verdaderamente independientes, complejidad >60, negociacion de interfaces |
+| Cuando NO vale la pena | <3 dominios, archivos compartidos, complejidad <60 |
 
-## Cache Strategy
+### Team vs Subagents Cost
 
-> **GUIDELINE**: No hay mecanismo de cache real en el runtime. Estas duraciones son orientativas para evitar repetir operaciones innecesariamente.
+| Modo | Coste | Paralelismo | Comunicacion inter-agente |
+|------|-------|-------------|---------------------------|
+| Subagents | 1x (baseline) | Via Lead (hub-spoke) | No (solo Lead <-> agente) |
+| Team Agents | 3-7x | Independiente (mesh) | Si (peer-to-peer directo) |
 
-| Resultado | Cache Duration | Condicion |
-|-----------|----------------|-----------|
-| LSP results | 5 min | Si archivo no modificado |
-| Grep results | 2 min | Si directorio no modificado |
-| Read files | 1 min | Si file mtime igual |
-| Glob patterns | 30 sec | Si directorio no modificado |
+## Tip: Evitar Lecturas Redundantes
+
+- No re-leer un archivo que acabas de leer y no ha cambiado
+- No re-buscar con Grep lo mismo que ya encontraste
+- Si un resultado LSP es reciente y el archivo no cambio, reutilizalo
 
 ## Tool Selection
 

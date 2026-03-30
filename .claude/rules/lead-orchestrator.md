@@ -41,12 +41,18 @@ graph TD
     SP1 -->|No| SG1[spec-driven rule recomendado]
     SG1 --> P1
     SP2 --> P2[planner obligatorio]
-    P1 & P2 --> IS[implement-spec]
+    P1 & P2 --> MD{execution_mode?}
+    MD -->|subagents| IS[implement-spec / builders]
+    MD -->|team| TM[Spawn teammates per domain]
     IS --> B2[builder]
+    TM --> TV[Teammates completan + Lead verifica]
+    TV --> R2[reviewer sobre changeset completo]
     B2 --> R[reviewer + SpecComplianceCheck]
     R -->|APPROVED| IX[INDEX.md → implemented]
+    R2 -->|APPROVED| IX
     IX --> D[Done]
     R -->|NEEDS_CHANGES| B2
+    R2 -->|NEEDS_CHANGES| TM
     B2 -->|Error| EA[error-analyzer]
     EA --> B2
 ```
@@ -100,6 +106,44 @@ Activar `isolation: "worktree"` en el Agent tool para aislar trabajo paralelo.
 |-----------|---------|---------|
 | Branch | `wt/<agent>/<task-hash>` | `wt/builder/a3f8c2` |
 | Directorio | `.worktrees/<agent>-<task-hash>` | `.worktrees/builder-a3f8c2` |
+
+## Team Agent Execution (Experimental)
+
+Cuando el planner recomienda `executionMode: team`, el Lead spawna teammates independientes por dominio. Ver `team-routing.md` para protocolo completo.
+
+### Prerequisitos
+
+| Requisito | Verificacion |
+|-----------|-------------|
+| Env var activa | `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` en settings.json |
+| Planner recomienda team | `executionMode: team` en roadmap output |
+| Si env var ausente | Fallback silencioso a subagents, log warning |
+
+### Teammate Prompt Template
+
+Cada teammate recibe:
+
+| Campo | Contenido |
+|-------|-----------|
+| **Dominio** | "Tu dominio es [X]. Solo tocas archivos en [paths]." |
+| **Tareas** | Subtasks del roadmap asignadas a este dominio |
+| **Interfaces** | Contratos a exponer/consumir con otros dominios |
+| **Restriccion** | "NO modifiques archivos fuera de tu dominio" |
+| **Coordinacion** | "Usa task list para coordinar con otros teammates" |
+
+### Monitoring
+
+- Lead revisa task list para progreso de teammates
+- No intervenir salvo que un teammate este stuck (sin progreso en task list)
+- Tras completar todos los teammates: Lead ejecuta reviewer sobre changeset completo
+
+### Fallback
+
+| Condicion | Accion |
+|-----------|--------|
+| Teammate falla 2x | Extraer tareas del dominio → ejecutar como builder subagent |
+| Multiples teammates fallan | Abortar team mode → fallback completo a subagents |
+| Conflicto de archivos entre teammates | Lead arbitra via reviewer, dominio perdedor re-ejecuta |
 
 ## Continuous Validation Pipeline
 
@@ -188,6 +232,7 @@ El Lead NO controla el modelo directamente (Claude Code lo gestiona), pero SI pu
 | Resolver merge conflicts | builder |
 | Documentar bugs | builder + diagnostic-patterns |
 | Sincronizar docs | builder |
+| Implementacion multi-dominio paralela | teammates (team mode) o parallel builders (subagents) |
 
 ## Paralelizacion de Delegacion (OBLIGATORIO)
 

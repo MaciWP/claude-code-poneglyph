@@ -52,8 +52,8 @@ Sistema de orquestación que potencia Claude Code con agentes especializados, sk
 | Problema | Solución |
 |----------|----------|
 | Sin orquestación | 7 agentes especializados con routing por complejidad |
-| Sin validación automática | 17 hooks (pre/post/stop) |
-| Sin conocimiento de dominio | 25 skills auto-matcheadas por keywords |
+| Sin validación automática | 15 hooks (pre/post/stop) |
+| Sin conocimiento de dominio | 15 skills auto-matcheadas por keywords |
 | Sin memoria persistente | Sistema de memoria semántica |
 
 ## HOW
@@ -63,8 +63,8 @@ graph LR
     User --> CC[Claude Code]
     CC --> Orch[Lead Orchestrator]
     Orch --> Agents[7 Agents]
-    Orch --> Skills[25 Skills]
-    Orch --> Hooks[17 Hooks]
+    Orch --> Skills[15 Skills]
+    Orch --> Hooks[15 Hooks]
 ```
 
 ## Estructura
@@ -72,7 +72,7 @@ graph LR
 ```
 .claude/
 ├── agents/       # 7 agentes especializados
-├── skills/       # 25 skills con auto-matching
+├── skills/       # 15 skills con auto-matching
 ├── hooks/        # Hooks pre/post/stop
 ├── rules/        # Reglas de orquestación
 ├── commands/     # Slash commands
@@ -139,6 +139,16 @@ graph TD
     B -->|Error| EA[error-analyzer]
     EA --> B
 ```
+
+### Execution Modes
+
+| Mode | Cuando | Como | Coste |
+|------|--------|------|-------|
+| **Subagents** (default) | Siempre, salvo criterios team | `Task()` hub-spoke via Lead | 1x |
+| **Team Agents** (experimental) | Complexity >60 + 3+ dominios independientes + comunicacion inter-agente | Procesos Claude Code independientes por dominio | 3-7x |
+
+El planner decide el modo. Ver `.claude/rules/complexity-routing.md` para criterios.
+Requiere `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` en settings.json.
 
 ### Reglas Clave
 

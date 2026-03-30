@@ -44,6 +44,48 @@ Ejemplo:
 | **30-60** | planner opcional | Considerar plan si hay incertidumbre |
 | **> 60** | planner obligatorio | Requiere roadmap estructurado |
 
+## Execution Mode Decision
+
+Tras determinar el routing por complejidad, evaluar el modo de ejecucion. Solo aplica cuando complexity > 60.
+
+### 4-Gate Criteria
+
+TODOS los gates deben cumplirse para activar `team` mode:
+
+| Gate | Threshold | Evaluador |
+|------|-----------|-----------|
+| Complejidad | > 60 | Lead (tabla anterior) |
+| Dominios independientes | >= 3 sin archivos compartidos | Planner (analisis de decomposicion) |
+| Comunicacion inter-agente | Necesaria (negociacion de interfaces) | Planner (analisis de dependencias) |
+| Feature habilitada | `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` | Env var en runtime |
+
+### Decision
+
+| Resultado | Modo | Accion |
+|-----------|------|--------|
+| TODOS los gates pasan | `team` | Planner genera roadmap con teammates por dominio |
+| CUALQUIER gate falla | `subagents` | Flujo actual sin cambios |
+
+> **Coste**: Team Agents usa 3-7x mas tokens que subagents. Default es SIEMPRE subagents.
+
+### Ejemplo: Team Mode Triggers
+
+> "Implementar sistema con auth service, payment service y notification service, cada uno con su API y base de datos independiente"
+
+- Complejidad: >60 ✅
+- Dominios: 3 (auth, payments, notifications) sin archivos compartidos ✅
+- Comunicacion: Necesaria (services consumen interfaces entre si) ✅
+- Env var: Configurada ✅
+- **→ team mode**
+
+### Ejemplo: Team Mode NO Triggers
+
+> "Implementar OAuth con Google y GitHub en el auth module"
+
+- Complejidad: >60 ✅
+- Dominios: 2 (Google OAuth, GitHub OAuth) pero comparten auth middleware ❌
+- **→ subagents** (dominios no independientes)
+
 ## Spec-Driven Development Trigger
 
 | Score | Spec Requerido | Accion |
@@ -71,6 +113,8 @@ Independiente del score de complejidad, evaluar necesidad de worktree:
 | 2+ builders en paralelo (cualquier score) | Obligatorio |
 | Tarea marcada experimental | Obligatorio |
 | Score <30, single builder | No necesario |
+
+> **Nota**: Las reglas de worktree NO aplican en team mode. Cada teammate corre en su propio proceso de Claude Code con su propio filesystem. Worktree isolation solo aplica al modo subagents.
 
 ## Model Routing
 

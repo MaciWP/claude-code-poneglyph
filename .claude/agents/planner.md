@@ -204,6 +204,8 @@ Implement [WHAT] in [WHERE]. Affects N files, risk [LEVEL].
 **Agents**: builder, reviewer, error-analyzer
 **Suggested Skills**: security-review, code-quality
 **Parallel Efficiency Score**: 83%
+**Execution Mode**: subagents (default) | team (experimental)
+**Team Justification**: [solo si mode=team: dominios, prueba de independencia, necesidades de comunicacion]
 
 ## Execution Roadmap
 
@@ -233,7 +235,9 @@ Implement [WHAT] in [WHERE]. Affects N files, risk [LEVEL].
     "totalTasks": 4,
     "parallelEfficiency": 0.83,
     "agentsUsed": ["builder", "reviewer"],
-    "skillsUsed": ["security-review", "code-quality"]
+    "skillsUsed": ["security-review", "code-quality"],
+    "executionMode": "subagents",
+    "teamJustification": null
   },
   "waves": [
     {
@@ -256,6 +260,26 @@ Implement [WHAT] in [WHERE]. Affects N files, risk [LEVEL].
     }
   ]
 }
+```
+
+### Team Mode Output Extension
+
+When `executionMode: "team"`, the `summary` object also includes a `teammates` array:
+
+| Field | Description |
+|-------|-------------|
+| `id` | Identifier for the teammate (domain slug) |
+| `domain` | Description of the domain this teammate owns |
+| `files` | File paths/directories this teammate can modify |
+| `tasks` | Task IDs from the roadmap assigned to this teammate |
+
+Example:
+
+```json
+"teammates": [
+  { "id": "auth-service", "domain": "Authentication", "files": ["src/auth/"], "tasks": ["T1", "T3"] },
+  { "id": "payments", "domain": "Payment processing", "files": ["src/payments/"], "tasks": ["T2", "T4"] }
+]
 ```
 
 ## Workflow
@@ -286,6 +310,21 @@ Implement [WHAT] in [WHERE]. Affects N files, risk [LEVEL].
 3. Ensure each subtask scores < 30
 4. Build dependency DAG
 ```
+
+### Step 3.5: Evaluate Execution Mode
+
+After decomposition, evaluate if team mode is appropriate:
+
+```
+1. Check if total task complexity > 60
+2. If yes: count independent domains from decomposition
+3. Verify zero shared files between domain file sets
+4. Assess if inter-agent communication needed (interface contracts between domains)
+5. ALL criteria met → set executionMode: "team", group tasks by domain into teammates array
+6. ANY criteria fails → set executionMode: "subagents" (default)
+```
+
+See `complexity-routing.md` section "Execution Mode Decision" for full criteria.
 
 ### Step 4: Assign Agent + Skills
 
