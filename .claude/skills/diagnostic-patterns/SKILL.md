@@ -1,8 +1,9 @@
 ---
 name: diagnostic-patterns
-description: "Patrones de diagnostico, retry y recovery para debugging, resiliencia y manejo de fallos.\n\
-  Use when: debugging, error analysis, retries, recovery, rollback, circuit breaker, saga.\n\
-  Keywords - error, debug, diagnose, investigate, trace, log, stacktrace, 5 whys, retry, timeout, backoff, circuit breaker, transient, resilience, fallback, recovery, rollback, compensation, saga, undo, restore, checkpoint, dead letter queue"
+description: |
+  Diagnostic, retry, and recovery patterns for debugging, resilience, and failure handling.
+  Use when: production incident, error spike, service degradation, timeout investigation, cascading failure, retry storm, circuit breaker tuning, rollback planning, saga orchestration.
+  Keywords - error, debug, diagnose, investigate, trace, stacktrace, 5 whys, retry, timeout, circuit breaker, resilience, recovery, rollback, saga, cascading failure, retry storm
 type: knowledge-base
 disable-model-invocation: false
 activation:
@@ -176,6 +177,22 @@ External API may be down?           -> Graceful Degradation
 | Debugging | [`checklists/debugging-checklist.md`](${CLAUDE_SKILL_DIR}/checklists/debugging-checklist.md) |
 
 Covers: Error Analysis, Root Cause Analysis, Logging, Debugging Techniques, Post-Mortem, Retry Implementation, Recovery/Saga Implementation, DLQ Implementation, Checkpoint Implementation, Post-Recovery.
+
+## Gotchas
+
+| Gotcha | Why | Workaround |
+|--------|-----|------------|
+| Retry without jitter causes thundering herd (all retries hit at same time) | Fixed backoff makes all clients retry at identical intervals | Always add randomized jitter: `delay * (0.5 + Math.random())` |
+| Correlation in logs != causation (event A before B doesn't mean A caused B) | Temporal proximity is misleading in concurrent systems | Look for causal chains, not just temporal proximity |
+| Circuit breaker half-open state needs a test request to transition | Without a probe, the breaker stays open indefinitely after cooldown | Don't wait for organic traffic; send synthetic probe after cooldown |
+| Saga compensation must run in reverse order of original steps | Forward-order compensation can violate dependencies between steps | Maintain ordered compensation stack, not unordered cleanup |
+| Logging the error object directly may miss nested cause chains | Many runtimes don't serialize `.cause` or nested errors by default | Always log `error.message`, `error.cause`, and full stack separately |
+
+## Scripts
+
+| Script | Input | Output | Usage |
+|--------|-------|--------|-------|
+| `scripts/analyze-error.ts` | error message (args) | JSON `{ matched, pattern?, bestFix?, confidence? }` | `bun .claude/skills/diagnostic-patterns/scripts/analyze-error.ts <error message>` |
 
 ---
 

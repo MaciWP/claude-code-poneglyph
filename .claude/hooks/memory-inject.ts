@@ -3,6 +3,7 @@
 import { existsSync } from "node:fs";
 import { loadPatterns } from "./lib/pattern-learning";
 import { loadScores } from "./lib/agent-scorer";
+import { loadRecentLessons } from "./lib/lessons-recorder";
 import { getSkillsForPath } from "./lib/path-rule-loader";
 import {
   createStore,
@@ -134,16 +135,25 @@ function emitOutput(context: string, prompt: string): void {
 
 async function buildEnrichmentContext(): Promise<string> {
   try {
-    const [patterns, scores] = await Promise.all([loadPatterns(), Promise.resolve(loadScores())]);
+    const [patterns, scores, lessons] = await Promise.all([
+      loadPatterns(),
+      Promise.resolve(loadScores()),
+      loadRecentLessons(10),
+    ]);
     const lines: string[] = [];
 
     if (patterns.length > 0) {
       lines.push("## Learned Patterns");
       for (const p of patterns) {
         const taskType = p.pattern.taskType ?? p.type;
-        const agents = p.pattern.agents?.join("→") ?? p.pattern.skills?.join("+") ?? "unknown";
+        const agents =
+          p.pattern.agents?.join("→") ??
+          p.pattern.skills?.join("+") ??
+          "unknown";
         const successPct = Math.round(p.outcome.successRate * 100);
-        lines.push(`- Task type "${taskType}": ${agents}, ${successPct}% success (${p.sampleSize} samples)`);
+        lines.push(
+          `- Task type "${taskType}": ${agents}, ${successPct}% success (${p.sampleSize} samples)`,
+        );
       }
     }
 
@@ -151,7 +161,19 @@ async function buildEnrichmentContext(): Promise<string> {
       lines.push("\n## Agent Success Rates");
       for (const s of scores) {
         const successPct = Math.round(s.successRate * 100);
-        lines.push(`- ${s.agent}: ${successPct}% success (${s.sampleSize} tasks)`);
+        lines.push(
+          `- ${s.agent}: ${successPct}% success (${s.sampleSize} tasks)`,
+        );
+      }
+    }
+
+    if (lessons.length > 0) {
+      lines.push("\n## Recent Lessons (self-improvement)");
+      for (const l of lessons) {
+        const date = l.timestamp.slice(0, 10);
+        lines.push(
+          `- [${date}] ${l.lesson}${l.skill ? ` (skill: ${l.skill})` : ""}`,
+        );
       }
     }
 

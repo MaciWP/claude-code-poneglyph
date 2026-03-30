@@ -3,7 +3,10 @@ name: database-patterns
 version: 2.0.0
 keywords: [database, sql, migration, transaction, query, orm, schema, index, normalization, acid, isolation]
 for_agents: [builder, reviewer]
-description: Database patterns for SQL, transactions, query optimization, and schema design. Language and ORM agnostic.
+description: |
+  Database patterns for SQL, transactions, query optimization, and schema design. Language and ORM agnostic.
+  Use when: schema design review, connection pool configuration, migration rollback safety, deadlock investigation, index optimization, query plan analysis, N+1 detection.
+  Keywords - database, sql, migration, transaction, query, orm, schema, index, deadlock, connection pool, query plan
 type: knowledge-base
 disable-model-invocation: false
 ---
@@ -37,28 +40,9 @@ Activate when prompt contains: database, sql, migration, transaction, query, orm
 
 ### Indexes
 
-```sql
--- Simple index for frequent lookups
-CREATE INDEX idx_users_email ON users(email);
+Index columns used in WHERE, JOIN, ORDER BY. Most selective column first in composites. Avoid over-indexing (slows writes).
 
--- Composite index for multi-column queries
-CREATE INDEX idx_orders_user_date ON orders(user_id, created_at);
-
--- Partial index for subsets
-CREATE INDEX idx_active_users ON users(email) WHERE status = 'active';
-
--- Covering index (all columns needed by query)
-CREATE INDEX idx_posts_author_cover ON posts(author_id) INCLUDE (title, created_at);
-```
-
-### Index Guidelines
-
-| Guideline | Detail |
-|-----------|--------|
-| Index columns in WHERE/JOIN/ORDER BY | Frequent filter/sort targets |
-| Composite index column order matters | Most selective column first |
-| Avoid over-indexing | Each index slows writes |
-| Use EXPLAIN to verify usage | Ensure index is actually used |
+For detailed index types, composite ordering rules, and EXPLAIN analysis, see `references/index-strategy.md`.
 
 ### Relationships
 
@@ -110,47 +94,9 @@ ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name;
 
 ## Migrations
 
-### Folder Structure
+Every migration needs UP and DOWN. Never edit applied migrations. Keep migrations small and use transactions.
 
-```
-migrations/
-  0001_initial.sql
-  0002_add_posts.sql
-  0003_add_user_avatar.sql
-```
-
-### Migration Commands
-
-Use your ORM or migration tool CLI. Common operations:
-
-| Operation | Description |
-|-----------|-------------|
-| Generate | Create migration file from schema diff |
-| Migrate | Apply pending migrations |
-| Rollback | Revert last migration |
-| Status | Show applied/pending migrations |
-
-### Rollback Pattern
-
-Every migration should have an UP and a DOWN:
-
-```sql
--- UP: 0003_add_user_avatar.sql
-ALTER TABLE users ADD COLUMN avatar_url TEXT;
-
--- DOWN: 0003_add_user_avatar_down.sql
-ALTER TABLE users DROP COLUMN avatar_url;
-```
-
-### Migration Best Practices
-
-| Practice | Reason |
-|----------|--------|
-| Never edit applied migrations | Already in production databases |
-| Test rollbacks | Ensure DOWN works before deploying UP |
-| Keep migrations small | Easier to debug failures |
-| Use transactions when supported | Atomic migration application |
-| Avoid data migrations in schema files | Separate schema from data transforms |
+For detailed migration workflow, rollback patterns, FK ordering rules, and dangerous operations guide, see `references/migration-safety.md`.
 
 ## Transactions
 
@@ -270,13 +216,16 @@ SELECT * FROM posts WHERE id > <last_seen_id> ORDER BY id LIMIT 100;
 
 ## Checklist for Reviewer
 
-- [ ] Schema normalized appropriately (3NF minimum)
-- [ ] Indexes on frequently queried columns (WHERE, JOIN, ORDER BY)
-- [ ] Transactions for multi-statement operations
-- [ ] N+1 queries eliminated (use JOINs or batch loading)
-- [ ] Migrations have UP and DOWN
-- [ ] EXPLAIN used for complex queries
-- [ ] Connection pooling configured
-- [ ] Appropriate isolation level for use case
-- [ ] No raw user input in queries (use parameterized/prepared statements)
-- [ ] Foreign keys with appropriate ON DELETE behavior
+10 items covering schema, indexes, transactions, N+1, migrations, queries, pooling, isolation, parameterization, and FK behavior.
+
+For the full checklist, see `checklists/schema-review.md`.
+
+## Gotchas
+
+| Gotcha | Why | Workaround |
+|--------|-----|------------|
+| FK constraint order in migrations (child table created before parent) | Database rejects FK if referenced table doesn't exist yet | Always create parent tables first, drop child tables first in rollback |
+| Index on low-cardinality column (e.g., boolean, status enum) often slower than table scan | Query planner skips index when selectivity is too low | Only index columns with high selectivity (>10% unique values) |
+| `SELECT *` with ORM may trigger lazy-loading of all relations | ORM interprets wildcard as "load everything including relations" | Always specify explicit column selection or use `.select()` in ORM |
+| Migration rollback tested in dev but fails in prod (data-dependent) | Empty tables rollback fine; millions of rows with constraints don't | Test rollbacks with production-like data volume, not empty tables |
+| Transaction isolation level too high causes deadlocks under concurrency | SERIALIZABLE and REPEATABLE READ acquire more locks | Default to READ COMMITTED, only escalate when proven necessary |

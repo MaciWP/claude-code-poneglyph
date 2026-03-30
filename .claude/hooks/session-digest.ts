@@ -3,6 +3,7 @@
 import { recordError } from "./lib/error-patterns";
 import { updateScores } from "./lib/agent-scorer";
 import { minePatterns } from "./lib/pattern-learning";
+import { extractAndRecordLessons } from "./lib/lesson-extractor";
 import { existsSync, unlinkSync } from "node:fs";
 import {
   findLatestTraceFile,
@@ -111,15 +112,30 @@ async function main(): Promise<void> {
     process.exit(0);
   }
 
-  try { runErrorRecording(trace); } catch (err) {
+  try {
+    runErrorRecording(trace);
+  } catch (err) {
     log(`recordError failed: ${formatError(err)}`);
   }
 
-  try { runScoreUpdate(trace); } catch (err) {
+  try {
+    runScoreUpdate(trace);
+  } catch (err) {
     log(`updateScores failed: ${formatError(err)}`);
   }
 
-  try { await runPatternMining(); } catch (err) {
+  try {
+    const correction = extractAndRecordLessons(traceFile, trace.sessionId);
+    if (correction) {
+      log(`Auto-recorded lesson: ${correction.slice(0, 60)}`);
+    }
+  } catch (err) {
+    log(`lessonExtraction failed: ${formatError(err)}`);
+  }
+
+  try {
+    await runPatternMining();
+  } catch (err) {
     log(`minePatterns failed: ${formatError(err)}`);
   }
 

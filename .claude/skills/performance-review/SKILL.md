@@ -1,9 +1,9 @@
 ---
 name: performance-review
 description: |
-  Skill de revision para performance y optimizacion.
-  Use when reviewing: codigo lento, memory leaks, queries N+1, bottlenecks.
-  Keywords - performance, memory, optimization, bottleneck, slow, leak, profiling, n+1
+  Performance audit for identifying bottlenecks, memory issues, and optimization opportunities.
+  Use when: slow endpoint, response time degradation, memory growing, connection pool tuning, query optimization, latency investigation, N+1 queries, profiling results analysis.
+  Keywords - performance, memory, optimization, bottleneck, slow, leak, profiling, n+1, latency, response time, connection pool
 activation:
   keywords:
     - performance
@@ -104,320 +104,22 @@ Performance audit checklist. Language-agnostic patterns applicable to any stack.
 
 ## Common Issues
 
-### N+1 Query Problem
-
-**Problem**: Executing N additional queries for N items.
-
-**Impact**: O(n) queries instead of O(1), exponential slowdown.
-
-**Detection**: Query in a loop, lazy loading in iteration.
-
-**BEFORE** (slow):
-```pseudocode
-// N+1 queries — 1 for users, N for posts
-users = database.query("SELECT * FROM users")
-FOR EACH user IN users:
-    user.posts = database.query("SELECT * FROM posts WHERE user_id = ?", [user.id])
-// 101 queries for 100 users!
-```
-
-**AFTER** (fast):
-```pseudocode
-// Option A: Single query with JOIN
-usersWithPosts = database.query(
-    "SELECT * FROM users LEFT JOIN posts ON users.id = posts.user_id"
-)
-
-// Option B: Two queries with batch loading
-userList = database.query("SELECT * FROM users")
-userIds = userList.map(u => u.id)
-allPosts = database.query("SELECT * FROM posts WHERE user_id IN (?)", [userIds])
-
-// Group posts by userId
-postsByUser = groupBy(allPosts, "userId")
-FOR EACH user IN userList:
-    user.posts = postsByUser[user.id] OR []
-// Only 2 queries regardless of user count!
-```
-
-### Synchronous Blocking
-
-**Problem**: Synchronous I/O blocks the main thread / event loop.
-
-**Impact**: All concurrent requests wait, throughput drops to 1.
-
-**Detection**: Any synchronous file, network, or database call in a request handler.
-
-**BEFORE** (slow):
-```pseudocode
-// Blocks entire server while reading file
-ENDPOINT GET /file:
-    data = readFileSync("large-file.json")
-    RETURN parseJSON(data)
-```
-
-**AFTER** (fast):
-```pseudocode
-// Async file read — other requests can proceed during I/O
-ENDPOINT GET /file:
-    data = AWAIT readFileAsync("large-file.json")
-    RETURN parseJSON(data)
-```
-
-### Memory Leaks - Growing Collections
-
-**Problem**: Collections grow without bounds.
-
-**Impact**: Memory exhaustion, OOM crash, GC pauses.
-
-**Detection**: Maps/dictionaries/lists without cleanup, module-level state.
-
-**BEFORE** (leaks):
-```pseudocode
-// Unbounded cache — grows forever
-cache = new Map()
-
-ENDPOINT GET /data/{id}:
-    IF NOT cache.has(id):
-        cache.set(id, AWAIT fetchData(id))
-    RETURN cache.get(id)
-// Cache grows forever — no eviction!
-```
-
-**AFTER** (bounded):
-```pseudocode
-// LRU cache with size limit and TTL
-cache = new LRUCache(
-    maxEntries=1000,
-    ttl=5 minutes
-)
-
-ENDPOINT GET /data/{id}:
-    data = cache.get(id)
-    IF data IS NULL:
-        data = AWAIT fetchData(id)
-        cache.set(id, data)
-    RETURN data
-```
-
-### Unbatched Operations
-
-**Problem**: Individual database operations instead of batch.
-
-**Impact**: N round trips instead of 1, network overhead.
-
-**Detection**: Insert/update in loop.
-
-**BEFORE** (slow):
-```pseudocode
-// 1000 individual inserts
-FOR EACH item IN items:
-    AWAIT database.insert("products", item)
-// 1000 database round trips!
-```
-
-**AFTER** (fast):
-```pseudocode
-// Single batch insert
-AWAIT database.batchInsert("products", items)
-// 1 database round trip!
-
-// For very large batches, chunk it
-BATCH_SIZE = 1000
-FOR i FROM 0 TO length(items) STEP BATCH_SIZE:
-    chunk = items[i : i + BATCH_SIZE]
-    AWAIT database.batchInsert("products", chunk)
-```
-
-### Sequential Await in Loop
-
-**Problem**: Awaiting sequentially when operations are independent.
-
-**Impact**: Total time = sum of all operations instead of max.
-
-**Detection**: Await inside for/forEach/map loop.
-
-**BEFORE** (slow):
-```pseudocode
-// Sequential — takes 10 seconds for 10 items (1s each)
-results = []
-FOR EACH url IN urls:
-    response = AWAIT httpGet(url)         // 1 second each
-    results.append(response.body)
-```
-
-**AFTER** (fast):
-```pseudocode
-// Parallel — takes 1 second for 10 items
-results = AWAIT parallelAll(
-    FOR EACH url IN urls:
-        httpGet(url).then(response => response.body)
-)
-
-// With concurrency limit for rate-limited APIs
-results = AWAIT parallelAll(
-    FOR EACH url IN urls:
-        withConcurrencyLimit(5, () => httpGet(url))
-)
-```
-
-### Unbounded Response Size
-
-**Problem**: Returning all records without pagination.
-
-**Impact**: Memory exhaustion, timeout, slow response.
-
-**Detection**: List endpoint without LIMIT.
-
-**BEFORE** (slow):
-```pseudocode
-// Returns all records — could be millions of rows
-ENDPOINT GET /api/users:
-    RETURN database.query("SELECT * FROM users")
-```
-
-**AFTER** (fast):
-```pseudocode
-// Paginated with validation
-ENDPOINT GET /api/users:
-    page = max(1, query.page OR 1)
-    limit = clamp(query.limit OR 20, min=1, max=100)
-
-    data, countResult = AWAIT parallel(
-        database.query("SELECT * FROM users LIMIT ? OFFSET ?", [limit, (page-1)*limit]),
-        database.query("SELECT count(*) FROM users")
-    )
-
-    RETURN {
-        data: data,
-        pagination: {
-            page: page,
-            limit: limit,
-            total: countResult,
-            pages: ceil(countResult / limit)
-        }
-    }
-```
-
-### Missing Indexes
-
-**Problem**: Queries perform full table scans.
-
-**Impact**: O(n) instead of O(log n) lookups.
-
-**Detection**: Slow queries, high CPU during queries.
-
-**BEFORE** (slow):
-```pseudocode
-// No index on email column — full table scan on every login
-database.query("SELECT * FROM users WHERE email = ?", [email])
-```
-
-**AFTER** (fast):
-```sql
--- Add indexes for frequently queried columns
-CREATE INDEX idx_users_email ON users(email);
-CREATE INDEX idx_posts_user_id ON posts(user_id);
-CREATE INDEX idx_orders_created_at ON orders(created_at DESC);
-```
-
-Define indexes in your ORM schema alongside table definitions (syntax varies by ORM).
-
-### Large Object Serialization
-
-**Problem**: Serializing large objects blocks CPU.
-
-**Impact**: Main thread blocked, all requests delayed.
-
-**Detection**: Large objects in response, slow endpoint.
-
-**BEFORE** (slow):
-```pseudocode
-// Serialize entire dataset at once — blocks CPU for large data
-ENDPOINT GET /export:
-    allData = AWAIT database.query("SELECT * FROM data")
-    RETURN serialize(allData)  // Blocks for large datasets
-```
-
-**AFTER** (fast):
-```pseudocode
-// Stream large responses — process one row at a time
-ENDPOINT GET /export:
-    stream = createResponseStream()
-    stream.write("[")
-    first = true
-
-    FOR EACH row IN database.streamQuery("SELECT * FROM data"):
-        IF NOT first:
-            stream.write(",")
-        stream.write(serialize(row))
-        first = false
-
-    stream.write("]")
-    stream.close()
-    RETURN stream
-```
-
-### Missing Connection Pool
-
-**Problem**: Creating new database connections per request.
-
-**Impact**: Connection exhaustion, slow connection setup.
-
-**Detection**: No pool configuration, connection errors under load.
-
-**BEFORE** (slow):
-```pseudocode
-// New connection each request — expensive setup every time
-ENDPOINT GET /data:
-    connection = database.createConnection(connectionString)
-    AWAIT connection.open()
-    result = AWAIT connection.query("SELECT * FROM data")
-    connection.close()
-    RETURN result
-```
-
-**AFTER** (fast):
-```pseudocode
-// Connection pool — reuse connections across requests
-pool = database.createPool(connectionString,
-    maxConnections=20,
-    idleTimeout=20s,
-    connectTimeout=10s
-)
-
-ENDPOINT GET /data:
-    RETURN AWAIT pool.query("SELECT * FROM data")
-    // Connection automatically returned to pool
-```
-
-### Event Listener Leak
-
-**Problem**: Adding event listeners without removing them.
-
-**Impact**: Memory leak, duplicate handlers.
-
-**Detection**: Listener added without corresponding removal.
-
-**BEFORE** (leaks):
-```pseudocode
-// Listener added on every request — never removed!
-ENDPOINT GET /stream:
-    emitter.on("data", handleData)
-    RETURN stream
-```
-
-**AFTER** (clean):
-```pseudocode
-// Proper cleanup when stream closes
-ENDPOINT GET /stream:
-    handler = (data) => handleData(data)
-    emitter.on("data", handler)
-
-    RETURN createStream(
-        onClose: () => emitter.off("data", handler)
-    )
-```
+| Issue | Impact | Key Fix |
+|-------|--------|---------|
+| N+1 Query | O(n) queries, 100x slower | JOIN or batch loading |
+| Synchronous Blocking | Blocks all concurrent requests | Use async I/O |
+| Growing Collections | OOM crash | LRU cache with maxEntries + TTL |
+| Unbatched Operations | N round trips | Batch insert/update |
+| Sequential Await | Total = sum, not max | Parallel execution |
+| Unbounded Response | Memory exhaustion | Pagination with LIMIT |
+| Missing Indexes | Full table scans | Index WHERE/JOIN/ORDER columns |
+| Large Serialization | CPU spike | Stream responses |
+| Missing Connection Pool | Connection exhaustion | Pool with max connections |
+| Event Listener Leak | Memory leak | Remove on cleanup |
+
+For N+1, sync blocking, unbatched, and sequential await patterns with before/after examples, see `references/n-plus-one-patterns.md`.
+
+For memory leak, event listener, and serialization patterns, see `references/memory-leak-patterns.md`.
 
 ## Runtime-Specific Optimizations
 
@@ -491,6 +193,22 @@ Use your runtime's native APIs when available for best performance:
 - [x] No synchronous I/O
 - [x] Indexes on foreign keys
 ```
+
+## Gotchas
+
+| Gotcha | Why | Workaround |
+|--------|-----|------------|
+| Optimizing before measuring leads to wrong bottleneck | Intuition about performance hotspots is often wrong | Always profile first with actual production-like data |
+| N+1 false positive when ORM uses eager loading or batched queries | Code pattern looks like N+1 but ORM optimizes behind the scenes | Check generated SQL, not just code pattern |
+| Connection pool != cache (pool manages connections, not query results) | Confusing the two leads to wrong architecture decisions | Don't confuse pooling with caching, they solve different problems |
+| `async/await` in loops looks sequential but may be batched by runtime | Some runtimes optimize sequential awaits internally | Verify actual execution order with timing logs, not just code reading |
+| Micro-benchmarks don't reflect production (JIT warmup, GC pressure differ) | Isolated benchmarks miss real-world contention and memory pressure | Use realistic workloads and sustained load tests |
+
+## Scripts
+
+| Script | Input | Output | Usage |
+|--------|-------|--------|-------|
+| `scripts/find-n-plus-one.ts` | file/dir path | JSON `{ findings, total }` | `bun .claude/skills/performance-review/scripts/find-n-plus-one.ts <path>` |
 
 ---
 

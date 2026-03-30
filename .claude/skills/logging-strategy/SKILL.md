@@ -1,8 +1,9 @@
 ---
 name: logging-strategy
-description: "Structured logging patterns with context, log levels, and best practices.\n\
-  Use proactively when: setting up logging, adding request tracing, debugging production.\n\
-  Keywords - log, logging, logger, structured, contextual logging, correlation, trace id, log levels"
+description: |
+  Structured logging patterns with context, log levels, and production-ready observability.
+  Use when: correlation ID setup, JSON log format, request tracing implementation, log aggregation, observability setup, debug logging strategy, adding contextual logging.
+  Keywords - log, logging, logger, structured, contextual logging, correlation, trace id, log levels, observability, JSON logs, request tracing
 type: knowledge-base
 disable-model-invocation: false
 activation:
@@ -35,104 +36,23 @@ Structured logging patterns with contextual information and production-ready out
 
 ## Log Levels
 
-### When to Use Each Level
+| Level | Purpose | Production |
+|-------|---------|-----------|
+| DEBUG | Verbose development info | Off |
+| INFO | Important business events | On |
+| WARN | Potential issues, degraded state | On |
+| ERROR | Failures needing investigation | On |
+| FATAL | Unrecoverable, process must exit | On |
 
-| Level | Purpose | Examples | Production Default |
-|-------|---------|----------|-------------------|
-| DEBUG | Verbose development info | Cache hits, variable state, flow tracing | Off |
-| INFO | Important business events | User created, order placed, server started | On |
-| WARN | Potential issues, degraded state | Rate limit approaching, deprecated API used, retry attempt | On |
-| ERROR | Failures needing investigation | Payment failed, DB query error, external service down | On |
-| FATAL | Unrecoverable, process must exit | DB connection lost permanently, corrupt config | On |
+Quick decision: normal event = INFO, might become a problem = WARN, something failed = ERROR, must stop = FATAL, dev-only = DEBUG.
 
-### Level Selection Decision
+For detailed level selection decision tree and examples per level, see `references/log-levels-guide.md`.
 
-| Question | If Yes | If No |
-|----------|--------|-------|
-| Is this a normal, expected event? | INFO | Continue |
-| Could this become a problem later? | WARN | Continue |
-| Did something fail? | ERROR | Continue |
-| Must the process stop? | FATAL | Continue |
-| Is this only useful during development? | DEBUG | INFO |
+## Structured Logging
 
-## Structured Logging Concepts
+Use structured key-value context instead of plain text. Output JSON in production, pretty-print in development. Use `logger.child()` for request-scoped context with requestId.
 
-### Unstructured vs Structured
-
-```pseudocode
-// BAD - Unstructured plain text
-log("User 123 logged in from 192.168.1.1")
-
-// GOOD - Structured key-value context
-log.info("User logged in", { userId: 123, ip: "192.168.1.1" })
-```
-
-### Why Structured
-
-| Benefit | Detail |
-|---------|--------|
-| Machine-parseable | Log aggregators can index fields |
-| Filterable | Query by userId, requestId, etc. |
-| Consistent | Same fields across all log entries |
-| Searchable | Find all logs for a specific request |
-
-### Logger Interface (Conceptual)
-
-```pseudocode
-Logger:
-  debug(message, context?)    // Verbose dev info
-  info(message, context?)     // Important events
-  warn(message, context?)     // Potential issues
-  error(message, context?)    // Failures
-  fatal(message, context?)    // Unrecoverable
-  child(baseContext) -> Logger // Scoped logger with inherited context
-
-Configuration:
-  level: from environment variable (default: "info")
-  format: JSON in production, pretty-print in development
-  output: stdout (let infrastructure handle routing)
-```
-
-## Request Context / Correlation IDs
-
-### Why Correlation IDs
-
-| Problem | Solution |
-|---------|----------|
-| Cannot trace a request across log lines | Attach requestId to every log in that request |
-| Cannot trace across services | Use correlationId passed via headers |
-| Cannot group logs by user session | Attach sessionId or userId |
-
-### Request-Scoped Logging
-
-```pseudocode
-// Middleware pattern (any framework)
-handleRequest(request):
-  requestId = request.headers["x-request-id"] or generateUUID()
-  log = logger.child({ requestId, method: request.method, path: request.path })
-
-  log.info("Request started")
-  startTime = now()
-
-  try:
-    result = processRequest(request)
-    log.info("Request completed", { statusCode: 200, durationMs: elapsed(startTime) })
-    return response(result, headers: { "x-request-id": requestId })
-  catch error:
-    log.error("Request failed", { error: error.message, durationMs: elapsed(startTime) })
-    throw error
-```
-
-### Cross-Service Tracing
-
-```pseudocode
-// When calling another service, forward the correlation ID
-callExternalService(url, data, correlationId):
-  log.info("Calling external service", { url, correlationId })
-  response = httpPost(url, data, headers: { "x-correlation-id": correlationId })
-  log.info("External service responded", { url, statusCode: response.status, correlationId })
-  return response
-```
+For logger interface, JSON format, correlation IDs, request-scoped logging, cross-service tracing, and error/performance logging patterns, see `references/structured-format.md`.
 
 ## What to Log / What NOT to Log
 
@@ -181,57 +101,13 @@ catch error:
   throw error   // Re-throw if caller needs to handle
 ```
 
-## Performance Logging
+## Performance & Format
 
-```pseudocode
-// BAD - No timing information
-log.info("Query completed")
+Include duration in logs, flag slow operations. JSON in production, pretty-print in development.
 
-// GOOD - Include duration and flag slow operations
-startTime = now()
-result = db.query(sql)
-duration = elapsed(startTime)
+Slow thresholds: DB > 1s, HTTP > 2s, File I/O > 500ms, Cache > 100ms.
 
-log.info("Query completed", {
-  query: truncate(sql, 100),
-  rowCount: result.length,
-  durationMs: round(duration, 2),
-  slow: duration > 1000
-})
-```
-
-### Slow Operation Thresholds
-
-| Operation | Warn Threshold | Error Threshold |
-|-----------|----------------|-----------------|
-| DB query | > 1s | > 5s |
-| HTTP call | > 2s | > 10s |
-| File I/O | > 500ms | > 3s |
-| Cache lookup | > 100ms | > 1s |
-
-## JSON Output Format
-
-### Production (Machine-Readable)
-
-```json
-{
-  "timestamp": "2025-01-24T10:30:45.123Z",
-  "level": "info",
-  "service": "api",
-  "message": "Request completed",
-  "requestId": "abc-123-def-456",
-  "method": "POST",
-  "path": "/api/users",
-  "statusCode": 201,
-  "durationMs": 45.23
-}
-```
-
-### Development (Human-Readable)
-
-```
-[INFO] 2025-01-24T10:30:45 Request completed  requestId=abc-123 method=POST path=/api/users status=201 duration=45ms
-```
+For detailed patterns, JSON format examples, and performance logging, see `references/structured-format.md` and `references/log-levels-guide.md`.
 
 ## Anti-Patterns
 
@@ -248,32 +124,25 @@ log.info("Query completed", {
 | Logging in tight loops | Performance degradation | Log summary after loop |
 | Not configuring log level from env | Cannot adjust in production | Read level from environment |
 
-## Log Aggregation Integration
+## Log Aggregation
 
-| Aspect | Recommendation |
-|--------|---------------|
-| Output target | stdout (let infrastructure route) |
-| Format | JSON in production |
-| Field naming | Consistent across services (camelCase or snake_case, pick one) |
-| Timestamp format | ISO 8601 (UTC) |
-| Correlation | Forward x-request-id / x-correlation-id headers |
-| Sampling | Consider sampling DEBUG logs in high-traffic systems |
+Output to stdout, JSON in production, ISO 8601 timestamps (UTC), consistent field naming, forward correlation headers.
+
+For full aggregation integration details, see `references/structured-format.md`.
 
 ## Checklist
 
-- [ ] Using structured logger (not plain print statements)
-- [ ] JSON output in production
-- [ ] Pretty output in development
-- [ ] Log level configurable via environment variable
-- [ ] Request ID / correlation ID in all request-scoped logs
-- [ ] Appropriate log level for each message
-- [ ] No sensitive data logged (passwords, tokens, cards, PII)
-- [ ] Error stack traces included
-- [ ] Performance timing for slow operations
-- [ ] Child/scoped loggers for request context
-- [ ] Correlation ID forwarded across service calls
-- [ ] Consistent field naming across services
-- [ ] Log rotation or aggregation configured for production
+13 items: structured logger, JSON/pretty output, env-configurable level, request IDs, appropriate levels, no sensitive data, stack traces, performance timing, child loggers, correlation forwarding, consistent naming, log rotation.
+
+## Gotchas
+
+| Gotcha | Why | Workaround |
+|--------|-----|------------|
+| PII leaks through structured context fields (email, IP in request context) | Structured logging auto-includes all context fields, including sensitive ones | Sanitize or hash PII fields before adding to log context |
+| Log level via env var requires restart to take effect (not hot-reloadable) | Most loggers read level once at initialization | Document this limitation; for dynamic levels use a config service |
+| JSON structured logs are unreadable in dev terminal | Raw JSON lines are hard to scan visually during development | Use pretty-print format in development, JSON only in production |
+| High-cardinality log fields (user IDs, request IDs) explode log indexing costs | Each unique value creates a new index entry in log aggregators | Use log sampling for high-volume debug logs, always log errors |
+| Logging inside hot loops degrades performance even at DEBUG level | String interpolation and serialization happen before level check | Guard debug logs with level check: `if (logger.isDebug())` before string interpolation |
 
 ---
 

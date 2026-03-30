@@ -12,9 +12,13 @@
  * - ternary operators (? but not optional chaining ?:)
  */
 
-import { EXIT_CODES, readStdin, reportError, isCodeFile } from "../config";
-
-const COMPLEXITY_THRESHOLD = 25;
+import {
+  EXIT_CODES,
+  readStdin,
+  reportError,
+  isCodeFile,
+  COMPLEXITY_THRESHOLD,
+} from "../config";
 
 /**
  * Regex patterns for complexity-increasing constructs.

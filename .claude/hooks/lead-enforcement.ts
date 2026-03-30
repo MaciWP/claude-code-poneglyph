@@ -10,12 +10,22 @@
  */
 
 async function main(): Promise<void> {
+  const input = JSON.parse(await Bun.stdin.text());
+  const tool = input.tool_name;
+
+  if (
+    process.env.CLAUDE_FREEZE_MODE === "true" &&
+    ["Edit", "Write"].includes(tool)
+  ) {
+    console.error(
+      "🔒 Freeze mode active: Edit/Write blocked. Use /freeze off to deactivate.",
+    );
+    process.exit(2);
+  }
+
   if (process.env.CLAUDE_LEAD_MODE !== "true") {
     process.exit(0);
   }
-
-  const input = JSON.parse(await Bun.stdin.text());
-  const tool = input.tool_name;
   const directTools = ["Read", "Edit", "Write", "Bash", "Glob", "Grep"];
 
   if (directTools.includes(tool)) {

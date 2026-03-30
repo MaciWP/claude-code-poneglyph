@@ -1,6 +1,9 @@
 ---
 name: anti-hallucination
-description: "Validation patterns to prevent AI hallucinations about files, functions, and facts.\nUse proactively when: making claims about code, suggesting changes, referencing files.\nKeywords - validate, verify, check, exists, hallucination, confidence, claim, assert\n"
+description: |
+  Validation patterns to prevent AI hallucinations about files, functions, and facts.
+  Use when: before claiming file exists, verify function signature, check API endpoint, validate import path, confidence below threshold, suggesting code changes without reading first.
+  Keywords - validate, verify, check, exists, hallucination, confidence, claim, assert, file exists, import path, function signature
 type: encoded-preference
 disable-model-invocation: false
 argument-hint: "[claim to validate]"
@@ -174,6 +177,16 @@ graph TD
     G -->|No| I[Correct understanding]
     B -->|No| J[Proceed without claim]
 ```
+
+## Gotchas
+
+| Gotcha | Why | Workaround |
+|--------|-----|------------|
+| Glob may not find recently created file (filesystem cache or timing) | File system events may not be flushed immediately after Write | After Write, wait before Glob; prefer Read with exact path if known |
+| LSP results stale after Write (language server hasn't reindexed) | Language servers reindex asynchronously after file changes | Re-run LSP query after file modifications, don't reuse previous results |
+| `Read` of non-existent file returns error, not empty content | Tool returns error object, not empty string | Check Glob first or handle error gracefully, don't assume empty = not found |
+| Grep finds text in comments/strings, not just code (false positives) | Grep is text-based, has no semantic understanding | Use LSP for semantic queries; Grep is text-only fallback |
+| Assuming function exists because it's imported (import might be hallucinated) | Import statement doesn't prove the target module exports that symbol | Verify with `goToDefinition` or `Grep` in the source module |
 
 ---
 

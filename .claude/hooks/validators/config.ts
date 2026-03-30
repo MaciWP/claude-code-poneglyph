@@ -265,3 +265,11 @@ export function isBiomeSupported(path: string): boolean {
 export function isPythonFile(path: string): boolean {
   return path.toLowerCase().endsWith(".py");
 }
+
+// =============================================================================
+// Mode Flags
+// =============================================================================
+
+export const CAREFUL = process.env.CLAUDE_CAREFUL_MODE === "true";
+export const FREEZE = process.env.CLAUDE_FREEZE_MODE === "true";
+export const COMPLEXITY_THRESHOLD = CAREFUL ? 15 : 25;

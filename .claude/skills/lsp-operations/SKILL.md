@@ -1,9 +1,9 @@
 ---
 name: lsp-operations
 description: |
-  LSP operations reference for semantic code navigation.
-  Use proactively when: finding definitions, references, types, call hierarchy.
-  Keywords - definition, references, hover, symbols, implementation, calls, lsp, go to
+  LSP operations reference for semantic code navigation and type-aware exploration.
+  Use when: find where function is defined, who calls this method, what type does this return, navigate to implementation, list all symbols in file, explore call hierarchy.
+  Keywords - definition, references, hover, symbols, implementation, calls, lsp, go to, find usages, who calls, type info
 activation:
   keywords:
     - definition
@@ -253,6 +253,16 @@ Use `Glob` to discover project files before applying LSP operations. Each projec
 - [ ] LSP not available for language
 - [ ] Searching text/comments (not code)
 - [ ] Non-code files (markdown, json)
+
+## Gotchas
+
+| Gotcha | Why | Workaround |
+|--------|-----|------------|
+| LSP server takes time to initialize at session start (TypeScript server warmup) | Language server must parse and index the entire project first | First LSP call may fail or return empty; retry after a few seconds |
+| Results are stale after Write/Edit (server hasn't reprocessed) | Language server reindexes asynchronously, not instantly | Re-run LSP operations after modifying files |
+| Doesn't work on files without recognized extensions | LSP servers register for specific file types only | Fall back to Grep for config files, scripts without extensions |
+| `findReferences` on a common name returns too many results | Generic names like `id`, `name`, `data` match everywhere | Narrow scope with file path or combine with Grep filter |
+| `hover` on re-exported symbols may show the re-export, not the original definition | LSP resolves to the nearest declaration, which may be a re-export | Chain with `goToDefinition` to reach the actual implementation |
 
 ---
 

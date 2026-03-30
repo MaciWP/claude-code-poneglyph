@@ -1,6 +1,9 @@
 ---
 name: code-quality
-description: "Skill de revision para calidad de codigo, mejores practicas y refactoring seguro.\nUse when reviewing: code smells, SOLID violations, complejidad, duplicacion, refactoring.\nKeywords - code quality, code smells, SOLID, complexity, duplication, refactoring, clean code, refactor, extract, simplify, decompose, rename, move, DRY, single responsibility, code smell\n"
+description: |
+  Code quality review, best practices enforcement, and safe refactoring guidance.
+  Use when: refactoring planning, technical debt assessment, pre-merge review, extract function, reduce complexity, SOLID violations, code smells, duplication detection.
+  Keywords - code quality, code smells, SOLID, complexity, duplication, refactoring, clean code, extract function, reduce complexity, technical debt, pre-merge review, decompose, DRY, single responsibility
 type: knowledge-base
 disable-model-invocation: false
 argument-hint: "[file-path or module]"
@@ -167,6 +170,22 @@ graph LR
 |-------|------|
 | Before starting | `${CLAUDE_SKILL_DIR}/checklists/pre-refactoring.md` |
 | After completing | `${CLAUDE_SKILL_DIR}/checklists/post-refactoring.md` |
+
+## Gotchas
+
+| Gotcha | Why | Workaround |
+|--------|-----|------------|
+| `?.` optional chaining counts as complexity (regex `?(?!:)` matches `?.` since `.` != `:`) | Hook complexity counter uses regex that catches optional chaining as a ternary variant | Refactor to explicit null checks or extract to helper function |
+| `\|\|` fallback chains inflate complexity score (14 fallbacks = 14 points) | Each `\|\|` is counted as a separate complexity point per-file | Use spread with defaults object: `{...defaults, ...input}` |
+| Linter auto-reformats on edit | Exact string matching in subsequent edits will fail if linter changed whitespace/formatting | Always re-read file after edit for exact string matching in subsequent edits |
+| Extracting a function doesn't reduce total complexity, just distributes it | Complexity is counted per-file, so moving code within the same file changes nothing | Split into separate files if per-file threshold matters |
+| Renaming during refactor may break imports silently | Static imports are string-based; rename won't auto-update other files | Use LSP findReferences before renaming to verify all usages |
+
+## Scripts
+
+| Script | Input | Output | Usage |
+|--------|-------|--------|-------|
+| `scripts/complexity-report.ts` | file/dir path | JSON `{ files, summary }` | `bun .claude/skills/code-quality/scripts/complexity-report.ts <path>` |
 
 ---
 
