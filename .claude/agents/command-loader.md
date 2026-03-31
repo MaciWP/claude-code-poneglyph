@@ -8,6 +8,7 @@ description: |
 tools: Read, Glob, Bash
 permissionMode: plan
 disallowedTools: Edit, Write, Task, NotebookEdit
+effort: low
 skills: []
 ---
 

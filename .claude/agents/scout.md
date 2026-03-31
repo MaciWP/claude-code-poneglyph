@@ -7,6 +7,7 @@ description: |
 tools: Read, Grep, Glob, WebFetch, WebSearch
 disallowedTools: Task, Edit, Write
 permissionMode: default
+effort: low
 skills:
   - lsp-operations
   - anti-hallucination

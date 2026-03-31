@@ -4,6 +4,7 @@ description: |
   LSP operations reference for semantic code navigation and type-aware exploration.
   Use when: find where function is defined, who calls this method, what type does this return, navigate to implementation, list all symbols in file, explore call hierarchy.
   Keywords - definition, references, hover, symbols, implementation, calls, lsp, go to, find usages, who calls, type info
+effort: low
 activation:
   keywords:
     - definition

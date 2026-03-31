@@ -8,6 +8,7 @@ description: |
 tools: Read, Glob, Grep, WebSearch, WebFetch
 disallowedTools: Edit, Write, Bash, Task
 permissionMode: plan
+effort: high
 memory: project
 ---
 

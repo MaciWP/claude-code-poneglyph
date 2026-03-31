@@ -6,6 +6,7 @@ description: |
   Keywords - design, plan, architecture, structure, strategy, approach, solution, RFC
 tools: Read, Grep, Glob, Task(scout), Task(builder), LSP
 permissionMode: plan
+effort: high
 skills:
   - code-quality
 memory: project

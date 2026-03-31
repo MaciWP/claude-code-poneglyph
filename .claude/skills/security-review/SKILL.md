@@ -7,6 +7,7 @@ description: |
 type: knowledge-base
 disable-model-invocation: false
 argument-hint: "[file-path or module]"
+effort: high
 activation:
   keywords:
     - security

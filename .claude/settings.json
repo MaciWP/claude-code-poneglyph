@@ -45,6 +45,7 @@
     "PostToolUse": [
       {
         "matcher": "Edit|Write",
+        "if": "Edit(*.ts)|Edit(*.tsx)|Edit(*.js)|Edit(*.jsx)|Edit(*.py)|Edit(*.go)|Edit(*.rs)|Write(*.ts)|Write(*.tsx)|Write(*.js)|Write(*.jsx)|Write(*.py)|Write(*.go)|Write(*.rs)",
         "hooks": [
           {
             "type": "command",
@@ -54,6 +55,7 @@
       },
       {
         "matcher": "Edit|Write",
+        "if": "Edit(*.ts)|Edit(*.tsx)|Edit(*.js)|Edit(*.jsx)|Edit(*.py)|Write(*.ts)|Write(*.tsx)|Write(*.js)|Write(*.jsx)|Write(*.py)",
         "hooks": [
           {
             "type": "command",
@@ -187,6 +189,39 @@
             "type": "command",
             "command": "bun run $HOME/.claude/hooks/post-compact.ts",
             "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun run $HOME/.claude/hooks/agent-scoring.ts",
+            "timeout": 10000
+          }
+        ]
+      }
+    ],
+    "StopFailure": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun run $HOME/.claude/hooks/api-error-recorder.ts",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun run $HOME/.claude/hooks/auto-approve.ts",
+            "timeout": 3000
           }
         ]
       }

@@ -7,6 +7,7 @@ description: |
 type: encoded-preference
 disable-model-invocation: false
 argument-hint: "[claim to validate]"
+effort: low
 activation:
   keywords:
     - validate

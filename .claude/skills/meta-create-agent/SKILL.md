@@ -480,13 +480,19 @@ When invoked:
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `name` | string | Yes | Unique kebab-case identifier |
-| `description` | string | Yes | Purpose + trigger keywords |
-| `tools` | string | Yes | Comma-separated tool whitelist |
-| `disallowedTools` | string | No | Comma-separated tool blacklist |
-| `model` | string | No | `sonnet` (default), `opus`, `haiku`, `inherit` |
+| `description` | string | Yes | Purpose + triggers (include "Use proactively when:" and "Keywords -") |
+| `tools` | string | Yes | Comma-separated whitelist. `Task(agent)` restringe sub-delegacion |
+| `disallowedTools` | string/list | No | Tools bloqueadas (camelCase: `NotebookEdit`) |
+| `model` | string | No | `sonnet`, `opus`, `haiku`, `inherit`. Lead puede override per-invocacion |
 | `permissionMode` | string | No | `default`, `plan`, `acceptEdits`, `dontAsk`, `bypassPermissions` |
-| `skills` | list | No | Pre-loaded skill names |
-| `hooks` | object | No | Lifecycle hooks configuration |
+| `skills` | list | No | Skills auto-cargadas al iniciar agente |
+| `effort` | string | No | `low`/`medium`/`high`. Fijo — solo definir si invariable por diseno |
+| `maxTurns` | number | No | Max turnos. Solo safety net generoso, no control de flujo |
+| `memory` | string | No | Scope: `user`, `project`, `local` |
+| `background` | boolean | No | `true` = siempre background |
+| `hooks` | object | No | Hooks scoped al agente (PreToolUse, PostToolUse, Stop) |
+| `isolation` | string | No | `worktree` = git worktree aislado |
+| `initialPrompt` | string | No | Prompt auto-enviado al iniciar |
 
 ---
 

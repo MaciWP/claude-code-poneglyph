@@ -625,13 +625,16 @@ project/
 |-------|------|----------|-------------|
 | `name` | string | Yes | Unique kebab-case identifier |
 | `description` | string | Yes | Purpose + trigger keywords |
-| `disable-model-invocation` | boolean | No | `true` = manual only |
-| `user-invocable` | boolean | No | `false` = Claude only |
-| `argument-hint` | string | No | Arguments shown in autocomplete |
-| `allowed-tools` | string | No | Comma-separated tool whitelist |
-| `context` | string | No | `fork` = isolated context |
-| `agent` | string | No | Delegate to: Explore, Plan, etc |
+| `disable-model-invocation` | boolean | No | `true` = manual only, `false` = auto-trigger por keywords |
+| `user-invocable` | boolean | No | `false` = solo invocable por Claude, no aparece en `/skills` |
+| `argument-hint` | string | No | Args en autocomplete (ej: `[file-path or module]`) |
+| `allowed-tools` | string/list | No | Tool whitelist. YAML list: `- Read\n- Glob` |
+| `context` | string | No | `fork` = contexto aislado (no contamina conversacion) |
+| `agent` | string | No | Delega a: Explore, Plan, builder, etc |
 | `model` | string | No | sonnet, opus, haiku |
+| `effort` | string | No | `low`/`medium`/`high`. Override effort al invocar skill |
+| `paths` | list | No | YAML list de globs — skill solo aplica a estos paths |
+| `hooks` | object | No | Hooks scoped al lifecycle de la skill |
 
 ---
 

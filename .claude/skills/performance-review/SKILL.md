@@ -18,6 +18,7 @@ activation:
 for_agents: [reviewer]
 type: knowledge-base
 disable-model-invocation: false
+effort: high
 version: "2.0"
 ---
 

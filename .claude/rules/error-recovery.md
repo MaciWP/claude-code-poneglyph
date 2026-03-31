@@ -37,9 +37,35 @@ graph TD
     EA2 --> F
 ```
 
+## SendMessage Recovery (Preferred)
+
+Desde v2.1.77, usar `SendMessage({to: agentId})` para continuar un agente fallido en vez de spawnar uno nuevo. Esto preserva todo el contexto del agente (archivos leídos, edits hechos) y ahorra ~2K-5K tokens de re-setup.
+
+### Cuándo usar SendMessage vs Re-spawn
+
+| Situación | Método | Razón |
+|-----------|--------|-------|
+| Builder falló test | SendMessage | El builder ya tiene contexto del código, solo necesita el error |
+| Builder falló por stale edit | SendMessage | Re-leer el archivo y reintentar en el mismo contexto |
+| Error-analyzer diagnosticó fix | SendMessage al builder original | Evita re-explorar el codebase |
+| Builder falló 2+ veces | Re-spawn con diagnosis completa | Contexto original puede estar contaminado |
+| Error en agente diferente al original | Re-spawn nuevo agente | SendMessage no cruza agentes |
+
+### Ejemplo SendMessage Recovery
+
+```
+// Builder falló en test
+SendMessage({
+  to: "builder-a3f8c2",
+  message: "Test failed: TypeError at auth.ts:23. Diagnosis: null check missing on user object. Fix: add guard clause before user.id access. Do NOT remove existing tests."
+})
+```
+
+> **Nota**: SendMessage auto-resumes agentes detenidos en background.
+
 ## Recovery Prompt Template
 
-Al reintentar, incluir SIEMPRE en el prompt del builder:
+Al reintentar (con re-spawn), incluir SIEMPRE en el prompt del builder:
 
 | Campo | Contenido |
 |-------|-----------|

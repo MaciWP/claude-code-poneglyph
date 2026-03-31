@@ -8,6 +8,7 @@ description: |
 tools: Read, Glob, Grep
 disallowedTools: Edit, Write, Bash, Task
 permissionMode: plan
+effort: high
 skills:
   - diagnostic-patterns
 memory: project

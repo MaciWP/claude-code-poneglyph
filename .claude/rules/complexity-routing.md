@@ -116,6 +116,26 @@ Independiente del score de complejidad, evaluar necesidad de worktree:
 
 > **Nota**: Las reglas de worktree NO aplican en team mode. Cada teammate corre en su propio proceso de Claude Code con su propio filesystem. Worktree isolation solo aplica al modo subagents.
 
+## Effort Routing
+
+Nivel de esfuerzo por agente. A diferencia del model routing, effort NO se puede pasar dinámicamente per-invocación — es fijo en frontmatter del agente.
+
+> **Limitación**: `effort` en frontmatter es estático. No existe parámetro `effort` en el Agent tool call (issue abierta anthropics/claude-code#25591). Por eso solo se define en agentes cuyo nivel es invariable por diseño.
+
+### Effort Assignments (Frontmatter)
+
+| Agente | effort | Rationale |
+|--------|--------|-----------|
+| scout | `low` | Solo lee archivos. No requiere razonamiento profundo. |
+| command-loader | `low` | Solo expande references. Puramente mecánico. |
+| architect | `high` | Decisiones estratégicas de alto impacto. |
+| planner | `high` | La calidad del plan determina toda la ejecución. |
+| error-analyzer | `high` | Diagnóstico profundo requiere razonamiento extenso. |
+| builder | ❌ inherit | Depende de la tarea. Hereda session default. |
+| reviewer | ❌ inherit | Depende del tipo de review. Hereda session default. |
+
+> Agentes sin `effort` en frontmatter heredan el nivel de sesión (configurable con `/effort`).
+
 ## Model Routing
 
 Seleccion de modelo por agente y complejidad para optimizar costos.
