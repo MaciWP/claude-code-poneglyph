@@ -1,7 +1,7 @@
 ---
 description: Orchestrator Strategy Engine - Generates Validated Execution Graphs with high-quality data
 model: opus
-version: 5.0.0
+version: 5.1.0
 ---
 
 # /planner
@@ -333,7 +333,7 @@ After each iteration:
 
 ### Anti-Patterns
 
-> See full table in §16. Summary: Do not accumulate >5 files, STOP on errors, verify after each group.
+> See full table in §17. Summary: Do not accumulate >5 files, STOP on errors, verify after each group.
 
 ---
 
@@ -675,7 +675,90 @@ graph TD
 
 ---
 
-## 16. ANTI-PATTERNS + TDD ENFORCEMENT
+## 16. TEAM MODE PLANNING
+
+When the Lead requests a plan with `execution_mode = team` (complexity > 60, 3+ independent domains), extend the standard plan with these additional sections.
+
+### Team Assembly
+
+Select agents based on task analysis:
+
+| Agent | Condition | Required |
+|-------|-----------|----------|
+| `scout` | Codebase exploration | ALWAYS |
+| `builder` | Code implementation | ALWAYS |
+| `reviewer` | Quality validation | ALWAYS |
+| `architect` | Complexity > 40 OR cross-domain interfaces | CONDITIONAL |
+| `reviewer` (security) | Keywords: auth, token, password, jwt, encryption | CONDITIONAL |
+
+### Domain Boundary Definition
+
+For each teammate, define explicit boundaries in the plan:
+
+| Field | Content | Example |
+|-------|---------|---------|
+| **Domain** | Logical area of responsibility | "Authentication service" |
+| **Owned paths** | Files this teammate may modify | `src/auth/**`, `tests/auth/**` |
+| **Forbidden paths** | Files this teammate must NOT touch | Everything outside owned paths |
+| **Exposes** | Interfaces/contracts other domains consume | `AuthResult`, `validateToken()` |
+| **Consumes** | Interfaces/contracts from other domains | `UserProfile` from user-domain |
+
+### Teammate Prompt Template
+
+Each teammate receives a structured prompt in the plan:
+
+```
+Domain: [X]. You own files in [paths]. Do NOT modify files outside your domain.
+
+Tasks:
+1. [subtask from roadmap]
+2. [subtask from roadmap]
+
+Interfaces:
+- EXPOSE: [type/function] consumed by [other domain]
+- CONSUME: [type/function] from [other domain]
+
+Coordination: Use task list to signal completion and coordinate with other teammates.
+```
+
+### Recovery Plan (Team)
+
+| Scenario | Action | Max retries |
+|----------|--------|-------------|
+| Teammate test failure | Analyze error, fix, re-run | 2 |
+| NEEDS_CHANGES from reviewer | Apply feedback, re-submit | 3 then escalate |
+| Teammate stuck (no progress) | Extract domain → run as builder subagent | 0 |
+| File conflict between teammates | Lead arbitrates via reviewer, loser re-executes | 1 |
+| Multiple teammates fail | Abort team mode → fallback to subagents | 0 |
+| Architecture mismatch | Architect redesigns contracts, re-delegate | 1 |
+
+### Correction Loop
+
+```
+1. builder/teammate implements
+2. reviewer evaluates
+3. If NEEDS_CHANGES:
+   a. builder fixes according to feedback
+   b. reviewer re-evaluates
+   c. Max 3 iterations before escalating to Lead with full history
+4. If APPROVED: mark task complete
+```
+
+### Team Plan Output Additions
+
+When `execution_mode = team`, the standard output (§14) must additionally include:
+
+| Section | Content |
+|---------|---------|
+| **Execution mode** | `team` in Objective section |
+| **Domain boundaries** | Table per teammate with owned/forbidden paths |
+| **Interface contracts** | Types and signatures shared between domains |
+| **Env requirement** | `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` |
+| **Fallback strategy** | What happens if team mode prerequisites fail |
+
+---
+
+## 17. ANTI-PATTERNS + TDD ENFORCEMENT
 
 | ❌ Do not | ✅ Do | Reason |
 |-----------|-------|--------|
@@ -691,7 +774,7 @@ graph TD
 
 ---
 
-## 17. FINAL QUALITY GATE
+## 18. FINAL QUALITY GATE
 
 Before considering the plan executed:
 
@@ -710,7 +793,7 @@ Before considering the plan executed:
 
 ---
 
-## 18. SESSION MANAGEMENT
+## 19. SESSION MANAGEMENT
 
 For long tasks:
 
@@ -737,6 +820,7 @@ claude --resume feature-export   # From terminal
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 5.1.0 | 2026-04-09 | Added §16 TEAM MODE PLANNING: team assembly, domain boundaries, teammate prompt template, recovery plan with correction loop. Merged from `/plan-with-team`. |
 | 5.0.0 | 2026-01-11 | **MAJOR v5**: Added DEEP RESEARCH PROTOCOL (mandatory external research), ANTI-OBSOLESCENCE DETECTION (reject deprecated APIs based on ICSE 2025), ITERATIVE EXECUTION (3-5 file loops), GROUND TRUTH FROM ENVIRONMENT (mandatory real feedback), POKA-YOKE TOOLS (error prevention), CROSS-VALIDATION (Four-Eyes Principle). Based on research by Anthropic, ICSE 2025, The New Stack. |
 | 4.0.0 | 2026-01-11 | Renamed to `/planner`. Added Discovery, Gap Analysis, 🔵🟡🔴, TDD, Quality Gate. |
 | 3.1.0 | 2025-12-27 | Fixed example: updated paths, corrected graph |

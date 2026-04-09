@@ -1,5 +1,22 @@
 ---
-description: Shows a summary of recent execution traces and accumulated costs
+name: traces
+description: |
+  Shows a summary of recent execution traces and accumulated costs from ~/.claude/traces/.
+  Use when: cost check, usage summary, session analysis, trace review, token spending.
+  Keywords - traces, cost, usage, tokens, spending, session, analytics
+type: reference
+disable-model-invocation: false
+effort: low
+activation:
+  keywords:
+    - traces
+    - cost
+    - usage
+    - tokens
+    - spending
+    - session history
+for_agents: [builder, reviewer, planner]
+version: "1.0"
 ---
 
 Read ALL JSONL files from the `~/.claude/traces/` directory.

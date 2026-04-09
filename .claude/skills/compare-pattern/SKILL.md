@@ -1,6 +1,22 @@
 ---
-description: Compares a specific pattern against expert sources
-allowed-tools: Read, Grep, WebSearch, WebFetch
+name: compare-pattern
+description: |
+  Compares a specific code pattern against expert sources (knowledge base, official docs, GitHub).
+  Use when: pattern review, best practice check, code comparison, convention validation.
+  Keywords - compare, pattern, best practice, convention, expert, review
+type: reference
+disable-model-invocation: false
+argument-hint: "[pattern name or code snippet]"
+effort: medium
+activation:
+  keywords:
+    - compare pattern
+    - best practice
+    - convention
+    - expert source
+    - pattern review
+for_agents: [builder, reviewer]
+version: "1.0"
 ---
 
 # /compare-pattern

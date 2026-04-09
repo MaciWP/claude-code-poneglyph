@@ -1,65 +1,83 @@
 ---
-description: Generate tests + implementation from Given-When-Then (BDD) specification
+description: Generate tests + implementation from BDD specification — accepts SPEC-NNN reference (reads from .specs/) or inline Given-When-Then text
 ---
 
 # Generate Code from Specification
 
-**Automatically generate tests and implementation from BDD specifications.**
+**Generate tests and implementation from BDD specifications. Works with spec files or inline BDD text.**
 
 ## Usage
 
 ```
+/generate-from-spec $ARGUMENTS
+```
+
+| Argument | Mode | Behavior |
+|----------|------|----------|
+| `SPEC-014` or spec filename | **Spec File** | Reads full spec from `.specs/`, extracts Design + BDD + Goals |
+| Inline BDD text or empty | **Inline BDD** | Parses Given-When-Then scenarios from chat |
+
+**Examples**:
+```
+/generate-from-spec SPEC-014
+/generate-from-spec session-management
 /generate-from-spec
 ```
 
-After invoking, provide your Given-When-Then specification.
+---
+
+## Argument Detection
+
+```mermaid
+graph TD
+    A["$ARGUMENTS"] --> B{Starts with SPEC- ?}
+    B -->|Yes| C[Lookup in .specs/INDEX.md]
+    B -->|No| D{Non-empty text?}
+    D -->|Matches filename| E[Search .specs/ by filename]
+    D -->|Contains Given/When/Then| F[Inline BDD mode]
+    D -->|Empty| F
+    C --> G[Read spec file]
+    E --> G
+    G --> H[Parse Design + BDD + Goals + Next Steps]
+    F --> I[Parse BDD from chat]
+    H --> J[Generate types + implementation + tests]
+    I --> J
+    J --> K[Run tests]
+    K --> L[Report results]
+```
+
+### Spec File Discovery (when argument provided)
+
+1. **Exact SPEC-ID**: `SPEC-014` -> lookup in `.specs/INDEX.md` -> resolve filename
+2. **Filename match**: `session` -> `.specs/session-management-persistence.md`
+3. **Fuzzy match**: `frontend` -> `.specs/frontend-architecture-refactor.md`
 
 ---
 
-## What This Command Does
+## Workflow
 
-Implements **Innovation #3: Code Generation from Specs** from module 15-INNOVATION.
+### Common Steps (Both Modes)
 
-**Workflow**:
-1. Parse your Given-When-Then specification
-2. Generate test file with all scenarios
+1. Parse BDD scenarios (from spec file section 6 or inline text)
+2. Generate test file with all scenarios (Given-When-Then comments)
 3. Generate implementation (TDD approach)
 4. Run tests to verify correctness
-5. Report results and suggest improvements
+5. Report results
 
-**Success rate**: 90% test pass on first generation (validated by experts 2024-2025)
+### Additional Steps (Spec File Mode)
 
----
-
-## When to Use
-
-Use `/generate-from-spec` when:
-
-### New Feature Implementation
-- You have a clear specification in Given-When-Then format
-- Need both tests and implementation
-- Want to follow TDD (test-driven development)
-
-### API Endpoint Creation
-- Spec defines request/response behavior
-- Need to generate route handlers + tests
-- Want type-safe implementation
-
-### Authentication/Authorization
-- Spec defines login, logout, registration flows
-- Need comprehensive test coverage
-- Want secure implementation patterns
-
-### Form Validation
-- Spec defines validation rules
-- Need client + server validation
-- Want consistent error messages
+| Step | Source Section | Output |
+|------|---------------|--------|
+| Extract types/interfaces | `## 4. Design` | Type definitions |
+| Read architecture patterns | `## 4. Design` | Implementation following spec patterns |
+| Validate feature scope | `## 2. Goals` | Scope guard |
+| Check dependencies | INDEX.md `Depends` column | Warn if unimplemented deps |
+| Track progress | `## 9. Next Steps` | Mark completed items |
 
 ---
 
-## Specification Format
+## Specification Format (Inline Mode)
 
-**Basic structure**:
 ```gherkin
 Feature: [Feature Name]
 
@@ -71,25 +89,162 @@ Scenario: [Scenario Name]
   And [additional expectation]
 ```
 
-**Example**:
-```gherkin
-Feature: User Logout
+### Writing Good Specs
 
-Scenario: User logs out successfully
-  Given user is logged in with session token
-  When user clicks logout button
-  Then session token is invalidated
-  And user is redirected to login page
-  And localStorage is cleared
+```gherkin
+# BAD (vague):
+Given user is logged in
+Then user sees dashboard
+
+# GOOD (specific):
+Given user "john@example.com" is authenticated with valid session token
+Then user is redirected to "/dashboard"
+And dashboard displays: username, stats, recent activity
+```
+
+Always cover: success case, invalid input, unauthorized access, not found, error case.
+
+---
+
+## Spec File Requirements (Spec File Mode)
+
+| Section | Required | Used For |
+|---------|----------|----------|
+| `## 4. Design` | Yes | Types, interfaces, implementation patterns |
+| `## 6. Acceptance Criteria (BDD)` | Yes | Test generation |
+| `## 2. Goals` | Optional | Feature scope validation |
+| `## 9. Next Steps` | Optional | Task tracking |
+
+---
+
+## Generated File Structure
+
+### Tests
+
+```typescript
+// tests/[feature]/[scenario].test.ts
+import { describe, it, expect, beforeEach } from 'vitest';
+
+describe('Feature Name', () => {
+  beforeEach(() => {
+    // Setup code
+  });
+
+  describe('Scenario 1', () => {
+    it('description', async () => {
+      // Given — setup
+      // When — action
+      // Then — assertions
+      expect(...).toBe(...);
+    });
+  });
+});
+```
+
+### Implementation
+
+```typescript
+// src/[feature]/[module].ts
+export interface ResultType { /* from Design or inferred */ }
+
+export async function featureName(
+  param1: Type1,
+  param2: Type2
+): Promise<ResultType> {
+  // Input validation
+  // Business logic
+  // Error handling
+  // Return result
+}
+```
+
+### Output Locations (Spec File Mode)
+
+| Spec Type | Output Location |
+|-----------|-----------------|
+| Types/Interfaces | `src/types/` or adjacent to module |
+| Services/Lib | `src/lib/` or `src/services/` |
+| Hooks | `.claude/hooks/` |
+| Agents/Skills/Rules | `.claude/{agents,skills,rules}/` |
+| Tests | `*.test.ts` adjacent to implementation |
+
+---
+
+## Implementation Strategy (Spec File Mode)
+
+### Phase 1: Parse Spec
+
+```typescript
+const spec = {
+  id: 'SPEC-014',
+  title: 'Feature Name',
+  design: { types, api, modules, patterns },
+  bdd: [/* Gherkin scenarios */],
+  goals: [/* Feature goals */],
+  nextSteps: [/* Implementation tasks */]
+};
+```
+
+### Phase 2: Generate Types (from Design code blocks)
+
+### Phase 3: Generate Implementation (from Design patterns + Next Steps)
+
+### Phase 4: Generate Tests (from BDD Acceptance Criteria)
+
+### Phase 5: Verify and Report
+
+```
+Types generated:     src/types/session.ts (45 lines)
+Implementation:      src/store/sessionSlice.ts (120 lines)
+Tests generated:     tests/store/session.test.ts (80 lines)
+Tests passing:       5/5 scenarios
+
+Next Steps updated:
+  [x] Create SessionSlice interface
+  [x] Implement session store
+  [ ] Integrate with existing components
+```
+
+---
+
+## Dependency Handling (Spec File Mode)
+
+The command checks INDEX.md for dependencies and warns:
+
+```
+SPEC-012 depends on:
+  - SPEC-011 (thread-metrics) - Not implemented
+  - SPEC-014 (frontend-refactor) - Not implemented
+
+Suggested order:
+  1. /generate-from-spec SPEC-014 (no dependencies)
+  2. /generate-from-spec SPEC-011 (depends on SPEC-014)
+  3. /generate-from-spec SPEC-012 (depends on both)
+```
+
+---
+
+## Flags
+
+| Flag | Description |
+|------|-------------|
+| `--dry-run` | Show what would be generated without creating files |
+| `--tests-only` | Only generate tests from BDD |
+| `--types-only` | Only generate types from Design (spec file mode) |
+| `--force` | Overwrite existing files |
+| `--no-verify` | Skip test execution after generation |
+
+```
+/generate-from-spec SPEC-014 --dry-run
+/generate-from-spec SPEC-019 --tests-only
 ```
 
 ---
 
 ## Examples
 
-### Example 1: Simple Feature
+### Example 1: Inline BDD — Simple Feature
 
-**Input**:
 ```
 /generate-from-spec
 
@@ -101,26 +256,25 @@ Scenario: Add product successfully
   When user clicks "Add to Cart"
   Then product is added to cart
   And cart count increases by 1
-  And success message is displayed
 ```
 
-**Output**:
-```typescript
-// tests/cart/addToCart.test.ts
-✅ Generated (15 lines)
+### Example 2: Spec File — Hook Validators
 
-// src/cart/addToCart.ts
-✅ Generated (35 lines)
-
-// Running tests...
-✅ All tests passing (1/1 scenarios)
+```
+/generate-from-spec SPEC-014
 ```
 
----
+Reads `.specs/orchestration-hooks-refactor.md`, generates:
+```
+.claude/hooks/
+  validators/
+    stop/validate-tests-pass.ts    # From Design 4.2
+    pre/validate-input.ts          # From Design 4.2
+  validators.test.ts               # From BDD scenarios
+```
 
-### Example 2: API Endpoint
+### Example 3: Inline BDD — API Endpoint
 
-**Input**:
 ```
 /generate-from-spec
 
@@ -140,259 +294,70 @@ Scenario: Unauthorized access
   And response error is "Unauthorized"
 ```
 
-**Output**:
-```typescript
-// tests/api/users.test.ts
-✅ Generated (40 lines, 2 scenarios)
-
-// src/api/routes/users.ts
-✅ Generated (60 lines)
-
-// Running tests...
-✅ All tests passing (2/2 scenarios)
-```
-
----
-
-### Example 3: Complex Feature (Multiple Scenarios)
-
-**Input**:
-```
-/generate-from-spec
-
-Feature: User Login
-
-Scenario: Successful login
-  Given user exists with email "user@example.com"
-  And password is "SecurePass123"
-  When user submits login form
-  Then user is authenticated
-  And session token is stored
-  And user is redirected to dashboard
-
-Scenario: Invalid password
-  Given user exists with email "user@example.com"
-  When user submits login with wrong password
-  Then login fails
-  And error "Invalid credentials" is shown
-
-Scenario: Account locked
-  Given user account is locked
-  When user attempts to login
-  Then login is blocked
-  And error "Account locked" is shown
-```
-
-**Output**:
-```typescript
-// tests/auth/login.test.ts
-✅ Generated (80 lines, 3 scenarios)
-
-// src/auth/login.ts
-✅ Generated (120 lines)
-
-// Running tests...
-✅ All tests passing (3/3 scenarios)
-
-💡 Suggestions:
-  - Add rate limiting for failed login attempts
-  - Consider implementing 2FA
-  - Log security events
-```
-
----
-
-## Generated Files
-
-### Test File Structure
-
-```typescript
-// tests/[feature]/[scenario].test.ts
-import { describe, it, expect, beforeEach } from 'vitest';
-
-describe('Feature Name', () => {
-  beforeEach(() => {
-    // Setup code
-  });
-
-  describe('Scenario 1', () => {
-    it('description of scenario', async () => {
-      // Given
-      // ... setup
-
-      // When
-      // ... action
-
-      // Then
-      // ... assertions
-      expect(...).toBe(...);
-    });
-  });
-
-  describe('Scenario 2', () => {
-    // ...
-  });
-});
-```
-
-### Implementation File Structure
-
-```typescript
-// src/[feature]/[module].ts
-// Type definitions
-export interface ResultType {
-  // ...
-}
-
-// Main implementation
-export async function featureName(
-  param1: Type1,
-  param2: Type2
-): Promise<ResultType> {
-  // Input validation
-
-  // Business logic
-
-  // Error handling
-
-  // Return result
-}
-
-// Helper functions
-function helperName(...) {
-  // ...
-}
-```
-
----
-
-## Best Practices
-
-### 1. Write Clear Specifications
-
-```gherkin
-❌ BAD (vague):
-Given user is logged in
-Then user sees dashboard
-
-✅ GOOD (specific):
-Given user "john@example.com" is authenticated with valid session token
-Then user is redirected to "/dashboard"
-And dashboard displays: username, stats, recent activity
-```
-
-### 2. Include Data Examples
-
-```gherkin
-✅ GOOD:
-Given product has price $99.99
-And product has stock quantity 50
-```
-
-### 3. Specify Expected Responses
-
-```gherkin
-✅ GOOD:
-Then response status is 201
-And response body contains: { "id": "generated_id", "status": "created" }
-And response header "Location" is "/api/products/generated_id"
-```
-
-### 4. Cover Error Cases
-
-```gherkin
-✅ Always include:
-Scenario: Success case
-Scenario: Invalid input
-Scenario: Unauthorized access
-Scenario: Resource not found
-Scenario: Server error
-```
-
 ---
 
 ## Integration with Workflow
 
-### 1. Start with Specification
-
-Write Given-When-Then spec **before coding**:
+```mermaid
+graph TD
+    A["/spec-gen Feature X"] --> B[Review spec]
+    B --> C{Approved?}
+    C -->|Yes| D["/generate-from-spec SPEC-XXX"]
+    D --> E[Review generated code]
+    E --> F{Tests pass?}
+    F -->|Yes| G[Commit]
+    F -->|No| H[Fix manually]
+    H --> E
+    C -->|No| I[Refine spec]
+    I --> B
 ```
-/generate-from-spec
-[Provide spec]
-```
 
-### 2. Generate + Review
-
-Claude generates tests + implementation:
-- Review generated code
-- Verify tests cover all scenarios
-- Check for security issues
-
-### 3. Refine if Needed
-
-If tests fail or code needs improvement:
-- Refine specification (be more specific)
-- Re-run `/generate-from-spec`
-- Or manually adjust generated code
-
-### 4. Integrate
-
-- Add to version control
-- Run full test suite
-- Deploy with confidence
+| After | Run | Purpose |
+|-------|-----|---------|
+| `/spec-gen` | `/generate-from-spec SPEC-XXX` | Generate code from approved spec |
+| `/generate-from-spec` | `bun test` | Verify implementation |
+| `/generate-from-spec` | `/commit` | Commit generated code |
 
 ---
 
-## Success Metrics (Target)
+## Error Handling
 
-| Metric | Target | Status |
-|--------|--------|--------|
-| **Test pass rate (first gen)** | >90% | ✅ 90% |
-| **Specification clarity** | >95% | ✅ 95% |
-| **Development speedup** | 5-10x | ✅ 9x |
-| **Code quality score** | 8/10 | ✅ 8/10 |
+| Error | Cause | Solution |
+|-------|-------|----------|
+| `Spec not found` | Wrong ID/name | Check `.specs/INDEX.md` for correct ID |
+| `No Design section` | Incomplete spec | Add `## 4. Design` to spec |
+| `No BDD section` | No Gherkin in spec or chat | Add Given-When-Then scenarios |
+| `Dependency missing` | Unimplemented dependency | Implement dependencies first |
+| `File exists` | Already generated | Use `--force` to overwrite |
 
 ---
 
-## Expert Validation
+## Success Metrics
 
-**Confirmed by industry trends (2024-2025)**:
-- ✅ ChatBDD - Generate BDD scenarios → code with ChatGPT
-- ✅ ATDD-driven AI - Tests as programming language
-- ✅ LangGraph/CrewAI/Autogen - Frameworks for spec-driven development
-- ✅ Academic research - Transformer models generating code from BDD specs
-
-**Key insight**: "Providing ChatGPT with requirements in BDD form and asking it to generate tests first, then code, produces correct results from the first attempt" - Medium, 2024
+| Metric | Target |
+|--------|--------|
+| Test pass rate (first gen) | >90% |
+| Spec parsing accuracy | >95% |
+| Generated code compiles | 100% |
+| Manual fixes needed | <15% |
 
 ---
 
 ## Limitations
 
-**Works well for:**
-- ✅ CRUD operations
-- ✅ API endpoints
-- ✅ Authentication/authorization
-- ✅ Form validation
-- ✅ Database queries
+**Works well for**: CRUD operations, API endpoints, auth flows, form validation, database queries.
 
-**Needs human review for:**
-- ⚠️ Complex business logic
-- ⚠️ Performance optimization
-- ⚠️ UI/UX design
-- ⚠️ Legacy system integration
+**Needs human review for**: Complex business logic, performance optimization, UI/UX design, legacy integration.
 
 ---
 
-## Related Documentation
+## Related
 
-- **Full guide**: `.claude/docs/innovation/code-generation-from-specs.md`
-- **Examples**: See documentation for Login, API endpoints, Cart features
-- **Module 15**: Innovation specification (predictive, NL parsing, code gen)
-- **Module 18**: Testing strategy (mutation testing, coverage)
+- `/spec-gen` — Create new specifications
+- `.specs/INDEX.md` — Spec registry with dependencies and status
 
 ---
 
-**Version**: 1.0.0
-**Category**: innovation
-**Innovation**: #3 - Code Generation from Specs
-**Target**: 90% test pass rate, 5-10x speedup
+**Version**: 2.0.0
+**Category**: implementation
+**Replaces**: `/implement-spec` (merged into this command)
