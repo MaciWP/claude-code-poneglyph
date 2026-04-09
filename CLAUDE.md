@@ -51,7 +51,7 @@ Orchestration system that powers Claude Code with specialized agents, skills, ho
 
 | Problem | Solution |
 |---------|----------|
-| No orchestration | 7 specialized agents with complexity-based routing |
+| No orchestration | 6 core agents + 1 meta agent with complexity-based routing |
 | No automatic validation | 15 hooks (pre/post/stop) |
 | No domain knowledge | 15 skills auto-matched by keywords |
 | No persistent memory | Semantic memory system |
@@ -62,7 +62,7 @@ Orchestration system that powers Claude Code with specialized agents, skills, ho
 graph LR
     User --> CC[Claude Code]
     CC --> Orch[Lead Orchestrator]
-    Orch --> Agents[7 Agents]
+    Orch --> Agents[6 Agents]
     Orch --> Skills[15 Skills]
     Orch --> Hooks[15 Hooks]
 ```
@@ -71,7 +71,7 @@ graph LR
 
 ```
 .claude/
-├── agents/       # 7 specialized agents
+├── agents/       # 6 core + 1 meta agent
 ├── skills/       # 15 skills with auto-matching
 ├── hooks/        # Hooks pre/post/stop
 ├── rules/        # Orchestration rules

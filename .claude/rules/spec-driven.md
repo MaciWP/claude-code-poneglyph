@@ -10,7 +10,7 @@ graph TD
     S --> C[Calculate Complexity]
     C -->|< 30| B[Builder directo]
     C -->|>= 30| SP{Spec exists?}
-    SP -->|Yes approved| IS[/implement-spec]
+    SP -->|Yes approved| IS[/generate-from-spec]
     SP -->|Yes draft| RV[Review spec first]
     SP -->|No| SG[/spec-gen]
     SG --> RV
@@ -31,7 +31,7 @@ graph TD
 |-----------|--------|
 | Complexity < 30 | Skip SDD, builder directo |
 | Complexity >= 30, no spec exists | Invoke `/spec-gen` before implementation |
-| Complexity >= 30, spec exists and approved | Invoke `/implement-spec` |
+| Complexity >= 30, spec exists and approved | Invoke `/generate-from-spec` |
 | Complexity >= 30, spec exists but draft/review | Review spec first, do NOT implement |
 | Complexity >= 30, spec deprecated | Create new spec with `/spec-gen` |
 | Complexity borderline (25-35) | Lead decides; if uncertain, create spec |
@@ -58,7 +58,7 @@ graph TD
 | review | approved | Reviewer | overallCompliance >= 70, BDD >= 5 scenarios |
 | review | draft | Reviewer | Requests changes |
 | review | deprecated | User | Spec abandoned |
-| approved | in_progress | Lead | `/implement-spec` invoked |
+| approved | in_progress | Lead | `/generate-from-spec` invoked |
 | approved | deprecated | User | Feature removed |
 | in_progress | implemented | Lead | All BDD tests pass + reviewer APPROVED |
 | in_progress | approved | Lead | Implementation abandoned, spec still valid |
@@ -74,7 +74,7 @@ stateDiagram-v2
     draft --> deprecated: Abandoned
     review --> approved: Reviewer approves
     review --> draft: Changes requested
-    approved --> in_progress: /implement-spec
+    approved --> in_progress: /generate-from-spec
     in_progress --> implemented: Tests pass + APPROVED
     in_progress --> approved: Implementation abandoned
     implemented --> deprecated: Feature removed
@@ -133,8 +133,7 @@ stateDiagram-v2
 | Command | Role in SDD | When |
 |---------|------------|------|
 | `/spec-gen` | Creates spec with 10 sections + research | Complexity >= 30, no spec exists |
-| `/implement-spec` | Implements from spec with BDD | Spec status = approved |
-| `/generate-from-spec` | Generates code from BDD only | Ad-hoc BDD generation |
+| `/generate-from-spec` | Implements from spec with BDD | Spec status = approved |
 
 ### Command Flow
 
@@ -143,7 +142,7 @@ sequenceDiagram
     participant U as User
     participant L as Lead
     participant SG as /spec-gen
-    participant IS as /implement-spec
+    participant IS as /generate-from-spec
     participant B as Builder
     participant R as Reviewer
 
@@ -177,7 +176,7 @@ sequenceDiagram
 2. If >= 30: check if spec exists in `.specs/`
 3. If no spec: invoke `/spec-gen` to create one
 4. Review spec: ensure overallCompliance >= 70
-5. Invoke `/implement-spec SPEC-NNN`
+5. Invoke `/generate-from-spec SPEC-NNN`
 6. After builder completes: reviewer validates (incl. SpecComplianceCheck)
 7. If APPROVED: update INDEX.md status -> implemented
 8. If NEEDS_CHANGES: feedback loop to builder

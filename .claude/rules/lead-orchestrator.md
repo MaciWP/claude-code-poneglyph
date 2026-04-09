@@ -42,7 +42,7 @@ graph TD
     SG1 --> P1
     SP2 --> P2[planner mandatory]
     P1 & P2 --> MD{execution_mode?}
-    MD -->|subagents| IS[implement-spec / builders]
+    MD -->|subagents| IS[generate-from-spec / builders]
     MD -->|team| TM[Spawn teammates per domain]
     IS --> B2[builder]
     TM --> TV[Teammates complete + Lead verifies]

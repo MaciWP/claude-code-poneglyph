@@ -123,7 +123,7 @@ ALL gates must be met to activate `team` mode:
 2. If score >= 30: check if a spec exists in `.specs/` for this feature
 3. If it does not exist: invoke `/spec-gen` to create spec (status: draft)
 4. Wait for spec to reach status `approved`
-5. Invoke `/implement-spec SPEC-NNN` to delegate to builder with BDD
+5. Invoke `/generate-from-spec SPEC-NNN` to delegate to builder with BDD
 6. After implementation: update INDEX.md to `implemented`
 
 ## Worktree Decision
