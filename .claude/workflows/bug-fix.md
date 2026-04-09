@@ -1,10 +1,10 @@
 # Workflow: Bug Fix
 
-Pipeline de corrección de bugs: reproduce → analyze → fix → test
+Bug correction pipeline: reproduce → analyze → fix → test
 
 ## Trigger
 
-| Tipo | Valor |
+| Type | Value |
 |------|-------|
 | Keywords | `bug`, `fix`, `error`, `crash`, `broken`, `not working` |
 | Complexity | >= 30 |
@@ -13,39 +13,39 @@ Pipeline de corrección de bugs: reproduce → analyze → fix → test
 
 ### Step 1: Reproduce
 
-| Campo | Valor |
+| Field | Value |
 |-------|-------|
 | Agent | `scout` |
-| Input | Descripción del bug, stacktrace si existe |
-| Output | Pasos de reproducción, archivos afectados |
+| Input | Bug description, stacktrace if available |
+| Output | Reproduction steps, affected files |
 | Next | Step 2 |
 
 ### Step 2: Analyze
 
-| Campo | Valor |
+| Field | Value |
 |-------|-------|
 | Agent | `scout` (deep) |
-| Input | Output de reproduce |
-| Output | Root cause analysis, variables afectadas, scope del fix |
+| Input | Reproduce output |
+| Output | Root cause analysis, affected variables, fix scope |
 | Next | Step 3 |
 
 ### Step 3: Fix
 
-| Campo | Valor |
+| Field | Value |
 |-------|-------|
 | Agent | `builder` |
-| Input | Análisis del bug + archivos afectados |
-| Output | Código corregido |
+| Input | Bug analysis + affected files |
+| Output | Corrected code |
 | Next | Step 4 |
 
 ### Step 4: Test
 
-| Campo | Valor |
+| Field | Value |
 |-------|-------|
 | Agent | `reviewer` |
-| Input | Fix aplicado |
-| Output | Verificación de que el bug está resuelto, sin regresiones |
-| Next | END o Step 3 (si persiste) |
+| Input | Applied fix |
+| Output | Verification that the bug is resolved, no regressions |
+| Next | END or Step 3 (if it persists) |
 
 ## Parallel Execution
 
@@ -60,7 +60,7 @@ graph TD
 
 ## Notes
 
-- Si el bug no se reproduce, solicitar más información al usuario
-- Priorizar fix mínimo que resuelva el problema
-- Documentar root cause para prevención futura
-- Actualizar AI_BUGS_KNOWLEDGE.md si aplica
+- If the bug cannot be reproduced, request more information from the user
+- Prioritize the minimal fix that resolves the problem
+- Document root cause for future prevention
+- Update AI_BUGS_KNOWLEDGE.md if applicable

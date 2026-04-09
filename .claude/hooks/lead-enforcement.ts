@@ -2,11 +2,11 @@
 /**
  * Lead Enforcement Hook (PreToolUse)
  *
- * WARN-ONLY: nunca bloquea (siempre exit 0).
- * Emite un warning a stderr cuando la sesion principal usa tools directas
- * en lugar de delegar a subagentes. Es solo un recordatorio, no un bloqueador.
+ * WARN-ONLY: never blocks (always exit 0).
+ * Emits a warning to stderr when the main session uses direct tools
+ * instead of delegating to subagents. It is just a reminder, not a blocker.
  *
- * Las reglas reales de orquestacion estan en rules/lead-orchestrator.md.
+ * The actual orchestration rules are in rules/lead-orchestrator.md.
  */
 
 async function main(): Promise<void> {
@@ -29,7 +29,7 @@ async function main(): Promise<void> {
   const directTools = ["Read", "Edit", "Write", "Bash", "Glob", "Grep"];
 
   if (directTools.includes(tool)) {
-    console.error(`⚠️ Lead: ${tool} directo. Considera delegar.`);
+    console.error(`⚠️ Lead: ${tool} used directly. Consider delegating.`);
   }
 
   process.exit(0);

@@ -1,10 +1,10 @@
 # Workflow: Dev Cycle
 
-Pipeline completo de desarrollo: scout → architect → builder → reviewer
+Full development pipeline: scout → architect → builder → reviewer
 
 ## Trigger
 
-| Tipo | Valor |
+| Type | Value |
 |------|-------|
 | Keywords | `implement`, `add feature`, `create`, `build`, `develop` |
 | Complexity | >= 50 |
@@ -13,39 +13,39 @@ Pipeline completo de desarrollo: scout → architect → builder → reviewer
 
 ### Step 1: Scout
 
-| Campo | Valor |
+| Field | Value |
 |-------|-------|
 | Agent | `scout` |
-| Input | Contexto del codebase, archivos relevantes |
-| Output | Estructura identificada, patrones existentes, archivos clave |
+| Input | Codebase context, relevant files |
+| Output | Identified structure, existing patterns, key files |
 | Next | Step 2 |
 
 ### Step 2: Architect
 
-| Campo | Valor |
+| Field | Value |
 |-------|-------|
 | Agent | `architect` |
-| Input | Output de scout + requirements |
-| Output | Plan de implementación con decisiones técnicas |
+| Input | Scout output + requirements |
+| Output | Implementation plan with technical decisions |
 | Next | Step 3 |
 
 ### Step 3: Builder
 
-| Campo | Valor |
+| Field | Value |
 |-------|-------|
 | Agent | `builder` |
-| Input | Plan del architect |
-| Output | Código implementado |
+| Input | Architect's plan |
+| Output | Implemented code |
 | Next | Step 4 |
 
 ### Step 4: Reviewer
 
-| Campo | Valor |
+| Field | Value |
 |-------|-------|
 | Agent | `reviewer` |
-| Input | Código del builder |
-| Output | Feedback, issues encontrados, aprobación |
-| Next | END o Step 3 (si hay issues) |
+| Input | Builder's code |
+| Output | Feedback, issues found, approval |
+| Next | END or Step 3 (if issues) |
 
 ## Parallel Execution
 
@@ -60,6 +60,6 @@ graph TD
 
 ## Notes
 
-- Si reviewer encuentra issues críticos, loop back a builder
-- Máximo 2 iteraciones antes de escalar a usuario
-- Cada step debe validar output del anterior antes de proceder
+- If reviewer finds critical issues, loop back to builder
+- Maximum 2 iterations before escalating to user
+- Each step must validate the previous step's output before proceeding

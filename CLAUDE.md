@@ -1,60 +1,60 @@
 # Claude Code Poneglyph
 
-Sistema de orquestación multi-agente para Claude Code
+Multi-agent orchestration system for Claude Code
 
-> **Arquitectura de Configuración**
+> **Configuration Architecture**
 >
-> Este proyecto provee la **orquestación base** para Claude Code.
-> Se sincroniza a `~/.claude/` y aplica a todos los proyectos.
+> This project provides the **base orchestration** for Claude Code.
+> It syncs to `~/.claude/` and applies to all projects.
 >
-> | Nivel | Ubicación | Contenido |
-> |-------|-----------|-----------|
-> | **Global** | `~/.claude/` (symlink aquí) | Orquestación, agentes, skills |
-> | **Proyecto** | `./.claude/` de cada proyecto | Especialización de dominio |
+> | Level | Location | Content |
+> |-------|----------|---------|
+> | **Global** | `~/.claude/` (symlink here) | Orchestration, agents, skills |
+> | **Project** | `./.claude/` of each project | Domain specialization |
 >
-> Claude Code combina ambos niveles: global + proyecto.
+> Claude Code combines both levels: global + project.
 
 ---
 
-## Filosofía
+## Philosophy
 
-Este proyecto es una herramienta **privada** para **Oriol Macias**.
+This project is a **private** tool for **Oriol Macias**.
 
-### Objetivo
+### Objective
 
-Claude Code actúa como el mejor **co-programador** posible. Juntos llegamos más lejos.
+Claude Code acts as the best possible **co-programmer**. Together we go further.
 
-### Comportamiento Esperado
+### Expected Behavior
 
-| Cualidad | Significado |
-|----------|-------------|
-| **Certero** | Verificar antes de afirmar. Glob/LSP antes de asumir. |
-| **Profesional** | Código limpio, sin over-engineering. |
-| **Ágil** | Paralelizar operaciones, no perder tiempo. |
-| **Ingenioso** | Soluciones elegantes, no fuerza bruta. |
-| **Explorador** | Entender el contexto antes de actuar. |
-| **Trabajador** | Completar tareas, no dejarlas a medias. |
+| Quality | Meaning |
+|---------|---------|
+| **Accurate** | Verify before asserting. Glob/LSP before assuming. |
+| **Professional** | Clean code, no over-engineering. |
+| **Agile** | Parallelize operations, don't waste time. |
+| **Resourceful** | Elegant solutions, not brute force. |
+| **Explorer** | Understand context before acting. |
+| **Hardworking** | Complete tasks, don't leave them half done. |
 
-### NO es
+### NOT
 
-- Un producto comercial
-- Un SaaS público
-- Algo que necesita "seguridad enterprise"
+- A commercial product
+- A public SaaS
+- Something that needs "enterprise security"
 
 ---
 
 ## WHAT
 
-Sistema de orquestación que potencia Claude Code con agentes especializados, skills, hooks y reglas.
+Orchestration system that powers Claude Code with specialized agents, skills, hooks and rules.
 
 ## WHY
 
-| Problema | Solución |
-|----------|----------|
-| Sin orquestación | 7 agentes especializados con routing por complejidad |
-| Sin validación automática | 15 hooks (pre/post/stop) |
-| Sin conocimiento de dominio | 15 skills auto-matcheadas por keywords |
-| Sin memoria persistente | Sistema de memoria semántica |
+| Problem | Solution |
+|---------|----------|
+| No orchestration | 7 specialized agents with complexity-based routing |
+| No automatic validation | 15 hooks (pre/post/stop) |
+| No domain knowledge | 15 skills auto-matched by keywords |
+| No persistent memory | Semantic memory system |
 
 ## HOW
 
@@ -67,71 +67,71 @@ graph LR
     Orch --> Hooks[15 Hooks]
 ```
 
-## Estructura
+## Structure
 
 ```
 .claude/
-├── agents/       # 7 agentes especializados
-├── skills/       # 15 skills con auto-matching
+├── agents/       # 7 specialized agents
+├── skills/       # 15 skills with auto-matching
 ├── hooks/        # Hooks pre/post/stop
-├── rules/        # Reglas de orquestación
+├── rules/        # Orchestration rules
 ├── commands/     # Slash commands
-└── agent_docs/   # Documentación extendida
+└── agent_docs/   # Extended documentation
 ```
 
 ## Anti-Hallucination
 
-1. `Glob` antes de afirmar existencia de archivo
-2. `LSP/Grep` antes de afirmar existencia de función
-3. `Read` antes de `Edit`
-4. Preguntar si confidence < 70%
+1. `Glob` before asserting file existence
+2. `LSP/Grep` before asserting function existence
+3. `Read` before `Edit`
+4. Ask if confidence < 70%
 
 ## Tool Hierarchy
 
-LSP (primario) > Grep (fallback) > Glob (archivos)
+LSP (primary) > Grep (fallback) > Glob (files)
 
 ## Extended Context
 
-| Comando | Contenido |
-|---------|-----------|
-| `/load-security` | Patrones de seguridad |
+| Command | Content |
+|---------|---------|
+| `/load-security` | Security patterns |
 | `/load-testing-strategy` | Testing |
 
 ## Lead Orchestrator Mode
 
-Esta sesión actúa como **orquestador puro**. NO ejecuta código directamente.
+This session acts as a **pure orchestrator**. Does NOT execute code directly.
 
-### Herramientas Permitidas
+### Allowed Tools
 
-| Tool | Uso |
+| Tool | Use |
 |------|-----|
-| `Task` | Delegar a agentes (builder, reviewer, planner, error-analyzer, scout) |
-| `Skill` | Cargar skills para contexto |
-| `AskUserQuestion` | Clarificar requisitos |
-| `TaskList/Create/Update` | Gestionar lista de tareas |
+| `Task` | Delegate to agents (builder, reviewer, planner, error-analyzer, scout) |
+| `Skill` | Load skills for context |
+| `AskUserQuestion` | Clarify requirements |
+| `TaskList/Create/Update` | Manage task list |
 
-### Herramientas PROHIBIDAS
+### PROHIBITED Tools
 
-| Tool | Alternativa |
+| Tool | Alternative |
 |------|-------------|
-| `Read` | Delegar a scout o builder |
-| `Edit` | Delegar a builder |
-| `Write` | Delegar a builder |
-| `Bash` | Delegar a builder |
-| `Glob` | Delegar a scout/Explore |
-| `Grep` | Delegar a scout/Explore |
-| `WebFetch/WebSearch` | Los agentes tienen acceso |
+| `Read` | Delegate to scout or builder |
+| `Edit` | Delegate to builder |
+| `Write` | Delegate to builder |
+| `Bash` | Delegate to builder |
+| `Glob` | Delegate to scout/Explore |
+| `Grep` | Delegate to scout/Explore |
+| `WebFetch/WebSearch` | Agents have access |
 
-### Flujo Obligatorio
+### Mandatory Flow
 
 ```mermaid
 graph TD
-    U[Usuario] --> S[Score Prompt]
+    U[User] --> S[Score Prompt]
     S -->|< 70| PE[prompt-engineer skill]
-    S -->|>= 70| C[Calcular Complejidad]
-    C -->|< 30| B[builder directo]
-    C -->|30-60| P1[planner opcional]
-    C -->|> 60| P2[planner obligatorio]
+    S -->|>= 70| C[Calculate Complexity]
+    C -->|< 30| B[builder direct]
+    C -->|30-60| P1[planner optional]
+    C -->|> 60| P2[planner mandatory]
     P1 & P2 --> B[builder]
     B --> R[reviewer checkpoint]
     R -->|APPROVED| D[Done]
@@ -142,32 +142,32 @@ graph TD
 
 ### Execution Modes
 
-| Mode | Cuando | Como | Coste |
-|------|--------|------|-------|
-| **Subagents** (default) | Siempre, salvo criterios team | `Task()` hub-spoke via Lead | 1x |
-| **Team Agents** (experimental) | Complexity >60 + 3+ dominios independientes + comunicacion inter-agente | Procesos Claude Code independientes por dominio | 3-7x |
+| Mode | When | How | Cost |
+|------|------|-----|------|
+| **Subagents** (default) | Always, except team criteria | `Task()` hub-spoke via Lead | 1x |
+| **Team Agents** (experimental) | Complexity >60 + 3+ independent domains + inter-agent communication | Independent Claude Code processes per domain | 3-7x |
 
-El planner decide el modo. Ver `.claude/rules/complexity-routing.md` para criterios.
-Requiere `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` en settings.json.
+The planner decides the mode. See `.claude/rules/complexity-routing.md` for criteria.
+Requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` in settings.json.
 
-### Reglas Clave
+### Key Rules
 
-1. **Evaluar prompt** con scoring de 5 criterios (ver `.claude/rules/prompt-scoring.md`)
-2. **Calcular complejidad** antes de delegar (ver `.claude/rules/complexity-routing.md`)
-3. **Cargar skills relevantes** por keywords (ver `.claude/rules/skill-matching.md`)
-4. **Delegar implementación** a builder, NUNCA implementar directamente
-5. **Validar con reviewer** en checkpoints críticos
-6. **Analizar errores** con error-analyzer si falla
-7. **Paralelizar delegacion** cuando sea posible (ver `.claude/rules/lead-orchestrator.md`)
+1. **Evaluate prompt** with 5-criteria scoring (see `.claude/rules/prompt-scoring.md`)
+2. **Calculate complexity** before delegating (see `.claude/rules/complexity-routing.md`)
+3. **Load relevant skills** by keywords (see `.claude/rules/skill-matching.md`)
+4. **Delegate implementation** to builder, NEVER implement directly
+5. **Validate with reviewer** at critical checkpoints
+6. **Analyze errors** with error-analyzer if it fails
+7. **Parallelize delegation** when possible (see `.claude/rules/lead-orchestrator.md`)
 
-### Verificacion Post-Implementacion (OBLIGATORIO)
+### Post-Implementation Verification (MANDATORY)
 
-Builder verifica automaticamente via Stop hook `validate-tests-pass.ts`. Lead NO ejecuta comandos directamente.
+Builder verifies automatically via Stop hook `validate-tests-pass.ts`. Lead does NOT execute commands directly.
 
-| Paso | Quien | Accion |
-|------|-------|--------|
-| 1 | Builder (auto) | Stop hook ejecuta `bun test` |
-| 2 | Lead | Revisa reporte del builder |
-| 3 | Lead (si falla) | Delega a error-analyzer → re-delega a builder |
+| Step | Who | Action |
+|------|-----|--------|
+| 1 | Builder (auto) | Stop hook runs `bun test` |
+| 2 | Lead | Reviews builder report |
+| 3 | Lead (if fails) | Delegates to error-analyzer → re-delegates to builder |
 
-**NUNCA reportar "completado" sin que builder confirme tests passing.**
+**NEVER report "completed" without builder confirming tests passing.**
