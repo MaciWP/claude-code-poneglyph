@@ -40,7 +40,7 @@ Extract from `$ARGUMENTS`:
 | Argument | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `skill-name` | Yes | - | Name in kebab-case |
-| `type` | No | prompt user | reference, workflow, research |
+| `type` | No | prompt user | knowledge-base, encoded-preference, workflow, reference, capability-uplift |
 
 ### Step 2: Determine Type
 
@@ -62,12 +62,12 @@ What type of skill do you want to create?
 
 Ask the user based on the type:
 
-**For reference:**
+**For capability-uplift:**
 ```
-What knowledge will this skill provide?
-- Topic: (e.g., API patterns, security best practices)
-- When to trigger: (e.g., when creating APIs, when reviewing security)
-- Key patterns to include: (e.g., authentication flow, validation)
+What tool guidance will this skill provide?
+- Tool/capability: (e.g., LSP operations, advanced git, regex patterns)
+- When to trigger: (e.g., when navigating code, when searching)
+- Key techniques to include: (e.g., goToDefinition, findReferences)
 ```
 
 **For workflow:**
@@ -78,9 +78,26 @@ What task will this workflow automate?
 - Steps: (e.g., build, test, deploy)
 ```
 
-**For research:**
+**For knowledge-base:**
 ```
-What will this skill investigate?
+What domain knowledge will this skill capture?
+- Domain: (e.g., Django models, React hooks, SQL optimization)
+- Key patterns: (e.g., model inheritance, hook composition)
+- Anti-patterns to avoid: (e.g., N+1 queries, prop drilling)
+- Target agents: (e.g., builder, reviewer)
+```
+
+**For encoded-preference:**
+```
+What behavioral rules will this skill encode?
+- Rules: (e.g., always use typed errors, never use any)
+- When they apply: (e.g., all TypeScript files, only in tests)
+- Exceptions: (e.g., legacy code, generated files)
+```
+
+**For reference (research/lookup):**
+```
+What will this skill investigate or provide as reference?
 - Topic: (e.g., library comparison, architecture options)
 - Questions to answer: (e.g., best tool for X, how to implement Y)
 - Sources: (e.g., codebase, documentation, web)
@@ -118,11 +135,13 @@ What will this skill investigate?
 
 ## Templates Available
 
-| Type | File | Invocation | Context | Best For |
-|------|------|------------|---------|----------|
-| reference | `templates/reference.md` | Auto | main | Knowledge, patterns, best practices |
-| workflow | `templates/workflow.md` | Manual `/cmd` | main | Step-by-step tasks, automation |
-| research | `templates/research.md` | Auto | fork | Investigation, deep analysis |
+| Type | Template | Invocation | Best For |
+|------|----------|------------|----------|
+| knowledge-base | Yes | Auto | Domain patterns, conventions |
+| encoded-preference | Yes | Auto | Behavioral rules, standards |
+| workflow | Yes | Manual `/cmd` | Step-by-step tasks, automation |
+| reference | Yes | Auto | Lookup material, cheat sheets |
+| capability-uplift | No (use reference) | Auto | Tool guidance, advanced usage |
 
 ---
 
@@ -225,11 +244,11 @@ version: "1.0"
 
 ---
 
-## Template: Research
+## Template: Research / Reference
 
 **Location**: `templates/research.md`
 
-**Use when**: Deep investigation that benefits from isolated context.
+**Use when**: Deep investigation or lookup material that benefits from isolated context.
 
 **Frontmatter**:
 ```yaml
@@ -272,12 +291,150 @@ version: "1.0"
 
 ---
 
+## Template: Knowledge Base
+
+**Location**: `templates/knowledge-base.md`
+
+**Use when**: Capturing domain-specific patterns and conventions that agents auto-invoke during implementation or review.
+
+**Frontmatter**:
+```yaml
+---
+name: {{SKILL_NAME}}
+description: |
+  {{DESCRIPTION}}
+  Use when: {{USE_CASES}}
+  Keywords - {{KEYWORDS}}
+type: knowledge-base
+disable-model-invocation: false
+argument-hint: "[file-path or module]"
+effort: medium
+activation:
+  keywords:
+    - {{KEYWORD_1}}
+    - {{KEYWORD_2}}
+for_agents: [builder, reviewer]
+version: "1.0"
+---
+```
+
+**Placeholders to replace**:
+
+| Placeholder | Description | Example |
+|-------------|-------------|---------|
+| `{{SKILL_NAME}}` | kebab-case name | `django-patterns` |
+| `{{SKILL_TITLE}}` | Display title | `Django Patterns` |
+| `{{DESCRIPTION}}` | What knowledge it provides | `Django model and view conventions` |
+| `{{USE_CASES}}` | When to auto-load | `working with Django models, views, or serializers` |
+| `{{KEYWORDS}}` | Comma-separated keywords | `django, model, view, serializer` |
+| `{{KEYWORD_1}}, {{KEYWORD_2}}` | Activation keywords | `django`, `model` |
+| `{{PATTERN}}` | Pattern name | `Fat Models` |
+| `{{WHEN}}` | When to apply | `Business logic in models` |
+| `{{EXAMPLE}}` | Code or usage example | `model.clean()` |
+| `{{AVOID}}` | Anti-pattern | `Logic in views` |
+| `{{ALTERNATIVE}}` | Preferred approach | `Move to model method` |
+| `{{REASON}}` | Why | `Testability and reuse` |
+| `{{REFERENCE_LINKS}}` | Documentation links | `https://docs.djangoproject.com/` |
+
+**Body template**:
+```markdown
+# {{SKILL_TITLE}}
+
+## Overview
+{{OVERVIEW}}
+
+## Patterns
+| Pattern | When | Example |
+|---------|------|---------|
+| {{PATTERN}} | {{WHEN}} | {{EXAMPLE}} |
+
+## Anti-Patterns
+| Avoid | Use Instead | Why |
+|-------|-------------|-----|
+| {{AVOID}} | {{ALTERNATIVE}} | {{REASON}} |
+
+## References
+- {{REFERENCE_LINKS}}
+```
+
+**Key sections**:
+- Overview - What domain this covers
+- Patterns - Table of recommended patterns with examples
+- Anti-Patterns - What to avoid and why
+- References - External documentation links
+
+---
+
+## Template: Encoded Preference
+
+**Location**: `templates/encoded-preference.md`
+
+**Use when**: Encoding behavioral rules and standards that agents apply automatically during their work.
+
+**Frontmatter**:
+```yaml
+---
+name: {{SKILL_NAME}}
+description: |
+  {{DESCRIPTION}}
+  Use proactively when: {{USE_CASES}}
+  Keywords - {{KEYWORDS}}
+type: encoded-preference
+disable-model-invocation: false
+effort: low
+activation:
+  keywords:
+    - {{KEYWORD_1}}
+    - {{KEYWORD_2}}
+for_agents: [builder, reviewer]
+version: "1.0"
+---
+```
+
+**Placeholders to replace**:
+
+| Placeholder | Description | Example |
+|-------------|-------------|---------|
+| `{{SKILL_NAME}}` | kebab-case name | `error-handling-rules` |
+| `{{SKILL_TITLE}}` | Display title | `Error Handling Rules` |
+| `{{DESCRIPTION}}` | What rules it encodes | `Typed error handling conventions` |
+| `{{USE_CASES}}` | When to auto-load | `writing error handling, catch blocks, Result types` |
+| `{{KEYWORDS}}` | Comma-separated keywords | `error, catch, Result, typed error` |
+| `{{KEYWORD_1}}, {{KEYWORD_2}}` | Activation keywords | `error`, `catch` |
+| `{{RULE}}` | Rule name | `Always use typed errors` |
+| `{{WHEN}}` | When it applies | `Any catch block` |
+| `{{EXAMPLE}}` | Code or usage example | `catch (e: AppError)` |
+| `{{EXCEPTION}}` | Exception to the rule | `Third-party library callbacks` |
+| `{{CONTEXT}}` | When exception applies | `Library expects untyped throw` |
+| `{{HANDLING}}` | How to handle the exception | `Wrap in typed error at boundary` |
+
+**Body template**:
+```markdown
+# {{SKILL_TITLE}}
+
+## Rules
+| Rule | Applies When | Example |
+|------|-------------|---------|
+| {{RULE}} | {{WHEN}} | {{EXAMPLE}} |
+
+## Exceptions
+| Exception | Context | Handling |
+|-----------|---------|----------|
+| {{EXCEPTION}} | {{CONTEXT}} | {{HANDLING}} |
+```
+
+**Key sections**:
+- Rules - Table of behavioral rules with applicability
+- Exceptions - When rules can be relaxed and how
+
+---
+
 ## Arguments
 
 | Argument | Required | Format | Description |
 |----------|----------|--------|-------------|
 | `skill-name` | Yes | kebab-case | Unique identifier for the skill |
-| `type` | No | reference\|workflow\|research | Skill category |
+| `type` | No | knowledge-base\|encoded-preference\|workflow\|reference\|capability-uplift | Skill category |
 
 ### Validation Rules
 
@@ -285,7 +442,7 @@ version: "1.0"
 |------|-------|---------------|
 | Name format | Must be kebab-case | "Skill name must be kebab-case (e.g., api-patterns)" |
 | Name unique | No existing directory | "Skill {name} already exists at {path}" |
-| Type valid | One of 3 types | "Type must be: reference, workflow, research" |
+| Type valid | One of 5 types | "Type must be: knowledge-base, encoded-preference, workflow, reference, capability-uplift" |
 
 ---
 
@@ -707,17 +864,29 @@ project/
 | `allowed-tools` | Not a valid skill field | Use agent frontmatter `allowedTools` instead |
 | `model` | Not a valid skill field | Model routing is handled by Lead dynamically |
 
+### Invocation Model: Agents = Behavior, Skills = Knowledge
+
+Skills provide domain knowledge that any agent can leverage. The `disable-model-invocation` field controls whether agents can self-invoke the skill:
+
+| Skill Category | `disable-model-invocation` | Reason |
+|----------------|---------------------------|--------|
+| **Knowledge** (knowledge-base, reference, capability-uplift) | `false` | Any agent can invoke when needed -- builder, reviewer, etc. |
+| **Behavioral/Workflow** (workflow, mode toggles) | `true` | User-initiated -- decisions, modes, scaffolding |
+| **Meta** (encoded-preference for meta ops) | `true` | User-initiated -- agent/skill creation |
+
+A builder working on Django can self-invoke a `django-patterns` skill. A reviewer on the same project uses the same skill for review context. The skill is shared knowledge; the agent decides how to apply it.
+
 ---
 
 ## Skill Types Comparison
 
-| Aspect | Reference | Workflow | Research |
-|--------|-----------|----------|----------|
-| Invocation | Auto | Manual | Auto |
-| Context | main | main | fork |
-| Purpose | Knowledge | Tasks | Investigation |
-| Tools | None | Specified | Read, Grep, etc |
-| User triggers | Keywords | `/command` | Keywords |
+| Aspect | knowledge-base | encoded-preference | workflow | reference | capability-uplift |
+|--------|---------------|-------------------|----------|-----------|-------------------|
+| Invocation | Auto | Auto | Manual | Auto | Auto |
+| Context | main | main | main | main | main |
+| Purpose | Domain patterns | Behavioral rules | Tasks | Lookup material | Tool guidance |
+| Template | Yes | Yes | Yes | Yes | No (use reference) |
+| User triggers | Keywords | Keywords | `/command` | Keywords | Keywords |
 
 ---
 

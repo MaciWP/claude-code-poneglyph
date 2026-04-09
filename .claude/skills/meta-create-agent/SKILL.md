@@ -133,7 +133,7 @@ tools: Read, Grep, Glob
 disallowedTools: Task, Edit, Write, Bash
 permissionMode: plan
 effort: low
-maxTurns: 15
+color: cyan
 memory:
   scope: project
 ---
@@ -170,7 +170,7 @@ description: |
 tools: Read, Write, Edit, Bash, Grep, Glob, LSP
 disallowedTools: Task
 permissionMode: acceptEdits
-maxTurns: 30
+color: blue
 memory:
   scope: project
 ---
@@ -206,7 +206,7 @@ tools: Bash, Read
 disallowedTools: Task, Edit, Write
 permissionMode: default
 effort: low
-maxTurns: 10
+color: orange
 ---
 ```
 
@@ -241,7 +241,7 @@ description: |
 tools: Read, Grep, Glob, WebSearch, WebFetch
 disallowedTools: Task, Edit, Write
 permissionMode: plan
-maxTurns: 20
+color: purple
 memory:
   scope: project
 ---
@@ -298,7 +298,7 @@ tools: Read, Grep, Glob
 disallowedTools: Task, Edit, Write, Bash
 permissionMode: plan
 effort: low
-maxTurns: 15
+color: cyan
 memory:
   scope: project
 skills:
@@ -359,7 +359,7 @@ tools: Bash, Read
 disallowedTools: Task, Edit, Write
 permissionMode: default
 effort: low
-maxTurns: 10
+color: orange
 ---
 
 You execute test commands and report results clearly.
@@ -421,7 +421,7 @@ description: |
 tools: Read, Write, Edit, Bash, Grep, Glob, LSP
 disallowedTools: Task
 permissionMode: acceptEdits
-maxTurns: 30
+color: blue
 memory:
   scope: project
 skills: []
@@ -507,8 +507,9 @@ When invoked:
 | `tools` | string | **Yes** | Comma-separated tool whitelist. Plain names only (no scoped syntax like `Task(scout)`) |
 | `disallowedTools` | string/list | No | Tools blocked. **camelCase** (e.g., `Task`, `NotebookEdit`) — NOT snake_case |
 | `permissionMode` | string | No | `default`, `plan`, `acceptEdits`, `dontAsk`, `bypassPermissions` |
-| `effort` | string | No | `low`/`medium`/`high`. Only set if **invariable** for this agent type |
-| `maxTurns` | number | No | Safety net for max turns. Use generous values, not flow control |
+| `effort` | string | No | Only if invariable. Options: `low`, `medium`, `high`, `max` (Opus 4.6 only) |
+| `maxTurns` | number | No | Optional hard stop. **Caution**: when reached, no result is returned and work is lost. Default (no limit) is correct for well-scoped tasks. Only set if running in CI/production pipelines. |
+| `color` | string | No | Visual identifier: `red`, `blue`, `green`, `yellow`, `purple`, `orange`, `pink`, `cyan` |
 | `skills` | list | No | Skills auto-loaded when agent starts |
 | `memory` | object | No | `scope: user\|project\|local` |
 | `background` | boolean | No | `true` = always run in background |
