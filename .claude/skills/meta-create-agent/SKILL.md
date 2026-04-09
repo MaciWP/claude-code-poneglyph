@@ -1,8 +1,8 @@
 ---
 name: meta-create-agent
 description: |
-  Meta-skill para crear subagentes de Claude Code desde templates estandarizados.
-  Use proactively when: crear nuevo agente, scaffolding de agente, definir especialista delegado.
+  Meta-skill for creating Claude Code subagents from standardized templates.
+  Use proactively when: creating a new agent, agent scaffolding, defining a delegated specialist.
   Keywords - create, agent, subagent, template, scaffold, specialist, delegate
 type: encoded-preference
 disable-model-invocation: true
@@ -21,29 +21,29 @@ version: "1.0"
 
 # Create Agent
 
-Meta-skill para generar subagentes de Claude Code desde templates estandarizados.
+Meta-skill for generating Claude Code subagents from standardized templates.
 
 ## When to Use
 
-Activar esta skill cuando:
-- Usuario pide crear un nuevo agente/subagente
-- Necesidad de scaffolding para especialista delegado
-- Solicitud de template de agente
+Activate this skill when:
+- User requests creating a new agent/subagent
+- Need for scaffolding a delegated specialist
+- Request for an agent template
 
 ## Workflow
 
 ### Step 1: Parse Arguments
 
-Extraer de `$ARGUMENTS`:
+Extract from `$ARGUMENTS`:
 
 | Argument | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `agent-name` | Yes | - | Nombre en kebab-case |
+| `agent-name` | Yes | - | Name in kebab-case |
 | `type` | No | prompt user | reader, builder, executor, researcher |
 
 ### Step 2: Determine Type
 
-Si `type` no fue proporcionado, preguntar:
+If `type` was not provided, ask:
 
 ```
 What type of agent do you want to create?
@@ -58,7 +58,7 @@ What type of agent do you want to create?
 
 ### Step 3: Gather Specialization
 
-Preguntar al usuario:
+Ask the user:
 
 ```
 What will this agent specialize in?
@@ -69,9 +69,9 @@ What will this agent specialize in?
 
 ### Step 4: Generate Agent File
 
-1. Leer template desde `.claude/skills/meta-create-agent/templates/{type}.md`
-2. Reemplazar placeholders con valores del usuario
-3. Escribir archivo a `.claude/agents/{category}/{agent-name}.md`
+1. Read template from `.claude/skills/meta-create-agent/templates/{type}.md`
+2. Replace placeholders with user-provided values
+3. Write file to `.claude/agents/{category}/{agent-name}.md`
 
 **Category mapping:**
 
@@ -215,7 +215,7 @@ maxTurns: 10
 | Placeholder | Description | Example |
 |-------------|-------------|---------|
 | `{{AGENT_NAME}}` | kebab-case name (used as filename) | `test-runner` |
-| `{{DESCRIPTION}}` | What commands | `Test execution specialist` |
+| `{{DESCRIPTION}}` | What commands it runs | `Test execution specialist` |
 | `{{TRIGGER_CONDITION}}` | When to delegate | `running tests, checking test results` |
 | `{{KEYWORDS}}` | Comma-separated keywords for matching | `test, run, execute, coverage` |
 | `{{PURPOSE}}` | Command purpose | `running and reporting test results` |

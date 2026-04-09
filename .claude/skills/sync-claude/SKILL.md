@@ -1,7 +1,7 @@
 ---
 name: sync-claude
 description: |
-  Sincroniza .claude/ del proyecto poneglyph a ~/.claude/ global via symlinks.
+  Syncs .claude/ from the poneglyph project to ~/.claude/ global via symlinks.
   Use proactively when: setting up new environment, sharing config globally.
   Keywords - sync, config, global, claude, settings, symlink, setup
 activation:
@@ -22,167 +22,167 @@ disable-model-invocation: false
 
 # Sync Claude Config
 
-Crea symlinks en `~/.claude/` que apuntan a `poneglyph/.claude/`, permitiendo usar los skills/agents/commands en cualquier proyecto.
+Creates symlinks in `~/.claude/` pointing to `poneglyph/.claude/`, allowing skills/agents/commands to be used in any project.
 
-## Compatibilidad Multi-SO
+## Multi-OS Compatibility
 
-| SO | Método por defecto | Permisos requeridos |
-|----|-------------------|---------------------|
-| Windows | Junction | Ninguno |
+| OS | Default method | Required permissions |
+|----|----------------|----------------------|
+| Windows | Junction | None |
 | Windows (Dev Mode) | Symlink | Developer Mode ON |
-| macOS | Symlink | Permisos de usuario |
-| Linux | Symlink | Permisos de usuario |
+| macOS | Symlink | User permissions |
+| Linux | Symlink | User permissions |
 
-## Workflow Recomendado
+## Recommended Workflow
 
 ```mermaid
 graph TD
-    A[1. --check] --> B{Sistema OK?}
-    B -->|Sí| C[2. Preview sin flags]
-    B -->|No| D[Seguir recomendaciones]
+    A[1. --check] --> B{System OK?}
+    B -->|Yes| C[2. Preview without flags]
+    B -->|No| D[Follow recommendations]
     D --> A
-    C --> E{Contenido existente?}
-    E -->|Sí| F[3. --execute --backup]
+    C --> E{Existing content?}
+    E -->|Yes| F[3. --execute --backup]
     E -->|No| G[3. --execute]
-    F --> H[4. --status verificar]
+    F --> H[4. --status verify]
     G --> H
 ```
 
-## Uso
+## Usage
 
-### 1. Verificar sistema (recomendado primero)
+### 1. Verify system (recommended first)
 
 ```bash
 bun .claude/skills/sync-claude/scripts/sync-claude.ts --check
 ```
 
-Muestra:
-- OS y versión
-- Si eres admin/root
+Shows:
+- OS and version
+- Whether you are admin/root
 - Developer Mode (Windows)
-- Si puede crear symlinks/junctions
-- Recomendaciones si algo falta
+- Whether symlinks/junctions can be created
+- Recommendations if anything is missing
 
-### 2. Preview de cambios
+### 2. Preview changes
 
 ```bash
 bun .claude/skills/sync-claude/scripts/sync-claude.ts
 ```
 
-### 3. Ejecutar sincronización
+### 3. Run sync
 
 ```bash
 # Normal
 bun .claude/skills/sync-claude/scripts/sync-claude.ts --execute
 
-# Con backup de contenido existente
+# With backup of existing content
 bun .claude/skills/sync-claude/scripts/sync-claude.ts --execute --backup
 
-# Forzar método específico
+# Force specific method
 bun .claude/skills/sync-claude/scripts/sync-claude.ts --method junction --execute
 ```
 
-### 4. Ver estado actual
+### 4. View current status
 
 ```bash
 bun .claude/skills/sync-claude/scripts/sync-claude.ts --status
 ```
 
-### 5. Deshacer (eliminar symlinks)
+### 5. Undo (remove symlinks)
 
 ```bash
 bun .claude/skills/sync-claude/scripts/sync-claude.ts --unlink
 ```
 
-## Opciones CLI
+## CLI Options
 
-| Opción | Descripción |
+| Option | Description |
 |--------|-------------|
-| `--check` | Verificar sistema y permisos |
-| `--status` | Mostrar estado actual |
-| `--execute` | Aplicar cambios |
-| `--backup` | Guardar existentes antes de reemplazar |
-| `--unlink` | Eliminar symlinks |
-| `--method` | Forzar método: `auto`, `symlink`, `junction`, `copy` |
-| `--force` | No pedir confirmación |
+| `--check` | Verify system and permissions |
+| `--status` | Show current status |
+| `--execute` | Apply changes |
+| `--backup` | Save existing content before replacing |
+| `--unlink` | Remove symlinks |
+| `--method` | Force method: `auto`, `symlink`, `junction`, `copy` |
+| `--force` | Do not prompt for confirmation |
 
-## Métodos de Vinculación
+## Linking Methods
 
-| Método | Ventajas | Desventajas |
-|--------|----------|-------------|
-| `symlink` | Estándar, funciona con archivos y carpetas | Windows: requiere Dev Mode o Admin |
-| `junction` | Windows: sin permisos especiales | Solo carpetas, solo Windows |
-| `copy` | Funciona siempre | No sincroniza cambios |
+| Method | Advantages | Disadvantages |
+|--------|------------|---------------|
+| `symlink` | Standard, works with files and folders | Windows: requires Dev Mode or Admin |
+| `junction` | Windows: no special permissions needed | Folders only, Windows only |
+| `copy` | Always works | Does not sync changes |
 
-## Carpetas Sincronizadas
+## Synced Folders
 
-| Carpeta | Contenido |
-|---------|-----------|
-| `agents/` | Agentes delegados |
-| `skills/` | Skills reutilizables |
+| Folder | Contents |
+|--------|----------|
+| `agents/` | Delegated agents |
+| `skills/` | Reusable skills |
 | `commands/` | Slash commands |
-| `rules/` | Reglas de comportamiento |
-| `docs/` | Documentación técnica |
-| `hooks/` | Automatizaciones |
-| `workflows/` | Pipelines multi-agente |
-| `knowledge/` | Base de conocimiento |
-| `CLAUDE.md` | Instrucciones globales |
+| `rules/` | Behavior rules |
+| `docs/` | Technical documentation |
+| `hooks/` | Automations |
+| `workflows/` | Multi-agent pipelines |
+| `knowledge/` | Knowledge base |
+| `CLAUDE.md` | Global instructions |
 
-## NO Sincronizado (específico por proyecto)
+## NOT Synced (project-specific)
 
-| Carpeta | Razón |
-|---------|-------|
-| `agent_docs/` | Docs específicos del proyecto |
-| `experts/` | Expertise aprendida |
-| `plans/` | Planes temporales |
-| `metrics/` | Métricas de sesión |
+| Folder | Reason |
+|--------|--------|
+| `agent_docs/` | Project-specific docs |
+| `experts/` | Learned expertise |
+| `plans/` | Temporary plans |
+| `metrics/` | Session metrics |
 
 ## Troubleshooting
 
 ### Windows: Developer Mode
 
-Si `--check` muestra Developer Mode desactivado (y symlinks no disponibles):
+If `--check` shows Developer Mode disabled (and symlinks unavailable):
 
-1. **Opción A**: Activar Developer Mode
+1. **Option A**: Enable Developer Mode
    - Settings → Privacy & Security → For developers → Developer Mode: ON
-   - Reiniciar terminal
+   - Restart terminal
 
-2. **Opción B**: Usar junction (default)
-   - Las junctions funcionan sin permisos especiales
-   - `--method junction` es automático si symlink no disponible
+2. **Option B**: Use junction (default)
+   - Junctions work without special permissions
+   - `--method junction` is automatic when symlink is unavailable
 
-3. **Opción C**: Ejecutar como Admin
-   - Click derecho en terminal → "Run as administrator"
+3. **Option C**: Run as Admin
+   - Right-click terminal → "Run as administrator"
 
-### macOS: Permisos
+### macOS: Permissions
 
 ```bash
-# Verificar permisos de home
+# Check home permissions
 ls -la ~
 
-# Si ~/.claude tiene permisos incorrectos
+# If ~/.claude has incorrect permissions
 chmod 755 ~/.claude
 ```
 
-### Linux: Permisos
+### Linux: Permissions
 
 ```bash
-# Verificar permisos
+# Check permissions
 ls -la ~/.claude
 
-# Arreglar si es necesario
+# Fix if needed
 sudo chown -R $USER:$USER ~/.claude
 ```
 
-### Conflictos de Symlinks
+### Symlink Conflicts
 
-Si hay symlinks apuntando a otro lugar:
+If symlinks are pointing elsewhere:
 
 ```bash
-# Ver a dónde apuntan
+# See where they point
 bun .claude/skills/sync-claude/scripts/sync-claude.ts --status
 
-# Reemplazar con backup
+# Replace with backup
 bun .claude/skills/sync-claude/scripts/sync-claude.ts --execute --backup
 ```
 

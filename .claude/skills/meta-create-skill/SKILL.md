@@ -1,8 +1,8 @@
 ---
 name: meta-create-skill
 description: |
-  Meta-skill para crear skills de Claude Code desde templates estandarizados.
-  Use proactively when: crear nuevo skill, scaffolding de conocimiento, definir workflow.
+  Meta-skill for creating Claude Code skills from standardized templates.
+  Use proactively when: creating a new skill, knowledge scaffolding, defining a workflow.
   Keywords - create, skill, command, knowledge, workflow, template, scaffold
 type: encoded-preference
 disable-model-invocation: true
@@ -21,30 +21,30 @@ version: "1.0"
 
 # Create Skill
 
-Meta-skill para generar skills de Claude Code desde templates estandarizados.
+Meta-skill for generating Claude Code skills from standardized templates.
 
 ## When to Use
 
-Activar esta skill cuando:
-- Usuario pide crear una nueva skill/comando
-- Necesidad de documentar conocimiento reutilizable
-- Solicitud de workflow automatizado
-- Scaffolding de investigacion profunda
+Activate this skill when:
+- User requests creating a new skill/command
+- Need to document reusable knowledge
+- Request for an automated workflow
+- Deep investigation scaffolding
 
 ## Workflow
 
 ### Step 1: Parse Arguments
 
-Extraer de `$ARGUMENTS`:
+Extract from `$ARGUMENTS`:
 
 | Argument | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `skill-name` | Yes | - | Nombre en kebab-case |
+| `skill-name` | Yes | - | Name in kebab-case |
 | `type` | No | prompt user | reference, workflow, research |
 
 ### Step 2: Determine Type
 
-Si `type` no fue proporcionado, preguntar:
+If `type` was not provided, ask:
 
 ```
 What type of skill do you want to create?
@@ -60,7 +60,7 @@ What type of skill do you want to create?
 
 ### Step 3: Gather Details
 
-Preguntar al usuario segun el tipo:
+Ask the user based on the type:
 
 **For reference:**
 ```
@@ -88,10 +88,10 @@ What will this skill investigate?
 
 ### Step 4: Generate Skill
 
-1. Crear directorio: `.claude/skills/{skill-name}/`
-2. Leer template desde `.claude/skills/meta-create-skill/templates/{type}.md`
-3. Reemplazar placeholders con valores del usuario
-4. Escribir archivo: `.claude/skills/{skill-name}/SKILL.md`
+1. Create directory: `.claude/skills/{skill-name}/`
+2. Read template from `.claude/skills/meta-create-skill/templates/{type}.md`
+3. Replace placeholders with user-provided values
+4. Write file: `.claude/skills/{skill-name}/SKILL.md`
 
 ### Step 5: Confirm Creation
 
@@ -693,8 +693,8 @@ project/
 | `name` | string | Yes | Unique kebab-case identifier |
 | `description` | string | Yes | Purpose + "Use when:" + "Keywords -" lines |
 | `type` | string | Yes | `knowledge-base` \| `encoded-preference` \| `workflow` \| `reference` \| `capability-uplift` |
-| `disable-model-invocation` | boolean | No | `true` = manual only (workflow), `false` = auto-trigger por keywords |
-| `argument-hint` | string | No | Args en autocomplete (ej: `"[file-path or module]"`) |
+| `disable-model-invocation` | boolean | No | `true` = manual only (workflow), `false` = auto-trigger by keywords |
+| `argument-hint` | string | No | Args shown in autocomplete (e.g., `"[file-path or module]"`) |
 | `effort` | string | No | `low` (quick reference) \| `medium` (moderate analysis) \| `high` (deep audit) |
 | `activation.keywords` | list | No | YAML list of keywords for auto-matching |
 | `for_agents` | list | No | Agents that benefit most from this skill |

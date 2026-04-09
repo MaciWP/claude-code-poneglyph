@@ -1,5 +1,6 @@
 import { describe, test, expect, beforeAll, afterAll } from "bun:test";
 import { join } from "path";
+import { mkdirSync, rmSync } from "fs";
 
 const VALIDATOR_PATH = join(import.meta.dir, "validate-file-contains.ts");
 
@@ -29,7 +30,7 @@ describe("validate-file-contains", () => {
   const sampleFile = join(tempDir, "sample.ts");
 
   beforeAll(async () => {
-    await Bun.$`mkdir -p ${tempDir}`.quiet();
+    mkdirSync(tempDir, { recursive: true });
     await Bun.write(
       sampleFile,
       [
@@ -46,8 +47,8 @@ describe("validate-file-contains", () => {
     );
   });
 
-  afterAll(async () => {
-    await Bun.$`rm -rf ${tempDir}`.quiet();
+  afterAll(() => {
+    rmSync(tempDir, { recursive: true, force: true });
   });
 
   test("passes when neither VALIDATE_CONTAINS nor VALIDATE_PATTERNS is set (skip)", async () => {

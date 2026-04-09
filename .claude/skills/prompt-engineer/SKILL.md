@@ -1,7 +1,7 @@
 ---
 name: prompt-engineer
 description: |
-  Skill para mejorar prompts vagos o ambiguos mediante análisis y reformulación estructurada.
+  Skill for improving vague or ambiguous prompts through analysis and structured reformulation.
   Use proactively when: prompt score < 70, requirements unclear, vague instructions.
   Keywords - prompt, improve, refine, clarify, ambiguous, vague, requirements
 type: encoded-preference

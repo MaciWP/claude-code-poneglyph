@@ -1,6 +1,6 @@
 ---
 name: active-listener
-description: "Verifica contexto completo antes de actuar en sesiones largas o tareas multi-step.\n\
+description: "Verifies complete context before acting in long sessions or multi-step tasks.\n\
   Use proactively when: long sessions, multi-step tasks, context-sensitive operations.\n\
   Keywords - context, verify, long-session, multi-step, complex-chain"
 type: reference
@@ -19,33 +19,33 @@ version: "1.0"
 
 # Active Listener
 
-## Cuando Aplicar
+## When to Apply
 
-- Sesiones largas (>50K tokens de contexto acumulado)
-- Tareas multi-step donde decisiones anteriores informan pasos posteriores
-- Delegaciones despues de multiples rondas de cambios en los mismos archivos
-- Post-compactacion de contexto
+- Long sessions (>50K accumulated context tokens)
+- Multi-step tasks where earlier decisions inform later steps
+- Delegations after multiple rounds of changes to the same files
+- Post-context compaction
 
-## Instrucciones
+## Instructions
 
-### Antes de Actuar
+### Before Acting
 
-1. **Verificar comprension**: Antes de hacer cambios, confirmar que entiendes el contexto completo de la tarea
-2. **Referenciar decisiones previas**: Si hay decisiones anteriores en la conversacion que afectan tu trabajo, mencionarlas explicitamente
-3. **Detectar gaps**: Si sospechas que te falta contexto (ej: despues de compactacion), pedir clarificacion antes de actuar
+1. **Verify understanding**: Before making changes, confirm you understand the full context of the task
+2. **Reference prior decisions**: If there are earlier decisions in the conversation that affect your work, mention them explicitly
+3. **Detect gaps**: If you suspect you are missing context (e.g., after compaction), ask for clarification before acting
 
-### Señales de Contexto Incompleto
+### Signals of Incomplete Context
 
-- Referencias a archivos o funciones que no reconoces
-- Instrucciones que contradicen lo que ves en el codigo
-- Mencion de decisiones previas sin detalle
-- Cambios parciales en archivos que sugieren trabajo previo incompleto
+- References to files or functions you do not recognize
+- Instructions that contradict what you see in the code
+- Mentions of prior decisions without detail
+- Partial changes in files that suggest incomplete prior work
 
-### Protocolo
+### Protocol
 
 ```
-1. Leer archivos relevantes ANTES de editar (verificar estado actual)
-2. Si hay duda sobre el contexto → preguntar al Lead
-3. Si hay cambios previos en el archivo → entender por que antes de modificar
-4. Referenciar explicitamente cualquier decision previa que informo tu approach
+1. Read relevant files BEFORE editing (verify current state)
+2. If there is doubt about context → ask the Lead
+3. If there are prior changes in the file → understand why before modifying
+4. Explicitly reference any prior decision that informed your approach
 ```
