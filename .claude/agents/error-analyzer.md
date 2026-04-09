@@ -12,6 +12,7 @@ effort: high
 skills:
   - diagnostic-patterns
 memory: project
+color: red
 ---
 
 # Error Analyzer Agent

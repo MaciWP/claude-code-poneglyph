@@ -10,6 +10,7 @@ disallowedTools: Edit, Write, Bash, Task
 permissionMode: plan
 effort: high
 memory: project
+color: purple
 ---
 
 # Planner Agent

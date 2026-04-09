@@ -10,6 +10,7 @@ effort: high
 skills:
   - code-quality
 memory: project
+color: orange
 ---
 
 # Architect Agent

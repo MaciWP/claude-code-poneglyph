@@ -14,6 +14,7 @@ skills:
   - anti-hallucination
 memory: project
 background: true
+color: green
 ---
 
 # Reviewer Agent

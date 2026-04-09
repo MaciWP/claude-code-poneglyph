@@ -11,6 +11,7 @@ effort: low
 skills:
   - lsp-operations
   - anti-hallucination
+color: cyan
 ---
 # Scout Agent
 

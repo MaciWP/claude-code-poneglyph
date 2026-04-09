@@ -12,6 +12,7 @@ memory: project
 skills:
   - meta-create-agent
   - meta-create-skill
+color: pink
 ---
 
 # Extension Architect

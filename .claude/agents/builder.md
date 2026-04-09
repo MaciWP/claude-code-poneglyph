@@ -16,6 +16,7 @@ hooks:
           command: "bun .claude/hooks/validators/stop/validate-tests-pass.ts"
           timeout: 120
 memory: project
+color: blue
 ---
 
 # Builder Agent
