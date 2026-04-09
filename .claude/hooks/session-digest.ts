@@ -25,7 +25,7 @@ import {
 } from "./lib/context-store";
 import { persistToKnowledge } from "./lib/context-store/bridge";
 
-const MINING_THRESHOLD = 50;
+const MINING_THRESHOLD = 10;
 const TAG = "[session-digest]";
 
 function log(message: string): void {

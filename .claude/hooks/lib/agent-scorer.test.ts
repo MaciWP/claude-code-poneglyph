@@ -97,6 +97,39 @@ describe("extractMetrics", () => {
     const metrics = extractMetrics([], "builder");
     expect(metrics.sessionCount).toBe(0);
   });
+
+  test("counts stop status as success (real-world stop_hook_event)", () => {
+    const traces = [
+      mockTrace({ status: "stop" }),
+      mockTrace({ status: "stop" }),
+      mockTrace({ status: "stop" }),
+    ];
+    const metrics = extractMetrics(traces, "builder");
+    expect(metrics.successRate).toBe(1.0);
+  });
+
+  test("counts non-error statuses as success", () => {
+    const traces = [
+      mockTrace({ status: "completed" }),
+      mockTrace({ status: "stop" }),
+      mockTrace({ status: "unknown" }),
+      mockTrace({ status: "error" }),
+      mockTrace({ status: "timeout" }),
+    ];
+    const metrics = extractMetrics(traces, "builder");
+    expect(metrics.successRate).toBeCloseTo(0.6, 2);
+  });
+
+  test("all error statuses produce zero success rate", () => {
+    const traces = [
+      mockTrace({ status: "error" }),
+      mockTrace({ status: "failed" }),
+      mockTrace({ status: "timeout" }),
+      mockTrace({ status: "interrupted" }),
+    ];
+    const metrics = extractMetrics(traces, "builder");
+    expect(metrics.successRate).toBe(0);
+  });
 });
 
 describe("calculateCompositeScore", () => {

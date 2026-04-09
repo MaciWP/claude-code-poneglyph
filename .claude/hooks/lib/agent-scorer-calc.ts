@@ -12,6 +12,8 @@ import {
   TREND_MIN_HISTORY,
 } from "./agent-scorer-types";
 
+const ERROR_STATUSES = new Set(["error", "failed", "timeout", "interrupted"]);
+
 export function classifyTaskType(agent: string): TaskType {
   return AGENT_TASK_TYPES[agent] ?? "implementation";
 }
@@ -35,8 +37,8 @@ export function extractMetrics(
 
   const recent = agentTraces.slice(-ROLLING_WINDOW);
   const count = recent.length;
-  const completed = recent.filter((t) => t.status === "completed").length;
-  const successRate = completed / count;
+  const succeeded = recent.filter((t) => !ERROR_STATUSES.has(t.status)).length;
+  const successRate = succeeded / count;
 
   let totalRetries = 0;
   for (const trace of recent) {

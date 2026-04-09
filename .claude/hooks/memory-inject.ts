@@ -4,6 +4,10 @@ import { existsSync } from "node:fs";
 import { loadPatterns } from "./lib/pattern-learning";
 import { loadScores } from "./lib/agent-scorer";
 import { loadRecentLessons } from "./lib/lessons-recorder";
+import {
+  loadPatterns as loadErrorPatterns,
+  getBestFix,
+} from "./lib/error-patterns";
 import { getSkillsForPath } from "./lib/path-rule-loader";
 import {
   createStore,
@@ -157,9 +161,12 @@ async function buildEnrichmentContext(): Promise<string> {
       }
     }
 
-    if (scores.length > 0) {
+    const meaningful = scores.filter(
+      (s) => s.successRate > 0 || s.sampleSize >= 5,
+    );
+    if (meaningful.length > 0) {
       lines.push("\n## Agent Success Rates");
-      for (const s of scores) {
+      for (const s of meaningful) {
         const successPct = Math.round(s.successRate * 100);
         lines.push(
           `- ${s.agent}: ${successPct}% success (${s.sampleSize} tasks)`,
@@ -175,6 +182,32 @@ async function buildEnrichmentContext(): Promise<string> {
           `- [${date}] ${l.lesson}${l.skill ? ` (skill: ${l.skill})` : ""}`,
         );
       }
+    }
+
+    try {
+      const errorPatterns = loadErrorPatterns();
+      const useful = errorPatterns
+        .filter((p) => {
+          const fix = getBestFix(p);
+          if (!fix) return false;
+          const successfulFixes = p.fixes.filter((f) => f.succeeded).length;
+          return p.fixes.length > 0 && successfulFixes / p.fixes.length > 0.5;
+        })
+        .sort((a, b) => b.occurrences - a.occurrences)
+        .slice(0, 5);
+
+      if (useful.length > 0) {
+        lines.push("\n## Known Error Patterns");
+        for (const p of useful) {
+          const fix = getBestFix(p);
+          const successPct = Math.round(p.successRate * 100);
+          lines.push(
+            `- ${p.normalizedMessage}: fix → ${fix} (${successPct}% success, ${p.occurrences} hits)`,
+          );
+        }
+      }
+    } catch {
+      // best-effort — never break memory-inject for error patterns
     }
 
     return lines.length > 0 ? lines.join("\n") : "";

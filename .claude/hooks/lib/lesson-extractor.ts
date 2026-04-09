@@ -1,13 +1,6 @@
 import { readFileSync } from "fs";
 import { recordLesson } from "./lessons-recorder";
 
-const CORRECTION_PATTERNS = [
-  /(?:no,?\s+(?:actually|that's wrong|eso no|no hagas|te dije))\s*[,.:]\s*(.+)/gi,
-  /(?:wrong|incorrecto|mal)[,.:]\s*(.+)/gi,
-  /(?:I said|te dije|ya te dije)\s+(.+)/gi,
-  /(?:don't|no)\s+(?:do that|hagas eso)[,.:]\s*(.+)/gi,
-];
-
 const MIN_LENGTH = 10;
 const MAX_LENGTH = 500;
 
@@ -32,20 +25,27 @@ function extractPromptsFromTraceFile(traceFilePath: string): string[] {
   return prompts;
 }
 
-function findFirstCorrection(text: string): string | null {
-  for (const pattern of CORRECTION_PATTERNS) {
-    pattern.lastIndex = 0;
-    const match = pattern.exec(text);
-    if (!match) continue;
-    const correction = match[1]?.trim();
-    if (
-      correction &&
-      correction.length > MIN_LENGTH &&
-      correction.length < MAX_LENGTH
-    ) {
-      return correction;
+function findExplicitLesson(text: string): string | null {
+  const trimmed = text.trim();
+
+  // /learn command: "/learn <lesson text>"
+  const learnMatch = /^\/learn\s+(.+)/is.exec(trimmed);
+  if (learnMatch) {
+    const lesson = learnMatch[1]?.trim();
+    if (lesson && lesson.length >= MIN_LENGTH && lesson.length <= MAX_LENGTH) {
+      return lesson;
     }
   }
+
+  // Explicit "lesson:" or "remember:" prefix anywhere in the message
+  const explicitMatch = /(?:^|\n)\s*(?:lesson|remember):\s*(.+)/i.exec(trimmed);
+  if (explicitMatch) {
+    const lesson = explicitMatch[1]?.trim();
+    if (lesson && lesson.length >= MIN_LENGTH && lesson.length <= MAX_LENGTH) {
+      return lesson;
+    }
+  }
+
   return null;
 }
 
@@ -56,14 +56,14 @@ export function extractAndRecordLessons(
   const prompts = extractPromptsFromTraceFile(traceFilePath);
 
   for (const prompt of prompts) {
-    const correction = findFirstCorrection(prompt);
-    if (correction) {
+    const lesson = findExplicitLesson(prompt);
+    if (lesson) {
       recordLesson({
-        context: `Auto-detected from session ${sessionId ?? "unknown"}`,
-        correction,
-        lesson: correction,
+        context: `Explicit lesson from session ${sessionId ?? "unknown"}`,
+        correction: lesson,
+        lesson,
       });
-      return correction;
+      return lesson;
     }
   }
   return null;
