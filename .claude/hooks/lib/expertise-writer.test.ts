@@ -98,6 +98,57 @@ describe("extractExpertiseInsights", () => {
     const result = extractExpertiseInsights(transcript);
     expect(result).toContain("- block insight");
   });
+
+  test("returns null when insights contain template placeholder text", () => {
+    const transcript = makeTranscript([
+      { role: "user", content: "task" },
+      {
+        role: "assistant",
+        content:
+          "Done.\n\n### Expertise Insights\n- [1-5 insights concretos y reutilizables]\n",
+      },
+    ]);
+    expect(extractExpertiseInsights(transcript)).toBeNull();
+  });
+
+  test("returns null when insights contain 'What to include' instructions", () => {
+    const transcript = makeTranscript([
+      { role: "user", content: "task" },
+      {
+        role: "assistant",
+        content:
+          "Done.\n\n### Expertise Insights\n- real insight\n\n**What to include**: patterns\n**What NOT to include**: ephemeral data\n",
+      },
+    ]);
+    expect(extractExpertiseInsights(transcript)).toBeNull();
+  });
+
+  test("returns null when insights contain 'Que incluir' instructions", () => {
+    const transcript = makeTranscript([
+      { role: "user", content: "task" },
+      {
+        role: "assistant",
+        content:
+          "Done.\n\n### Expertise Insights\n- insight\n\n**Que incluir**: patrones\n**Que NO incluir**: detalles\n",
+      },
+    ]);
+    expect(extractExpertiseInsights(transcript)).toBeNull();
+  });
+
+  test("still returns valid insights after contamination guard", () => {
+    const transcript = makeTranscript([
+      { role: "user", content: "task" },
+      {
+        role: "assistant",
+        content:
+          "Done.\n\n### Expertise Insights\n- Bun mock.module is global and persistent across test files\n- Always use spyOn instead of mock.module when possible\n",
+      },
+    ]);
+    const result = extractExpertiseInsights(transcript);
+    expect(result).not.toBeNull();
+    expect(result).toContain("Bun mock.module is global");
+    expect(result).toContain("spyOn instead of mock.module");
+  });
 });
 
 describe("persistExpertise", () => {

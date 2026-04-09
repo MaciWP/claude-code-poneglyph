@@ -41,6 +41,10 @@ export function extractExpertiseInsights(transcript: TranscriptMessage[]): strin
 
   const body = match[1].trim();
   if (!body) return null;
+
+  const contamination = /\[1-5 insights|\*\*(?:Que|What)\s+(?:NO[T]?\s+)?(?:to\s+)?inclu/i;
+  if (contamination.test(body)) return null;
+
   return body;
 }
 

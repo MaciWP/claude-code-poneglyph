@@ -189,10 +189,9 @@ async function run(): Promise<void> {
     let insights = extractExpertiseInsights(lines as TranscriptMessage[]);
 
     if (!insights && typeof input.last_assistant_message === "string") {
-      const match = input.last_assistant_message.match(/#{2,3}\s+Expertise Insights\s*\n([\s\S]*?)(?=\n#{1,3}\s|\n*$)/);
-      if (match && match[1].trim()) {
-        insights = match[1].trim();
-      }
+      insights = extractExpertiseInsights([
+        { role: "assistant", content: input.last_assistant_message },
+      ]);
     }
 
     if (insights) {
