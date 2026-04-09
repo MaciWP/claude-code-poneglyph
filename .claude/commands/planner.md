@@ -1,133 +1,133 @@
 ---
-description: Motor de Estrategia del Orquestador - Genera Grafos de Ejecución Validados con datos de alta calidad
+description: Orchestrator Strategy Engine - Generates Validated Execution Graphs with high-quality data
 model: opus
 version: 5.0.0
 ---
 
 # /planner
 
-Motor de Estrategia del Orquestador. Traduce intenciones humanas en Grafos de Ejecución Validados que minimizan errores y maximizan paralelismo, usando siempre datos de la más alta calidad disponible.
+Orchestrator Strategy Engine. Translates human intentions into Validated Execution Graphs that minimize errors and maximize parallelism, always using the highest quality data available.
 
 ---
 
-## 0. METAS FUNDAMENTALES
+## 0. FUNDAMENTAL GOALS
 
-Mantener activas durante TODA la planificación y ejecución:
+Keep these active throughout ALL planning and execution:
 
-| Meta | Regla |
-|------|-------|
-| **Certeza** | Verificar con Glob/Grep/Read ANTES de afirmar. Nunca asumir. |
-| **Anti-Alucinación** | `Glob('path/file.ts')` antes de referenciarlo. Si no existe → "necesita crearse". |
-| **Calidad** | Patterns del proyecto > shortcuts. Consultar documentación oficial si hay duda. |
-| **Paralelización** | Múltiples tools independientes en UN mensaje. Batch operations. |
-| **Tokens** | Cargar solo lo necesario, PERO gastar si mejora certeza/calidad. |
-| **Claridad** | Cada paso ejecutable sin preguntas. Tablas > prosa. |
-| **Trazabilidad** | Milestones definidos. Dependencias explícitas. |
-| **TDD** | Cada función planificada → su test correspondiente. |
-| **Feedback Loop** | Verificar con el entorno real después de cada paso. |
+| Goal | Rule |
+|------|------|
+| **Certainty** | Verify with Glob/Grep/Read BEFORE asserting. Never assume. |
+| **Anti-Hallucination** | `Glob('path/file.ts')` before referencing it. If it does not exist → "needs to be created". |
+| **Quality** | Project patterns > shortcuts. Consult official documentation when in doubt. |
+| **Parallelization** | Multiple independent tools in ONE message. Batch operations. |
+| **Tokens** | Load only what is needed, BUT spend if it improves certainty/quality. |
+| **Clarity** | Each step executable without questions. Tables > prose. |
+| **Traceability** | Milestones defined. Dependencies explicit. |
+| **TDD** | Each planned function → its corresponding test. |
+| **Feedback Loop** | Verify with the real environment after each step. |
 
 ---
 
-## 1. PROTOCOLO DE DISCOVERY (OBLIGATORIO)
+## 1. DISCOVERY PROTOCOL (MANDATORY)
 
-Antes de generar cualquier plan, consultar estas fuentes. **No suponer nada.**
+Before generating any plan, consult these sources. **Assume nothing.**
 
-### A. Fuentes Estáticas (Reglas del Juego)
+### A. Static Sources (Rules of the Game)
 
-| Archivo | Propósito | Qué buscar |
-|---------|-----------|------------|
-| `docs/orchestrator/ORCHESTRATOR.md` | Filosofía, políticas | Reglas de commit, evidencias |
-| `docs/orchestrator/CAPABILITIES.md` | Inventario real | Agents, skills, scripts disponibles |
-| `reports/QUALITY_GATES.md` | Estándares calidad | Coverage, linting, CI/CD status |
+| File | Purpose | What to look for |
+|------|---------|-----------------|
+| `docs/orchestrator/ORCHESTRATOR.md` | Philosophy, policies | Commit rules, evidence |
+| `docs/orchestrator/CAPABILITIES.md` | Real inventory | Available agents, skills, scripts |
+| `reports/QUALITY_GATES.md` | Quality standards | Coverage, linting, CI/CD status |
 
-### B. Fuentes Dinámicas (Estado del Código)
+### B. Dynamic Sources (Code State)
 
-| Archivo | Propósito | Qué buscar |
-|---------|-----------|------------|
-| `package.json` | Stack y scripts | Versiones, deps, test scripts |
-| `tsconfig.json` | Config TypeScript | `strict: true`? Paths? |
-| `Glob('.claude/**/*')` | Estructura dirs | Arquitectura real del proyecto |
+| File | Purpose | What to look for |
+|------|---------|-----------------|
+| `package.json` | Stack and scripts | Versions, deps, test scripts |
+| `tsconfig.json` | TypeScript config | `strict: true`? Paths? |
+| `Glob('.claude/**/*')` | Directory structure | Real project architecture |
 
-### C. Verificación Anti-Duplicados
+### C. Anti-Duplicate Verification
 
-Antes de planificar "crear X":
+Before planning "create X":
 ```
-Glob('**/X.ts')          # ¿Ya existe?
-Glob('**/X/**')          # ¿Existe directorio?
-Grep('class X', 'src/')  # ¿Ya hay implementación?
+Glob('**/X.ts')          # Does it already exist?
+Glob('**/X/**')          # Does the directory exist?
+Grep('class X', 'src/')  # Is there already an implementation?
 ```
 
-**Si existe → modificar en lugar de crear.**
+**If it exists → modify instead of create.**
 
 ---
 
-## 2. PROTOCOLO DEEP RESEARCH (OBLIGATORIO)
+## 2. DEEP RESEARCH PROTOCOL (MANDATORY)
 
-**Principio**: PROHIBIDO usar conocimiento interno desactualizado. Consultar fuentes externas ANTES de planificar código.
+**Principle**: FORBIDDEN to use outdated internal knowledge. Consult external sources BEFORE planning code.
 
-### Cuándo Consultar Documentación Externa
+### When to Consult External Documentation
 
-| Condición | Acción OBLIGATORIA |
-|-----------|-------------------|
-| API de framework (Elysia, Bun) | Consultar documentación oficial |
-| Librería poco conocida (<10k stars) | WebSearch "[library] changelog 2025 2026" |
-| Patrón de diseño/arquitectura | WebSearch + WebFetch de repo >1k stars |
-| Cualquier duda sobre sintaxis/API | Documentación oficial ANTES de escribir código |
-| Breaking changes sospechados | WebSearch "[library] breaking changes [version]" |
+| Condition | MANDATORY Action |
+|-----------|-----------------|
+| Framework API (Elysia, Bun) | Consult official documentation |
+| Little-known library (<10k stars) | WebSearch "[library] changelog 2025 2026" |
+| Design/architecture pattern | WebSearch + WebFetch from repo >1k stars |
+| Any doubt about syntax/API | Official documentation BEFORE writing code |
+| Suspected breaking changes | WebSearch "[library] breaking changes [version]" |
 
-### Fuentes de Confianza
+### Trusted Sources
 
-| Tipo | Fuente | Confianza |
-|------|--------|-----------|
-| Docs oficiales | Sitio oficial del framework | Alta |
-| GitHub issues/discussions | Repo oficial | Media-Alta |
-| Blogs de ingeniería | Vercel, Anthropic, Google | Alta |
-| Stack Overflow | Posts recientes (2024-2026) | Media |
-| Tutoriales random | Evitar | Baja |
+| Type | Source | Trust |
+|------|--------|-------|
+| Official docs | Official framework site | High |
+| GitHub issues/discussions | Official repo | Medium-High |
+| Engineering blogs | Vercel, Anthropic, Google | High |
+| Stack Overflow | Recent posts (2024-2026) | Medium |
+| Random tutorials | Avoid | Low |
 
 ---
 
-## 3. DETECCIÓN ANTI-OBSOLESCENCIA
+## 3. ANTI-OBSOLESCENCE DETECTION
 
-**Problema**: Según [ICSE 2025](https://arxiv.org/abs/2406.09834), 25-38% del código generado por LLMs usa APIs deprecated.
+**Problem**: According to [ICSE 2025](https://arxiv.org/abs/2406.09834), 25-38% of LLM-generated code uses deprecated APIs.
 
-### Checklist Obligatorio
+### Mandatory Checklist
 
-Antes de usar cualquier API, verificar:
+Before using any API, verify:
 
-| Check | Cómo verificar | Acción si falla |
-|-------|----------------|-----------------|
-| ¿API deprecated? | Docs oficiales + buscar "deprecated" en docs | Usar API de reemplazo |
-| ¿Versión correcta? | Comparar package.json vs docs consultadas | Ajustar a versión instalada |
-| ¿Breaking changes? | WebSearch "[library] breaking changes [version]" | Aplicar migration guide |
-| ¿Patrón legacy? | Buscar "modern alternative" o "best practice 2025" | Usar patrón moderno |
+| Check | How to verify | Action if fails |
+|-------|--------------|-----------------|
+| Is the API deprecated? | Official docs + search for "deprecated" in docs | Use replacement API |
+| Correct version? | Compare package.json vs consulted docs | Adjust to installed version |
+| Breaking changes? | WebSearch "[library] breaking changes [version]" | Apply migration guide |
+| Legacy pattern? | Search for "modern alternative" or "best practice 2025" | Use modern pattern |
 
-### Patrones a RECHAZAR
+### Patterns to REJECT
 
-| ❌ Legacy/Deprecated | ✅ Moderno |
-|---------------------|------------|
-| `google-generativeai` | `google-genai` (nueva API) |
+| ❌ Legacy/Deprecated | ✅ Modern |
+|---------------------|----------|
+| `google-generativeai` | `google-genai` (new API) |
 | `OpenAIClient` Azure v1 | `AzureOpenAIClient` v2 |
 | Callbacks (`callback(err, result)`) | async/await |
 | `var` | `const`/`let` |
 | `require()` | `import` |
-| `any` types | Tipos específicos o `unknown` |
+| `any` types | Specific types or `unknown` |
 
-### Señales de Alerta
+### Warning Signals
 
-Si encuentras estos patrones en docs/ejemplos, **buscar alternativa**:
+If you find these patterns in docs/examples, **look for an alternative**:
 
 - "This API is deprecated"
 - "Legacy mode"
 - "For backwards compatibility"
-- Ejemplos con versiones < actual - 2 major versions
+- Examples with versions < current - 2 major versions
 
 ---
 
-## 4. CARGA DE CONTEXTO AUTOMÁTICA
+## 4. AUTOMATIC CONTEXT LOADING
 
-| Keywords detectados | Acción |
-|---------------------|--------|
+| Detected keywords | Action |
+|-------------------|--------|
 | elysia, backend, api, endpoint | Skill: `typescript-patterns` + `bun-best-practices` |
 | bun, runtime, server | Skill: `bun-best-practices` |
 | test, coverage, vitest | `/load-testing-strategy` |
@@ -136,396 +136,396 @@ Si encuentras estos patrones en docs/ejemplos, **buscar alternativa**:
 | config, env, settings | Skill: `config-validator` |
 | refactor, clean, simplify | Agent: `builder` |
 
-### Cuándo usar Razonamiento Estructurado
+### When to Use Structured Reasoning
 
-| Usar SI | NO usar |
-|---------|---------|
-| Arquitectura nueva | Fix de una línea |
-| Refactoring multi-archivo | Cambio de config simple |
-| Decisiones de diseño | Tarea con solución obvia |
-| Múltiples soluciones válidas | - |
-| Debugging complejo | - |
+| Use IF | Do NOT use |
+|--------|-----------|
+| New architecture | Single-line fix |
+| Multi-file refactoring | Simple config change |
+| Design decisions | Task with an obvious solution |
+| Multiple valid solutions | - |
+| Complex debugging | - |
 
-**Config**: 10-15+ thoughts para tareas complejas. Habilitar revision si hay incertidumbre.
+**Config**: 10-15+ thoughts for complex tasks. Enable revision if there is uncertainty.
 
-### Referencias Externas
+### External References
 
-| Necesidad | Acción |
-|-----------|--------|
-| API desconocida | Consultar documentación oficial |
-| Docs de Elysia/Bun | Documentación oficial del framework |
-| Pattern de diseño | WebSearch best practices, docs oficiales |
-| Proyecto referencia | WebFetch GitHub >1k stars |
-
----
-
-## 5. CLASIFICACIÓN DE TAREAS
-
-| Símbolo | Tipo | Definición | Ejecución |
-|---------|------|------------|-----------|
-| 🔵 | **Independiente** | Sin dependencias mutuas | PARALELO - mismo mensaje |
-| 🟡 | **Dependiente** | Necesita output anterior | SECUENCIAL - esperar |
-| 🔴 | **Bloqueante** | Checkpoint humano/validación | PAUSA - aprobar antes de continuar |
-
-### Ejemplos de Clasificación
-
-| Tarea | Tipo | Razón |
-|-------|------|-------|
-| Crear types.ts + utils.ts | 🔵 | No se referencian entre sí |
-| Crear service que usa types | 🟡 | Necesita types primero |
-| Migración de DB | 🔴 | Requiere aprobación humana |
-| Deploy a producción | 🔴 | Checkpoint crítico |
-| Test + Code review | 🔵 | Pueden correr en paralelo |
+| Need | Action |
+|------|--------|
+| Unknown API | Consult official documentation |
+| Elysia/Bun docs | Official framework documentation |
+| Design pattern | WebSearch best practices, official docs |
+| Reference project | WebFetch GitHub >1k stars |
 
 ---
 
-## 6. GAP ANALYSIS (OBLIGATORIO)
+## 5. TASK CLASSIFICATION
 
-Antes de cada Execution Roadmap, completar esta tabla:
+| Symbol | Type | Definition | Execution |
+|--------|------|------------|-----------|
+| 🔵 | **Independent** | No mutual dependencies | PARALLEL - same message |
+| 🟡 | **Dependent** | Needs prior output | SEQUENTIAL - wait |
+| 🔴 | **Blocking** | Human checkpoint/validation | PAUSE - approve before continuing |
 
-### Tabla de Gap Analysis
+### Classification Examples
 
-| Acción | Archivo | Deps | Verificar Existe | Riesgo |
-|--------|---------|------|------------------|--------|
-| Edit | `path/existing.ts` | - | `Glob('path/existing.ts')` ✅ | Bajo |
-| Create | `path/new.ts` | types.ts | `Glob('path/')` dir existe | Medio |
-| Delete | `path/old.ts` | - | Verificar no hay imports | Alto - breaking |
-
-### Análisis de Impacto
-
-| Pregunta | Cómo verificar |
-|----------|----------------|
-| ¿Qué archivos toco? | Listar rutas exactas |
-| ¿Qué archivos creo? | Verificar que dir destino exista |
-| ¿Rompo API pública? | `Grep('export.*FunctionName')` |
-| ¿Requiere migración? | Verificar cambios de schema/types |
+| Task | Type | Reason |
+|------|------|--------|
+| Create types.ts + utils.ts | 🔵 | They do not reference each other |
+| Create service that uses types | 🟡 | Needs types first |
+| DB migration | 🔴 | Requires human approval |
+| Deploy to production | 🔴 | Critical checkpoint |
+| Test + Code review | 🔵 | Can run in parallel |
 
 ---
 
-## 7. REGLAS DE SELECCIÓN DE HERRAMIENTAS
+## 6. GAP ANALYSIS (MANDATORY)
 
-> **Listas actualizadas**:
+Before each Execution Roadmap, complete this table:
+
+### Gap Analysis Table
+
+| Action | File | Deps | Verify Exists | Risk |
+|--------|------|------|---------------|------|
+| Edit | `path/existing.ts` | - | `Glob('path/existing.ts')` ✅ | Low |
+| Create | `path/new.ts` | types.ts | `Glob('path/')` dir exists | Medium |
+| Delete | `path/old.ts` | - | Verify no imports | High - breaking |
+
+### Impact Analysis
+
+| Question | How to verify |
+|----------|--------------|
+| What files do I touch? | List exact paths |
+| What files do I create? | Verify destination dir exists |
+| Do I break a public API? | `Grep('export.*FunctionName')` |
+| Does it require migration? | Verify schema/type changes |
+
+---
+
+## 7. TOOL SELECTION RULES
+
+> **Updated lists**:
 > - Agents: `Glob('.claude/agents/*.md')`
 > - Skills: `Glob('.claude/skills/*/SKILL.md')`
 > - Commands: `Glob('.claude/commands/*.md')`
 > - Scripts: `Glob('scripts/*.sh')`
 
-### Agents (usar con Task tool)
+### Agents (use with Task tool)
 
 | Trigger | Agent | Model | Background? |
 |---------|-------|-------|-------------|
-| Diseño de feature | architect | opus | No |
-| Implementar código | builder | sonnet | No |
+| Feature design | architect | opus | No |
+| Implement code | builder | sonnet | No |
 | Refactoring | builder | sonnet | No |
-| Code review | reviewer | sonnet | ✅ Sí |
-| Análisis de calidad | reviewer | sonnet | ✅ Sí |
-| Explorar codebase | scout | sonnet | No |
-| Diagnosticar errores | error-analyzer | sonnet | No |
-| Descomponer tarea | planner | opus | No |
-| **Explorar general** | **Explore** | sonnet | No |
+| Code review | reviewer | sonnet | ✅ Yes |
+| Quality analysis | reviewer | sonnet | ✅ Yes |
+| Explore codebase | scout | sonnet | No |
+| Diagnose errors | error-analyzer | sonnet | No |
+| Decompose task | planner | opus | No |
+| **General exploration** | **Explore** | sonnet | No |
 
-### Cuándo usar Task:Explore vs Glob/Grep
+### When to use Task:Explore vs Glob/Grep
 
-| Situación | Usar |
-|-----------|------|
-| Buscar archivo por nombre exacto | `Glob('**/filename.ts')` |
-| Buscar función/clase específica | `Grep('class MyClass')` |
-| Entender estructura del codebase | `Task:Explore` |
-| Búsqueda abierta, múltiples intentos | `Task:Explore` |
-| Pregunta "cómo funciona X" | `Task:Explore` |
+| Situation | Use |
+|-----------|-----|
+| Find file by exact name | `Glob('**/filename.ts')` |
+| Find specific function/class | `Grep('class MyClass')` |
+| Understand codebase structure | `Task:Explore` |
+| Open-ended search, multiple attempts | `Task:Explore` |
+| Question "how does X work" | `Task:Explore` |
 
-### Skills (auto-activación por keywords)
+### Skills (auto-activation by keywords)
 
-| Archivo/Keyword | Skill |
-|-----------------|-------|
+| File/Keyword | Skill |
+|--------------|-------|
 | *.ts, *.tsx, async, Promise | typescript-patterns |
 | Bun, bun:test, runtime | bun-best-practices |
-| prompt, agent, mejorar | AskUserQuestion for clarification |
+| prompt, agent, improve | AskUserQuestion for clarification |
 | .env, config, settings | config-validator |
 | import, export, type | code-style-enforcer |
 | log, logger, winston | logging-strategy |
 
-### Scripts Disponibles
+### Available Scripts
 
-| Script | Propósito | Cuándo usar |
-|--------|-----------|-------------|
-| `./scripts/check.sh` | Full validation | Antes de commit |
-| `./scripts/lint.sh` | ESLint | Después de editar |
-| `./scripts/test.sh` | Tests | Después de implementar |
-| `./scripts/typecheck.sh` | TypeScript | Después de crear types |
+| Script | Purpose | When to use |
+|--------|---------|-------------|
+| `./scripts/check.sh` | Full validation | Before commit |
+| `./scripts/lint.sh` | ESLint | After editing |
+| `./scripts/test.sh` | Tests | After implementing |
+| `./scripts/typecheck.sh` | TypeScript | After creating types |
 
 ---
 
-## 8. WORKFLOW DE PLANIFICACIÓN
+## 8. PLANNING WORKFLOW
 
-### Fase 0: Discovery (READ-ONLY)
-
-```
-1. Leer fuentes estáticas (ORCHESTRATOR, CAPABILITIES, QUALITY_GATES)
-2. Leer package.json y tsconfig.json relevantes
-3. Glob/Grep archivos relacionados con la tarea
-4. Identificar skills relevantes según keywords
-5. Verificar si lo solicitado ya existe (anti-duplicados)
-```
-
-### Fase 1: Deep Research
+### Phase 0: Discovery (READ-ONLY)
 
 ```
-1. Identificar APIs/frameworks que se usarán
-2. Consultar documentación oficial para cada framework con versión de package.json
-3. Verificar que no hay breaking changes recientes
-4. Documentar cualquier API deprecated encontrada
+1. Read static sources (ORCHESTRATOR, CAPABILITIES, QUALITY_GATES)
+2. Read relevant package.json and tsconfig.json
+3. Glob/Grep files related to the task
+4. Identify relevant skills by keywords
+5. Verify if what was requested already exists (anti-duplicates)
 ```
 
-### Fase 2: Gap Analysis
+### Phase 1: Deep Research
 
 ```
-1. Listar TODOS los archivos a crear/modificar
-2. Verificar que rutas destino existan
-3. Identificar dependencias entre archivos
-4. Evaluar riesgos (breaking changes, migraciones)
-5. Completar tabla de Gap Analysis
+1. Identify APIs/frameworks that will be used
+2. Consult official documentation for each framework with version from package.json
+3. Verify there are no recent breaking changes
+4. Document any deprecated API found
 ```
 
-### Fase 3: Classification & Grouping
+### Phase 2: Gap Analysis
 
 ```
-1. Clasificar cada tarea (🔵🟡🔴)
-2. Agrupar tareas independientes (🔵) para ejecución paralela
-3. Ordenar tareas dependientes (🟡) secuencialmente
-4. Identificar checkpoints (🔴) que requieren aprobación
-5. Dividir en iteraciones de máximo 3-5 archivos
+1. List ALL files to create/modify
+2. Verify destination paths exist
+3. Identify dependencies between files
+4. Evaluate risks (breaking changes, migrations)
+5. Complete Gap Analysis table
 ```
 
-### Fase 4: Execution Roadmap
+### Phase 3: Classification & Grouping
 
 ```
-1. Crear DAG (Mermaid) con colores de clasificación
-2. Crear Tool Inventory
-3. Tabla detallada con verificaciones por paso
-4. Recovery plans para nodos bloqueantes
+1. Classify each task (🔵🟡🔴)
+2. Group independent tasks (🔵) for parallel execution
+3. Order dependent tasks (🟡) sequentially
+4. Identify checkpoints (🔴) that require approval
+5. Divide into iterations of at most 3-5 files
+```
+
+### Phase 4: Execution Roadmap
+
+```
+1. Create DAG (Mermaid) with classification colors
+2. Create Tool Inventory
+3. Detailed table with verifications per step
+4. Recovery plans for blocking nodes
 ```
 
 ---
 
 ## 9. ITERATIVE EXECUTION
 
-**Principio**: Según [Addy Osmani](https://medium.com/@addyosmani/my-llm-coding-workflow-going-into-2026-52fe1681325e), iterar en loops pequeños reduce errores catastróficos.
+**Principle**: According to [Addy Osmani](https://medium.com/@addyosmani/my-llm-coding-workflow-going-into-2026-52fe1681325e), iterating in small loops reduces catastrophic errors.
 
-### Tamaño de Iteración
+### Iteration Size
 
-| Tamaño del plan | Estrategia |
-|-----------------|------------|
-| 1-3 archivos | Ejecutar todo en una iteración |
-| 4-7 archivos | Dividir en 2 iteraciones con checkpoint |
-| 8+ archivos | Dividir en N iteraciones, cada una con tests |
+| Plan size | Strategy |
+|-----------|----------|
+| 1-3 files | Execute everything in one iteration |
+| 4-7 files | Divide into 2 iterations with checkpoint |
+| 8+ files | Divide into N iterations, each with tests |
 
-### Regla de Iteración
+### Iteration Rule
 
-Después de cada iteración:
+After each iteration:
 
 ```
-1. Ejecutar tests de los archivos modificados
-2. Verificar que TypeScript compila (bun typecheck)
-3. Verificar que linter pasa (bun lint)
-4. Solo si TODO pasa → continuar con siguiente iteración
+1. Run tests on modified files
+2. Verify TypeScript compiles (bun typecheck)
+3. Verify linter passes (bun lint)
+4. Only if EVERYTHING passes → continue to next iteration
 ```
 
 ### Anti-Patterns
 
-> Ver tabla completa en §16. Resumen: No acumular >5 archivos, STOP si hay errores, verificar después de cada grupo.
+> See full table in §16. Summary: Do not accumulate >5 files, STOP on errors, verify after each group.
 
 ---
 
-## 10. REGLAS DE PARALELIZACIÓN
+## 10. PARALLELIZATION RULES
 
-### ✅ PARALELO (mismo mensaje)
+### ✅ PARALLEL (same message)
 
-- Múltiples `Read`, `Glob`, `Grep` independientes
-- Múltiples `Write` a archivos SIN dependencia entre ellos
-- Múltiples `Task` agents independientes
-- `WebSearch` + `WebFetch` simultáneos
+- Multiple independent `Read`, `Glob`, `Grep`
+- Multiple `Write` to files WITHOUT dependency between them
+- Multiple independent `Task` agents
+- `WebSearch` + `WebFetch` simultaneously
 
-### ❌ SECUENCIAL (esperar resultado)
+### ❌ SEQUENTIAL (wait for result)
 
-- `Edit` después de `Read` del mismo archivo
-- `Task` agent que necesita output del anterior
-- `Bash` que usa archivo recién creado
-- Nodo marcado 🔴 "Blocking"
+- `Edit` after `Read` of the same file
+- `Task` agent that needs output from the previous one
+- `Bash` that uses a newly created file
+- Node marked 🔴 "Blocking"
 
-### Sintaxis y Ejemplos
+### Syntax and Examples
 
-| Tipo | Sintaxis | Ejemplo |
-|------|----------|---------|
-| 🔵 Paralelo | `A + B + C` | `Read(a) + Read(b) + Grep(c)` |
-| 🟡 Secuencial | `A → ESPERAR → B` | `Read(file) → Edit(file)` |
+| Type | Syntax | Example |
+|------|--------|---------|
+| 🔵 Parallel | `A + B + C` | `Read(a) + Read(b) + Grep(c)` |
+| 🟡 Sequential | `A → WAIT → B` | `Read(file) → Edit(file)` |
 | Background | `Task(..., background:true)` | `Task(reviewer, background:true)` |
 
 ### Parallel Efficiency Score
 
-Evaluar después de cada tarea:
+Evaluate after each task:
 
-| Score | Significado | Acción |
-|-------|-------------|--------|
-| >80% | Excelente | Continuar |
-| 50-80% | Aceptable | Revisar oportunidades |
-| <50% | Pobre | **STOP** - refactorizar approach |
+| Score | Meaning | Action |
+|-------|---------|--------|
+| >80% | Excellent | Continue |
+| 50-80% | Acceptable | Review opportunities |
+| <50% | Poor | **STOP** - refactor approach |
 
-**Cálculo**: `(operaciones paralelas) / (total que PODRÍAN ser paralelas) × 100`
+**Calculation**: `(parallel operations) / (total that COULD be parallel) × 100`
 
 ---
 
 ## 11. GROUND TRUTH FROM ENVIRONMENT
 
-**Principio**: Según [Anthropic](https://www.anthropic.com/research/building-effective-agents), obtener feedback del entorno real en cada paso.
+**Principle**: According to [Anthropic](https://www.anthropic.com/research/building-effective-agents), get feedback from the real environment at each step.
 
-### Verificación Obligatoria
+### Mandatory Verification
 
-| Después de... | Ejecutar | Esperar |
-|---------------|----------|---------|
-| Edit de código TypeScript | `bun typecheck path/file.ts` | Exit 0 |
-| Nuevo archivo de test | `bun test path/file.test.ts` | Tests pasan |
-| Cambio en endpoint API | Request real o test de integración | Response esperado |
-| Cambio de configuración | Verificar que app inicia | No errores |
-| Instalación de dependencia | `bun install` + import test | Sin errores |
+| After... | Run | Expect |
+|----------|-----|--------|
+| Edit of TypeScript code | `bun typecheck path/file.ts` | Exit 0 |
+| New test file | `bun test path/file.test.ts` | Tests pass |
+| Change in API endpoint | Real request or integration test | Expected response |
+| Configuration change | Verify app starts | No errors |
+| Dependency installation | `bun install` + import test | No errors |
 
-### Workflow de Verificación
+### Verification Workflow
 
 ```mermaid
 graph TD
-    A[Hacer cambio] --> B[Ejecutar verificación]
-    B --> C{¿Pasó?}
-    C -->|Sí| D[Marcar completado]
-    C -->|No| E[Analizar error]
-    E --> F[Corregir]
+    A[Make change] --> B[Run verification]
+    B --> C{Passed?}
+    C -->|Yes| D[Mark complete]
+    C -->|No| E[Analyze error]
+    E --> F[Fix]
     F --> B
 ```
 
-### PROHIBIDO
+### FORBIDDEN
 
-- Marcar paso como "completado" sin verificación del entorno
-- Asumir que el código funciona sin ejecutarlo
-- Continuar al siguiente paso si hay errores pendientes
+- Marking a step as "complete" without environment verification
+- Assuming code works without running it
+- Continuing to the next step if there are pending errors
 
 ---
 
 ## 12. POKA-YOKE TOOLS
 
-**Principio**: Diseñar el uso de tools para que sea difícil cometer errores (Anthropic pattern).
+**Principle**: Design tool usage so it is hard to make mistakes (Anthropic pattern).
 
-### Errores Comunes y Prevención
+### Common Errors and Prevention
 
-| Tool | Error Común | Prevención |
+| Tool | Common Error | Prevention |
 |------|-------------|------------|
-| **Edit** | `old_string` no único, match múltiple | Incluir más líneas de contexto (2-3 antes/después) |
-| **Edit** | `old_string` no encontrado | Verificar con `Grep` exacto primero |
-| **Write** | Path de directorio no existe | `Glob('parent/dir/')` antes de Write |
-| **Bash** | Timeout en comandos largos | Especificar `timeout: 120000` explícito |
-| **Bash** | Comando falla silenciosamente | Verificar exit code, no solo output |
-| **Task** | Agent no devuelve lo esperado | Prompt específico y estructurado, no vago |
-| **Glob** | No encuentra archivos que existen | Verificar path base correcto |
-| **Grep** | Regex demasiado específico | Empezar broad, refinar |
+| **Edit** | `old_string` not unique, multiple matches | Include more context lines (2-3 before/after) |
+| **Edit** | `old_string` not found | Verify with exact `Grep` first |
+| **Write** | Directory path does not exist | `Glob('parent/dir/')` before Write |
+| **Bash** | Timeout on long commands | Specify explicit `timeout: 120000` |
+| **Bash** | Command fails silently | Verify exit code, not just output |
+| **Task** | Agent does not return what expected | Specific and structured prompt, not vague |
+| **Glob** | Does not find files that exist | Verify base path is correct |
+| **Grep** | Regex too specific | Start broad, refine |
 
-### Checklist Pre-uso
+### Pre-use Checklist
 
-| Tool | Verificar ANTES |
-|------|-----------------|
-| Edit | `Read` previo + `old_string` único (verificar con Grep) + contexto suficiente |
-| Write | Directorio existe (`Glob`) + no sobrescribir archivo crítico sin Read |
-| Bash | Timeout adecuado + verificar exit code + working directory correcto |
-| Task | Prompt específico + model correcto + `background` si largo |
+| Tool | Verify BEFORE |
+|------|--------------|
+| Edit | Prior `Read` + unique `old_string` (verify with Grep) + sufficient context |
+| Write | Directory exists (`Glob`) + do not overwrite critical file without Read |
+| Bash | Adequate timeout + verify exit code + correct working directory |
+| Task | Specific prompt + correct model + `background` if long |
 
 ---
 
-## 13. VALIDACIÓN CRUZADA (Four-Eyes Principle)
+## 13. CROSS-VALIDATION (Four-Eyes Principle)
 
-**Principio**: Para decisiones críticas, usar patrón LLM-as-Judge donde un agente revisa el trabajo de otro.
+**Principle**: For critical decisions, use the LLM-as-Judge pattern where one agent reviews another's work.
 
-### Cuándo Aplicar
+### When to Apply
 
-| Tipo de Decisión | Requiere Validación Cruzada |
-|------------------|----------------------------|
-| Arquitectura nueva | ✅ Sí |
-| Refactoring >5 archivos | ✅ Sí |
-| Cambio de API pública | ✅ Sí |
-| Migración de datos | ✅ Sí |
-| Fix de bug simple | ❌ No |
-| Cambio de config | ❌ No |
-| Nuevo endpoint aislado | ❌ No |
+| Type of Decision | Requires Cross-Validation |
+|-----------------|--------------------------|
+| New architecture | ✅ Yes |
+| Refactoring >5 files | ✅ Yes |
+| Public API change | ✅ Yes |
+| Data migration | ✅ Yes |
+| Simple bug fix | ❌ No |
+| Config change | ❌ No |
+| New isolated endpoint | ❌ No |
 
-### Workflow de Validación
+### Validation Workflow
 
 ```mermaid
 sequenceDiagram
-    participant A as Agente Generador
-    participant B as Agente Validador
-    participant H as Humano (si 🔴)
+    participant A as Generator Agent
+    participant B as Validator Agent
+    participant H as Human (if 🔴)
 
-    A->>A: Genera propuesta/código
-    A->>B: Envía para review
-    B->>B: Analiza calidad, seguridad, correctitud
-    B-->>A: Aprueba o Rechaza con razones
-    alt Aprobado
-        A->>H: Proceder con implementación
-    else Rechazado
-        A->>A: Corregir según feedback
-        A->>B: Re-enviar
+    A->>A: Generates proposal/code
+    A->>B: Sends for review
+    B->>B: Analyzes quality, security, correctness
+    B-->>A: Approves or Rejects with reasons
+    alt Approved
+        A->>H: Proceed with implementation
+    else Rejected
+        A->>A: Fix according to feedback
+        A->>B: Re-send
     end
 ```
 
-### Combinaciones de Agentes
+### Agent Combinations
 
-| Tarea | Generador | Validador |
-|-------|-----------|-----------|
-| Arquitectura nueva | `architect` | `reviewer` |
-| Refactoring complejo | `builder` | `reviewer` |
-| Feature con seguridad | `builder` | `reviewer` |
-| Tests críticos | `builder` | `reviewer` |
+| Task | Generator | Validator |
+|------|-----------|-----------|
+| New architecture | `architect` | `reviewer` |
+| Complex refactoring | `builder` | `reviewer` |
+| Feature with security | `builder` | `reviewer` |
+| Critical tests | `builder` | `reviewer` |
 
 ---
 
-## 14. FORMATO OUTPUT OBLIGATORIO
+## 14. MANDATORY OUTPUT FORMAT
 
-### A. Resumen Ejecutivo (2 líneas)
+### A. Executive Summary (2 lines)
 
 ```markdown
-## Resumen Ejecutivo
+## Executive Summary
 
-Implementar [QUÉ] en [DÓNDE] para lograr [OBJETIVO].
-Afecta [N] archivos, [M] son nuevos, riesgo [BAJO/MEDIO/ALTO].
+Implement [WHAT] in [WHERE] to achieve [OBJECTIVE].
+Affects [N] files, [M] are new, risk [LOW/MEDIUM/HIGH].
 ```
 
 ### B. Tool Inventory
 
-| Tipo | Herramienta | Uso en esta tarea | Config |
-|------|-------------|-------------------|--------|
-| Skill | [nombre] | [propósito] | Auto/Manual |
-| Agent | [nombre] | [propósito] | model, background |
-| Script | [nombre] | [propósito] | Pre/Post |
+| Type | Tool | Use in this task | Config |
+|------|------|-----------------|--------|
+| Skill | [name] | [purpose] | Auto/Manual |
+| Agent | [name] | [purpose] | model, background |
+| Script | [name] | [purpose] | Pre/Post |
 
 ### C. Deep Research Summary
 
-| API/Framework | Versión en proyecto | Versión consultada | Breaking changes? |
-|---------------|--------------------|--------------------|-------------------|
-| Elysia | 1.2.3 | 1.2.3 (docs oficiales) | No |
+| API/Framework | Version in project | Version consulted | Breaking changes? |
+|---------------|--------------------|-------------------|-------------------|
+| Elysia | 1.2.3 | 1.2.3 (official docs) | No |
 
 ### D. Gap Analysis
 
-| Acción | Archivo | Deps | Verificación | Riesgo |
-|--------|---------|------|--------------|--------|
-| Edit | path/file.ts | - | `Glob('path/file.ts')` | Bajo |
-| Create | path/new.ts | types.ts | Dir existe | Medio |
+| Action | File | Deps | Verification | Risk |
+|--------|------|------|--------------|------|
+| Edit | path/file.ts | - | `Glob('path/file.ts')` | Low |
+| Create | path/new.ts | types.ts | Dir exists | Medium |
 
-### E. Grafo de Dependencias
+### E. Dependency Graph
 
 ```mermaid
 graph TD
   subgraph "🔵 PARALLEL-1: Foundation"
-    A[archivo1.ts]
-    B[archivo2.ts]
+    A[file1.ts]
+    B[file2.ts]
   end
   subgraph "🟡 SEQ-2: Implementation"
-    C[archivo3.ts]
+    C[file3.ts]
   end
   subgraph "🔴 CHECKPOINT-3: Validation"
     D[Quality Gate]
@@ -535,80 +535,80 @@ graph TD
   C --> D
 ```
 
-**Leyenda:**
-- 🔵 = Paralelo (sin dependencias mutuas)
-- 🟡 = Secuencial (requiere paso anterior)
-- 🔴 = Bloqueante (checkpoint, aprobación requerida)
+**Legend:**
+- 🔵 = Parallel (no mutual dependencies)
+- 🟡 = Sequential (requires prior step)
+- 🔴 = Blocking (checkpoint, approval required)
 
-### F. Nodos de Ejecución
+### F. Execution Nodes
 
-#### 🔵 PARALLEL-1: [Nombre del grupo]
-**Deps**: Ninguna | **Tipo**: 🔵 Paralelo
+#### 🔵 PARALLEL-1: [Group name]
+**Deps**: None | **Type**: 🔵 Parallel
 
-| # | Archivo | Tool | Skills | Verificación |
-|---|---------|------|--------|--------------|
-| 1.1 | path/file.ts | Write | skill1 | `Glob` confirma + `bun typecheck` |
-| 1.2 | path/file2.ts | Write | skill2 | `Glob` confirma + `bun typecheck` |
+| # | File | Tool | Skills | Verification |
+|---|------|------|--------|--------------|
+| 1.1 | path/file.ts | Write | skill1 | `Glob` confirms + `bun typecheck` |
+| 1.2 | path/file2.ts | Write | skill2 | `Glob` confirms + `bun typecheck` |
 
-**Ejecutar**: `Write(file1) + Write(file2)` EN MISMO MENSAJE
-**Ground Truth**: `bun typecheck` después de completar grupo
+**Execute**: `Write(file1) + Write(file2)` IN SAME MESSAGE
+**Ground Truth**: `bun typecheck` after completing group
 
-#### 🟡 SEQ-2: [Nombre]
-**Deps**: PARALLEL-1 ✅ | **Tipo**: 🟡 Secuencial
+#### 🟡 SEQ-2: [Name]
+**Deps**: PARALLEL-1 ✅ | **Type**: 🟡 Sequential
 
-| # | Archivo | Tool | Skills | Verificación |
-|---|---------|------|--------|--------------|
+| # | File | Tool | Skills | Verification |
+|---|------|------|--------|--------------|
 | 2.1 | path/service.ts | Edit | typescript-patterns | `bun typecheck` |
 
-**Ejecutar**: DESPUÉS de PARALLEL-1
-**Test correspondiente**: `path/service.test.ts` (TDD enforcement)
+**Execute**: AFTER PARALLEL-1
+**Corresponding test**: `path/service.test.ts` (TDD enforcement)
 **Ground Truth**: `bun test path/service.test.ts`
 
-#### 🔴 CHECKPOINT-3: [Nombre] [Blocking]
-**Deps**: SEQ-2 ✅ | **Tipo**: 🔴 Bloqueante
+#### 🔴 CHECKPOINT-3: [Name] [Blocking]
+**Deps**: SEQ-2 ✅ | **Type**: 🔴 Blocking
 
-| # | Acción | Tool | Verificación |
+| # | Action | Tool | Verification |
 |---|--------|------|--------------|
 | 3.1 | Quality Gate | Bash | `./scripts/check.sh` |
 
-**Ejecutar**: PAUSA - Esperar resultado y aprobación
-**Recovery**: Si falla → corregir errores antes de continuar
+**Execute**: PAUSE - Wait for result and approval
+**Recovery**: If fails → fix errors before continuing
 
 ---
 
-## 15. EJEMPLO COMPLETO
+## 15. COMPLETE EXAMPLE
 
-**Tarea**: "Añadir nuevo agent de documentación con skill asociado"
+**Task**: "Add new documentation agent with associated skill"
 
-### Resumen Ejecutivo
+### Executive Summary
 
-Implementar agent `doc-generator.md` con skill `doc-patterns/SKILL.md` y tests para el hook de validación.
-Afecta 4 archivos, 2 nuevos, riesgo BAJO.
+Implement agent `doc-generator.md` with skill `doc-patterns/SKILL.md` and tests for the validation hook.
+Affects 4 files, 2 new, risk LOW.
 
 ### Deep Research Summary
 
-| API/Framework | Versión proyecto | Consultado | Breaking changes? |
-|---------------|-----------------|------------|-------------------|
-| Bun | 1.x | Docs oficiales | No |
+| API/Framework | Project version | Consulted | Breaking changes? |
+|---------------|----------------|-----------|-------------------|
+| Bun | 1.x | Official docs | No |
 
 ### Gap Analysis
 
-| Acción | Archivo | Deps | Verificación | Riesgo |
-|--------|---------|------|--------------|--------|
-| Create | `.claude/agents/doc-generator.md` | - | `Glob('.claude/agents/')` dir existe | Bajo |
-| Create | `.claude/skills/doc-patterns/SKILL.md` | - | `Glob('.claude/skills/')` dir existe | Bajo |
-| Edit | `.claude/rules/skill-matching.md` | skill | `Glob` ✅ | Bajo |
-| Edit | `.claude/hooks/validators/stop/validate-tests-pass.test.ts` | - | `Glob` ✅ | Bajo |
+| Action | File | Deps | Verification | Risk |
+|--------|------|------|--------------|------|
+| Create | `.claude/agents/doc-generator.md` | - | `Glob('.claude/agents/')` dir exists | Low |
+| Create | `.claude/skills/doc-patterns/SKILL.md` | - | `Glob('.claude/skills/')` dir exists | Low |
+| Edit | `.claude/rules/skill-matching.md` | skill | `Glob` ✅ | Low |
+| Edit | `.claude/hooks/validators/stop/validate-tests-pass.test.ts` | - | `Glob` ✅ | Low |
 
 ### Tool Inventory
 
-| Tipo | Herramienta | Uso | Config |
-|------|-------------|-----|--------|
-| Skill | typescript-patterns | Types y async | Auto |
-| Skill | bun-best-practices | Runtime Bun | Auto |
-| Agent | reviewer | Review final | sonnet, background |
+| Type | Tool | Use | Config |
+|------|------|-----|--------|
+| Skill | typescript-patterns | Types and async | Auto |
+| Skill | bun-best-practices | Bun runtime | Auto |
+| Agent | reviewer | Final review | sonnet, background |
 
-### Grafo de Dependencias
+### Dependency Graph
 
 ```mermaid
 graph TD
@@ -635,118 +635,118 @@ graph TD
 ```
 
 #### 🔵 PARALLEL-1: Foundation
-**Deps**: - | **Tipo**: 🔵
+**Deps**: - | **Type**: 🔵
 
-| # | Archivo | Tool | Verificación |
-|---|---------|------|--------------|
-| 1.1 | `.claude/agents/doc-generator.md` | Write | `Glob` confirma |
-| 1.2 | `.claude/skills/doc-patterns/SKILL.md` | Write | `Glob` confirma |
+| # | File | Tool | Verification |
+|---|------|------|--------------|
+| 1.1 | `.claude/agents/doc-generator.md` | Write | `Glob` confirms |
+| 1.2 | `.claude/skills/doc-patterns/SKILL.md` | Write | `Glob` confirms |
 
-**Ejecutar**: `Write(agent) + Write(skill)` EN MISMO MENSAJE
+**Execute**: `Write(agent) + Write(skill)` IN SAME MESSAGE
 
 #### 🟡 SEQ-2: Integration
-**Deps**: PARALLEL-1 ✅ | **Tipo**: 🟡
+**Deps**: PARALLEL-1 ✅ | **Type**: 🟡
 
-| # | Archivo | Tool | Verificación |
-|---|---------|------|--------------|
-| 2.1 | `.claude/rules/skill-matching.md` | Edit | `Grep('doc-patterns')` confirma |
+| # | File | Tool | Verification |
+|---|------|------|--------------|
+| 2.1 | `.claude/rules/skill-matching.md` | Edit | `Grep('doc-patterns')` confirms |
 
-**Contenido**: Añadir keyword mapping para `doc-patterns`
+**Content**: Add keyword mapping for `doc-patterns`
 
 #### 🔵 PARALLEL-3: Validation
-**Deps**: SEQ-2 ✅ | **Tipo**: 🔵
+**Deps**: SEQ-2 ✅ | **Type**: 🔵
 
-| # | Archivo | Tool | Verificación |
-|---|---------|------|--------------|
+| # | File | Tool | Verification |
+|---|------|------|--------------|
 | 3.1 | `validate-tests-pass.test.ts` | Edit | `bun test .claude/hooks/` |
 | 3.2 | - | Task:reviewer | - |
 
-**Ejecutar**: `Edit(test) + Task(reviewer, background:true)` EN MISMO MENSAJE
+**Execute**: `Edit(test) + Task(reviewer, background:true)` IN SAME MESSAGE
 **Ground Truth**: `bun test ./.claude/hooks/`
 
 #### 🔴 CHECKPOINT-4: Quality Gate
-**Deps**: PARALLEL-3 ✅ | **Tipo**: 🔴
+**Deps**: PARALLEL-3 ✅ | **Type**: 🔴
 
-| # | Acción | Verificación |
+| # | Action | Verification |
 |---|--------|--------------|
 | 4.1 | `bun test ./.claude/hooks/` | Exit code 0 |
 
-**Recovery**: Si falla → corregir antes de commit
+**Recovery**: If fails → fix before commit
 
 ---
 
 ## 16. ANTI-PATTERNS + TDD ENFORCEMENT
 
-| ❌ No hacer | ✅ Hacer | Razón |
-|-------------|----------|-------|
-| Writes secuenciales sin dep | Agrupar en 1 mensaje | Paralelismo |
-| No Discovery antes de plan | Discovery PRIMERO | Base real |
-| Código sin test | Función → test | TDD |
-| Paso sin verificación | Ground truth por paso | Trazabilidad |
-| Asumir archivo existe | `Glob` antes de Edit | Anti-alucina |
-| API sin consultar docs | Consultar docs primero | Anti-deprecated |
-| Plan >5 archivos sin checkpoint | Iterar 3-5 archivos | Errores contenidos |
-| Continuar con errores | STOP, corregir, continuar | Cascada |
-| Test "después" | Test en mismo nodo | TDD strict |
+| ❌ Do not | ✅ Do | Reason |
+|-----------|-------|--------|
+| Sequential writes without dep | Group in 1 message | Parallelism |
+| No Discovery before planning | Discovery FIRST | Real basis |
+| Code without test | Function → test | TDD |
+| Step without verification | Ground truth per step | Traceability |
+| Assume file exists | `Glob` before Edit | Anti-hallucination |
+| API without checking docs | Check docs first | Anti-deprecated |
+| Plan >5 files without checkpoint | Iterate 3-5 files | Contained errors |
+| Continue with errors | STOP, fix, continue | Cascade |
+| Test "later" | Test in same node | TDD strict |
 
 ---
 
-## 17. QUALITY GATE FINAL
+## 17. FINAL QUALITY GATE
 
-Antes de considerar el plan ejecutado:
+Before considering the plan executed:
 
-| Script | Propósito | Exit Code |
-|--------|-----------|-----------|
+| Script | Purpose | Exit Code |
+|--------|---------|-----------|
 | `./scripts/check.sh` | typecheck + lint + test | 0 = OK |
 
-**Si falla → NO está completo.** Resolver antes de commit.
+**If fails → NOT complete.** Resolve before commit.
 
-### Checklist Final
+### Final Checklist
 
-- [ ] Verificaciones de Ground Truth (§11) completadas
-- [ ] Deep Research completado, no hay APIs deprecated
+- [ ] Ground Truth verifications (§11) completed
+- [ ] Deep Research completed, no deprecated APIs
 - [ ] `./scripts/check.sh` exit code 0
-- [ ] Si validación cruzada, agente validador aprobó
+- [ ] If cross-validation, validator agent approved
 
 ---
 
-## 18. GESTIÓN DE SESIONES
+## 18. SESSION MANAGEMENT
 
-Para tareas largas:
+For long tasks:
 
-### Nombrar Sesión
+### Name Session
 ```bash
-/rename feature-export   # Nombrar descriptivamente
+/rename feature-export   # Name descriptively
 ```
 
-### Reanudar Trabajo
+### Resume Work
 ```bash
-claude --resume feature-export   # Desde terminal
-/resume feature-export           # Desde REPL
+claude --resume feature-export   # From terminal
+/resume feature-export           # From REPL
 ```
 
-### Workflow Recomendado
-1. Iniciar tarea: `/rename <nombre-descriptivo>`
-2. Si hay interrupción: `/compact` antes de cerrar
-3. Reanudar: `claude --resume <nombre>`
-4. Al finalizar: Verificar Quality Gate antes de commit
+### Recommended Workflow
+1. Start task: `/rename <descriptive-name>`
+2. If interrupted: `/compact` before closing
+3. Resume: `claude --resume <name>`
+4. At the end: Verify Quality Gate before commit
 
 ---
 
 ## Changelog
 
-| Versión | Fecha | Cambios |
-|---------|-------|---------|
-| 5.0.0 | 2026-01-11 | **MAJOR v5**: Añadido PROTOCOLO DEEP RESEARCH (investigación externa obligatoria), DETECCIÓN ANTI-OBSOLESCENCIA (rechazar APIs deprecated basado en ICSE 2025), ITERATIVE EXECUTION (loops de 3-5 archivos), GROUND TRUTH FROM ENVIRONMENT (feedback real obligatorio), POKA-YOKE TOOLS (prevención de errores), VALIDACIÓN CRUZADA (Four-Eyes Principle). Basado en investigación de Anthropic, ICSE 2025, The New Stack. |
-| 4.0.0 | 2026-01-11 | Renombrado a `/planner`. Añadido Discovery, Gap Analysis, 🔵🟡🔴, TDD, Quality Gate. |
-| 3.1.0 | 2025-12-27 | Corregido ejemplo: rutas actualizadas, grafo corregido |
-| 3.0.0 | 2025-12-22 | Adaptado para claude-code-poneglyph (Bun/Elysia/React) |
-| 2.0.0 | 2025-12-11 | Fusión plan-hard + advanced. Sequential Thinking, Anti-alucinación |
-| 1.0.0 | 2025-12-11 | Versión inicial con Execution Roadmap |
+| Version | Date | Changes |
+|---------|------|---------|
+| 5.0.0 | 2026-01-11 | **MAJOR v5**: Added DEEP RESEARCH PROTOCOL (mandatory external research), ANTI-OBSOLESCENCE DETECTION (reject deprecated APIs based on ICSE 2025), ITERATIVE EXECUTION (3-5 file loops), GROUND TRUTH FROM ENVIRONMENT (mandatory real feedback), POKA-YOKE TOOLS (error prevention), CROSS-VALIDATION (Four-Eyes Principle). Based on research by Anthropic, ICSE 2025, The New Stack. |
+| 4.0.0 | 2026-01-11 | Renamed to `/planner`. Added Discovery, Gap Analysis, 🔵🟡🔴, TDD, Quality Gate. |
+| 3.1.0 | 2025-12-27 | Fixed example: updated paths, corrected graph |
+| 3.0.0 | 2025-12-22 | Adapted for claude-code-poneglyph (Bun/Elysia/React) |
+| 2.0.0 | 2025-12-11 | Merged plan-hard + advanced. Sequential Thinking, Anti-hallucination |
+| 1.0.0 | 2025-12-11 | Initial version with Execution Roadmap |
 
 ---
 
-## Referencias
+## References
 
 - [Anthropic - Building Effective Agents](https://www.anthropic.com/research/building-effective-agents)
 - [The New Stack - 5 Key Trends Shaping Agentic Development in 2026](https://thenewstack.io/5-key-trends-shaping-agentic-development-in-2026/)

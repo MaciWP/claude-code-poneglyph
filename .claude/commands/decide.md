@@ -1,8 +1,8 @@
 ---
-description: "Decision Mode — toma decisiones estrategicas con 3 perspectivas de agentes y genera memo HTML visual"
-argument-hint: "<pregunta o brief de decision>"
+description: "Decision Mode — makes strategic decisions with 3 agent perspectives and generates a visual HTML memo"
+argument-hint: "<question or decision brief>"
 ---
 
 $ARGUMENTS
 
-Invoca el skill `decide` con el brief proporcionado.
+Invoke the `decide` skill with the provided brief.

@@ -1,30 +1,30 @@
 ---
-description: Muestra resumen de traces de ejecucion recientes y costos acumulados
+description: Shows a summary of recent execution traces and accumulated costs
 ---
 
-Lee TODOS los archivos JSONL del directorio `~/.claude/traces/`.
+Read ALL JSONL files from the `~/.claude/traces/` directory.
 
-Cada linea es un JSON con formato:
+Each line is a JSON with the following format:
 ```json
 {"ts":"ISO","sessionId":"...","prompt":"...","agents":["builder"],"skills":["api-design"],"tokens":4500,"inputTokens":1500,"outputTokens":3000,"costUsd":0.048,"durationMs":56250,"model":"sonnet","status":"completed","toolCalls":12,"filesChanged":3}
 ```
 
-Instrucciones:
-1. Usa `Glob` para encontrar archivos `*.jsonl` en `~/.claude/traces/`
-2. Lee y parsea todos los archivos
-3. Muestra una tabla resumen de los ultimos 7 dias con columnas: Fecha, Prompt (primeros 60 chars), Model, Tokens, Cost, Agentes, Skills, Tool Calls, Files Changed, Status
-4. Muestra estadisticas agregadas (ultimos 7 dias):
-   - Total de sesiones
-   - Tokens totales (input/output breakdown)
-   - Costo total estimado
-   - Desglose por modelo (sessions, tokens, cost)
-   - Agentes mas utilizados (top 5)
-   - Skills mas utilizadas (top 5)
-   - Sesiones por dia
-5. Muestra seccion de costos acumulados con desglose temporal:
-   - **Hoy**: costo, tokens (input/output) del dia actual
-   - **Ultima semana**: ultimos 7 dias
-   - **Ultimo mes**: ultimos 30 dias
-   - **Total acumulado**: todo el historial
-6. Muestra desglose de costos por modelo: sesiones, tokens y costo para cada modelo (opus, sonnet, haiku)
-7. Nota al final: "Los costos son estimaciones basadas en conteo de caracteres. Para facturacion real, consultar console.anthropic.com"
+Instructions:
+1. Use `Glob` to find `*.jsonl` files in `~/.claude/traces/`
+2. Read and parse all files
+3. Show a summary table for the last 7 days with columns: Date, Prompt (first 60 chars), Model, Tokens, Cost, Agents, Skills, Tool Calls, Files Changed, Status
+4. Show aggregated statistics (last 7 days):
+   - Total sessions
+   - Total tokens (input/output breakdown)
+   - Estimated total cost
+   - Breakdown by model (sessions, tokens, cost)
+   - Most used agents (top 5)
+   - Most used skills (top 5)
+   - Sessions per day
+5. Show accumulated costs section with time breakdown:
+   - **Today**: cost, tokens (input/output) for the current day
+   - **Last week**: last 7 days
+   - **Last month**: last 30 days
+   - **All-time total**: full history
+6. Show cost breakdown by model: sessions, tokens and cost for each model (opus, sonnet, haiku)
+7. Note at the end: "Costs are estimates based on character count. For actual billing, check console.anthropic.com"

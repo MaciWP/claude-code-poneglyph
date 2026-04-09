@@ -6,121 +6,121 @@ version: 2.0.0
 
 # /docs [topic] [file]
 
-Sistema dinámico de navegación de conocimiento en `.claude/docs/`.
+Dynamic knowledge navigation system in `.claude/docs/`.
 
 ---
 
-## 1. PROTOCOLO DE NAVEGACIÓN (3 Niveles)
+## 1. NAVIGATION PROTOCOL (3 Levels)
 
-**OBLIGATORIO**: Ejecutar Glob real, NO usar listas hardcodeadas.
+**MANDATORY**: Run real Glob, do NOT use hardcoded lists.
 
-### Nivel 1: Sin argumentos → Listar Temas
+### Level 1: No arguments → List Topics
 
 ```
 Glob('.claude/docs/*/')
 ```
 
-Para cada directorio encontrado:
-1. Extraer nombre de carpeta como tema
-2. Contar archivos `.md` dentro
-3. Buscar `README.md` para descripción (primera línea después del título)
+For each directory found:
+1. Extract folder name as topic
+2. Count `.md` files inside
+3. Look for `README.md` for description (first line after title)
 
 **Output**:
 ```
-📚 DOCUMENTATION TOPICS ({N} encontrados)
+📚 DOCUMENTATION TOPICS ({N} found)
 
 ═══════════════════════════════════════════════════════════════════════════════
 
-📁 [tema]
-   └─ {N} archivos | README: [primera línea descripción]
+📁 [topic]
+   └─ {N} files | README: [first description line]
 
-(repetir por cada tema)
+(repeat for each topic)
 
 ═══════════════════════════════════════════════════════════════════════════════
 
-💡 Usar: /docs [tema] para explorar archivos
+💡 Use: /docs [topic] to explore files
 ```
 
 ---
 
-### Nivel 2: Con tema → Listar Archivos del Tema
+### Level 2: With topic → List Topic Files
 
 ```
 /docs security
 ```
 
-**Ejecución**:
+**Execution**:
 ```
-1. Verificar: Glob('.claude/docs/security/') existe
-2. Si NO existe → Error: "Tema 'security' no encontrado. Usa /docs para ver temas."
-3. Si existe → Glob('.claude/docs/security/*.md')
-4. Para cada archivo: extraer título (primer # del archivo)
+1. Verify: Glob('.claude/docs/security/') exists
+2. If NOT found → Error: "Topic 'security' not found. Use /docs to see topics."
+3. If found → Glob('.claude/docs/security/*.md')
+4. For each file: extract title (first # in the file)
 ```
 
 **Output**:
 ```
-📚 TOPIC: [TEMA] ({N} archivos)
+📚 TOPIC: [TOPIC] ({N} files)
 
 ═══════════════════════════════════════════════════════════════════════════════
 
 📄 README.md
-   └─ [título extraído del archivo]
+   └─ [title extracted from file]
 
-📄 [archivo].md
-   └─ [título extraído del archivo]
+📄 [file].md
+   └─ [title extracted from file]
 
-(repetir por cada archivo)
+(repeat for each file)
 
 ═══════════════════════════════════════════════════════════════════════════════
 
-💡 Usar: /docs [tema] [archivo] para leer contenido
-💡 Usar: /load-[tema] para cargar todo (si existe)
+💡 Use: /docs [topic] [file] to read content
+💡 Use: /load-[topic] to load everything (if it exists)
 ```
 
 ---
 
-### Nivel 3: Con tema + archivo → Leer Contenido
+### Level 3: With topic + file → Read Content
 
 ```
 /docs security sql-injection
 ```
 
-**Ejecución**:
+**Execution**:
 ```
-1. Construir path: '.claude/docs/security/sql-injection.md'
-2. Verificar existencia con Glob
-3. Si NO existe → Error con sugerencias de archivos válidos
-4. Si existe → Read(path) completo
+1. Build path: '.claude/docs/security/sql-injection.md'
+2. Verify existence with Glob
+3. If NOT found → Error with suggestions of valid files
+4. If found → Read(path) in full
 ```
 
-**Output**: Contenido completo del archivo markdown.
+**Output**: Full content of the markdown file.
 
 ---
 
-## 2. FORMATO DE SALIDA
+## 2. OUTPUT FORMAT
 
-### Nivel 1 (Temas)
+### Level 1 (Topics)
 
 ```
-📚 DOCUMENTATION TOPICS ({N} encontrados)
+📚 DOCUMENTATION TOPICS ({N} found)
 
 ═══════════════════════════════════════════════════════════════════════════════
 
 📁 anti-hallucination
-   └─ 5 archivos | Validation patterns and confidence scoring
+   └─ 5 files | Validation patterns and confidence scoring
 
 📁 security
-   └─ 5 archivos | Security patterns and vulnerability detection
+   └─ 5 files | Security patterns and vulnerability detection
 
 ═══════════════════════════════════════════════════════════════════════════════
 
-💡 Usar: /docs [tema] para explorar
+💡 Use: /docs [topic] to explore
 ```
 
-### Nivel 2 (Archivos)
+### Level 2 (Files)
 
 ```
-📚 TOPIC: SECURITY (5 archivos)
+📚 TOPIC: SECURITY (5 files)
 
 ═══════════════════════════════════════════════════════════════════════════════
 
@@ -135,91 +135,91 @@ Para cada directorio encontrado:
 
 ═══════════════════════════════════════════════════════════════════════════════
 
-💡 Usar: /docs security [archivo] para leer
+💡 Use: /docs security [file] to read
 ```
 
 ---
 
-## 3. ANTI-ALUCINACIÓN
+## 3. ANTI-HALLUCINATION
 
-| ❌ PROHIBIDO | ✅ OBLIGATORIO |
-|--------------|----------------|
-| Listar temas de memoria | `Glob('.claude/docs/*/')` real |
-| Inventar archivos | `Glob('.claude/docs/[tema]/*.md')` real |
-| Asumir que existe README | Verificar con Glob primero |
-| Describir sin leer | `Read` primeras líneas para descripción |
-
----
-
-## 4. POKA-YOKE (Manejo de Errores)
-
-| Escenario | Acción |
-|-----------|--------|
-| Tema no existe | Listar temas válidos disponibles |
-| Archivo no existe | Listar archivos válidos del tema |
-| `.claude/docs/` vacío | "No hay documentación. Crear en .claude/docs/" |
-| Path traversal (`../`) | RECHAZAR, solo rutas dentro de `.claude/docs/` |
+| PROHIBITED | MANDATORY |
+|------------|-----------|
+| List topics from memory | Real `Glob('.claude/docs/*/')` |
+| Invent files | Real `Glob('.claude/docs/[topic]/*.md')` |
+| Assume README exists | Verify with Glob first |
+| Describe without reading | `Read` first lines for description |
 
 ---
 
-## 5. EJEMPLO DE EJECUCIÓN
+## 4. POKA-YOKE (Error Handling)
 
-### Caso: `/docs`
+| Scenario | Action |
+|----------|--------|
+| Topic does not exist | List available valid topics |
+| File does not exist | List valid files for the topic |
+| `.claude/docs/` is empty | "No documentation found. Create in .claude/docs/" |
+| Path traversal (`../`) | REJECT, only paths inside `.claude/docs/` |
+
+---
+
+## 5. EXECUTION EXAMPLE
+
+### Case: `/docs`
 
 ```
 1. Glob('.claude/docs/*/')
    → [anti-hallucination/, security/, testing/, refactoring/, context-management/]
 
-2. Para cada directorio:
-   - Contar archivos: Glob('.claude/docs/[tema]/*.md').length
-   - Leer descripción: Read('.claude/docs/[tema]/README.md', limit: 5)
+2. For each directory:
+   - Count files: Glob('.claude/docs/[topic]/*.md').length
+   - Read description: Read('.claude/docs/[topic]/README.md', limit: 5)
 
-3. Renderizar lista de temas
+3. Render topic list
 ```
 
-### Caso: `/docs security`
+### Case: `/docs security`
 
 ```
-1. Verificar: Glob('.claude/docs/security/')
-   → Existe
+1. Verify: Glob('.claude/docs/security/')
+   → Exists
 
-2. Listar: Glob('.claude/docs/security/*.md')
+2. List: Glob('.claude/docs/security/*.md')
    → [README.md, sql-injection.md, secret-detection.md, ...]
 
-3. Para cada archivo:
-   - Read(archivo, limit: 3) para extraer título
+3. For each file:
+   - Read(file, limit: 3) to extract title
 
-4. Renderizar lista de archivos
+4. Render file list
 ```
 
-### Caso: `/docs security sql-injection`
+### Case: `/docs security sql-injection`
 
 ```
-1. Construir: '.claude/docs/security/sql-injection.md'
+1. Build: '.claude/docs/security/sql-injection.md'
 
-2. Verificar: Glob('.claude/docs/security/sql-injection.md')
-   → Existe
+2. Verify: Glob('.claude/docs/security/sql-injection.md')
+   → Exists
 
 3. Read('.claude/docs/security/sql-injection.md')
-   → Contenido completo
+   → Full content
 
-4. Mostrar contenido
+4. Display content
 ```
 
 ---
 
-## 6. SEGURIDAD
+## 6. SECURITY
 
 **Directory Traversal Prevention**:
 
 ```
-Si argumento contiene '../' o '..\' o path absoluto:
-  → RECHAZAR: "Path inválido. Solo se permiten nombres de tema/archivo."
+If argument contains '../' or '..\' or absolute path:
+  → REJECT: "Invalid path. Only topic/file names are allowed."
 ```
 
-**Scope**: Solo `.claude/docs/` y subdirectorios directos.
+**Scope**: Only `.claude/docs/` and direct subdirectories.
 
 ---
 
-**Relacionado**: `/load-anti-hallucination`, `/load-security`
-**Source**: `.claude/docs/` directory (escaneado en tiempo real)
+**Related**: `/load-anti-hallucination`, `/load-security`
+**Source**: `.claude/docs/` directory (scanned at runtime)

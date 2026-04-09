@@ -1,52 +1,52 @@
 ---
-description: Compara un patron especifico con fuentes de expertos
+description: Compares a specific pattern against expert sources
 allowed-tools: Read, Grep, WebSearch, WebFetch
 ---
 
 # /compare-pattern
 
-Compara un patron especifico del codigo actual con documentacion y repos exitosos.
+Compares a specific pattern from the current code against documentation and successful repos.
 
-## Uso
+## Usage
 
 ```
 /compare-pattern <pattern-name> [file-path]
 
-Ejemplos:
+Examples:
 /compare-pattern "error handling" src/services/
 /compare-pattern "state management" src/stores/
 /compare-pattern "validation" src/routes/
 ```
 
-## Proceso
+## Process
 
-### 1. Identificar Patron Actual
-
-```
-Grep "[pattern-name]" en [file-path o codebase]
-Read archivos relevantes
-```
-
-### 2. Cargar Referencia
+### 1. Identify Current Pattern
 
 ```
-Read knowledge-base/[categoria]-patterns.md
+Grep "[pattern-name]" in [file-path or codebase]
+Read relevant files
 ```
 
-### 3. Buscar Fuentes Adicionales (si necesario)
+### 2. Load Reference
+
+```
+Read knowledge-base/[category]-patterns.md
+```
+
+### 3. Search Additional Sources (if needed)
 
 ```
 WebSearch "github [pattern] typescript stars:>1000"
-WebFetch [url de repo relevante]
+WebFetch [url of relevant repo]
 ```
 
-### 4. Generar Comparacion
+### 4. Generate Comparison
 
-| Fuente | Patron Recomendado | Match con Actual |
-|--------|-------------------|------------------|
-| Knowledge Base | [patron] | [%] |
-| [Repo Name] | [patron] | [%] |
-| Official Docs | [patron] | [%] |
+| Source | Recommended Pattern | Match with Current |
+|--------|--------------------|--------------------|
+| Knowledge Base | [pattern] | [%] |
+| [Repo Name] | [pattern] | [%] |
+| Official Docs | [pattern] | [%] |
 
 ### 5. Output
 
@@ -54,26 +54,26 @@ WebFetch [url de repo relevante]
 ## Pattern Comparison: [pattern-name]
 
 ### Current Implementation
-[codigo actual encontrado]
+[current code found]
 
 ### Reference Implementations
 
 #### From Knowledge Base
-[patron documentado]
+[documented pattern]
 
 #### From [Repo Name] (Xk stars)
-[patron del repo]
+[pattern from repo]
 
 ### Recommendations
-1. [recomendacion especifica con ejemplo]
+1. [specific recommendation with example]
 
 ### Confidence: [X]%
 ```
 
-## Patrones Comunes para Comparar
+## Common Patterns to Compare
 
-| Patron | Keywords | Repos de Referencia |
-|--------|----------|---------------------|
+| Pattern | Keywords | Reference Repos |
+|---------|----------|-----------------|
 | Error handling | try/catch, Result | neverthrow, fp-ts |
 | State management | useState, store | zustand, jotai |
 | API routes | router, endpoint | tRPC, hono |

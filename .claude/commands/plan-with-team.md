@@ -1,12 +1,12 @@
 ---
-description: Genera planes de ejecucion con asignacion de equipos de agentes - analiza trabajo, ensambla team, produce plan completo con dependencias y recovery
+description: Generates execution plans with agent team assignment - analyzes work, assembles team, produces complete plan with dependencies and recovery
 model: opus
 version: 1.0.0
 ---
 
 # /plan-with-team
 
-Genera un plan de ejecucion completo con asignacion de equipos de agentes especializados, dependencias entre tareas, y plan de recuperacion.
+Generates a complete execution plan with assignment of specialized agent teams, task dependencies, and a recovery plan.
 
 ---
 
@@ -18,69 +18,69 @@ $ARGUMENTS
 
 ---
 
-## INSTRUCCIONES
+## INSTRUCTIONS
 
-Analiza la descripcion del trabajo proporcionada en `$ARGUMENTS` y genera un plan completo siguiendo TODOS los pasos a continuacion. No omitas ninguna seccion.
+Analyze the work description provided in `$ARGUMENTS` and generate a complete plan following ALL steps below. Do not omit any section.
 
 ---
 
-## PASO 1: ANALIZAR TRABAJO
+## STEP 1: ANALYZE WORK
 
-1. Leer `$ARGUMENTS` y extraer:
-   - Objetivo principal
-   - Tecnologias involucradas (inferir del contexto si no se especifican)
-   - Dominio (backend, frontend, infra, full-stack)
-   - Archivos potencialmente afectados (usar Glob/Grep para verificar)
+1. Read `$ARGUMENTS` and extract:
+   - Main objective
+   - Technologies involved (infer from context if not specified)
+   - Domain (backend, frontend, infra, full-stack)
+   - Potentially affected files (use Glob/Grep to verify)
 
-2. Calcular complejidad:
+2. Calculate complexity:
 
-| Factor | Peso | Low (1) | Medium (2) | High (3) |
-|--------|------|---------|------------|----------|
-| Archivos | 20% | 1-2 | 3-5 | 6+ |
-| Dominios | 20% | 1 | 2-3 | 4+ |
-| Dependencias | 20% | 0-1 | 2-3 | 4+ |
-| Seguridad | 20% | Ninguna | Data | Auth/Crypto |
-| Integraciones | 20% | 0-1 | 2-3 | 4+ |
+| Factor | Weight | Low (1) | Medium (2) | High (3) |
+|--------|--------|---------|------------|----------|
+| Files | 20% | 1-2 | 3-5 | 6+ |
+| Domains | 20% | 1 | 2-3 | 4+ |
+| Dependencies | 20% | 0-1 | 2-3 | 4+ |
+| Security | 20% | None | Data | Auth/Crypto |
+| Integrations | 20% | 0-1 | 2-3 | 4+ |
 
 ```
-score = SUM(factor_value x peso x 20)
+score = SUM(factor_value x weight x 20)
 ```
 
-3. Evaluar execution mode:
-   - Si score > 60 Y dominios independientes >= 3 Y comunicacion inter-dominio necesaria:
+3. Evaluate execution mode:
+   - If score > 60 AND independent domains >= 3 AND inter-domain communication needed:
      `execution_mode = team`
-   - Si no: `execution_mode = subagents` (default)
-   - Ver `complexity-routing.md` seccion "Execution Mode Decision" para criterios completos
+   - Otherwise: `execution_mode = subagents` (default)
+   - See `complexity-routing.md` section "Execution Mode Decision" for full criteria
 
 ---
 
-## PASO 2: ENSAMBLAR EQUIPO
+## STEP 2: ASSEMBLE TEAM
 
-Seleccionar agentes segun estas reglas:
+Select agents according to these rules:
 
-| Agente | Condicion | Siempre/Condicional |
-|--------|-----------|---------------------|
-| `scout` | Exploracion previa del codebase | SIEMPRE |
-| `builder` | Implementacion de codigo | SIEMPRE |
-| `reviewer` | Validacion de calidad | SIEMPRE |
-| `architect` | Complejidad > 40 | CONDICIONAL |
-| `reviewer` | Keywords: auth, token, password, jwt, api-key, data, encryption, sanitize | CONDICIONAL |
-| `reviewer` | Keywords: refactor, cleanup, simplify O archivos > 5 | CONDICIONAL |
+| Agent | Condition | Always/Conditional |
+|-------|-----------|-------------------|
+| `scout` | Prior codebase exploration | ALWAYS |
+| `builder` | Code implementation | ALWAYS |
+| `reviewer` | Quality validation | ALWAYS |
+| `architect` | Complexity > 40 | CONDITIONAL |
+| `reviewer` | Keywords: auth, token, password, jwt, api-key, data, encryption, sanitize | CONDITIONAL |
+| `reviewer` | Keywords: refactor, cleanup, simplify OR files > 5 | CONDITIONAL |
 
 ### Model Assignment
 
-| Agente | Model por defecto | Cuando usar opus |
-|--------|-------------------|------------------|
-| `scout` | sonnet | Nunca |
-| `builder` | sonnet | Arquitectura critica |
-| `reviewer` | sonnet | Review de seguridad |
-| `architect` | opus | Siempre |
+| Agent | Default model | When to use opus |
+|-------|--------------|-----------------|
+| `scout` | sonnet | Never |
+| `builder` | sonnet | Critical architecture |
+| `reviewer` | sonnet | Security review |
+| `architect` | opus | Always |
 | `reviewer` | sonnet | Auth/crypto |
-| `reviewer` | sonnet | Refactoring > 10 archivos |
+| `reviewer` | sonnet | Refactoring > 10 files |
 
 ### Skill Matching
 
-Detectar keywords en `$ARGUMENTS` y asignar skills:
+Detect keywords in `$ARGUMENTS` and assign skills:
 
 | Keywords | Skill |
 |----------|-------|
@@ -96,52 +96,52 @@ Detectar keywords en `$ARGUMENTS` y asignar skills:
 
 ---
 
-## PASO 3: GENERAR PLAN
+## STEP 3: GENERATE PLAN
 
-Producir un documento con TODAS las secciones siguientes. Cada seccion es OBLIGATORIA.
+Produce a document with ALL the following sections. Each section is MANDATORY.
 
-### Seccion 1: Objective
+### Section 1: Objective
 
 ```markdown
 ## Objective
 
-[1-3 frases describiendo que se quiere lograr y por que]
+[1-3 sentences describing what is to be achieved and why]
 
-**Complejidad calculada**: [score]/60
-**Archivos estimados**: [N]
-**Riesgo**: [BAJO/MEDIO/ALTO]
+**Calculated complexity**: [score]/60
+**Estimated files**: [N]
+**Risk**: [LOW/MEDIUM/HIGH]
 **Execution mode**: subagents | team
 ```
 
-### Seccion 2: Team Members
+### Section 2: Team Members
 
 ```markdown
 ## Team Members
 
-| Agente | Rol en este plan | Model | Skills recomendadas | Background? |
-|--------|------------------|-------|---------------------|-------------|
-| scout | Explorar estructura y patterns existentes | sonnet | - | No |
-| builder | Implementar codigo | sonnet | [skills] | No |
-| reviewer | Validar calidad y correctitud | sonnet | code-style-enforcer | Si |
+| Agent | Role in this plan | Model | Recommended skills | Background? |
+|-------|------------------|-------|--------------------|-------------|
+| scout | Explore existing structure and patterns | sonnet | - | No |
+| builder | Implement code | sonnet | [skills] | No |
+| reviewer | Validate quality and correctness | sonnet | code-style-enforcer | Yes |
 | ... | ... | ... | ... | ... |
 ```
 
-### Seccion 3: Dependency Graph
+### Section 3: Dependency Graph
 
 ```markdown
 ## Dependency Graph
 
-(diagrama Mermaid obligatorio)
+(mandatory Mermaid diagram)
 ```
 
 ```mermaid
 graph TD
   subgraph "PHASE-1: Discovery"
-    S1[scout: explorar codebase]
+    S1[scout: explore codebase]
   end
   subgraph "PHASE-2: Implementation"
-    B1[builder: tarea 1]
-    B2[builder: tarea 2]
+    B1[builder: task 1]
+    B2[builder: task 2]
   end
   subgraph "PHASE-3: Validation"
     R1[reviewer: code review]
@@ -152,177 +152,177 @@ graph TD
   B2 --> R1
 ```
 
-Usar esta leyenda:
-- Nodos independientes en el mismo subgraph = ejecutar en PARALELO
-- Flechas entre subgraphs = ejecutar SECUENCIAL
-- Nodos con `[Blocking]` en label = requieren aprobacion
+Use this legend:
+- Independent nodes in the same subgraph = execute in PARALLEL
+- Arrows between subgraphs = execute SEQUENTIALLY
+- Nodes with `[Blocking]` in label = require approval
 
-### Seccion 4: Tasks
+### Section 4: Tasks
 
-Para CADA tarea, incluir TODOS estos campos:
+For EACH task, include ALL these fields:
 
 ```markdown
 ## Tasks
 
-### Task 1: [Nombre descriptivo]
-- **Agente**: [nombre]
-- **Dependencias**: Ninguna | Task N
-- **Prompt para el agente**:
+### Task 1: [Descriptive name]
+- **Agent**: [name]
+- **Dependencies**: None | Task N
+- **Prompt for the agent**:
   ```
-  [Prompt exacto y completo que se le pasara al agente.
-   Incluir contexto, archivos a tocar, patron a seguir,
-   y criterio de completado.]
+  [Exact and complete prompt that will be passed to the agent.
+   Include context, files to touch, pattern to follow,
+   and completion criteria.]
   ```
-- **Criterio de completado**: [Condicion verificable]
+- **Completion criteria**: [Verifiable condition]
 - **Validation hook**: `bun typecheck` | `bun test [file]` | N/A
 
-### Task 2: [Nombre descriptivo]
+### Task 2: [Descriptive name]
 ...
 ```
 
-Reglas para los prompts de agentes:
-- Ser especificos: incluir paths de archivos, nombres de funciones, patterns a seguir
-- Incluir contexto: que existe, que se espera, como verificar
-- Incluir criterio: como saber que esta terminado
-- Para `builder`: incluir skill instructions si aplica
-- Para `reviewer`: especificar que revisar y contra que criterios
+Rules for agent prompts:
+- Be specific: include file paths, function names, patterns to follow
+- Include context: what exists, what is expected, how to verify
+- Include criteria: how to know it is done
+- For `builder`: include skill instructions if applicable
+- For `reviewer`: specify what to review and against which criteria
 
-### Seccion 5: Execution Instructions
+### Section 5: Execution Instructions
 
 ```markdown
 ## Execution Instructions
 
-### Grupo 1: Discovery (PARALELO)
-Ejecutar simultaneamente:
+### Group 1: Discovery (PARALLEL)
+Execute simultaneously:
 - Task 1 (scout)
 
-### Grupo 2: Implementation (PARALELO donde posible)
-Ejecutar despues de Grupo 1:
-- Task 2 (builder) + Task 3 (builder) [en paralelo si archivos independientes]
-- Task 4 (builder) [secuencial, depende de Task 2]
+### Group 2: Implementation (PARALLEL where possible)
+Execute after Group 1:
+- Task 2 (builder) + Task 3 (builder) [in parallel if files are independent]
+- Task 4 (builder) [sequential, depends on Task 2]
 
-### Grupo 3: Validation (PARALELO)
-Ejecutar despues de Grupo 2:
-- Task 5 (reviewer) + Task 6 (reviewer) [en paralelo]
+### Group 3: Validation (PARALLEL)
+Execute after Group 2:
+- Task 5 (reviewer) + Task 6 (reviewer) [in parallel]
 
-### Env vars necesarias
-| Variable | Requerida | Default |
-|----------|-----------|---------|
-| [var] | Si/No | [valor] |
+### Required env vars
+| Variable | Required | Default |
+|----------|----------|---------|
+| [var] | Yes/No | [value] |
 
-### Si Execution Mode = team
+### If Execution Mode = team
 
-Cuando el plan recomienda `execution_mode = team`:
+When the plan recommends `execution_mode = team`:
 
-| Aspecto | Comportamiento |
-|---------|---------------|
-| Teammates | Cada dominio → un teammate (proceso Claude Code independiente) |
-| Config | Teammates cargan `~/.claude/` automaticamente (reglas, skills, hooks de Poneglyph) |
-| Coordinacion | Via task list compartida (TaskCreate/TaskUpdate/TaskList) |
-| Monitoring | Lead monitorea progreso y maneja integracion final |
-| Requisito | `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` en settings.json |
-| Fallback | Si teammate falla 2x → extraer dominio → ejecutar como builder subagent |
+| Aspect | Behavior |
+|--------|----------|
+| Teammates | Each domain → one teammate (independent Claude Code process) |
+| Config | Teammates automatically load `~/.claude/` (Poneglyph rules, skills, hooks) |
+| Coordination | Via shared task list (TaskCreate/TaskUpdate/TaskList) |
+| Monitoring | Lead monitors progress and handles final integration |
+| Requirement | `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` in settings.json |
+| Fallback | If teammate fails 2x → extract domain → run as builder subagent |
 
-### Pre-requisitos
-- [ ] [Requisito antes de empezar]
+### Prerequisites
+- [ ] [Requirement before starting]
 ```
 
-### Seccion 6: Recovery Plan
+### Section 6: Recovery Plan
 
 ```markdown
 ## Recovery Plan
 
-| Escenario | Accion | Agente |
-|-----------|--------|--------|
-| Test falla | Analizar error, corregir, re-ejecutar test | builder |
-| TypeScript error | Verificar types e imports, corregir | builder |
-| NEEDS_CHANGES del reviewer | Aplicar feedback, re-submit a reviewer | builder -> reviewer |
-| BLOCKED por dependencia externa | Escalar al Lead con contexto del bloqueo | Lead |
-| Arquitectura inadecuada | Re-disenar con architect, re-implementar | architect -> builder |
-| Fallo de seguridad detectado | reviewer analiza, builder corrige | reviewer -> builder |
+| Scenario | Action | Agent |
+|----------|--------|-------|
+| Test fails | Analyze error, fix, re-run test | builder |
+| TypeScript error | Verify types and imports, fix | builder |
+| NEEDS_CHANGES from reviewer | Apply feedback, re-submit to reviewer | builder -> reviewer |
+| BLOCKED by external dependency | Escalate to Lead with block context | Lead |
+| Inadequate architecture | Redesign with architect, re-implement | architect -> builder |
+| Security failure detected | reviewer analyzes, builder fixes | reviewer -> builder |
 
-### Loop de Correccion
+### Correction Loop
 
-(maximo 3 iteraciones antes de escalar al Lead)
+(maximum 3 iterations before escalating to Lead)
 
-1. builder implementa
-2. reviewer evalua
-3. Si NEEDS_CHANGES:
-   a. builder corrige segun feedback
-   b. reviewer re-evalua
-   c. Si NEEDS_CHANGES de nuevo: repetir (max 3x)
-   d. Si 3x fallidos: escalar al Lead con historial
-4. Si APPROVED: marcar tarea como completada
+1. builder implements
+2. reviewer evaluates
+3. If NEEDS_CHANGES:
+   a. builder fixes according to feedback
+   b. reviewer re-evaluates
+   c. If NEEDS_CHANGES again: repeat (max 3x)
+   d. If 3x failures: escalate to Lead with history
+4. If APPROVED: mark task as complete
 ```
 
 ---
 
-## PASO 4: SELF-VALIDATION
+## STEP 4: SELF-VALIDATION
 
-Antes de finalizar, verificar que el plan contiene TODAS estas secciones:
+Before finishing, verify the plan contains ALL these sections:
 
-| Seccion | Existe? |
+| Section | Exists? |
 |---------|---------|
 | Objective | |
 | Team Members | |
 | Dependency Graph (Mermaid) | |
-| Tasks (con prompts exactos) | |
+| Tasks (with exact prompts) | |
 | Execution Instructions | |
 | Recovery Plan | |
 
-Si falta alguna seccion, completarla antes de continuar.
+If any section is missing, complete it before continuing.
 
 ---
 
-## PASO 5: GUARDAR PLAN
+## STEP 5: SAVE PLAN
 
-1. Crear directorio `.specs/` si no existe:
+1. Create `.specs/` directory if it does not exist:
    ```bash
    mkdir -p .specs
    ```
 
-2. Slugificar el nombre del trabajo:
+2. Slugify the work name:
    - Lowercase
-   - Espacios a guiones
-   - Remover caracteres especiales
-   - Max 50 caracteres
+   - Spaces to hyphens
+   - Remove special characters
+   - Max 50 characters
 
-3. Guardar en `.specs/plan-{slug}.md`
+3. Save to `.specs/plan-{slug}.md`
 
-4. Confirmar al usuario:
+4. Confirm to the user:
    ```
-   Plan guardado en .specs/plan-{slug}.md
+   Plan saved to .specs/plan-{slug}.md
 
-   Para ejecutar: delegar cada Task al agente correspondiente siguiendo
-   el orden de Execution Instructions.
+   To execute: delegate each Task to the corresponding agent following
+   the order in Execution Instructions.
    ```
 
 ---
 
-## EJEMPLO DE USO
+## USAGE EXAMPLE
 
 ```
-/plan-with-team Implementar sistema de notificaciones real-time con WebSocket
+/plan-with-team Implement real-time notification system with WebSocket
 ```
 
-Deberia generar un plan con:
-- **Team**: scout + architect (complejidad > 40) + builder + reviewer
+Should generate a plan with:
+- **Team**: scout + architect (complexity > 40) + builder + reviewer
 - **Skills**: websocket-patterns, typescript-patterns, bun-best-practices
-- **Tasks**: scout explora ws existente, architect disena, builder implementa server + client, reviewer valida
-- **Recovery**: fallback a polling si WS falla, loop builder-reviewer max 3x
+- **Tasks**: scout explores existing ws, architect designs, builder implements server + client, reviewer validates
+- **Recovery**: fallback to polling if WS fails, builder-reviewer loop max 3x
 
 ---
 
 ## ANTI-PATTERNS
 
-| NO hacer | SI hacer |
-|----------|----------|
-| Plan sin Mermaid | Siempre incluir Dependency Graph |
-| Prompts vagos para agentes | Prompts con paths, funciones, patterns |
-| Ignorar skills relevantes | Match keywords -> skills automatico |
-| Team sin reviewer | Reviewer SIEMPRE presente |
-| Sin recovery plan | Recovery con escenarios concretos |
-| Guardar sin validar secciones | Self-validation ANTES de guardar |
+| DO NOT | DO |
+|--------|----|
+| Plan without Mermaid | Always include Dependency Graph |
+| Vague prompts for agents | Prompts with paths, functions, patterns |
+| Ignore relevant skills | Auto-match keywords -> skills |
+| Team without reviewer | Reviewer ALWAYS present |
+| No recovery plan | Recovery with concrete scenarios |
+| Save without validating sections | Self-validation BEFORE saving |
 
 ---
 

@@ -1,11 +1,11 @@
 ---
-description: Dashboard analitico HTML — evalua uso de Claude Code con metricas, tendencias, patrones y recomendaciones accionables
+description: HTML analytics dashboard — evaluates Claude Code usage with metrics, trends, patterns and actionable recommendations
 model: opus
 ---
 
 # /insights-poneglyph
 
-Genera un dashboard HTML interactivo con analisis profundo del uso de Claude Code. Dark mode, visualizaciones con Chart.js, metricas accionables.
+Generates an interactive HTML dashboard with in-depth analysis of Claude Code usage. Dark mode, Chart.js visualizations, actionable metrics.
 
 ## INPUT
 
@@ -13,123 +13,123 @@ Genera un dashboard HTML interactivo con analisis profundo del uso de Claude Cod
 $ARGUMENTS
 ```
 
-Periodo por defecto: ultimos 30 dias. Si `$ARGUMENTS` especifica un periodo (ej: "7d", "90d", "all"), usar ese.
+Default period: last 30 days. If `$ARGUMENTS` specifies a period (e.g., "7d", "90d", "all"), use that instead.
 
 ---
 
-## PASO 1: RECOPILAR DATOS
+## STEP 1: COLLECT DATA
 
-Leer TODAS estas fuentes. Si un archivo no existe, marcar como "sin datos" en el dashboard (no fallar).
+Read ALL these sources. If a file does not exist, mark as "no data" in the dashboard (do not fail).
 
-### 1.1 Traces de ejecucion
+### 1.1 Execution traces
 ```bash
-# Leer todos los archivos JSONL de traces
+# Read all JSONL trace files
 ls ~/.claude/traces/*.jsonl
 ```
 
-Cada linea es un JSON con campos:
-- `ts` (timestamp ISO)
+Each line is a JSON with fields:
+- `ts` (ISO timestamp)
 - `sessionId`
-- `prompt` (texto del usuario)
-- `agents` (array de agentes usados)
-- `skills` (array de skills cargadas)
+- `prompt` (user text)
+- `agents` (array of agents used)
+- `skills` (array of skills loaded)
 - `tokens`, `inputTokens`, `outputTokens`
 - `costUsd`
 - `durationMs`
 - `model` (opus/sonnet/haiku)
 - `status` (success/error/timeout)
-- `toolCalls` (numero de tool calls)
-- `filesChanged` (numero de archivos modificados)
+- `toolCalls` (number of tool calls)
+- `filesChanged` (number of files modified)
 
-### 1.2 Patrones descubiertos
+### 1.2 Discovered patterns
 ```bash
 cat ~/.claude/patterns.jsonl
 ```
 
-Campos: `type` (sequence/skill_combo/decomposition/recovery), `pattern` (agents, skills, taskType, complexityRange), `outcome` (successRate, avgDuration, avgCost, avgRetries), `confidence`, `sampleSize`
+Fields: `type` (sequence/skill_combo/decomposition/recovery), `pattern` (agents, skills, taskType, complexityRange), `outcome` (successRate, avgDuration, avgCost, avgRetries), `confidence`, `sampleSize`
 
 ### 1.3 Agent scores
 ```bash
 cat ~/.claude/agent-scores.jsonl
 ```
 
-Campos: `agent`, `taskType`, `compositeScore`, `successRate`, `trend` (improving/stable/declining), `sampleSize`, `recentScores`
+Fields: `agent`, `taskType`, `compositeScore`, `successRate`, `trend` (improving/stable/declining), `sampleSize`, `recentScores`
 
 ---
 
-## PASO 2: COMPUTAR METRICAS
+## STEP 2: COMPUTE METRICS
 
-Calcular todo esto desde los datos raw:
+Calculate all of the following from raw data:
 
 ### 2.1 Overview KPIs
-| Metrica | Calculo |
-|---------|---------|
-| Total sesiones | Count de traces en periodo |
-| Success rate | % con status=success |
-| Coste total | Sum costUsd |
-| Coste medio por sesion | Avg costUsd |
-| Tokens totales | Sum tokens |
-| Duracion media | Avg durationMs |
-| Archivos modificados | Sum filesChanged |
+| Metric | Calculation |
+|--------|-------------|
+| Total sessions | Count of traces in period |
+| Success rate | % with status=success |
+| Total cost | Sum costUsd |
+| Average cost per session | Avg costUsd |
+| Total tokens | Sum tokens |
+| Average duration | Avg durationMs |
+| Files modified | Sum filesChanged |
 
-### 2.2 Tendencias temporales (por dia)
-- Sesiones por dia
-- Coste por dia
-- Tokens por dia
-- Success rate por dia (media movil 3 dias)
+### 2.2 Time trends (per day)
+- Sessions per day
+- Cost per day
+- Tokens per day
+- Success rate per day (3-day moving average)
 
-### 2.3 Distribucion de modelos
-- % uso de opus vs sonnet vs haiku
-- Coste por modelo
-- Success rate por modelo
+### 2.3 Model distribution
+- % usage of opus vs sonnet vs haiku
+- Cost per model
+- Success rate per model
 
-### 2.4 Performance de agentes
-Para cada agente (builder, reviewer, scout, planner, architect, error-analyzer):
-- Frecuencia de uso
+### 2.4 Agent performance
+For each agent (builder, reviewer, scout, planner, architect, error-analyzer):
+- Usage frequency
 - Success rate
-- Trend (de agent-scores.jsonl)
-- Coste medio por invocacion
+- Trend (from agent-scores.jsonl)
+- Average cost per invocation
 
-### 2.5 Efectividad de skills
-Para cada skill usada:
-- Frecuencia de carga
-- Correlacion con success rate (sesiones con skill vs sin skill)
-- Coste medio de sesiones con skill
+### 2.5 Skill effectiveness
+For each skill used:
+- Load frequency
+- Correlation with success rate (sessions with skill vs without skill)
+- Average cost of sessions with skill
 
-### 2.6 Patrones top
-De patterns.jsonl:
-- Top 5 patrones por success rate (con sampleSize >= 5)
-- Top 5 patrones por coste-eficiencia
-- Patrones con declive (success rate bajando)
+### 2.6 Top patterns
+From patterns.jsonl:
+- Top 5 patterns by success rate (with sampleSize >= 5)
+- Top 5 patterns by cost-efficiency
+- Patterns in decline (success rate dropping)
 
-### 2.7 Analisis de fallos
-- Categorizar errores mas frecuentes
-- Agentes que mas fallan
-- Horas del dia con mas errores
-- Sesiones mas caras sin resultado exitoso
+### 2.7 Failure analysis
+- Categorize most frequent errors
+- Agents that fail most often
+- Hours of day with most errors
+- Most expensive sessions without a successful result
 
-### 2.8 Recomendaciones
-Generar insights accionables basados en los datos:
+### 2.8 Recommendations
+Generate actionable insights based on the data:
 
-| Condicion | Insight |
+| Condition | Insight |
 |-----------|---------|
-| Un agente tiene success rate < 70% | "Warning: [agent] falla frecuentemente ([rate]%). Revisar prompts o skills asignadas." |
-| Un modelo representa >60% del coste total | "Tip: [model] consume [%] del presupuesto. Considerar downgrade para tareas simples." |
-| Una skill no mejora success rate | "Issue: [skill] no aporta mejora medible. Evaluar si los triggers son correctos." |
-| Success rate general > 90% | "OK: Orquestacion saludable. Success rate: [rate]%." |
-| Coste medio subiendo vs periodo anterior | "Trend: Coste medio subiendo [%]. Revisar model routing y complejidad de tareas." |
-| Un patron tiene >90% success rate | "Target: Patron '[pattern]' es muy efectivo ([rate]%). Potenciar su uso." |
-| Sesiones sin agentes usados | "Search: [N] sesiones sin orquestacion. Verificar que el lead mode esta activo." |
+| An agent has success rate < 70% | "Warning: [agent] fails frequently ([rate]%). Review prompts or assigned skills." |
+| A model represents >60% of total cost | "Tip: [model] consumes [%] of the budget. Consider downgrading for simple tasks." |
+| A skill does not improve success rate | "Issue: [skill] shows no measurable improvement. Evaluate whether the triggers are correct." |
+| Overall success rate > 90% | "OK: Healthy orchestration. Success rate: [rate]%." |
+| Average cost rising vs previous period | "Trend: Average cost rising [%]. Review model routing and task complexity." |
+| A pattern has >90% success rate | "Target: Pattern '[pattern]' is highly effective ([rate]%). Increase its usage." |
+| Sessions with no agents used | "Search: [N] sessions without orchestration. Verify that lead mode is active." |
 
 ---
 
-## PASO 3: GENERAR HTML
+## STEP 3: GENERATE HTML
 
-Crear un archivo HTML **standalone** (sin dependencias locales) con este diseno:
+Create a **standalone** HTML file (no local dependencies) with the following design:
 
 ### Design System
 
-**Paleta dark mode**:
+**Dark mode palette**:
 ```
 --bg-primary: #0d1117
 --bg-secondary: #161b22
@@ -147,176 +147,177 @@ Crear un archivo HTML **standalone** (sin dependencias locales) con este diseno:
 --gradient-end: #bc8cff
 ```
 
-**Tipografia**: `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif` (cargar Inter desde Google Fonts CDN)
+**Typography**: `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif` (load Inter from Google Fonts CDN)
 
-**Layout**: CSS Grid responsive — 12 columns en desktop, 1 column en mobile
+**Layout**: Responsive CSS Grid — 12 columns on desktop, 1 column on mobile
 
-**Charts**: Usar Chart.js v4 desde CDN (`https://cdn.jsdelivr.net/npm/chart.js`). Todos los charts con theme dark (gridlines sutiles, labels claros, tooltips con fondo oscuro).
+**Charts**: Use Chart.js v4 from CDN (`https://cdn.jsdelivr.net/npm/chart.js`). All charts with dark theme (subtle gridlines, clear labels, tooltips with dark background).
 
-### Estructura del HTML
+### HTML Structure
 
 ```
 +-----------------------------------------------------+
 |  HEADER                                              |
-|  Logo + "Poneglyph Insights" + periodo + fecha gen.  |
+|  Logo + "Poneglyph Insights" + period + gen. date   |
 |  Gradient accent line (blue -> purple)               |
 +-----------------------------------------------------+
-|  KPI CARDS (4 cards en fila)                         |
+|  KPI CARDS (4 cards in a row)                        |
 |  +------+ +------+ +------+ +------+                |
 |  | Sess | | Rate | | Cost | |Tokens|                |
 |  |  142 | | 94%  | |$12.50| | 2.1M |                |
 |  +------+ +------+ +------+ +------+                |
 +-----------------------------------------------------+
 |  TIMELINE (full width)                               |
-|  Line chart: sesiones + coste por dia                |
-|  Dual Y axis: sesiones (izq), coste (der)           |
+|  Line chart: sessions + cost per day                 |
+|  Dual Y axis: sessions (left), cost (right)          |
 +-----------------------+-----------------------------+
 |  MODEL DISTRIBUTION   |  SUCCESS RATE TREND          |
-|  Doughnut chart       |  Line chart con media movil  |
+|  Doughnut chart       |  Line chart with moving avg  |
 |  opus/sonnet/haiku    |  3-day rolling average       |
 +-----------------------+-----------------------------+
 |  AGENT PERFORMANCE    |  SKILL EFFECTIVENESS         |
 |  Horizontal bar       |  Horizontal bar chart        |
-|  por success rate     |  con/sin skill comparison    |
+|  by success rate      |  with/without skill comparison|
 +-----------------------+-----------------------------+
 |  TOP PATTERNS (table)                                |
 |  Pattern name | Success Rate | Cost | Samples | Trend|
 +-----------------------------------------------------+
 |  FAILURE ANALYSIS (2 columns)                        |
 |  +-----------------+ +-----------------+             |
-|  | Errores comunes  | | Sesiones caras  |             |
-|  | (table)          | | sin resultado   |             |
+|  | Most common      | | Expensive       |             |
+|  | errors (table)   | | sessions w/o    |             |
+|  |                  | | result          |             |
 |  +-----------------+ +-----------------+             |
 +-----------------------------------------------------+
-|  RECOMMENDATIONS (cards con iconos)                  |
-|  Cards con borde de color segun tipo:                |
-|  green=positivo, yellow=alerta, red=problema         |
+|  RECOMMENDATIONS (cards with icons)                  |
+|  Cards with colored border by type:                  |
+|  green=positive, yellow=warning, red=problem         |
 +-----------------------------------------------------+
 |  FOOTER                                              |
-|  "Generated by Poneglyph v2.0 | {fecha} | {periodo}"|
-|  + link a repo                                       |
+|  "Generated by Poneglyph v2.0 | {date} | {period}"  |
+|  + link to repo                                      |
 +-----------------------------------------------------+
 ```
 
-### Detalles de cada seccion
+### Section Details
 
 **Header**:
-- Titulo grande "Poneglyph Insights" con gradiente text (azul a morado via `-webkit-background-clip: text`)
-- Subtitulo: "Analytics Dashboard for Claude Code Orchestration"
-- Badge con periodo analizado
-- Timestamp de generacion
+- Large title "Poneglyph Insights" with gradient text (blue to purple via `-webkit-background-clip: text`)
+- Subtitle: "Analytics Dashboard for Claude Code Orchestration"
+- Badge with analyzed period
+- Generation timestamp
 
 **KPI Cards**:
-- 4 cards con: icono (emoji), valor grande (font-size: 2.5rem, font-weight: 700), label debajo, delta vs periodo anterior (green up or red down con porcentaje)
-- Cards con `backdrop-filter: blur(10px)`, border sutil, box-shadow
-- Hover: sutil elevation + border glow
+- 4 cards with: icon (emoji), large value (font-size: 2.5rem, font-weight: 700), label below, delta vs previous period (green up or red down with percentage)
+- Cards with `backdrop-filter: blur(10px)`, subtle border, box-shadow
+- Hover: subtle elevation + border glow
 
 **Timeline Chart**:
-- Chart.js Line chart con 2 datasets en dual Y axis
-- Dataset 1: Sessions per day (bar, azul con opacity 0.6)
-- Dataset 2: Cost per day (line, naranja)
-- Tooltip muestra: fecha, sesiones, coste, tokens
-- X axis: fechas formateadas (dd/MM)
+- Chart.js Line chart with 2 datasets on dual Y axis
+- Dataset 1: Sessions per day (bar, blue with opacity 0.6)
+- Dataset 2: Cost per day (line, orange)
+- Tooltip shows: date, sessions, cost, tokens
+- X axis: formatted dates (dd/MM)
 
 **Model Distribution**:
-- Doughnut chart con 3 segmentos (opus=purple, sonnet=blue, haiku=green)
-- Centro: total sesiones
-- Legend debajo con porcentaje y coste por modelo
+- Doughnut chart with 3 segments (opus=purple, sonnet=blue, haiku=green)
+- Center: total sessions
+- Legend below with percentage and cost per model
 
 **Success Rate Trend**:
-- Line chart con success rate diario (puntos) + media movil 3 dias (linea suave)
-- Linea de referencia a 90% (dashed, green)
-- Area bajo la linea con gradiente sutil
+- Line chart with daily success rate (points) + 3-day moving average (smooth line)
+- Reference line at 90% (dashed, green)
+- Area below the line with subtle gradient
 
 **Agent Performance**:
-- Horizontal bar chart ordenado por success rate
-- Colores: >90% green, 70-90% yellow, <70% red
-- Label muestra: nombre, success rate, sample size
+- Horizontal bar chart sorted by success rate
+- Colors: >90% green, 70-90% yellow, <70% red
+- Label shows: name, success rate, sample size
 
 **Skill Effectiveness**:
-- Grouped horizontal bars: success rate CON skill (blue) vs SIN skill (gray)
-- Solo skills con >= 5 samples
-- Ordenado por delta (mayor impacto arriba)
+- Grouped horizontal bars: success rate WITH skill (blue) vs WITHOUT skill (gray)
+- Only skills with >= 5 samples
+- Sorted by delta (highest impact at top)
 
 **Top Patterns**:
-- Table estilizada con:
-  - Columnas: Pattern, Type, Success Rate, Avg Cost, Samples, Trend
-  - Success rate con progress bar inline (color-coded)
-  - Trend con emoji (improving, stable, declining)
-  - Hover highlight en filas
-  - Zebra striping sutil
+- Styled table with:
+  - Columns: Pattern, Type, Success Rate, Avg Cost, Samples, Trend
+  - Success rate with inline progress bar (color-coded)
+  - Trend with emoji (improving, stable, declining)
+  - Hover highlight on rows
+  - Subtle zebra striping
 
 **Failure Analysis**:
-- 2 cards lado a lado
-- Card 1: "Errores mas frecuentes" — tabla con error type, count, last seen
-- Card 2: "Sesiones caras sin resultado" — tabla con fecha, prompt (truncado), coste, modelo
+- 2 cards side by side
+- Card 1: "Most frequent errors" — table with error type, count, last seen
+- Card 2: "Expensive sessions without result" — table with date, prompt (truncated), cost, model
 
 **Recommendations**:
-- Cards con borde izquierdo grueso de color (green/yellow/red/blue)
-- Icono grande a la izquierda
-- Titulo + descripcion + accion sugerida
-- Ordenadas por prioridad (red > yellow > green)
+- Cards with thick left border color (green/yellow/red/blue)
+- Large icon on the left
+- Title + description + suggested action
+- Sorted by priority (red > yellow > green)
 
-### CSS Avanzado
+### Advanced CSS
 
-Incluir estos efectos:
-- `@keyframes fadeInUp` para entrada de cards
-- `transition: all 0.2s ease` en hover de cards y filas
-- `scroll-behavior: smooth` en html
-- Media queries: responsive a mobile (stack cards vertical)
-- `::selection` con color accent
-- Scrollbar custom dark (webkit)
-- Print styles que ocultan charts y muestran data en tablas
+Include these effects:
+- `@keyframes fadeInUp` for card entrance animation
+- `transition: all 0.2s ease` on card and row hover
+- `scroll-behavior: smooth` on html
+- Media queries: responsive to mobile (stack cards vertically)
+- `::selection` with accent color
+- Custom dark scrollbar (webkit)
+- Print styles that hide charts and show data as tables
 
-### Datos de ejemplo (fallback)
+### Example data (fallback)
 
-Si NO hay datos en alguna fuente, generar seccion con:
+If there is NO data for a given source, generate a section with:
 ```html
 <div class="empty-state">
   <span class="empty-icon">📊</span>
-  <p>Sin datos disponibles para esta seccion</p>
-  <p class="hint">Los datos se generan automaticamente con el uso de Claude Code</p>
+  <p>No data available for this section</p>
+  <p class="hint">Data is generated automatically with Claude Code usage</p>
 </div>
 ```
 
 ---
 
-## PASO 4: GUARDAR Y ABRIR
+## STEP 4: SAVE AND OPEN
 
-1. Guardar el HTML en: `~/.claude/reports/insights-{YYYY-MM-DD}.html`
-   - Crear directorio `~/.claude/reports/` si no existe
+1. Save the HTML to: `~/.claude/reports/insights-{YYYY-MM-DD}.html`
+   - Create directory `~/.claude/reports/` if it does not exist
 
-2. Reportar al usuario:
+2. Report to the user:
 ```
-Dashboard generado: ~/.claude/reports/insights-{fecha}.html
+Dashboard generated: ~/.claude/reports/insights-{date}.html
 
-## Resumen
-- Periodo: {desde} a {hasta}
-- Sesiones: {N}
+## Summary
+- Period: {from} to {to}
+- Sessions: {N}
 - Success rate: {%}
-- Coste total: ${X.XX}
-- Recomendaciones: {N} ({criticas} criticas, {alertas} alertas, {positivas} positivas)
+- Total cost: ${X.XX}
+- Recommendations: {N} ({critical} critical, {warnings} warnings, {positive} positive)
 
-Abre el archivo en tu navegador para ver el dashboard completo.
+Open the file in your browser to see the full dashboard.
 ```
 
 ---
 
 ## ANTI-PATTERNS
 
-| NO | SI |
+| NO | YES |
 |----|-----|
-| Generar charts como imagenes | Usar Chart.js interactivo |
-| Hardcodear datos de ejemplo | Leer datos reales de traces |
-| HTML sin responsive | CSS Grid + media queries |
-| Colores claros | Dark mode SIEMPRE |
-| Tablas planas sin estilo | Tables con zebra, hover, progress bars |
-| Omitir seccion si no hay datos | Mostrar empty state elegante |
-| Archivo gigante sin estructura | HTML bien organizado con comments |
+| Generate charts as images | Use interactive Chart.js |
+| Hardcode example data | Read real data from traces |
+| HTML without responsive | CSS Grid + media queries |
+| Light colors | Dark mode ALWAYS |
+| Plain unstyled tables | Tables with zebra, hover, progress bars |
+| Skip section if no data | Show elegant empty state |
+| Giant file without structure | Well-organized HTML with comments |
 
 ---
 
-## EJEMPLO DE USO
+## USAGE EXAMPLES
 
 ```
 /insights-poneglyph

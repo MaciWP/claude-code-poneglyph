@@ -1,63 +1,63 @@
 ---
-description: Sincroniza la configuración .claude/ a global (~/.claude/) via symlinks
+description: Syncs .claude/ configuration to global (~/.claude/) via symlinks
 allowed-tools: [Bash, AskUserQuestion]
 version: 2.0.0
 ---
 
 # /sync-claude
 
-Sincroniza los archivos de `.claude/` del proyecto actual hacia `~/.claude/` del usuario mediante symlinks.
+Syncs files from the current project's `.claude/` to the user's `~/.claude/` via symlinks.
 
-## Uso Rápido
+## Quick Start
 
 ```bash
-# 1. Verificar sistema primero
+# 1. Verify system first
 /sync-claude --check
 
-# 2. Ver preview
+# 2. Preview changes
 /sync-claude
 
-# 3. Ejecutar con backup
+# 3. Execute with backup
 /sync-claude --execute --backup
 ```
 
-## Opciones
+## Options
 
-| Argumento | Efecto |
-|-----------|--------|
-| `--check` | Verificar sistema y permisos (recomendado primero) |
-| `--status` | Solo muestra estado actual |
-| `--execute` | Aplica cambios |
-| `--backup` | Guarda contenido existente |
-| `--unlink` | Elimina symlinks |
-| `--method` | Forzar: `auto`, `symlink`, `junction`, `copy` |
-| `--force` | Sin confirmación |
+| Argument | Effect |
+|----------|--------|
+| `--check` | Verify system and permissions (recommended first) |
+| `--status` | Show current status only |
+| `--execute` | Apply changes |
+| `--backup` | Save existing content |
+| `--unlink` | Remove symlinks |
+| `--method` | Force: `auto`, `symlink`, `junction`, `copy` |
+| `--force` | No confirmation prompt |
 
-## Ejemplos
+## Examples
 
 ```bash
-# Verificar si el sistema puede crear symlinks
+# Verify if the system can create symlinks
 /sync-claude --check
 
-# Ver qué cambios se harían
+# Preview what changes would be made
 /sync-claude
 
-# Ejecutar (con backup del existente)
+# Execute (with backup of existing)
 /sync-claude --execute --backup
 
-# En Windows sin permisos: forzar junction
+# On Windows without permissions: force junction
 /sync-claude --method junction --execute
 
-# Eliminar todos los symlinks
+# Remove all symlinks
 /sync-claude --unlink
 
-# Ver estado actual
+# Show current status
 /sync-claude --status
 ```
 
-## Ejecución
+## Execution
 
-$ARGUMENTS contiene las opciones adicionales.
+$ARGUMENTS contains the additional options.
 
 ```bash
 bun .claude/skills/sync-claude/scripts/sync-claude.ts $ARGUMENTS
