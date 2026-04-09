@@ -30,6 +30,7 @@
 | **Error then Fix** | error-analyzer -> builder | diagnosis before fix |
 | **Worktree Parallel** | 2+ builders in worktrees | Parallel builders with file overlap potential |
 | **Security Review** | reviewer (security mode, model: opus) | Auth/security changes |
+| **Tiered Build** | architect + N builders + reviewer | complexity 45-60, 2-3 domains with shared interfaces |
 | **Team Parallel** | teammates (general-purpose) | execution_mode=team, 3+ dominios independientes, complexity >60 |
 
 ## Anti-Patterns

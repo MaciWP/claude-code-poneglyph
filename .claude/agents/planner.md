@@ -205,7 +205,7 @@ Implement [WHAT] in [WHERE]. Affects N files, risk [LEVEL].
 **Agents**: builder, reviewer, error-analyzer
 **Suggested Skills**: security-review, code-quality
 **Parallel Efficiency Score**: 83%
-**Execution Mode**: subagents (default) | team (experimental)
+**Execution Mode**: subagents (default) | tiered (architect-first contracts) | team (experimental)
 **Team Justification**: [solo si mode=team: dominios, prueba de independencia, necesidades de comunicacion]
 
 ## Execution Roadmap
@@ -238,7 +238,8 @@ Implement [WHAT] in [WHERE]. Affects N files, risk [LEVEL].
     "agentsUsed": ["builder", "reviewer"],
     "skillsUsed": ["security-review", "code-quality"],
     "executionMode": "subagents",
-    "teamJustification": null
+    "teamJustification": null,
+    "_executionModeValues": "subagents | tiered | team"
   },
   "waves": [
     {
@@ -314,7 +315,7 @@ Example:
 
 ### Step 3.5: Evaluate Execution Mode
 
-After decomposition, evaluate if team mode is appropriate:
+After decomposition, evaluate which execution mode is appropriate:
 
 ```
 1. Check if total task complexity > 60
@@ -322,8 +323,19 @@ After decomposition, evaluate if team mode is appropriate:
 3. Verify zero shared files between domain file sets
 4. Assess if inter-agent communication needed (interface contracts between domains)
 5. ALL criteria met → set executionMode: "team", group tasks by domain into teammates array
-6. ANY criteria fails → set executionMode: "subagents" (default)
+6. ANY criteria fails → evaluate tiered mode:
+   a. Complexity 45-60 AND 2-3 domains AND domains share interfaces (types/APIs/contracts)
+      → set executionMode: "tiered" (architect designs interface contracts first, then parallel builders)
+   b. Otherwise → set executionMode: "subagents" (default)
 ```
+
+**Execution Mode Summary**:
+
+| Mode | Complexity | Domains | Domain Coupling | Description |
+|------|-----------|---------|-----------------|-------------|
+| `subagents` | Any | Any | Any | Default hub-spoke delegation via Lead |
+| `tiered` | 45-60 | 2-3 | Shared interfaces (types/APIs/contracts) | Architect designs contracts first, then parallel builders |
+| `team` | >60 | 3+ | Independent (no shared files) | Full peer-to-peer teammates per domain |
 
 See `complexity-routing.md` section "Execution Mode Decision" for full criteria.
 
@@ -470,3 +482,15 @@ Completed tasks are **never re-run**. The planner tracks task status:
 | `pending` | Yes | Not yet started |
 
 When resuming after failure, the Lead uses the roadmap status to determine which tasks remain. Only `failed` and `pending` tasks enter the execution queue.
+
+## Expertise Persistence
+
+Al finalizar tu tarea, incluye esta seccion en tu respuesta:
+
+### Expertise Insights
+- [1-5 insights concretos y reutilizables descubiertos durante esta tarea]
+
+**Que incluir**: patrones de decomposicion que funcionan bien en este codebase, dependencias no obvias entre modulos, heuristicas de paralelizacion especificas del proyecto, errores de planificacion a evitar.
+**Que NO incluir**: detalles de la tarea especifica, paths temporales, nombres de variables locales, informacion efimera.
+
+> Esta seccion es extraida automaticamente por el hook SubagentStop y persistida en tu archivo de expertise para futuras sesiones.

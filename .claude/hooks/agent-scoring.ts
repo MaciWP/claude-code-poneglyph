@@ -14,6 +14,8 @@
 import { readFileSync } from "node:fs";
 import { updateScores } from "./lib/agent-scorer";
 import type { ResolvedTraceEntry } from "./lib/agent-scorer-types";
+import { extractExpertiseInsights, persistExpertise } from "./lib/expertise-writer";
+import type { TranscriptMessage } from "./lib/expertise-writer";
 
 const TAG = "[agent-scoring]";
 
@@ -24,6 +26,8 @@ const KNOWN_AGENTS = [
   "scout",
   "error-analyzer",
   "architect",
+  // command-loader is included for scoring but won't produce Expertise Insights
+  // (no Expertise Persistence section in its agent definition — intentionally excluded as mechanical agent)
   "command-loader",
 ];
 
@@ -40,8 +44,10 @@ const ERROR_KEYWORDS = [
 interface SubagentStopInput {
   session_id?: string;
   agent_id?: string;
+  agent_type?: string;
   agent_transcript_path?: string;
   tool_use_id?: string;
+  last_assistant_message?: string;
   [key: string]: unknown;
 }
 
@@ -163,6 +169,7 @@ async function run(): Promise<void> {
   if (!raw.trim()) return;
 
   const input: SubagentStopInput = JSON.parse(raw);
+
   const agentId = input.agent_id || "";
   const transcriptPath = input.agent_transcript_path || "";
 
@@ -172,11 +179,29 @@ async function run(): Promise<void> {
   }
 
   const lines = parseTranscript(transcriptPath);
-  const agentType = extractAgentType(agentId);
+  const agentType = input.agent_type || extractAgentType(agentId);
   const entry = buildResolvedEntry(input, lines, agentType);
 
   updateScores([entry]);
   log(`Scored ${agentType}: status=${entry.status}, tools=${entry.toolCalls}, tokens=${entry.tokens}`);
+
+  try {
+    let insights = extractExpertiseInsights(lines as TranscriptMessage[]);
+
+    if (!insights && typeof input.last_assistant_message === "string") {
+      const match = input.last_assistant_message.match(/#{2,3}\s+Expertise Insights\s*\n([\s\S]*?)(?=\n#{1,3}\s|\n*$)/);
+      if (match && match[1].trim()) {
+        insights = match[1].trim();
+      }
+    }
+
+    if (insights) {
+      persistExpertise(agentType, input.session_id || "unknown", insights);
+      log(`Persisted expertise for ${agentType}`);
+    }
+  } catch (err) {
+    log(`Expertise extraction failed: ${fmtErr(err)}`);
+  }
 }
 
 run().catch((err) => log(`Failed: ${fmtErr(err)}`)).finally(() => process.exit(0));

@@ -46,9 +46,33 @@ Ejemplo:
 
 ## Execution Mode Decision
 
-Tras determinar el routing por complejidad, evaluar el modo de ejecucion. Solo aplica cuando complexity > 60.
+Tras determinar el routing por complejidad, evaluar el modo de ejecucion.
 
-### 4-Gate Criteria
+### Mode Selection Table
+
+| Score | Dominios | Interfaces Compartidas | Mode |
+|-------|----------|----------------------|------|
+| < 45 | Cualquiera | - | **subagents** |
+| 45-60 | 2-3 | Si (tipos/APIs compartidos) | **tiered** |
+| 45-60 | 2-3 | No (independientes) | **subagents** |
+| > 60 | 3+ independientes (4-gate pass) | - | **team** |
+| > 60 | 3+ (4-gate fail) | - | **subagents** |
+
+> **Coste**: subagents = 1x (baseline) / tiered = ~2x / team = 3-7x. Default es SIEMPRE subagents.
+
+### Tiered Mode
+
+Modo intermedio que aplica cuando hay 2-3 dominios con interfaces compartidas y complejidad 45-60. El architect diseña los contratos antes de que los builders arranquen en paralelo.
+
+| Paso | Quien | Accion |
+|------|-------|--------|
+| 1 | Planner | Genera roadmap con `executionMode: "tiered"` |
+| 2 | Lead → Architect | "Diseña contratos de interfaz entre dominios X e Y" |
+| 3 | Architect → Lead | Tipos compartidos, API signatures, contratos de datos |
+| 4 | Lead → Builders (paralelo) | Cada uno recibe su dominio + contratos del architect |
+| 5 | Lead → Reviewer | Valida integracion cross-domain contra contratos |
+
+### 4-Gate Criteria (Team Mode Only)
 
 TODOS los gates deben cumplirse para activar `team` mode:
 
@@ -64,9 +88,8 @@ TODOS los gates deben cumplirse para activar `team` mode:
 | Resultado | Modo | Accion |
 |-----------|------|--------|
 | TODOS los gates pasan | `team` | Planner genera roadmap con teammates por dominio |
-| CUALQUIER gate falla | `subagents` | Flujo actual sin cambios |
-
-> **Coste**: Team Agents usa 3-7x mas tokens que subagents. Default es SIEMPRE subagents.
+| CUALQUIER gate falla (score > 60) | `subagents` | Flujo actual sin cambios |
+| Score 45-60 con interfaces compartidas | `tiered` | Lead invoca architect primero |
 
 ### Ejemplo: Team Mode Triggers
 

@@ -66,6 +66,35 @@ graph TD
 | `AskUserQuestion` | Clarificar requisitos |
 | `TaskList/TaskCreate/TaskUpdate` | Gestionar lista de tareas |
 
+## Expertise Injection al Delegar
+
+Al delegar a cualquier agente, el Lead DEBE incluir la expertise acumulada del agente en el prompt:
+
+| Paso | Accion |
+|------|--------|
+| 1 | Leer `.claude/agent-memory/{agent}/EXPERTISE.md` |
+| 2 | Incluir ultimos ~3K tokens en el prompt del agente |
+| 3 | Prefijo: `[EXPERTISE ACUMULADA]\n{contenido}` |
+| 4 | Si el archivo no existe o esta vacio, omitir |
+
+### Template de Delegacion con Expertise
+
+```
+[EXPERTISE ACUMULADA - {agent}]
+{contenido de EXPERTISE.md, ultimos 3K tokens}
+
+[TAREA]
+{instrucciones de la tarea}
+
+[EXPERTISE OUTPUT]
+Al finalizar, incluye "### Expertise Insights" con 1-5 insights reutilizables descubiertos durante esta tarea.
+```
+
+> **Nota**: El recordatorio en el prompt de delegacion es NECESARIO. La instruccion en el system prompt del agente (seccion "Expertise Persistence") esta en la linea 400+ y los agentes no la siguen consistentemente. El recordatorio explicito en el prompt de delegacion garantiza que los insights se produzcan.
+
+> La expertise es contexto de solo lectura. El agente la usa para informar decisiones pero NO la repite en su output.
+> La expertise se actualiza automaticamente via el hook SubagentStop — el Lead no necesita gestionarla.
+
 ## Worktree Isolation
 
 Activar `isolation: "worktree"` en el Agent tool para aislar trabajo paralelo.
@@ -144,6 +173,50 @@ Cada teammate recibe:
 | Teammate falla 2x | Extraer tareas del dominio → ejecutar como builder subagent |
 | Multiples teammates fallan | Abortar team mode → fallback completo a subagents |
 | Conflicto de archivos entre teammates | Lead arbitra via reviewer, dominio perdedor re-ejecuta |
+
+## Tiered Execution Mode
+
+Modo de ejecucion intermedio entre subagents y team. Usa architect como intermediario que diseña interfaces antes de que builders paralelos empiecen.
+
+### Cuando Usar
+
+| Criterio | Threshold |
+|----------|-----------|
+| Complejidad | 45-60 |
+| Dominios | 2-3 con interfaces compartidas |
+| Independencia | Dominios NO son independientes (comparten tipos/APIs/contratos) |
+| Planner output | `executionMode: "tiered"` |
+
+### Diferencia vs Otros Modos
+
+| Aspecto | subagents | tiered | team |
+|---------|-----------|--------|------|
+| Cuando | Default | 2-3 dominios con interfaces | 3+ dominios independientes |
+| Intermediario | Ninguno | architect (obligatorio) | Ninguno (peer-to-peer) |
+| Coste | 1x | ~2x | 3-7x |
+| Contratos | Implicitos en roadmap | Explicitos por architect | Negociados entre teammates |
+
+### Workflow Tiered
+
+```mermaid
+graph TD
+    P[Planner: executionMode=tiered] --> A[Architect: diseña interfaces/contratos]
+    A --> B1[Builder 1: dominio A con contrato]
+    A --> B2[Builder 2: dominio B con contrato]
+    B1 & B2 --> R[Reviewer: valida integracion cross-domain]
+```
+
+1. Planner genera roadmap con `executionMode: "tiered"`
+2. Lead delega a **architect**: "Diseña los contratos de interfaz entre dominios X e Y"
+3. Architect retorna: tipos compartidos, signatures de API, contratos de datos
+4. Lead delega a **builders en paralelo**: cada uno recibe su dominio + contratos del architect
+5. Lead delega a **reviewer**: valida que la integracion cross-domain cumple los contratos
+
+### Cuando NO Usar
+
+- Complejidad < 45 → subagents (no vale el overhead del architect)
+- Dominios independientes sin interfaces → subagents o team
+- Complejidad > 60 con 3+ dominios independientes → team mode
 
 ## Continuous Validation Pipeline
 

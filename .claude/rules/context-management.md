@@ -9,7 +9,7 @@ Reglas para carga de skills y contexto a agentes. Evitar sobrecarga de contexto 
 | builder | anti-hallucination | 5 | 6 | Base gratis, no cuenta contra max |
 | reviewer | code-quality, security-review, performance-review, anti-hallucination | 2 | 6 | Base son gratis |
 | error-analyzer | diagnostic-patterns | 2 | 3 | + matched skills |
-| architect | — | 4 | 4 | + api-design |
+| architect | — | 4 | 4 | |
 | planner | — | 2 | 2 | High-level only |
 | scout | — | 1 | 1 | Minimal context |
 | command-loader | — | 0 | 0 | Infrastructure only |
@@ -35,9 +35,29 @@ Cuando multiples skills aplican, respetar sinergia y conflictos:
 
 | Method | When | Example |
 |--------|------|---------|
-| Skill (via Skill tool) | Domain patterns, best practices | `api-design`, `security-review` |
+| Skill (via Skill tool) | Domain patterns, best practices | `security-review` |
 | Scout agent | Codebase exploration, finding files | "Find all auth-related files" |
 | Explore agent | Deep codebase analysis | "How does the auth system work?" |
+
+## Agent Expertise (No Cuenta Contra Skill Limits)
+
+Cada agente tiene un archivo de expertise persistente en `.claude/agent-memory/{agent}/EXPERTISE.md`.
+
+| Aspecto | Detalle |
+|---------|---------|
+| Carga | Lead inyecta al delegar (ultimos 3K tokens) |
+| Coste contra limits | **NO cuenta** contra skill limits del agente |
+| Actualizacion | Automatica via SubagentStop hook |
+| Max size | 5K tokens (~20K chars) con pruning FIFO |
+
+### Expertise vs Skills vs Memory
+
+| Tipo | Quien lo mantiene | Contenido | Persistencia |
+|------|-------------------|-----------|-------------|
+| Skills | Desarrollador (manual) | Patrones y best practices genericos | Estatico |
+| Expertise | Hook automatico | Insights del agente sobre el codebase | Crece por sesion |
+| Memory | Usuario | Preferencias, feedback, contexto proyecto | Manual |
+| Patterns | Hook automatico | Secuencias agente→agente exitosas | Crece por sesion |
 
 ## Anti-Patterns
 

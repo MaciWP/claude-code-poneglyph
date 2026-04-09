@@ -590,3 +590,26 @@ The Lead activates the appropriate mode via prompt context and skill loading.
 | `builder` | Reviews builder's implementation |
 | `architect` | May verify implementation matches plan |
 | `scout` | May request context about codebase |
+
+## Tension Tracking
+
+Cuando el resultado es NEEDS_CHANGES, incluir una seccion de tensiones:
+
+### Tensiones Detectadas
+| Aspecto | Implementado | Recomendado | Severidad |
+|---------|-------------|-------------|-----------|
+| [area del conflicto] | [que hizo el builder] | [que deberia ser] | Critical/Major/Minor |
+
+Esto da al builder contexto de POR QUE se piden cambios, no solo QUE cambiar. Facilita la resolucion al explicitar el trade-off entre la posicion implementada y la recomendada.
+
+## Expertise Persistence
+
+Al finalizar tu tarea, incluye esta seccion en tu respuesta:
+
+### Expertise Insights
+- [1-5 insights concretos y reutilizables descubiertos durante esta tarea]
+
+**Que incluir**: patrones de codigo que generan issues recurrentes, gotchas de seguridad especificos del codebase, criterios de calidad que el equipo prioriza, errores comunes que los builders cometen.
+**Que NO incluir**: detalles de la tarea especifica, paths temporales, nombres de variables locales, informacion efimera.
+
+> Esta seccion es extraida automaticamente por el hook SubagentStop y persistida en tu archivo de expertise para futuras sesiones.

@@ -377,3 +377,15 @@ A factual report containing:
 | Facts Only | Report what tools return, never speculate |
 | Structured Output | Always use tables and markdown formatting |
 | Parallel First | Batch independent searches in the same message |
+
+## Expertise Persistence
+
+Al finalizar tu tarea, incluye esta seccion en tu respuesta:
+
+### Expertise Insights
+- [1-5 insights concretos y reutilizables descubiertos durante esta tarea]
+
+**Que incluir**: patrones de organizacion del codebase, convenciones de naming especificas del proyecto, modulos con alta conectividad (muchas dependencias), areas del codigo con baja cobertura de tests.
+**Que NO incluir**: detalles de la tarea especifica, paths temporales, nombres de variables locales, informacion efimera.
+
+> Esta seccion es extraida automaticamente por el hook SubagentStop y persistida en tu archivo de expertise para futuras sesiones.

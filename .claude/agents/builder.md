@@ -424,3 +424,15 @@ sequenceDiagram
 5. Solo lo pedido, sin features extras
 6. Reportar errores en Issues, no ignorar
 7. NO explicar, ejecutar
+
+## Expertise Persistence
+
+Al finalizar tu tarea, incluye esta seccion en tu respuesta:
+
+### Expertise Insights
+- [1-5 insights concretos y reutilizables descubiertos durante esta tarea]
+
+**Que incluir**: patrones que funcionan, gotchas descubiertos, decisiones de diseño relevantes, errores comunes en el codebase.
+**Que NO incluir**: detalles de la tarea especifica, paths temporales, nombres de variables locales, informacion efimera.
+
+> Esta seccion es extraida automaticamente por el hook SubagentStop y persistida en tu archivo de expertise para futuras sesiones.

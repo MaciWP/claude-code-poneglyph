@@ -1,14 +1,28 @@
 ---
 name: database-patterns
-version: 2.0.0
-keywords: [database, sql, migration, transaction, query, orm, schema, index, normalization, acid, isolation]
-for_agents: [builder, reviewer]
 description: |
   Database patterns for SQL, transactions, query optimization, and schema design. Language and ORM agnostic.
   Use when: schema design review, connection pool configuration, migration rollback safety, deadlock investigation, index optimization, query plan analysis, N+1 detection.
   Keywords - database, sql, migration, transaction, query, orm, schema, index, deadlock, connection pool, query plan
 type: knowledge-base
 disable-model-invocation: false
+argument-hint: "[database type, query, or file path]"
+effort: medium
+activation:
+  keywords:
+    - database
+    - sql
+    - migration
+    - transaction
+    - query
+    - orm
+    - schema
+    - index
+    - normalization
+    - acid
+    - isolation
+for_agents: [builder, reviewer]
+version: "2.0.0"
 ---
 
 # Database Patterns Skill

@@ -60,6 +60,19 @@ export interface MatchResult {
 
 const PATTERNS_PATH = join(homedir(), ".claude", "error-patterns.jsonl");
 
+const TEST_FIXTURE_PATTERNS: RegExp[] = [
+  /__test_temp_ast__/i,
+  /__test_temp__/i,
+];
+
+// ============================================================================
+// Test Fixture Filter
+// ============================================================================
+
+export function isTestFixtureError(message: string): boolean {
+  return TEST_FIXTURE_PATTERNS.some(pattern => pattern.test(message));
+}
+
 // ============================================================================
 // Storage (JSONL)
 // ============================================================================
@@ -109,6 +122,19 @@ function nowIso(): string {
 }
 
 export function recordError(message: string): ErrorPattern {
+  if (isTestFixtureError(message)) {
+    return {
+      id: "skipped",
+      normalizedMessage: normalizeErrorMessage(message),
+      category: classifyError(message),
+      originalMessage: message,
+      fixes: [],
+      successRate: 0,
+      occurrences: 0,
+      firstSeen: nowIso(),
+      lastSeen: nowIso(),
+    };
+  }
   const patterns = loadPatterns();
   const normalized: string = normalizeErrorMessage(message);
   const category: ErrorCategory = classifyError(message);
@@ -209,4 +235,14 @@ export function getBestFix(pattern: ErrorPattern): string | null {
   }
 
   return bestFix;
+}
+
+export function cleanTestFixturePatterns(): number {
+  const patterns = loadPatterns();
+  const clean = patterns.filter(p => !isTestFixtureError(p.originalMessage));
+  const removed = patterns.length - clean.length;
+  if (removed > 0) {
+    savePatterns(clean);
+  }
+  return removed;
 }

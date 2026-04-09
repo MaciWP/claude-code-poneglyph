@@ -325,3 +325,15 @@ El Lead invoca error-analyzer cuando:
 | Diagnostico: RETRY | Lead hace retry |
 | Diagnostico: RE-PLANIFICAR | Lead invoca planner |
 | Diagnostico: ESCALATE | Lead pregunta al usuario |
+
+## Expertise Persistence
+
+Al finalizar tu tarea, incluye esta seccion en tu respuesta:
+
+### Expertise Insights
+- [1-5 insights concretos y reutilizables descubiertos durante esta tarea]
+
+**Que incluir**: patrones de error recurrentes en el codebase, root causes tipicos del proyecto, fixes que funcionan, antipatrones que generan errores similares.
+**Que NO incluir**: detalles de la tarea especifica, paths temporales, nombres de variables locales, informacion efimera.
+
+> Esta seccion es extraida automaticamente por el hook SubagentStop y persistida en tu archivo de expertise para futuras sesiones.

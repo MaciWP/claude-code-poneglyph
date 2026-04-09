@@ -113,6 +113,15 @@ describe("StopHookInput interface", () => {
     expect(input["some_future_field"]).toBe("value");
     expect(input["numeric_field"]).toBe(42);
   });
+
+  test("accepts input with transcript_path", () => {
+    const input: StopHookInput = {
+      session_id: "sess-123",
+      transcript_path: "/tmp/transcript.json",
+    };
+    expect(input.transcript_path).toBe("/tmp/transcript.json");
+    expect(input.transcript).toBeUndefined();
+  });
 });
 
 describe("JSONL serialization", () => {

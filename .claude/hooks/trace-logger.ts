@@ -88,6 +88,7 @@ export interface StopHookInput {
   session_id?: string;
   last_assistant_message?: string;
   transcript?: TranscriptMessage[];
+  transcript_path?: string;
   stop_hook_event?: string;
   [key: string]: unknown;
 }
@@ -103,6 +104,21 @@ async function consumeStdin(): Promise<string> {
     process.stdin.on("error", () => resolve(""));
     process.stdin.resume();
   });
+}
+
+async function readTranscriptFromPath(
+  transcriptPath: string,
+): Promise<TranscriptMessage[]> {
+  try {
+    const file = Bun.file(transcriptPath);
+    if (!(await file.exists())) return [];
+    const content = await file.text();
+    const parsed = JSON.parse(content);
+    if (Array.isArray(parsed)) return parsed as TranscriptMessage[];
+    return [];
+  } catch {
+    return [];
+  }
 }
 
 function buildRawInput(input: StopHookInput): Record<string, unknown> {
@@ -194,7 +210,10 @@ async function main(): Promise<void> {
     }
 
     const input: StopHookInput = JSON.parse(raw);
-    const transcript = input.transcript || [];
+    let transcript = input.transcript || [];
+    if (transcript.length === 0 && typeof input.transcript_path === "string") {
+      transcript = await readTranscriptFromPath(input.transcript_path);
+    }
     const trace = buildTrace(input, transcript);
     await writeTrace(trace);
   } catch {

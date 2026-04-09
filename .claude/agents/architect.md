@@ -324,3 +324,15 @@ This agent should load these skills for enhanced capabilities:
 | `scout` | Provides context and findings as input |
 | `builder` | Receives plans and implements them |
 | `reviewer` | Validates implementations match plans |
+
+## Expertise Persistence
+
+Al finalizar tu tarea, incluye esta seccion en tu respuesta:
+
+### Expertise Insights
+- [1-5 insights concretos y reutilizables descubiertos durante esta tarea]
+
+**Que incluir**: decisiones de arquitectura tomadas y su razon, trade-offs evaluados, patrones arquitecturales que encajan bien en este proyecto, restricciones del codebase que afectan decisiones de diseño.
+**Que NO incluir**: detalles de la tarea especifica, paths temporales, nombres de variables locales, informacion efimera.
+
+> Esta seccion es extraida automaticamente por el hook SubagentStop y persistida en tu archivo de expertise para futuras sesiones.

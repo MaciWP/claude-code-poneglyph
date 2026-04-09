@@ -12,6 +12,8 @@ import {
   recordError,
   recordFixOutcome,
   getBestFix,
+  isTestFixtureError,
+  cleanTestFixturePatterns,
 } from "./error-patterns";
 import type { ErrorPattern } from "./error-patterns";
 
@@ -233,6 +235,30 @@ describe("storage", () => {
   });
 });
 
+describe("isTestFixtureError", () => {
+  test("returns true for __test_temp_ast__ path", () => {
+    expect(
+      isTestFixtureError(
+        "phantom_import: Cannot find module './ghost' at __test_temp_ast__/bad-import.ts:1",
+      ),
+    ).toBe(true);
+  });
+
+  test("returns true for __test_temp__ path", () => {
+    expect(isTestFixtureError("some error in __test_temp__/foo.ts")).toBe(true);
+  });
+
+  test("returns false for real TypeError", () => {
+    expect(
+      isTestFixtureError("TypeError: Cannot read property 'id' of undefined"),
+    ).toBe(false);
+  });
+
+  test("returns false for real ModuleNotFound", () => {
+    expect(isTestFixtureError("Cannot find module '@/utils'")).toBe(false);
+  });
+});
+
 describe("recordError", () => {
   const patternsPath = join(homedir(), ".claude", "error-patterns.jsonl");
   let backup: string | null = null;
@@ -275,6 +301,21 @@ describe("recordError", () => {
     recordError("TypeError: bar is not defined");
     const second = recordError("TypeError: bar is not defined");
     expect(second.occurrences).toBe(2);
+  });
+
+  test("returns skipped pattern for test fixture error", () => {
+    const pattern = recordError(
+      "phantom_import: Cannot find module './ghost' at __test_temp_ast__/bad-import.ts:1",
+    );
+    expect(pattern.id).toBe("skipped");
+    expect(pattern.occurrences).toBe(0);
+  });
+
+  test("does not write test fixture error to disk", () => {
+    recordError(
+      "phantom_import: Cannot find module './ghost' at __test_temp_ast__/bad-import.ts:1",
+    );
+    expect(loadPatterns()).toHaveLength(0);
   });
 });
 
@@ -398,5 +439,75 @@ describe("getBestFix", () => {
       lastSeen: "2026-03-08T00:00:00Z",
     };
     expect(getBestFix(pattern)).toBeNull();
+  });
+});
+
+describe("cleanTestFixturePatterns", () => {
+  const patternsPath = join(homedir(), ".claude", "error-patterns.jsonl");
+  let backup: string | null = null;
+
+  beforeEach(() => {
+    try {
+      if (existsSync(patternsPath)) {
+        backup = readFileSync(patternsPath, "utf-8");
+      }
+    } catch {
+      backup = null;
+    }
+    try {
+      unlinkSync(patternsPath);
+    } catch {
+      // may not exist
+    }
+  });
+
+  afterEach(() => {
+    try {
+      if (backup !== null) {
+        writeFileSync(patternsPath, backup);
+      } else if (existsSync(patternsPath)) {
+        unlinkSync(patternsPath);
+      }
+    } catch {
+      // cleanup best effort
+    }
+  });
+
+  test("removes fixture patterns and preserves real ones", () => {
+    const fixtureBase: Omit<ErrorPattern, "id" | "originalMessage" | "normalizedMessage"> = {
+      category: "ModuleNotFound",
+      fixes: [],
+      successRate: 0,
+      occurrences: 1,
+      firstSeen: "2026-03-08T00:00:00Z",
+      lastSeen: "2026-03-08T00:00:00Z",
+    };
+    savePatterns([
+      {
+        ...fixtureBase,
+        id: "f1",
+        originalMessage: "Cannot find module './ghost' at __test_temp_ast__/bad-import.ts:1",
+        normalizedMessage: "cannot find module at __test_temp_ast__/<path>",
+      },
+      {
+        ...fixtureBase,
+        id: "f2",
+        originalMessage: "some error in __test_temp__/foo.ts",
+        normalizedMessage: "some error in __test_temp__/<path>",
+      },
+      {
+        ...fixtureBase,
+        id: "real1",
+        originalMessage: "Cannot find module '@/utils'",
+        normalizedMessage: "cannot find module '@/utils'",
+      },
+    ]);
+
+    const removed = cleanTestFixturePatterns();
+    expect(removed).toBe(2);
+
+    const remaining = loadPatterns();
+    expect(remaining).toHaveLength(1);
+    expect(remaining[0].id).toBe("real1");
   });
 });
