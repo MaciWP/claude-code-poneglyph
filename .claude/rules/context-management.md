@@ -1,13 +1,13 @@
 # Context Management
 
-Reglas para carga de skills y contexto a agentes. Evitar sobrecarga de contexto irrelevante.
+Rules for loading skills and context into agents. Avoid overloading agents with irrelevant context.
 
 ## Skill Loading Limits
 
-| Agent | Base Skills (gratis) | Max Adicionales | Total Max | Notes |
-|-------|---------------------|-----------------|-----------|-------|
-| builder | anti-hallucination | 5 | 6 | Base gratis, no cuenta contra max |
-| reviewer | code-quality, security-review, performance-review, anti-hallucination | 2 | 6 | Base son gratis |
+| Agent | Base Skills (free) | Max Additional | Total Max | Notes |
+|-------|--------------------|----------------|-----------|-------|
+| builder | anti-hallucination | 5 | 6 | Base is free, does not count against max |
+| reviewer | code-quality, security-review, performance-review, anti-hallucination | 2 | 6 | Base skills are free |
 | error-analyzer | diagnostic-patterns | 2 | 3 | + matched skills |
 | architect | — | 4 | 4 | |
 | planner | — | 2 | 2 | High-level only |
@@ -16,20 +16,20 @@ Reglas para carga de skills y contexto a agentes. Evitar sobrecarga de contexto 
 
 ## Precedence Rules
 
-1. **Domain-specific skills > generic skills** — siempre priorizar especificas
-2. **Base skills no cuentan** contra el limite max del agente
-3. **Si keyword matches > agent max**: priorizar por frecuencia de keywords en el prompt
-4. **Si empate**: preferir skills del dominio principal de la tarea
+1. **Domain-specific skills > generic skills** — always prioritize specific ones
+2. **Base skills do not count** against the agent's max limit
+3. **If keyword matches > agent max**: prioritize by keyword frequency in the prompt
+4. **If tied**: prefer skills from the task's primary domain
 
 ## Composition Rules
 
-Cuando multiples skills aplican, respetar sinergia y conflictos:
+When multiple skills apply, respect synergies and conflicts:
 
-1. **Sinergia**: Si dos skills matcheadas son par sinergico (ver `skill-matching.md`), ambas reciben +1 prioridad
-2. **Conflicto**: Si dos skills son par conflictivo, descartar la de menor score
-3. **Budget overflow**: Si matches > max del agente, ordenar por score y truncar
-4. **Base skills**: NO cuentan contra el limite max (son gratis)
-5. **Frontmatter skills**: SI cuentan contra el limite max del agente
+1. **Synergy**: If two matched skills are a synergic pair (see `skill-matching.md`), both receive +1 priority
+2. **Conflict**: If two skills are a conflicting pair, discard the one with the lower score
+3. **Budget overflow**: If matches > agent max, sort by score and truncate
+4. **Base skills**: do NOT count against the max limit (they are free)
+5. **Frontmatter skills**: DO count against the agent's max limit
 
 ## Context Loading Methods
 
@@ -39,32 +39,32 @@ Cuando multiples skills aplican, respetar sinergia y conflictos:
 | Scout agent | Codebase exploration, finding files | "Find all auth-related files" |
 | Explore agent | Deep codebase analysis | "How does the auth system work?" |
 
-## Agent Expertise (No Cuenta Contra Skill Limits)
+## Agent Expertise (Does Not Count Against Skill Limits)
 
-Cada agente tiene un archivo de expertise persistente en `.claude/agent-memory/{agent}/EXPERTISE.md`.
+Each agent has a persistent expertise file at `.claude/agent-memory/{agent}/EXPERTISE.md`.
 
-| Aspecto | Detalle |
-|---------|---------|
-| Carga | Lead inyecta al delegar (ultimos 3K tokens) |
-| Coste contra limits | **NO cuenta** contra skill limits del agente |
-| Actualizacion | Automatica via SubagentStop hook |
-| Max size | 5K tokens (~20K chars) con pruning FIFO |
+| Aspect | Detail |
+|--------|--------|
+| Loading | Lead injects when delegating (last ~3K tokens) |
+| Cost against limits | **Does NOT count** against the agent's skill limits |
+| Updates | Automatic via SubagentStop hook |
+| Max size | 5K tokens (~20K chars) with FIFO pruning |
 
 ### Expertise vs Skills vs Memory
 
-| Tipo | Quien lo mantiene | Contenido | Persistencia |
-|------|-------------------|-----------|-------------|
-| Skills | Desarrollador (manual) | Patrones y best practices genericos | Estatico |
-| Expertise | Hook automatico | Insights del agente sobre el codebase | Crece por sesion |
-| Memory | Usuario | Preferencias, feedback, contexto proyecto | Manual |
-| Patterns | Hook automatico | Secuencias agente→agente exitosas | Crece por sesion |
+| Type | Maintained by | Content | Persistence |
+|------|---------------|---------|-------------|
+| Skills | Developer (manual) | Generic patterns and best practices | Static |
+| Expertise | Automatic hook | Agent insights about the codebase | Grows per session |
+| Memory | User | Preferences, feedback, project context | Manual |
+| Patterns | Automatic hook | Successful agent→agent sequences | Grows per session |
 
 ## Anti-Patterns
 
-| Anti-Pattern | Problema | Alternativa |
-|--------------|----------|-------------|
-| Loading >5 skills para un builder | Context overload, respuestas diluidas | Priorizar top 5 por relevancia |
-| Loading generic skills cuando hay especificas | Ruido innecesario | Domain-specific primero |
-| Usar scout cuando ya conoces los paths | Desperdicio de tokens/tiempo | Read directo o delegar builder |
-| Cargar skills sin keyword match | Contexto irrelevante | Solo cargar si keywords matchean |
-| Repetir base skills en el conteo | Limita skills utiles | Base skills son gratis |
+| Anti-Pattern | Problem | Alternative |
+|--------------|---------|-------------|
+| Loading >5 skills for a builder | Context overload, diluted responses | Prioritize top 5 by relevance |
+| Loading generic skills when specific ones exist | Unnecessary noise | Domain-specific first |
+| Using scout when you already know the paths | Waste of tokens/time | Direct Read or delegate to builder |
+| Loading skills without a keyword match | Irrelevant context | Only load if keywords match |
+| Counting base skills in the limit | Limits useful skills | Base skills are free |

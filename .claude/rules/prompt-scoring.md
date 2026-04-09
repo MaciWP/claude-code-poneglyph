@@ -1,72 +1,72 @@
 # Prompt Scoring Rule
 
-Antes de cualquier accion, evaluar el prompt del usuario con 5 criterios.
+Before any action, evaluate the user's prompt against 5 criteria.
 
-## Criterios de Evaluacion
+## Evaluation Criteria
 
-| Criterio | 20 pts | 10 pts | 0 pts |
-|----------|--------|--------|-------|
-| **Clarity** | Verbo accion + target especifico | Verbo generico | Vago/ambiguo |
-| **Context** | Paths + tech + versiones | Tech mencionada | Sin contexto |
-| **Structure** | Organizado, bullets/headers | Parrafos claros | Muro de texto |
-| **Success** | Metricas (<100ms, >90%) | "mejor", "mas rapido" | Sin criterios |
-| **Actionable** | Sin preguntas abiertas | 1-2 clarificaciones | Muy vago |
+| Criterion | 20 pts | 10 pts | 0 pts |
+|-----------|--------|--------|-------|
+| **Clarity** | Action verb + specific target | Generic verb | Vague/ambiguous |
+| **Context** | Paths + tech + versions | Tech mentioned | No context |
+| **Structure** | Organized, bullets/headers | Clear paragraphs | Wall of text |
+| **Success** | Metrics (<100ms, >90%) | "better", "faster" | No criteria |
+| **Actionable** | No open questions | 1-2 clarifications needed | Too vague |
 
 ## Scoring
 
-| Score | Accion |
+| Score | Action |
 |-------|--------|
-| 80-100 | Proceder directamente |
-| 70-79 | Proceder con precaucion |
-| **< 70** | **Usar `AskUserQuestion` para pedir al usuario que clarifique** |
+| 80-100 | Proceed directly |
+| 70-79 | Proceed with caution |
+| **< 70** | **Use `AskUserQuestion` to ask the user to clarify** |
 
-## Preguntas de Mejora
+## Improvement Questions
 
-Cuando un criterio puntua bajo, usar estas preguntas para mejorar el prompt:
+When a criterion scores low, use these questions to improve the prompt:
 
-| Criterio Bajo | Pregunta al Usuario |
-|---------------|---------------------|
-| **Clarity** | "¿Que accion especifica necesitas? ¿Crear, modificar, eliminar, refactorizar?" |
-| **Context** | "¿En que archivos o modulos? ¿Que tecnologias o frameworks estan involucrados?" |
-| **Structure** | "¿Puedes desglosar en pasos o requisitos concretos?" |
-| **Success** | "¿Como sabremos que esta bien? ¿Tests que pasen, metricas, comportamiento esperado?" |
-| **Actionable** | "¿Hay decisiones de diseno que prefieras? ¿Restricciones que deba conocer?" |
+| Low Criterion | Question to User |
+|---------------|-----------------|
+| **Clarity** | "What specific action do you need? Create, modify, delete, refactor?" |
+| **Context** | "Which files or modules? What technologies or frameworks are involved?" |
+| **Structure** | "Can you break it down into concrete steps or requirements?" |
+| **Success** | "How will we know it's correct? Tests passing, metrics, expected behavior?" |
+| **Actionable** | "Are there design decisions you prefer? Constraints I should know about?" |
 
-### Ejemplo de Mejora
+### Improvement Example
 
-**Prompt original** (score ~30): "Mejorar el sistema de usuarios"
+**Original prompt** (score ~30): "Improve the user system"
 
-**Preguntas del Lead**:
-1. ¿Mejorar que exactamente? ¿Performance, seguridad, funcionalidad?
-2. ¿Que archivos o modulos tocan el sistema de usuarios?
-3. ¿Hay un problema concreto que resolver o es refactoring general?
-4. ¿Como medimos el exito? ¿Tests, tiempo de respuesta, menos errores?
+**Lead's questions**:
+1. Improve what exactly? Performance, security, functionality?
+2. Which files or modules touch the user system?
+3. Is there a concrete problem to solve or is it general refactoring?
+4. How do we measure success? Tests, response time, fewer errors?
 
-**Prompt mejorado** (score ~85): "Refactorizar UserService para separar auth de profile. Mover logica de password a AuthService, mantener profile en UserService. Tests deben pasar. Archivos: src/services/user.ts, src/services/auth.ts."
+**Improved prompt** (score ~85): "Refactor UserService to separate auth from profile. Move password logic to AuthService, keep profile in UserService. Tests must pass. Files: src/services/user.ts, src/services/auth.ts."
 
-## Ejemplos
+## Examples
 
-### Score Alto (85+)
-> "Anadir endpoint POST /api/users que valide email unico, hashee password con bcrypt, y retorne 201 con el user sin password"
+### High Score (85+)
+> "Add endpoint POST /api/users that validates unique email, hashes password with bcrypt, and returns 201 with the user without the password"
 
-- Clarity: 20 (verbo + target especifico)
-- Context: 15 (tech implicita)
-- Structure: 20 (organizado)
-- Success: 15 (status code definido)
-- Actionable: 20 (sin ambiguedad)
+- Clarity: 20 (verb + specific target)
+- Context: 15 (implicit tech)
+- Structure: 20 (organized)
+- Success: 15 (status code defined)
+- Actionable: 20 (no ambiguity)
 
-### Score Bajo (< 70)
-> "Mejorar el sistema de usuarios"
+### Low Score (< 70)
+> "Improve the user system"
 
-- Clarity: 0 (vago)
-- Context: 0 (sin detalles)
+- Clarity: 0 (vague)
+- Context: 0 (no details)
 - Structure: 10 (simple)
-- Success: 0 (sin criterios)
-- Actionable: 0 (muy ambiguo)
+- Success: 0 (no criteria)
+- Actionable: 0 (too ambiguous)
 
-## Proceso
+## Process
 
-1. Recibir prompt del usuario
-2. Evaluar contra los 5 criterios
-3. Si score < 70: usar `AskUserQuestion` para pedir clarificacion al usuario
-4. Si score >= 70: proceder con analisis de complejidad
+1. Receive user prompt
+2. Evaluate against the 5 criteria
+3. If score < 70: use `AskUserQuestion` to ask the user to clarify
+4. If score >= 70: proceed with complexity analysis

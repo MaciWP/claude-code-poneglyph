@@ -1,65 +1,65 @@
 # Orchestration Pre-Action Protocol (MANDATORY)
 
-Antes de responder a CUALQUIER prompt del usuario, ejecutar pasos 1-5 EN ORDEN. NO saltar.
+Before responding to ANY user prompt, execute steps 1-5 IN ORDER. Do NOT skip.
 
-**Apply when**: Siempre. Cada prompt. Sin excepciones.
+**Apply when**: Always. Every prompt. No exceptions.
 
-## Paso 1: Triage
+## Step 1: Triage
 
-| Condicion | Accion |
+| Condition | Action |
 |-----------|--------|
-| Tarea trivial (typo, rename, 1 linea, pregunta simple) | Skip a Paso 4 |
-| Prompt vago (score < 70) | Cargar skill `prompt-engineer`, clarificar |
-| Prompt claro (score >= 70) | Continuar a Paso 2 |
+| Trivial task (typo, rename, 1 line, simple question) | Skip to Step 4 |
+| Vague prompt (score < 70) | Load skill `prompt-engineer`, clarify |
+| Clear prompt (score >= 70) | Continue to Step 2 |
 
-## Paso 2: Complejidad
+## Step 2: Complexity
 
-Calcular score y mostrar inline: `Complejidad: ~XX`
+Calculate score and show inline: `Complexity: ~XX`
 
 | Score | Routing |
 |-------|---------|
-| < 15 | builder directo, skip scoring/skills |
-| 15-30 | builder directo |
-| 30-60 | planner opcional |
-| > 60 | planner OBLIGATORIO |
+| < 15 | builder direct, skip scoring/skills |
+| 15-30 | builder direct |
+| 30-60 | planner optional |
+| > 60 | planner MANDATORY |
 
-Factores: Archivos, Dominios, Dependencias, Seguridad, Integraciones (ver `complexity-routing.md`).
+Factors: Files, Domains, Dependencies, Security, Integrations (see `complexity-routing.md`).
 
-## Paso 3: Preparar contexto
+## Step 3: Prepare Context
 
-1. Extraer keywords del prompt
-2. Consultar `skill-matching.md` del proyecto (si existe) o global
-3. Cargar max 3 skills via `Skill()` ANTES de delegar
-4. Verificar si hay agente especializado (ej: `django-refactor-agent`, `django-security-auditor`)
+1. Extract keywords from prompt
+2. Consult `skill-matching.md` of the project (if it exists) or global
+3. Load max 3 skills via `Skill()` BEFORE delegating
+4. Check if there is a specialized agent (e.g.: `django-refactor-agent`, `django-security-auditor`)
 
-## Paso 4: Delegar
+## Step 4: Delegate
 
-| Herramienta | Uso |
+| Tool | Usage |
 |-------------|-----|
-| `Agent(subagent_type="builder")` | Implementar codigo |
-| `Agent(subagent_type="scout")` | Explorar codebase |
-| `Agent(subagent_type="planner")` | Planificar tareas complejas |
-| `Agent(subagent_type="reviewer")` | Validar cambios |
-| `Skill()` | Cargar contexto de dominio |
+| `Agent(subagent_type="builder")` | Implement code |
+| `Agent(subagent_type="scout")` | Explore codebase |
+| `Agent(subagent_type="planner")` | Plan complex tasks |
+| `Agent(subagent_type="reviewer")` | Validate changes |
+| `Skill()` | Load domain context |
 
-**PROHIBIDO usar directamente**: Read, Edit, Write, Bash, Glob, Grep.
-**Excepciones**: CLAUDE.md, memory/, .claude/, conftest.py, plan files.
-**Paralelizar**: Agents independientes en el MISMO mensaje.
+**PROHIBITED to use directly**: Read, Edit, Write, Bash, Glob, Grep.
+**Exceptions**: CLAUDE.md, memory/, .claude/, conftest.py, plan files.
+**Parallelize**: Independent agents in the SAME message.
 
-## Paso 5: Validar
+## Step 5: Validate
 
-| Tipo de cambio | Validacion |
+| Change type | Validation |
 |----------------|-----------|
-| Single file, low complexity | Builder confirma tests passing |
-| Multi-file | Delegar a reviewer |
+| Single file, low complexity | Builder confirms tests passing |
+| Multi-file | Delegate to reviewer |
 | Security-related | security-auditor |
 | Cross-domain | reviewer + test-watcher |
 
-**NUNCA reportar "completado" sin confirmacion de tests passing.**
+**NEVER report "completed" without confirmation that tests are passing.**
 
-## Cuando NO aplicar este protocolo
+## When NOT to Apply This Protocol
 
-- Responder preguntas sin codigo (explicaciones, decisiones)
-- Leer CLAUDE.md o memory para orientacion
-- Cargar skills via Skill tool
-- Escribir/actualizar plan files o memory
+- Answering questions without code (explanations, decisions)
+- Reading CLAUDE.md or memory for orientation
+- Loading skills via Skill tool
+- Writing/updating plan files or memory

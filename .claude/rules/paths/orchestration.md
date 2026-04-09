@@ -8,31 +8,31 @@ priority: 15
 
 ## Orchestration Context
 
-Archivos del sistema de orquestacion Poneglyph. Mantener consistencia entre agentes, skills y reglas.
+Files of the Poneglyph orchestration system. Maintain consistency across agents, skills, and rules.
 
-- Seguir formato frontmatter YAML estandar
-- Mantener keywords actualizados para auto-matching
-- Documentar dependencias entre componentes
-- Verificar que cambios no rompen el grafo de orquestacion
+- Follow standard YAML frontmatter format
+- Keep keywords updated for auto-matching
+- Document dependencies between components
+- Verify that changes do not break the orchestration graph
 
-### Agent Frontmatter — campos clave recientes
+### Agent Frontmatter — recent key fields
 
-| Campo | Nota |
+| Field | Note |
 |-------|------|
-| `effort` | Fijo por agente. NO variable per-invocacion. Solo definir si invariable |
-| `maxTurns` | Safety net. Devuelve `error_max_turns` al Lead |
+| `effort` | Fixed per agent. NOT variable per-invocation. Only define if invariable |
+| `maxTurns` | Safety net. Returns `error_max_turns` to the Lead |
 | `memory` | Scope: `user`, `project`, `local` |
-| `isolation` | `worktree` para git worktree aislado |
-| `initialPrompt` | Auto-submit al iniciar agente |
+| `isolation` | `worktree` for isolated git worktree |
+| `initialPrompt` | Auto-submit on agent start |
 
-### Skill Frontmatter — campos clave recientes
+### Skill Frontmatter — recent key fields
 
-| Campo | Nota |
+| Field | Note |
 |-------|------|
-| `effort` | Override effort al invocar skill |
-| `paths` | YAML list de globs — skill solo aplica a estos paths |
-| `context` | `fork` = contexto aislado |
+| `effort` | Override effort when invoking skill |
+| `paths` | YAML list of globs — skill applies only to these paths |
+| `context` | `fork` = isolated context |
 
 ### Error Recovery — SendMessage
 
-Preferir `SendMessage({to: agentId})` para continuar agente fallido en vez de re-spawnar. Preserva contexto y ahorra tokens.
+Prefer `SendMessage({to: agentId})` to continue a failed agent instead of re-spawning. Preserves context and saves tokens.

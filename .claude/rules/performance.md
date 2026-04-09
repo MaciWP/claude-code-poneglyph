@@ -2,107 +2,107 @@
 
 ## Tool Hierarchy (Single Source of Truth)
 
-| Prioridad | Tool | Uso |
-|-----------|------|-----|
-| 1 | **LSP** | Navegacion semantica (type-aware) |
-| 2 | Grep | Busqueda de texto (fallback) |
-| 3 | Glob | Busqueda de archivos |
+| Priority | Tool | Use |
+|----------|------|-----|
+| 1 | **LSP** | Semantic navigation (type-aware) |
+| 2 | Grep | Text search (fallback) |
+| 3 | Glob | File search |
 
 ## LSP Operations
 
-| Tarea | Operacion LSP |
-|-------|---------------|
-| Donde esta definida X? | `goToDefinition` |
-| Donde se usa X? | `findReferences` |
-| Que parametros acepta? | `hover` |
-| Que funciones tiene este archivo? | `documentSymbol` |
-| Quien llama a esta funcion? | `incomingCalls` |
-| Que llama esta funcion? | `outgoingCalls` |
+| Task | LSP Operation |
+|------|---------------|
+| Where is X defined? | `goToDefinition` |
+| Where is X used? | `findReferences` |
+| What parameters does it accept? | `hover` |
+| What functions does this file have? | `documentSymbol` |
+| Who calls this function? | `incomingCalls` |
+| What does this function call? | `outgoingCalls` |
 
-Usar Grep como fallback cuando: LSP no disponible, busqueda de texto literal, archivos no-codigo.
+Use Grep as fallback when: LSP unavailable, literal text search, non-code files.
 
-## Batch Operations (OBLIGATORIO)
+## Batch Operations (MANDATORY)
 
-| Paralelo (mismo mensaje) | Secuencial (esperar resultado) |
-|--------------------------|--------------------------------|
-| 3+ Read independientes | Edit despues de Read mismo archivo |
-| 2+ Glob patterns diferentes | Write dependiente de Read |
-| 2+ Task agents independientes | Task que necesita output previo |
-| Multiple LSP en diferentes simbolos | LSP despues de crear archivo |
-| LSP + Grep para busqueda comprehensiva | Bash con archivo recien creado |
-| goToDefinition + findReferences | Nodo marcado "Blocking" |
+| Parallel (same message) | Sequential (wait for result) |
+|-------------------------|------------------------------|
+| 3+ independent Reads | Edit after Read on the same file |
+| 2+ different Glob patterns | Write that depends on Read |
+| 2+ independent Task agents | Task that needs prior output |
+| Multiple LSP on different symbols | LSP after creating a file |
+| LSP + Grep for comprehensive search | Bash with a newly created file |
+| goToDefinition + findReferences | Node marked "Blocking" |
 | WebSearch + WebFetch | |
 
-**Anti-pattern**: Si lees archivos uno por uno o corres agents secuencialmente -> BATCH en un mensaje.
+**Anti-pattern**: If you read files one by one or run agents sequentially -> BATCH in one message.
 
 ## Anti-Patterns
 
-| No hacer | Hacer |
-|----------|-------|
-| Read archivos uno por uno | Batch 3+ Reads en un mensaje |
-| Task agents secuenciales sin dependencia | Lanzar agents en paralelo |
-| Glob -> Read -> Grep | Glob + Grep paralelos |
-| Edit sin Read previo | Read -> Edit secuencial |
+| Don't do | Do instead |
+|----------|------------|
+| Read files one by one | Batch 3+ Reads in one message |
+| Sequential Task agents with no dependency | Launch agents in parallel |
+| Glob -> Read -> Grep | Glob + Grep in parallel |
+| Edit without prior Read | Read -> Edit sequentially |
 
 ## Quality Triggers
 
-| Agent | Cuando |
-|-------|--------|
-| reviewer | Despues de implementar, refactoring, antes de commit, cambios significativos |
+| Agent | When |
+|-------|------|
+| reviewer | After implementing, refactoring, before committing, significant changes |
 
-## Tips de Distribucion de Esfuerzo
+## Effort Distribution Tips
 
-- Dedicar suficiente tiempo a explorar ANTES de implementar — entender el contexto evita retrabajo
-- La verificacion (tests, review) no es opcional — reservar tiempo para ella
-- Si llevas mucho rato implementando sin verificar, es momento de un checkpoint
+- Spend enough time exploring BEFORE implementing — understanding context avoids rework
+- Verification (tests, review) is not optional — reserve time for it
+- If you have been implementing for a long time without verifying, it is time for a checkpoint
 
-## Tip: Maximizar Paralelismo
+## Tip: Maximize Parallelism
 
-- Si estas haciendo operaciones secuenciales que podrian ser paralelas, reagrupalas
-- Preguntate: "¿Alguna de estas operaciones depende del resultado de otra?" Si no, batch.
-- El objetivo es minimizar ida y vuelta innecesarios, no optimizar un score numerico
+- If you are doing sequential operations that could be parallel, regroup them
+- Ask yourself: "Does any of these operations depend on the result of another?" If not, batch.
+- The goal is to minimize unnecessary round-trips, not to optimize a numeric score
 
 ## Team Mode Efficiency
 
-> **GUIDELINE**: Estas metricas son orientativas para el Lead cuando el planner recomienda team mode.
+> **GUIDELINE**: These metrics are guidelines for the Lead when the planner recommends team mode.
 
-| Metrica | Guideline |
-|---------|-----------|
-| Min teammates | 3 (por debajo, subagents son mas baratos) |
-| Max teammates | 5 (por encima, overhead de coordinacion domina) |
-| Multiplicador de tokens | 3-7x vs subagents (cada teammate es instancia completa de Claude Code) |
-| Cuando vale la pena | Dominios verdaderamente independientes, complejidad >60, negociacion de interfaces |
-| Cuando NO vale la pena | <3 dominios, archivos compartidos, complejidad <60 |
+| Metric | Guideline |
+|--------|-----------|
+| Min teammates | 3 (below that, subagents are cheaper) |
+| Max teammates | 5 (above that, coordination overhead dominates) |
+| Token multiplier | 3-7x vs subagents (each teammate is a full Claude Code instance) |
+| When it's worth it | Truly independent domains, complexity >60, interface negotiation needed |
+| When it's NOT worth it | <3 domains, shared files, complexity <60 |
 
 ### Team vs Subagents Cost
 
-| Modo | Coste | Paralelismo | Comunicacion inter-agente |
-|------|-------|-------------|---------------------------|
-| Subagents | 1x (baseline) | Via Lead (hub-spoke) | No (solo Lead <-> agente) |
-| Team Agents | 3-7x | Independiente (mesh) | Si (peer-to-peer directo) |
+| Mode | Cost | Parallelism | Inter-agent communication |
+|------|------|-------------|---------------------------|
+| Subagents | 1x (baseline) | Via Lead (hub-spoke) | No (Lead <-> agent only) |
+| Team Agents | 3-7x | Independent (mesh) | Yes (peer-to-peer direct) |
 
-## Tip: Evitar Lecturas Redundantes
+## Tip: Avoid Redundant Reads
 
-- No re-leer un archivo que acabas de leer y no ha cambiado
-- No re-buscar con Grep lo mismo que ya encontraste
-- Si un resultado LSP es reciente y el archivo no cambio, reutilizalo
+- Do not re-read a file you just read that has not changed
+- Do not re-search with Grep for something you already found
+- If an LSP result is recent and the file has not changed, reuse it
 
 ## Tool Selection
 
-| Tarea | Tool Primario | Fallback |
-|-------|---------------|----------|
-| Definicion de simbolo | LSP goToDefinition | Grep |
-| Usos de simbolo | LSP findReferences | Grep |
-| Buscar archivo | Glob | Bash find |
-| Buscar texto | Grep | Bash grep |
-| Leer archivo | Read | Bash cat |
-| Editar archivo | Edit | Bash sed |
+| Task | Primary Tool | Fallback |
+|------|--------------|----------|
+| Symbol definition | LSP goToDefinition | Grep |
+| Symbol usages | LSP findReferences | Grep |
+| Find file | Glob | Bash find |
+| Find text | Grep | Bash grep |
+| Read file | Read | Bash cat |
+| Edit file | Edit | Bash sed |
 
-## Tools por Complejidad
+## Tools by Complexity
 
 | Trigger | Tool/Agent |
 |---------|------------|
-| >3 subtasks o complejidad >60 | planner |
-| Prompt vago | AskUserQuestion para clarificar |
+| >3 subtasks or complexity >60 | planner |
+| Vague prompt | AskUserQuestion to clarify |
 | Feature design | architect |
-| Pre-implementacion | scout |
+| Pre-implementation | scout |

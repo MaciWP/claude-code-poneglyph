@@ -1,231 +1,231 @@
 # Complexity Routing Rule
 
-Calcular complejidad antes de delegar para determinar si requiere planner.
+Calculate complexity before delegating to determine if a planner is required.
 
-## Factores de Complejidad
+## Complexity Factors
 
-| Factor | Peso | Low (1) | Medium (2) | High (3) |
+| Factor | Weight | Low (1) | Medium (2) | High (3) |
 |--------|------|---------|------------|----------|
-| **Archivos** | 20% | 1-2 | 3-5 | 6+ |
-| **Dominios** | 20% | 1 | 2-3 | 4+ |
-| **Dependencias** | 20% | 0-1 | 2-3 | 4+ |
-| **Seguridad** | 20% | Ninguna | Data | Auth/Crypto |
-| **Integraciones** | 20% | 0-1 | 2-3 | 4+ |
-| **Worktree** | 0% (modifier) | No aplica | Overlap posible | Paralelo confirmado |
+| **Files** | 20% | 1-2 | 3-5 | 6+ |
+| **Domains** | 20% | 1 | 2-3 | 4+ |
+| **Dependencies** | 20% | 0-1 | 2-3 | 4+ |
+| **Security** | 20% | None | Data | Auth/Crypto |
+| **Integrations** | 20% | 0-1 | 2-3 | 4+ |
+| **Worktree** | 0% (modifier) | Not applicable | Overlap possible | Parallel confirmed |
 
-## Calculo
+## Calculation
 
 ```
-score = Σ (factor_value × peso × 100 / 3)
+score = Σ (factor_value × weight × 100 / 3)
 ```
 
-Cada factor contribuye maximo ~33 puntos (value=3 × 20% × 33.3). Total maximo = 100.
+Each factor contributes a maximum of ~33 points (value=3 × 20% × 33.3). Total maximum = 100.
 
-| Value | × Peso (20%) | × Scale (33.3) | Contribucion |
+| Value | × Weight (20%) | × Scale (33.3) | Contribution |
 |-------|-------------|----------------|-------------|
 | Low (1) | 0.20 | 33.3 | ~7 |
 | Medium (2) | 0.20 | 33.3 | ~13 |
 | High (3) | 0.20 | 33.3 | ~20 |
 
-Ejemplo:
-- Archivos: 3-5 (Medium = 2) × 0.20 × 33.3 = ~13
-- Dominios: 2-3 (Medium = 2) × 0.20 × 33.3 = ~13
-- Dependencias: 0-1 (Low = 1) × 0.20 × 33.3 = ~7
-- Seguridad: Ninguna (Low = 1) × 0.20 × 33.3 = ~7
-- Integraciones: 0-1 (Low = 1) × 0.20 × 33.3 = ~7
-- **Total: ~47** → planner opcional
+Example:
+- Files: 3-5 (Medium = 2) × 0.20 × 33.3 = ~13
+- Domains: 2-3 (Medium = 2) × 0.20 × 33.3 = ~13
+- Dependencies: 0-1 (Low = 1) × 0.20 × 33.3 = ~7
+- Security: None (Low = 1) × 0.20 × 33.3 = ~7
+- Integrations: 0-1 (Low = 1) × 0.20 × 33.3 = ~7
+- **Total: ~47** → planner optional
 
-## Routing por Complejidad
+## Routing by Complexity
 
-| Score | Routing | Razon |
+| Score | Routing | Reason |
 |-------|---------|-------|
-| **< 15** | builder directo, skip scoring/skills | Tarea trivial (rename, typo, single-line) |
-| **15-30** | builder directo | Tarea simple, sin planificacion |
-| **30-60** | planner opcional | Considerar plan si hay incertidumbre |
-| **> 60** | planner obligatorio | Requiere roadmap estructurado |
+| **< 15** | builder direct, skip scoring/skills | Trivial task (rename, typo, single-line) |
+| **15-30** | builder direct | Simple task, no planning needed |
+| **30-60** | planner optional | Consider plan if there is uncertainty |
+| **> 60** | planner mandatory | Requires structured roadmap |
 
 ## Execution Mode Decision
 
-Tras determinar el routing por complejidad, evaluar el modo de ejecucion.
+After determining the routing by complexity, evaluate the execution mode.
 
 ### Mode Selection Table
 
-| Score | Dominios | Interfaces Compartidas | Mode |
+| Score | Domains | Shared Interfaces | Mode |
 |-------|----------|----------------------|------|
-| < 45 | Cualquiera | - | **subagents** |
-| 45-60 | 2-3 | Si (tipos/APIs compartidos) | **tiered** |
-| 45-60 | 2-3 | No (independientes) | **subagents** |
-| > 60 | 3+ independientes (4-gate pass) | - | **team** |
+| < 45 | Any | - | **subagents** |
+| 45-60 | 2-3 | Yes (shared types/APIs) | **tiered** |
+| 45-60 | 2-3 | No (independent) | **subagents** |
+| > 60 | 3+ independent (4-gate pass) | - | **team** |
 | > 60 | 3+ (4-gate fail) | - | **subagents** |
 
-> **Coste**: subagents = 1x (baseline) / tiered = ~2x / team = 3-7x. Default es SIEMPRE subagents.
+> **Cost**: subagents = 1x (baseline) / tiered = ~2x / team = 3-7x. Default is ALWAYS subagents.
 
 ### Tiered Mode
 
-Modo intermedio que aplica cuando hay 2-3 dominios con interfaces compartidas y complejidad 45-60. El architect diseña los contratos antes de que los builders arranquen en paralelo.
+Intermediate mode that applies when there are 2-3 domains with shared interfaces and complexity 45-60. The architect designs the contracts before the builders start in parallel.
 
-| Paso | Quien | Accion |
+| Step | Who | Action |
 |------|-------|--------|
-| 1 | Planner | Genera roadmap con `executionMode: "tiered"` |
-| 2 | Lead → Architect | "Diseña contratos de interfaz entre dominios X e Y" |
-| 3 | Architect → Lead | Tipos compartidos, API signatures, contratos de datos |
-| 4 | Lead → Builders (paralelo) | Cada uno recibe su dominio + contratos del architect |
-| 5 | Lead → Reviewer | Valida integracion cross-domain contra contratos |
+| 1 | Planner | Generates roadmap with `executionMode: "tiered"` |
+| 2 | Lead → Architect | "Design interface contracts between domains X and Y" |
+| 3 | Architect → Lead | Shared types, API signatures, data contracts |
+| 4 | Lead → Builders (parallel) | Each receives its domain + architect's contracts |
+| 5 | Lead → Reviewer | Validates cross-domain integration against contracts |
 
 ### 4-Gate Criteria (Team Mode Only)
 
-TODOS los gates deben cumplirse para activar `team` mode:
+ALL gates must be met to activate `team` mode:
 
-| Gate | Threshold | Evaluador |
+| Gate | Threshold | Evaluator |
 |------|-----------|-----------|
-| Complejidad | > 60 | Lead (tabla anterior) |
-| Dominios independientes | >= 3 sin archivos compartidos | Planner (analisis de decomposicion) |
-| Comunicacion inter-agente | Necesaria (negociacion de interfaces) | Planner (analisis de dependencias) |
-| Feature habilitada | `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` | Env var en runtime |
+| Complexity | > 60 | Lead (previous table) |
+| Independent domains | >= 3 with no shared files | Planner (decomposition analysis) |
+| Inter-agent communication | Necessary (interface negotiation) | Planner (dependency analysis) |
+| Feature enabled | `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` | Env var at runtime |
 
 ### Decision
 
-| Resultado | Modo | Accion |
+| Result | Mode | Action |
 |-----------|------|--------|
-| TODOS los gates pasan | `team` | Planner genera roadmap con teammates por dominio |
-| CUALQUIER gate falla (score > 60) | `subagents` | Flujo actual sin cambios |
-| Score 45-60 con interfaces compartidas | `tiered` | Lead invoca architect primero |
+| ALL gates pass | `team` | Planner generates roadmap with teammates per domain |
+| ANY gate fails (score > 60) | `subagents` | Current flow unchanged |
+| Score 45-60 with shared interfaces | `tiered` | Lead invokes architect first |
 
-### Ejemplo: Team Mode Triggers
+### Example: Team Mode Triggers
 
-> "Implementar sistema con auth service, payment service y notification service, cada uno con su API y base de datos independiente"
+> "Implement a system with auth service, payment service and notification service, each with its own API and independent database"
 
-- Complejidad: >60 ✅
-- Dominios: 3 (auth, payments, notifications) sin archivos compartidos ✅
-- Comunicacion: Necesaria (services consumen interfaces entre si) ✅
-- Env var: Configurada ✅
+- Complexity: >60 ✅
+- Domains: 3 (auth, payments, notifications) with no shared files ✅
+- Communication: Necessary (services consume each other's interfaces) ✅
+- Env var: Configured ✅
 - **→ team mode**
 
-### Ejemplo: Team Mode NO Triggers
+### Example: Team Mode Does NOT Trigger
 
-> "Implementar OAuth con Google y GitHub en el auth module"
+> "Implement OAuth with Google and GitHub in the auth module"
 
-- Complejidad: >60 ✅
-- Dominios: 2 (Google OAuth, GitHub OAuth) pero comparten auth middleware ❌
-- **→ subagents** (dominios no independientes)
+- Complexity: >60 ✅
+- Domains: 2 (Google OAuth, GitHub OAuth) but they share auth middleware ❌
+- **→ subagents** (domains are not independent)
 
 ## Spec-Driven Development Trigger
 
-| Score | Spec Requerido | Accion |
+| Score | Spec Required | Action |
 |-------|---------------|--------|
-| **< 30** | No | Builder directo, sin spec |
-| **30-60** | Recomendado | Si hay incertidumbre, invocar `/spec-gen` antes de builder |
-| **> 60** | Obligatorio | SIEMPRE invocar `/spec-gen` antes de planner/builder |
+| **< 30** | No | Builder direct, no spec |
+| **30-60** | Recommended | If uncertain, invoke `/spec-gen` before builder |
+| **> 60** | Mandatory | ALWAYS invoke `/spec-gen` before planner/builder |
 
-### Proceso con Spec
+### Process with Spec
 
-1. Calcular complejidad
-2. Si score >= 30: verificar si existe spec en `.specs/` para esta feature
-3. Si no existe: invocar `/spec-gen` para crear spec (status: draft)
-4. Esperar a que spec llegue a status `approved`
-5. Invocar `/implement-spec SPEC-NNN` para delegar a builder con BDD
-6. Tras implementacion: actualizar INDEX.md a `implemented`
+1. Calculate complexity
+2. If score >= 30: check if a spec exists in `.specs/` for this feature
+3. If it does not exist: invoke `/spec-gen` to create spec (status: draft)
+4. Wait for spec to reach status `approved`
+5. Invoke `/implement-spec SPEC-NNN` to delegate to builder with BDD
+6. After implementation: update INDEX.md to `implemented`
 
 ## Worktree Decision
 
-Independiente del score de complejidad, evaluar necesidad de worktree:
+Independent of the complexity score, evaluate the need for worktree:
 
-| Condicion | Worktree |
+| Condition | Worktree |
 |-----------|----------|
-| Score >60 + planner genera >1 builder | Obligatorio |
-| 2+ builders en paralelo (cualquier score) | Obligatorio |
-| Tarea marcada experimental | Obligatorio |
-| Score <30, single builder | No necesario |
+| Score >60 + planner generates >1 builder | Mandatory |
+| 2+ builders in parallel (any score) | Mandatory |
+| Task marked experimental | Mandatory |
+| Score <30, single builder | Not needed |
 
-> **Nota**: Las reglas de worktree NO aplican en team mode. Cada teammate corre en su propio proceso de Claude Code con su propio filesystem. Worktree isolation solo aplica al modo subagents.
+> **Note**: Worktree rules do NOT apply in team mode. Each teammate runs in its own Claude Code process with its own filesystem. Worktree isolation only applies to subagents mode.
 
 ## Effort Routing
 
-Nivel de esfuerzo por agente. A diferencia del model routing, effort NO se puede pasar dinámicamente per-invocación — es fijo en frontmatter del agente.
+Effort level per agent. Unlike model routing, effort CANNOT be passed dynamically per-invocation — it is fixed in the agent's frontmatter.
 
-> **Limitación**: `effort` en frontmatter es estático. No existe parámetro `effort` en el Agent tool call (issue abierta anthropics/claude-code#25591). Por eso solo se define en agentes cuyo nivel es invariable por diseño.
+> **Limitation**: `effort` in frontmatter is static. There is no `effort` parameter in the Agent tool call (open issue anthropics/claude-code#25591). That is why it is only defined in agents whose level is invariable by design.
 
 ### Effort Assignments (Frontmatter)
 
-| Agente | effort | Rationale |
+| Agent | effort | Rationale |
 |--------|--------|-----------|
-| scout | `low` | Solo lee archivos. No requiere razonamiento profundo. |
-| command-loader | `low` | Solo expande references. Puramente mecánico. |
-| architect | `high` | Decisiones estratégicas de alto impacto. |
-| planner | `high` | La calidad del plan determina toda la ejecución. |
-| error-analyzer | `high` | Diagnóstico profundo requiere razonamiento extenso. |
-| builder | ❌ inherit | Depende de la tarea. Hereda session default. |
-| reviewer | ❌ inherit | Depende del tipo de review. Hereda session default. |
+| scout | `low` | Only reads files. Does not require deep reasoning. |
+| command-loader | `low` | Only expands references. Purely mechanical. |
+| architect | `high` | High-impact strategic decisions. |
+| planner | `high` | Plan quality determines all execution. |
+| error-analyzer | `high` | Deep diagnosis requires extensive reasoning. |
+| builder | ❌ inherit | Depends on the task. Inherits session default. |
+| reviewer | ❌ inherit | Depends on review type. Inherits session default. |
 
-> Agentes sin `effort` en frontmatter heredan el nivel de sesión (configurable con `/effort`).
+> Agents without `effort` in frontmatter inherit the session level (configurable with `/effort`).
 
 ## Model Routing
 
-Seleccion de modelo por agente y complejidad para optimizar costos.
+Model selection per agent and complexity to optimize costs.
 
-> **Mecanismo**: El Lead determina el modelo pasando `model:` en el Agent tool call. Los agentes NO tienen model hardcoded en frontmatter — el routing es dinámico basado en la complejidad de la tarea.
+> **Mechanism**: The Lead determines the model by passing `model:` in the Agent tool call. Agents do NOT have model hardcoded in frontmatter — routing is dynamic based on task complexity.
 
 ### Model Selection by Agent Category
 
 **Code agents** (builder, reviewer, error-analyzer) — produce or analyze code:
 
-| Complejidad | Modelo | Rationale |
+| Complexity | Model | Rationale |
 |-------------|--------|-----------|
-| <30 | sonnet | Calidad mínima garantizada para código |
-| 30-50 | sonnet | Buen balance para tareas medianas |
-| >50 | opus | Razonamiento profundo para tareas complejas |
+| <30 | sonnet | Minimum guaranteed quality for code |
+| 30-50 | sonnet | Good balance for medium tasks |
+| >50 | opus | Deep reasoning for complex tasks |
 
 **Read-only agents** (scout, command-loader) — only read, don't produce:
 
-| Complejidad | Modelo | Rationale |
+| Complexity | Model | Rationale |
 |-------------|--------|-----------|
-| <30 | haiku | Leer archivos no requiere razonamiento profundo |
-| 30-50 | haiku | Exploración más amplia, aún barata |
-| >50 | sonnet | Exploración compleja requiere mejor comprensión |
+| <30 | haiku | Reading files does not require deep reasoning |
+| 30-50 | haiku | Broader exploration, still cheap |
+| >50 | sonnet | Complex exploration requires better comprehension |
 
 **Strategic agents** (planner, architect) — high-impact decisions:
 
-| Complejidad | Modelo | Rationale |
+| Complexity | Model | Rationale |
 |-------------|--------|-----------|
-| Cualquiera | opus | La calidad del plan determina la calidad de la ejecución |
+| Any | opus | Plan quality determines execution quality |
 
 > Model defaults are determined dynamically by the Lead based on agent category and task complexity. See table above.
 
 ### Budget Alerts
 
-> **GUIDELINE**: Esta regla es orientativa. No esta enforced por hooks — el Lead no tiene visibilidad real del costo en runtime.
+> **GUIDELINE**: This rule is advisory. It is not enforced by hooks — the Lead has no real visibility of cost at runtime.
 
-| Condicion | Accion |
+| Condition | Action |
 |-----------|--------|
-| Sesion >$1.00 | Warning al usuario |
-| Sesion >$5.00 | Solicitar confirmacion para continuar |
-| Dia >$20.00 | Revisar patron de uso |
+| Session >$1.00 | Warning to user |
+| Session >$5.00 | Request confirmation to continue |
+| Day >$20.00 | Review usage pattern |
 
-## Ejemplos
+## Examples
 
-### Complejidad Baja (< 30)
-> "Anadir validacion de email al endpoint de registro"
+### Low Complexity (< 30)
+> "Add email validation to the registration endpoint"
 
-- Archivos: 1-2 (Low = 1) × 0.20 × 33.3 = ~7
-- Dominios: 1 (Low = 1) × 0.20 × 33.3 = ~7
-- Dependencias: 1 (Low = 1) × 0.20 × 33.3 = ~7
-- Seguridad: Data (Medium = 2) × 0.20 × 33.3 = ~13
-- Integraciones: 0 (Low = 1) × 0.20 × 33.3 = ~7
-- **Total: ~41** → planner opcional
+- Files: 1-2 (Low = 1) × 0.20 × 33.3 = ~7
+- Domains: 1 (Low = 1) × 0.20 × 33.3 = ~7
+- Dependencies: 1 (Low = 1) × 0.20 × 33.3 = ~7
+- Security: Data (Medium = 2) × 0.20 × 33.3 = ~13
+- Integrations: 0 (Low = 1) × 0.20 × 33.3 = ~7
+- **Total: ~41** → planner optional
 
-### Complejidad Alta (> 60)
-> "Implementar sistema de autenticacion OAuth con Google y GitHub"
+### High Complexity (> 60)
+> "Implement OAuth authentication system with Google and GitHub"
 
-- Archivos: 6+ (High = 3) × 0.20 × 33.3 = ~20
-- Dominios: 4+ (High = 3) × 0.20 × 33.3 = ~20
-- Dependencias: 4+ (High = 3) × 0.20 × 33.3 = ~20
-- Seguridad: Auth (High = 3) × 0.20 × 33.3 = ~20
-- Integraciones: 4+ (High = 3) × 0.20 × 33.3 = ~20
-- **Total: ~100** → planner obligatorio
+- Files: 6+ (High = 3) × 0.20 × 33.3 = ~20
+- Domains: 4+ (High = 3) × 0.20 × 33.3 = ~20
+- Dependencies: 4+ (High = 3) × 0.20 × 33.3 = ~20
+- Security: Auth (High = 3) × 0.20 × 33.3 = ~20
+- Integrations: 4+ (High = 3) × 0.20 × 33.3 = ~20
+- **Total: ~100** → planner mandatory
 
-## Proceso
+## Process
 
-1. Analizar tarea del usuario
-2. Evaluar cada factor
-3. Calcular score total
-4. Rutear segun umbral
+1. Analyze the user's task
+2. Evaluate each factor
+3. Calculate total score
+4. Route according to threshold

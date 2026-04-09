@@ -1,6 +1,6 @@
 # Error Recovery
 
-Guia de recuperacion cuando agentes fallan. Define retry budgets, escalacion y deteccion de bloqueo.
+Recovery guide for when agents fail. Defines retry budgets, escalation, and stuck detection.
 
 ## Retry Budget
 
@@ -39,42 +39,42 @@ graph TD
 
 ## SendMessage Recovery (Preferred)
 
-Desde v2.1.77, usar `SendMessage({to: agentId})` para continuar un agente fallido en vez de spawnar uno nuevo. Esto preserva todo el contexto del agente (archivos leídos, edits hechos) y ahorra ~2K-5K tokens de re-setup.
+Since v2.1.77, use `SendMessage({to: agentId})` to continue a failed agent instead of spawning a new one. This preserves all agent context (files read, edits made) and saves ~2K-5K tokens of re-setup.
 
-### Cuándo usar SendMessage vs Re-spawn
+### When to use SendMessage vs Re-spawn
 
-| Situación | Método | Razón |
-|-----------|--------|-------|
-| Builder falló test | SendMessage | El builder ya tiene contexto del código, solo necesita el error |
-| Builder falló por stale edit | SendMessage | Re-leer el archivo y reintentar en el mismo contexto |
-| Error-analyzer diagnosticó fix | SendMessage al builder original | Evita re-explorar el codebase |
-| Builder falló 2+ veces | Re-spawn con diagnosis completa | Contexto original puede estar contaminado |
-| Error en agente diferente al original | Re-spawn nuevo agente | SendMessage no cruza agentes |
+| Situation | Method | Reason |
+|-----------|--------|--------|
+| Builder failed test | SendMessage | Builder already has code context, only needs the error |
+| Builder failed due to stale edit | SendMessage | Re-read the file and retry in the same context |
+| Error-analyzer diagnosed a fix | SendMessage to original builder | Avoids re-exploring the codebase |
+| Builder failed 2+ times | Re-spawn with full diagnosis | Original context may be contaminated |
+| Error in a different agent than the original | Re-spawn new agent | SendMessage does not cross agents |
 
-### Ejemplo SendMessage Recovery
+### SendMessage Recovery Example
 
 ```
-// Builder falló en test
+// Builder failed on test
 SendMessage({
   to: "builder-a3f8c2",
   message: "Test failed: TypeError at auth.ts:23. Diagnosis: null check missing on user object. Fix: add guard clause before user.id access. Do NOT remove existing tests."
 })
 ```
 
-> **Nota**: SendMessage auto-resumes agentes detenidos en background.
+> **Note**: SendMessage auto-resumes agents stopped in background.
 
 ## Recovery Prompt Template
 
-Al reintentar (con re-spawn), incluir SIEMPRE en el prompt del builder:
+When retrying (with re-spawn), ALWAYS include in the builder prompt:
 
-| Campo | Contenido |
-|-------|-----------|
-| **Original error** | Mensaje de error completo |
-| **Diagnosis** | Output de error-analyzer (si disponible) |
-| **Do NOT repeat** | Accion especifica que causo el fallo |
-| **Changed constraints** | Nuevos limites o contexto adicional |
+| Field | Content |
+|-------|---------|
+| **Original error** | Full error message |
+| **Diagnosis** | error-analyzer output (if available) |
+| **Do NOT repeat** | Specific action that caused the failure |
+| **Changed constraints** | New limits or additional context |
 
-Ejemplo:
+Example:
 
 ```
 Previous attempt failed: "TypeError: Cannot read property 'id' of undefined"
@@ -85,73 +85,73 @@ Changed constraints: Add guard clause before accessing user properties.
 
 ## Pattern-Based Recovery
 
-Antes de reintentar, consultar la base de patrones de error (`~/.claude/error-patterns.jsonl`).
+Before retrying, consult the error pattern database (`~/.claude/error-patterns.jsonl`).
 
-### Flujo con Patrones
+### Flow with Patterns
 
-| Paso | Accion |
+| Step | Action |
 |------|--------|
-| 1 | Error ocurre → normalizar mensaje |
-| 2 | Buscar match en patterns (exact > regex > fuzzy) |
-| 3a | Match con >70% success rate → aplicar fix directo (skip error-analyzer) |
-| 3b | Match con <70% success rate → error-analyzer + historial de fixes |
-| 3c | Sin match → error-analyzer standard + registrar nuevo pattern |
-| 4 | Registrar outcome (exito/fallo) para actualizar success rate |
+| 1 | Error occurs → normalize message |
+| 2 | Search for match in patterns (exact > regex > fuzzy) |
+| 3a | Match with >70% success rate → apply fix directly (skip error-analyzer) |
+| 3b | Match with <70% success rate → error-analyzer + fix history |
+| 3c | No match → standard error-analyzer + register new pattern |
+| 4 | Record outcome (success/failure) to update success rate |
 
-### Recovery Prompt con Pattern
+### Recovery Prompt with Pattern
 
-Cuando hay un match, incluir en el prompt del builder:
+When there is a match, include in the builder prompt:
 
-| Campo | Contenido |
-|-------|-----------|
-| **Known pattern** | Mensaje normalizado del pattern |
-| **Category** | Clasificacion del error |
-| **Best fix** | Fix con mayor success rate |
-| **Success rate** | Porcentaje de exito historico |
-| **Previous attempts** | Fixes que fallaron (para NO repetir) |
+| Field | Content |
+|-------|---------|
+| **Known pattern** | Normalized pattern message |
+| **Category** | Error classification |
+| **Best fix** | Fix with the highest success rate |
+| **Success rate** | Historical success percentage |
+| **Previous attempts** | Fixes that failed (do NOT repeat) |
 
 ## Stuck Detection
 
-| Condicion | Accion |
+| Condition | Action |
 |-----------|--------|
-| 3+ retries en misma tarea | STOP → AskUserQuestion |
-| 2+ error-analyzer sin fix | STOP → AskUserQuestion |
-| Mismo error exacto 2 veces | STOP → AskUserQuestion |
+| 3+ retries on the same task | STOP → AskUserQuestion |
+| 2+ error-analyzer runs without a fix | STOP → AskUserQuestion |
+| Same exact error 2 times | STOP → AskUserQuestion |
 
-Cuando se detecta bloqueo, preguntar al usuario:
+When a block is detected, ask the user:
 
-1. Contexto que puede faltar
-2. Si el approach debe cambiar
-3. Si la tarea debe dividirse
+1. Context that may be missing
+2. Whether the approach should change
+3. Whether the task should be split
 
 ## Worktree Cleanup on Failure
 
-| Condicion | Accion |
+| Condition | Action |
 |-----------|--------|
-| Builder en worktree falla | Preservar worktree, delegar a error-analyzer |
-| Error-analyzer diagnostica fix | Reintentar builder en MISMO worktree |
-| Retry falla | Eliminar worktree + branch, escalar al usuario |
-| Merge conflict en worktree | Delegar a builder |
-| builder falla en merge | Preservar worktree, escalar al usuario con diff |
+| Builder in worktree fails | Preserve worktree, delegate to error-analyzer |
+| Error-analyzer diagnoses a fix | Retry builder in the SAME worktree |
+| Retry fails | Delete worktree + branch, escalate to user |
+| Merge conflict in worktree | Delegate to builder |
+| Builder fails on merge | Preserve worktree, escalate to user with diff |
 
 ## Team Mode Recovery
 
-Recuperacion cuando teammates fallan en team mode. Ver `team-routing.md` para protocolo completo.
+Recovery when teammates fail in team mode. See `team-routing.md` for the full protocol.
 
-| Escenario | Accion |
-|-----------|--------|
-| Single teammate falla | Otros teammates continuan. Dominio fallido se reintenta como builder subagent. |
-| Multiples teammates fallan | Abortar team mode. Fallback a ejecucion completa con subagents. |
-| Conflicto de archivos entre teammates | Lead arbitra via reviewer. Dominio perdedor re-ejecuta con boundaries corregidos. |
-| Env var ausente pero planner recomendo team | Fallback silencioso a subagents. Log warning al usuario. |
-| Teammate sin progreso en task list | Considerar stuck despues de inactividad prolongada. Extraer dominio → builder subagent. |
+| Scenario | Action |
+|----------|--------|
+| Single teammate fails | Other teammates continue. Failed domain is retried as a builder subagent. |
+| Multiple teammates fail | Abort team mode. Fallback to full subagent execution. |
+| File conflict between teammates | Lead arbitrates via reviewer. Losing domain re-executes with corrected boundaries. |
+| Env var missing but planner recommended team | Silent fallback to subagents. Log warning to user. |
+| Teammate with no progress in task list | Consider stuck after prolonged inactivity. Extract domain → builder subagent. |
 
-## Proceso
+## Process
 
-1. Error ocurre en agente
-2. Clasificar: transient vs structural
-3. Consultar retry budget
-4. Si budget disponible: reintentar con recovery prompt
-5. Si budget agotado: error-analyzer → diagnosticar
-6. Si fix identificado: reintentar con fix
-7. Si no: escalar al usuario via AskUserQuestion
+1. Error occurs in agent
+2. Classify: transient vs structural
+3. Check retry budget
+4. If budget available: retry with recovery prompt
+5. If budget exhausted: error-analyzer → diagnose
+6. If fix identified: retry with fix
+7. If not: escalate to user via AskUserQuestion

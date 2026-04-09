@@ -31,16 +31,16 @@
 | **Worktree Parallel** | 2+ builders in worktrees | Parallel builders with file overlap potential |
 | **Security Review** | reviewer (security mode, model: opus) | Auth/security changes |
 | **Tiered Build** | architect + N builders + reviewer | complexity 45-60, 2-3 domains with shared interfaces |
-| **Team Parallel** | teammates (general-purpose) | execution_mode=team, 3+ dominios independientes, complexity >60 |
+| **Team Parallel** | teammates (general-purpose) | execution_mode=team, 3+ independent domains, complexity >60 |
 
 ## Anti-Patterns
 
 | Anti-Pattern | Problem | Use Instead |
 |--------------|---------|-------------|
 | builder for exploration | misses context, wastes tokens | scout |
-| planner for complexity <30 | overkill, slows execution | builder directo |
+| planner for complexity <30 | overkill, slows execution | builder direct |
 | skipping reviewer after multi-file changes | quality risk | reviewer checkpoint |
 | single builder for >60 complexity without planner | uncoordinated, error-prone | planner -> N builders |
-| 2+ builders paralelos sin worktree en archivos solapados | Conflictos de escritura | Activar `isolation: "worktree"` |
-| team mode para <3 dominios | 3-7x coste sin beneficio real | parallel builders en worktrees |
-| team mode para dominios dependientes | conflictos de archivos entre teammates | subagents secuenciales |
+| 2+ builders in parallel without worktree on overlapping files | Write conflicts | Activate `isolation: "worktree"` |
+| team mode for <3 domains | 3-7x cost with no real benefit | parallel builders in worktrees |
+| team mode for dependent domains | file conflicts between teammates | sequential subagents |

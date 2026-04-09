@@ -1,62 +1,62 @@
 # Team Routing Rule
 
-Quick reference para el Lead cuando ejecuta team mode. Ver `complexity-routing.md` para criterios de decision.
+Quick reference for the Lead when executing team mode. See `complexity-routing.md` for decision criteria.
 
-## Prerequisitos
+## Prerequisites
 
-| Requisito | Check |
-|-----------|-------|
-| Env var activa | `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` |
-| Planner recomendo team | `executionMode: team` en roadmap |
-| Complejidad > 60 | Calculada en complexity routing |
-| 3+ dominios independientes | Sin archivos compartidos entre dominios |
+| Requirement | Check |
+|-------------|-------|
+| Env var active | `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` |
+| Planner recommended team | `executionMode: team` in roadmap |
+| Complexity > 60 | Calculated in complexity routing |
+| 3+ independent domains | No shared files between domains |
 
-Si cualquier prerequisito falla → usar subagents (flujo actual).
+If any prerequisite fails → use subagents (current flow).
 
 ## Opt-Out
 
-| Variable | Efecto |
+| Variable | Effect |
 |----------|--------|
-| `PONEGLYPH_DISABLE_TEAM_MODE=1` | Fuerza subagents siempre, ignora recomendacion del planner |
+| `PONEGLYPH_DISABLE_TEAM_MODE=1` | Always forces subagents, ignores planner recommendation |
 
 ## Teammate Prompt Template
 
-Cada teammate recibe un prompt con:
+Each teammate receives a prompt with:
 
-| Campo | Contenido |
-|-------|-----------|
-| **Dominio** | "Tu dominio es [X]. Solo tocas archivos en [paths]." |
-| **Tareas** | Subtasks del roadmap asignadas a este dominio |
-| **Interfaces** | Contratos a exponer/consumir con otros dominios |
-| **Restriccion** | "NO modifiques archivos fuera de tu dominio" |
-| **Coordinacion** | "Usa task list para coordinar con otros teammates" |
+| Field | Content |
+|-------|---------|
+| **Domain** | "Your domain is [X]. You only touch files in [paths]." |
+| **Tasks** | Roadmap subtasks assigned to this domain |
+| **Interfaces** | Contracts to expose/consume with other domains |
+| **Constraint** | "DO NOT modify files outside your domain" |
+| **Coordination** | "Use the task list to coordinate with other teammates" |
 
-## Protocolo de Coordinacion
+## Coordination Protocol
 
-| Fase | Accion del Lead |
-|------|-----------------|
-| **Spawn** | Crear un teammate por dominio con prompt template |
-| **Monitor** | Revisar task list para progreso. No intervenir salvo stuck. |
-| **Interfaces** | Teammates negocian contratos via task list (TaskCreate/TaskUpdate) |
-| **Integracion** | Tras completar todos los teammates, Lead ejecuta reviewer sobre changeset completo |
-| **Cleanup** | Verificar que no hay conflictos de archivos entre outputs de teammates |
+| Phase | Lead Action |
+|-------|-------------|
+| **Spawn** | Create one teammate per domain using the prompt template |
+| **Monitor** | Review task list for progress. Do not intervene unless stuck. |
+| **Interfaces** | Teammates negotiate contracts via task list (TaskCreate/TaskUpdate) |
+| **Integration** | After all teammates complete, Lead runs reviewer over the full changeset |
+| **Cleanup** | Verify no file conflicts between teammate outputs |
 
-## Fallback a Subagents
+## Fallback to Subagents
 
-| Trigger | Accion |
+| Trigger | Action |
 |---------|--------|
-| Teammate falla 2x | Extraer tareas del dominio → ejecutar como builder subagent |
-| Multiples teammates fallan | Abortar team mode → fallback a subagents completo |
-| Conflicto de archivos entre teammates | Lead arbitra via reviewer. Dominio perdedor re-ejecuta. |
-| Env var ausente pero planner recomendo team | Fallback silencioso a subagents. Log warning. |
+| Teammate fails 2x | Extract domain tasks → run as builder subagent |
+| Multiple teammates fail | Abort team mode → full fallback to subagents |
+| File conflict between teammates | Lead arbitrates via reviewer. Losing domain re-executes. |
+| Env var missing but planner recommended team | Silent fallback to subagents. Log warning. |
 
-## Coste Comparativo
+## Comparative Cost
 
-| Modo | Coste relativo | Cuando vale la pena |
-|------|---------------|---------------------|
-| Subagents | 1x (baseline) | 95% de las tareas |
-| Team Agents | 3-7x | Dominios verdaderamente independientes, complexity >60, necesidad de negociacion de interfaces |
+| Mode | Relative Cost | When it's worth it |
+|------|---------------|--------------------|
+| Subagents | 1x (baseline) | 95% of tasks |
+| Team Agents | 3-7x | Truly independent domains, complexity >60, need for interface negotiation |
 
-## Limitacion Actual
+## Current Limitation
 
-Teammates son siempre `general-purpose` (issue anthropics/claude-code#24316). No pueden usar `.claude/agents/` custom. Pero cada teammate carga `~/.claude/` automaticamente — reglas, skills y hooks de Poneglyph aplican.
+Teammates are always `general-purpose` (issue anthropics/claude-code#24316). They cannot use custom `.claude/agents/`. However, each teammate loads `~/.claude/` automatically — Poneglyph rules, skills and hooks apply.

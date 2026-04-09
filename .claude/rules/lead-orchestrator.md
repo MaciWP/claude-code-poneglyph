@@ -1,52 +1,52 @@
 # Lead Orchestrator Rules
 
-La sesion principal actua como **orquestador puro**. No ejecuta codigo directamente.
+The main session acts as a **pure orchestrator**. It does not execute code directly.
 
-## NUNCA (Prohibido)
+## NEVER (Prohibited)
 
-| Accion Prohibida | Razon |
+| Prohibited Action | Reason |
 |------------------|-------|
-| Leer archivos directamente (Read) | Delegar a scout o builder |
-| Editar codigo directamente (Edit) | Delegar a builder |
-| Escribir archivos (Write) | Delegar a builder |
-| Ejecutar comandos bash (Bash) | Delegar a builder |
-| Buscar con Glob/Grep | Delegar a scout/Explore |
-| Fetch web directo | Los agentes tienen acceso |
+| Read files directly (Read) | Delegate to scout or builder |
+| Edit code directly (Edit) | Delegate to builder |
+| Write files (Write) | Delegate to builder |
+| Execute bash commands (Bash) | Delegate to builder |
+| Search with Glob/Grep | Delegate to scout/Explore |
+| Direct web fetch | Agents have access |
 
-## SIEMPRE (Obligatorio)
+## ALWAYS (Required)
 
-| Accion Requerida | Como |
+| Required Action | How |
 |------------------|------|
-| Delegar codigo a builder | `Task(subagent_type="builder", prompt="...")` |
-| Validar con reviewer | `Task(subagent_type="reviewer", prompt="...")` |
-| Planificar tareas complejas | `Task(subagent_type="planner", prompt="...")` |
-| Explorar codebase | `Task(subagent_type="scout", prompt="...")` |
-| Analizar errores | `Task(subagent_type="error-analyzer", prompt="...")` |
-| Cargar skills relevantes | `Skill(skill="...")` (solo skills globales disponibles) |
-| Clarificar requisitos | `AskUserQuestion(questions=[...])` |
-| Trigger spec workflow | Si complexity >= 30 y no hay spec: seguir regla spec-driven (auto-loaded en `.claude/rules/spec-driven.md`) |
+| Delegate code to builder | `Task(subagent_type="builder", prompt="...")` |
+| Validate with reviewer | `Task(subagent_type="reviewer", prompt="...")` |
+| Plan complex tasks | `Task(subagent_type="planner", prompt="...")` |
+| Explore codebase | `Task(subagent_type="scout", prompt="...")` |
+| Analyze errors | `Task(subagent_type="error-analyzer", prompt="...")` |
+| Load relevant skills | `Skill(skill="...")` (only global skills available) |
+| Clarify requirements | `AskUserQuestion(questions=[...])` |
+| Trigger spec workflow | If complexity >= 30 and no spec exists: follow spec-driven rule (auto-loaded at `.claude/rules/spec-driven.md`) |
 
-## Flujo de Trabajo
+## Workflow
 
 ```mermaid
 graph TD
-    U[Usuario] --> S[Score Prompt]
-    S -->|< 70| AUQ[AskUserQuestion para clarificar]
+    U[User] --> S[Score Prompt]
+    S -->|< 70| AUQ[AskUserQuestion to clarify]
     AUQ --> S
-    S -->|>= 70| C[Calcular Complejidad]
-    C -->|< 30| B[builder directo]
+    S -->|>= 70| C[Calculate Complexity]
+    C -->|< 30| B[builder direct]
     C -->|30-60| SP1{Spec exists?}
-    C -->|> 60| SP2[spec-driven rule OBLIGATORIO]
-    SP1 -->|Yes| P1[planner opcional]
-    SP1 -->|No| SG1[spec-driven rule recomendado]
+    C -->|> 60| SP2[spec-driven rule MANDATORY]
+    SP1 -->|Yes| P1[planner optional]
+    SP1 -->|No| SG1[spec-driven rule recommended]
     SG1 --> P1
-    SP2 --> P2[planner obligatorio]
+    SP2 --> P2[planner mandatory]
     P1 & P2 --> MD{execution_mode?}
     MD -->|subagents| IS[implement-spec / builders]
     MD -->|team| TM[Spawn teammates per domain]
     IS --> B2[builder]
-    TM --> TV[Teammates completan + Lead verifica]
-    TV --> R2[reviewer sobre changeset completo]
+    TM --> TV[Teammates complete + Lead verifies]
+    TV --> R2[reviewer over full changeset]
     B2 --> R[reviewer + SpecComplianceCheck]
     R -->|APPROVED| IX[INDEX.md → implemented]
     R2 -->|APPROVED| IX
@@ -57,199 +57,199 @@ graph TD
     EA --> B2
 ```
 
-## Herramientas Permitidas
+## Allowed Tools
 
-| Tool | Uso |
+| Tool | Usage |
 |------|-----|
-| `Task` | Delegar a agentes especializados |
-| `Skill` | Cargar skills para contexto |
-| `AskUserQuestion` | Clarificar requisitos |
-| `TaskList/TaskCreate/TaskUpdate` | Gestionar lista de tareas |
+| `Task` | Delegate to specialized agents |
+| `Skill` | Load skills for context |
+| `AskUserQuestion` | Clarify requirements |
+| `TaskList/TaskCreate/TaskUpdate` | Manage task list |
 
-## Expertise Injection al Delegar
+## Expertise Injection When Delegating
 
-Al delegar a cualquier agente, el Lead DEBE incluir la expertise acumulada del agente en el prompt:
+When delegating to any agent, the Lead MUST include the agent's accumulated expertise in the prompt:
 
-| Paso | Accion |
+| Step | Action |
 |------|--------|
-| 1 | Leer `.claude/agent-memory/{agent}/EXPERTISE.md` |
-| 2 | Incluir ultimos ~3K tokens en el prompt del agente |
-| 3 | Prefijo: `[EXPERTISE ACUMULADA]\n{contenido}` |
-| 4 | Si el archivo no existe o esta vacio, omitir |
+| 1 | Read `.claude/agent-memory/{agent}/EXPERTISE.md` |
+| 2 | Include last ~3K tokens in the agent's prompt |
+| 3 | Prefix: `[ACCUMULATED EXPERTISE]\n{content}` |
+| 4 | If the file does not exist or is empty, omit |
 
-### Template de Delegacion con Expertise
+### Delegation Template with Expertise
 
 ```
-[EXPERTISE ACUMULADA - {agent}]
-{contenido de EXPERTISE.md, ultimos 3K tokens}
+[ACCUMULATED EXPERTISE - {agent}]
+{content of EXPERTISE.md, last 3K tokens}
 
-[TAREA]
-{instrucciones de la tarea}
+[TASK]
+{task instructions}
 
 [EXPERTISE OUTPUT]
-Al finalizar, incluye "### Expertise Insights" con 1-5 insights reutilizables descubiertos durante esta tarea.
+When finished, include "### Expertise Insights" with 1-5 reusable insights discovered during this task.
 ```
 
-> **Nota**: El recordatorio en el prompt de delegacion es NECESARIO. La instruccion en el system prompt del agente (seccion "Expertise Persistence") esta en la linea 400+ y los agentes no la siguen consistentemente. El recordatorio explicito en el prompt de delegacion garantiza que los insights se produzcan.
+> **Note**: The reminder in the delegation prompt is NECESSARY. The instruction in the agent's system prompt (section "Expertise Persistence") is at line 400+ and agents do not follow it consistently. The explicit reminder in the delegation prompt guarantees that insights are produced.
 
-> La expertise es contexto de solo lectura. El agente la usa para informar decisiones pero NO la repite en su output.
-> La expertise se actualiza automaticamente via el hook SubagentStop — el Lead no necesita gestionarla.
+> Expertise is read-only context. The agent uses it to inform decisions but does NOT repeat it in its output.
+> Expertise is updated automatically via the SubagentStop hook — the Lead does not need to manage it.
 
 ## Worktree Isolation
 
-Activar `isolation: "worktree"` en el Agent tool para aislar trabajo paralelo.
+Activate `isolation: "worktree"` in the Agent tool to isolate parallel work.
 
 ### Routing Rules
 
-| Condicion | Usar Worktree | Prioridad |
+| Condition | Use Worktree | Priority |
 |-----------|--------------|-----------|
-| 2+ builders delegados en paralelo | Si (cada uno su worktree) | Alta |
-| Tarea experimental/riesgo marcada por planner | Si | Alta |
-| Reviewer necesita diff limpio | Si (builder en worktree) | Media |
-| Single builder, archivos conocidos, sin overlap | No | Baja |
-| Archivos target desconocidos (sin planner output) | Si (default seguro) | Media |
+| 2+ builders delegated in parallel | Yes (each gets its own worktree) | High |
+| Experimental/risk task flagged by planner | Yes | High |
+| Reviewer needs a clean diff | Yes (builder in worktree) | Medium |
+| Single builder, known files, no overlap | No | Low |
+| Unknown target files (no planner output) | Yes (safe default) | Medium |
 
 ### Merge Strategy
 
-| Escenario | Estrategia | Agente |
+| Scenario | Strategy | Agent |
 |-----------|-----------|--------|
-| Fast-forward limpio | Auto-merge via builder | builder |
-| Merge sin conflictos | `git merge --no-ff` via builder | builder |
-| Conflictos detectados | Delegar a builder | builder |
-| builder falla en merge (confidence <50%) | Escalar al usuario | AskUserQuestion |
-| Builder sin cambios | Skip merge, cleanup | Automatico |
+| Clean fast-forward | Auto-merge via builder | builder |
+| Merge without conflicts | `git merge --no-ff` via builder | builder |
+| Conflicts detected | Delegate to builder | builder |
+| builder fails on merge (confidence <50%) | Escalate to user | AskUserQuestion |
+| Builder with no changes | Skip merge, cleanup | Automatic |
 
 ### Cleanup Policy
 
-| Condicion | Accion | Timing |
+| Condition | Action | Timing |
 |-----------|--------|--------|
-| Worktree merged OK | Eliminar worktree + branch | Inmediato |
-| Builder sin cambios | Eliminar worktree + branch | Inmediato |
-| Builder fallo | Preservar para 1 retry | Post error-analyzer |
-| Retry tambien fallo | Eliminar + escalar | Post escalacion |
-| Session termina con worktrees no-merged | Log warning, preservar | Fin de session |
+| Worktree merged OK | Delete worktree + branch | Immediate |
+| Builder with no changes | Delete worktree + branch | Immediate |
+| Builder failed | Preserve for 1 retry | Post error-analyzer |
+| Retry also failed | Delete + escalate | Post escalation |
+| Session ends with unmerged worktrees | Log warning, preserve | End of session |
 
 ### Naming Convention
 
-| Componente | Formato | Ejemplo |
+| Component | Format | Example |
 |-----------|---------|---------|
 | Branch | `wt/<agent>/<task-hash>` | `wt/builder/a3f8c2` |
-| Directorio | `.worktrees/<agent>-<task-hash>` | `.worktrees/builder-a3f8c2` |
+| Directory | `.worktrees/<agent>-<task-hash>` | `.worktrees/builder-a3f8c2` |
 
 ## Team Agent Execution (Experimental)
 
-Cuando el planner recomienda `executionMode: team`, el Lead spawna teammates independientes por dominio. Ver `team-routing.md` para protocolo completo.
+When the planner recommends `executionMode: team`, the Lead spawns independent teammates per domain. See `team-routing.md` for the full protocol.
 
-### Prerequisitos
+### Prerequisites
 
-| Requisito | Verificacion |
+| Requirement | Verification |
 |-----------|-------------|
-| Env var activa | `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` en settings.json |
-| Planner recomienda team | `executionMode: team` en roadmap output |
-| Si env var ausente | Fallback silencioso a subagents, log warning |
+| Env var active | `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` in settings.json |
+| Planner recommends team | `executionMode: team` in roadmap output |
+| If env var absent | Silent fallback to subagents, log warning |
 
 ### Teammate Prompt Template
 
-Cada teammate recibe:
+Each teammate receives:
 
-| Campo | Contenido |
+| Field | Content |
 |-------|-----------|
-| **Dominio** | "Tu dominio es [X]. Solo tocas archivos en [paths]." |
-| **Tareas** | Subtasks del roadmap asignadas a este dominio |
-| **Interfaces** | Contratos a exponer/consumir con otros dominios |
-| **Restriccion** | "NO modifiques archivos fuera de tu dominio" |
-| **Coordinacion** | "Usa task list para coordinar con otros teammates" |
+| **Domain** | "Your domain is [X]. You only touch files in [paths]." |
+| **Tasks** | Roadmap subtasks assigned to this domain |
+| **Interfaces** | Contracts to expose/consume with other domains |
+| **Constraint** | "DO NOT modify files outside your domain" |
+| **Coordination** | "Use task list to coordinate with other teammates" |
 
 ### Monitoring
 
-- Lead revisa task list para progreso de teammates
-- No intervenir salvo que un teammate este stuck (sin progreso en task list)
-- Tras completar todos los teammates: Lead ejecuta reviewer sobre changeset completo
+- Lead reviews task list for teammate progress
+- Do not intervene unless a teammate is stuck (no progress in task list)
+- After all teammates complete: Lead runs reviewer over the full changeset
 
 ### Fallback
 
-| Condicion | Accion |
+| Condition | Action |
 |-----------|--------|
-| Teammate falla 2x | Extraer tareas del dominio → ejecutar como builder subagent |
-| Multiples teammates fallan | Abortar team mode → fallback completo a subagents |
-| Conflicto de archivos entre teammates | Lead arbitra via reviewer, dominio perdedor re-ejecuta |
+| Teammate fails 2x | Extract domain tasks → run as builder subagent |
+| Multiple teammates fail | Abort team mode → full fallback to subagents |
+| File conflict between teammates | Lead arbitrates via reviewer, losing domain re-executes |
 
 ## Tiered Execution Mode
 
-Modo de ejecucion intermedio entre subagents y team. Usa architect como intermediario que diseña interfaces antes de que builders paralelos empiecen.
+Intermediate execution mode between subagents and team. Uses architect as intermediary to design interfaces before parallel builders start.
 
-### Cuando Usar
+### When to Use
 
-| Criterio | Threshold |
+| Criterion | Threshold |
 |----------|-----------|
-| Complejidad | 45-60 |
-| Dominios | 2-3 con interfaces compartidas |
-| Independencia | Dominios NO son independientes (comparten tipos/APIs/contratos) |
+| Complexity | 45-60 |
+| Domains | 2-3 with shared interfaces |
+| Independence | Domains are NOT independent (share types/APIs/contracts) |
 | Planner output | `executionMode: "tiered"` |
 
-### Diferencia vs Otros Modos
+### Difference vs Other Modes
 
-| Aspecto | subagents | tiered | team |
+| Aspect | subagents | tiered | team |
 |---------|-----------|--------|------|
-| Cuando | Default | 2-3 dominios con interfaces | 3+ dominios independientes |
-| Intermediario | Ninguno | architect (obligatorio) | Ninguno (peer-to-peer) |
-| Coste | 1x | ~2x | 3-7x |
-| Contratos | Implicitos en roadmap | Explicitos por architect | Negociados entre teammates |
+| When | Default | 2-3 domains with interfaces | 3+ independent domains |
+| Intermediary | None | architect (mandatory) | None (peer-to-peer) |
+| Cost | 1x | ~2x | 3-7x |
+| Contracts | Implicit in roadmap | Explicit by architect | Negotiated between teammates |
 
-### Workflow Tiered
+### Tiered Workflow
 
 ```mermaid
 graph TD
-    P[Planner: executionMode=tiered] --> A[Architect: diseña interfaces/contratos]
-    A --> B1[Builder 1: dominio A con contrato]
-    A --> B2[Builder 2: dominio B con contrato]
-    B1 & B2 --> R[Reviewer: valida integracion cross-domain]
+    P[Planner: executionMode=tiered] --> A[Architect: designs interfaces/contracts]
+    A --> B1[Builder 1: domain A with contract]
+    A --> B2[Builder 2: domain B with contract]
+    B1 & B2 --> R[Reviewer: validates cross-domain integration]
 ```
 
-1. Planner genera roadmap con `executionMode: "tiered"`
-2. Lead delega a **architect**: "Diseña los contratos de interfaz entre dominios X e Y"
-3. Architect retorna: tipos compartidos, signatures de API, contratos de datos
-4. Lead delega a **builders en paralelo**: cada uno recibe su dominio + contratos del architect
-5. Lead delega a **reviewer**: valida que la integracion cross-domain cumple los contratos
+1. Planner generates roadmap with `executionMode: "tiered"`
+2. Lead delegates to **architect**: "Design the interface contracts between domains X and Y"
+3. Architect returns: shared types, API signatures, data contracts
+4. Lead delegates to **builders in parallel**: each receives its domain + architect's contracts
+5. Lead delegates to **reviewer**: validates that cross-domain integration meets the contracts
 
-### Cuando NO Usar
+### When NOT to Use
 
-- Complejidad < 45 → subagents (no vale el overhead del architect)
-- Dominios independientes sin interfaces → subagents o team
-- Complejidad > 60 con 3+ dominios independientes → team mode
+- Complexity < 45 → subagents (architect overhead not worth it)
+- Independent domains without interfaces → subagents or team
+- Complexity > 60 with 3+ independent domains → team mode
 
 ## Continuous Validation Pipeline
 
-Validacion continua durante implementacion. El Lead supervisa checkpoints de calidad.
+Continuous validation during implementation. The Lead supervises quality checkpoints.
 
 ### Validation Checkpoints
 
-| Checkpoint | Trigger | Agente | Accion si Falla |
+| Checkpoint | Trigger | Agent | Action if Fails |
 |-----------|---------|--------|-----------------|
-| Pre-implementation | Antes de delegar a builder | planner | Re-planificar con restricciones |
-| Mid-implementation | Builder reporta progreso parcial | reviewer (background) | Feedback temprano al builder |
-| Post-implementation | Builder completa tarea | reviewer | NEEDS_CHANGES → re-delegar |
-| Pre-merge | Worktree listo para merge | reviewer | Bloquear merge si falla |
-| Post-merge | Despues de merge exitoso | reviewer (background) | Rollback si tests fallan |
+| Pre-implementation | Before delegating to builder | planner | Re-plan with constraints |
+| Mid-implementation | Builder reports partial progress | reviewer (background) | Early feedback to builder |
+| Post-implementation | Builder completes task | reviewer | NEEDS_CHANGES → re-delegate |
+| Pre-merge | Worktree ready to merge | reviewer | Block merge if fails |
+| Post-merge | After successful merge | reviewer (background) | Rollback if tests fail |
 
 ### Validation Feedback Loop
 
 ```mermaid
 graph TD
-    B[Builder implementa] --> V1{Checkpoint?}
+    B[Builder implements] --> V1{Checkpoint?}
     V1 -->|Mid| R1[Reviewer background]
     R1 -->|Feedback| B
     V1 -->|Post| R2[Reviewer formal]
     R2 -->|APPROVED| M[Merge/Done]
-    R2 -->|NEEDS_CHANGES| FB[Feedback al builder]
+    R2 -->|NEEDS_CHANGES| FB[Feedback to builder]
     FB --> B
-    R2 -->|BLOCKED| P[Re-planificar]
+    R2 -->|BLOCKED| P[Re-plan]
     P --> B
 ```
 
-### Validacion por Tipo de Cambio
+### Validation by Change Type
 
-| Tipo de Cambio | Validaciones Requeridas |
+| Change Type | Required Validations |
 |----------------|------------------------|
 | Single file, low complexity | Post-implementation reviewer |
 | Multi-file, same domain | Post-implementation reviewer |
@@ -259,98 +259,98 @@ graph TD
 
 ### Feedback Template
 
-Al enviar feedback de reviewer a builder, incluir:
+When sending reviewer feedback to builder, include:
 
-| Campo | Contenido |
+| Field | Content |
 |-------|-----------|
 | **Status** | APPROVED / NEEDS_CHANGES / BLOCKED |
-| **Issues found** | Lista de problemas especificos |
-| **Suggested fixes** | Acciones concretas para resolver |
-| **Files affected** | Archivos que necesitan cambios |
+| **Issues found** | List of specific problems |
+| **Suggested fixes** | Concrete actions to resolve |
+| **Files affected** | Files that need changes |
 | **Priority** | Critical / Major / Minor |
 
 ## Model Selection
 
-Optimizar costos seleccionando modelo apropiado por agente y tarea.
+Optimize costs by selecting the appropriate model per agent and task.
 
-### Reglas de Seleccion
+### Selection Rules
 
-| Regla | Condicion | Modelo |
+| Rule | Condition | Model |
 |-------|-----------|--------|
-| Default | Cualquier agente sin regla especifica | sonnet |
-| High-stakes | Arquitectura, planificacion compleja | opus |
-| Read-only | Scout explorando codebase | haiku/sonnet |
-| Budget mode | Usuario solicita optimizar costos | Downgrade un nivel |
+| Default | Any agent without a specific rule | sonnet |
+| High-stakes | Architecture, complex planning | opus |
+| Read-only | Scout exploring codebase | haiku/sonnet |
+| Budget mode | User requests cost optimization | Downgrade one level |
 
-### Aplicacion
+### Application
 
-El Lead NO controla el modelo directamente (Claude Code lo gestiona), pero SI puede:
+The Lead does NOT control the model directly (Claude Code manages it), but CAN:
 
-1. Indicar en el prompt del Task la complejidad esperada
-2. Sugerir al usuario cambiar modelo con `/model` si el budget lo requiere
-3. Paralelizar con agents mas baratos (scout con haiku) para tareas de lectura
+1. Indicate the expected complexity in the Task prompt
+2. Suggest the user change the model with `/model` if budget requires it
+3. Parallelize with cheaper agents (scout with haiku) for read tasks
 
-## Delegacion por Tipo de Tarea
+## Delegation by Task Type
 
-| Tipo de Tarea | Agente(s) |
+| Task Type | Agent(s) |
 |---------------|-----------|
-| Escribir codigo | builder |
-| Refactorizar codigo | builder + code-quality skill |
-| Revisar codigo | reviewer |
-| Auditar seguridad | reviewer + security-review skill |
-| Planificar implementacion | planner |
-| Explorar codebase | scout / Explore |
-| Analizar error | error-analyzer |
-| Disenar arquitectura | architect |
-| Resolver merge conflicts | builder |
-| Documentar bugs | builder + diagnostic-patterns |
-| Sincronizar docs | builder |
-| Implementacion multi-dominio paralela | teammates (team mode) o parallel builders (subagents) |
+| Write code | builder |
+| Refactor code | builder + code-quality skill |
+| Review code | reviewer |
+| Security audit | reviewer + security-review skill |
+| Plan implementation | planner |
+| Explore codebase | scout / Explore |
+| Analyze error | error-analyzer |
+| Design architecture | architect |
+| Resolve merge conflicts | builder |
+| Document bugs | builder + diagnostic-patterns |
+| Sync docs | builder |
+| Multi-domain parallel implementation | teammates (team mode) or parallel builders (subagents) |
 
-## Paralelizacion de Delegacion (OBLIGATORIO)
+## Delegation Parallelization (MANDATORY)
 
-El Lead DEBE maximizar paralelismo. Multiples Task en un solo mensaje = ejecucion paralela.
+The Lead MUST maximize parallelism. Multiple Tasks in a single message = parallel execution.
 
-### Cuando Paralelizar
+### When to Parallelize
 
-| Paralelo (mismo mensaje) | Secuencial (esperar resultado) |
+| Parallel (same message) | Sequential (wait for result) |
 |--------------------------|--------------------------------|
-| scout + builder en archivos diferentes | builder que necesita output de scout |
-| 2+ builders en archivos sin dependencia | builder despues de planner |
-| 2+ reviewers en modulos independientes | reviewer despues de builder mismo archivo |
-| planner + scout para contexto | cualquier Task con dependencia de datos |
+| scout + builder on different files | builder that needs scout output |
+| 2+ builders on files without dependency | builder after planner |
+| 2+ reviewers on independent modules | reviewer after builder on same file |
+| planner + scout for context | any Task with data dependency |
 
-### Patrones
+### Patterns
 
-#### Exploracion Paralela
+#### Parallel Exploration
 ```
-Task(scout, "patrones auth") + Task(scout, "patrones logging") + Task(scout, "patrones config")
-```
-
-#### Builders Independientes
-```
-Task(builder, "crear utils/validation.ts") + Task(builder, "crear utils/crypto.ts")
+Task(scout, "auth patterns") + Task(scout, "logging patterns") + Task(scout, "config patterns")
 ```
 
-#### Review en Background
+#### Independent Builders
 ```
-Task(reviewer, "revisar modulo auth", run_in_background=true) + Task(reviewer, "revisar modulo users", run_in_background=true)
+Task(builder, "create utils/validation.ts") + Task(builder, "create utils/crypto.ts")
+```
+
+#### Review in Background
+```
+Task(reviewer, "review auth module", run_in_background=true) + Task(reviewer, "review users module", run_in_background=true)
 ```
 
 ### Anti-Patterns
 
-| NO | SI |
+| NO | YES |
 |----|-----|
-| scout → esperar → builder (sin dependencia) | scout + builder paralelos |
-| builder A → esperar → builder B (archivos distintos) | 2 builders paralelos |
-| reviewer M1 → esperar → reviewer M2 | 2 reviewers en background |
+| scout → wait → builder (no dependency) | scout + builder in parallel |
+| builder A → wait → builder B (different files) | 2 builders in parallel |
+| reviewer M1 → wait → reviewer M2 | 2 reviewers in background |
 
-### Cuando usar `run_in_background=true`
+### When to use `run_in_background=true`
 
-| Usar | No usar |
+| Use | Do not use |
 |------|---------|
-| reviewer que no bloquea siguiente paso | builder que produce archivos necesarios para siguiente Task |
-| scout exploratorio cuando builder puede empezar con archivos conocidos | planner cuyo roadmap se necesita antes de delegar |
-| reviewer audit en paralelo con siguiente feature | error-analyzer cuyo diagnostico determina siguiente accion |
+| reviewer that does not block next step | builder that produces files needed for next Task |
+| exploratory scout when builder can start with known files | planner whose roadmap is needed before delegating |
+| audit reviewer in parallel with next feature | error-analyzer whose diagnosis determines next action |
 
-> Para batching de herramientas (Read, Glob, Grep) y Parallel Efficiency Score, ver `performance.md`.
+> For tool batching (Read, Glob, Grep) and Parallel Efficiency Score, see `performance.md`.

@@ -6,42 +6,42 @@ priority: 15
 
 ## Hooks Context
 
-Scripts de validacion ejecutados por Claude Code en puntos especificos del workflow. El runtime y lenguaje dependen del proyecto.
+Validation scripts executed by Claude Code at specific points in the workflow. Runtime and language depend on the project.
 
-- Siempre exit 0 para hooks best-effort (Stop hooks)
-- Usar EXIT_CODES de validators/config (si existe)
-- Leer stdin con readStdin() de config (si existe)
-- Manejar errores gracefully — nunca bloquear Claude Code
-- Testear con el test runner del proyecto
+- Always exit 0 for best-effort hooks (Stop hooks)
+- Use EXIT_CODES from validators/config (if it exists)
+- Read stdin with readStdin() from config (if it exists)
+- Handle errors gracefully — never block Claude Code
+- Test with the project's test runner
 
-### Gotcha: Shebangs en Windows / PATH reducido
+### Gotcha: Shebangs on Windows / Reduced PATH
 
-Claude Code ejecuta hooks con un PATH reducido. **NUNCA usar `#!/usr/bin/env bash`** — `env` no se encuentra.
+Claude Code executes hooks with a reduced PATH. **NEVER use `#!/usr/bin/env bash`** — `env` is not found.
 
-| Shebang | Funciona | Alternativa |
-|---------|----------|-------------|
-| `#!/usr/bin/env bash` | NO | `#!/bin/bash` (ruta absoluta) |
-| `#!/usr/bin/env bun` | SI | Poneglyph incluye bun en PATH via settings.json |
-| `#!/bin/bash` | SI | Ruta absoluta, no depende de env |
+| Shebang | Works | Alternative |
+|---------|-------|-------------|
+| `#!/usr/bin/env bash` | NO | `#!/bin/bash` (absolute path) |
+| `#!/usr/bin/env bun` | YES | Poneglyph includes bun in PATH via settings.json |
+| `#!/bin/bash` | YES | Absolute path, does not depend on env |
 
-**Preferir `.ts` con bun** sobre `.sh` para hooks. Si se necesita `.sh`, usar `#!/bin/bash`.
+**Prefer `.ts` with bun** over `.sh` for hooks. If `.sh` is needed, use `#!/bin/bash`.
 
-### Hook Events Disponibles
+### Available Hook Events
 
-| Event | Cuando | Uso en Poneglyph |
-|-------|--------|-------------------|
-| PreToolUse | Antes de tool | lead-enforcement, check-staleness |
-| PostToolUse | Despues de tool | format-code, validators, context |
-| Stop | Fin de turno | trace-logger, validate-tests, session-digest |
-| SubagentStop | Fin de subagente | agent-scoring |
-| StopFailure | Error API (rate limit, auth) | api-error-recorder |
-| PermissionRequest | Claude pide permiso | auto-approve |
-| PostCompact | Tras compactar | post-compact |
-| UserPromptSubmit | Al enviar prompt | memory-inject |
+| Event | When | Usage in Poneglyph |
+|-------|------|--------------------|
+| PreToolUse | Before tool | lead-enforcement, check-staleness |
+| PostToolUse | After tool | format-code, validators, context |
+| Stop | End of turn | trace-logger, validate-tests, session-digest |
+| SubagentStop | End of subagent | agent-scoring |
+| StopFailure | API error (rate limit, auth) | api-error-recorder |
+| PermissionRequest | Claude requests permission | auto-approve |
+| PostCompact | After compaction | post-compact |
+| UserPromptSubmit | On prompt submit | memory-inject |
 
-### Campo `if` para filtrado condicional
+### `if` field for conditional filtering
 
-Ademas de `matcher`, `if` filtra con permission rule syntax para no spawnar proceso innecesariamente:
+In addition to `matcher`, `if` filters with permission rule syntax to avoid spawning a process unnecessarily:
 ```json
 {"matcher": "Edit|Write", "if": "Edit(*.ts)|Write(*.ts)"}
 ```
