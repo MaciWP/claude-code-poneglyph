@@ -187,6 +187,22 @@ graph LR
 |--------|-------|--------|-------|
 | `scripts/complexity-report.ts` | file/dir path | JSON `{ files, summary }` | `bun .claude/skills/code-quality/scripts/complexity-report.ts <path>` |
 
+## Refactoring Safety Classification
+
+| Safe (auto-apply) | Risky (requires confirmation) |
+|-------------------|------------------------------|
+| Rename symbol | Change function signature |
+| Extract variable | Extract class |
+| Extract function | Replace inheritance with composition |
+| Inline temp variable | Merge/split modules |
+| Move method (same module) | Move method (cross-module) |
+| Remove dead code | Change public API |
+
+**Require user confirmation when**:
+- Refactoring affects multiple files AND no tests cover the changed code
+- Changing a public API that other modules depend on
+- Replacing inheritance hierarchies
+
 ---
 
 **Version**: 3.0

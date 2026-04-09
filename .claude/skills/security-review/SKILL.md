@@ -134,6 +134,47 @@ For detailed patterns with detection methods and before/after examples, see `ref
 |--------|-------|--------|-------|
 | `scripts/scan-secrets.ts` | file/dir path | JSON `{ findings, total }` | `bun .claude/skills/security-review/scripts/scan-secrets.ts <path>` |
 
+## Secret Detection Patterns
+
+| Secret Type | Regex Pattern | Example |
+|------------|---------------|---------|
+| AWS Access Key | `AKIA[0-9A-Z]{16}` | AKIAIOSFODNN7EXAMPLE |
+| GitHub Token | `gh[opsr]_[A-Za-z0-9_]{36,}` | ghp_xxxx... |
+| Stripe Live | `sk_live_[A-Za-z0-9]{24,}` | sk_live_xxxx... |
+| Anthropic | `sk-ant-[A-Za-z0-9-]{20,}` | sk-ant-xxxx... |
+| OpenAI | `sk-[A-Za-z0-9]{32,}` | sk-xxxx... |
+| Google API | `AIza[0-9A-Za-z-_]{35}` | AIzaSyxxxx... |
+| Generic Password | `(?i)(password\|passwd\|pwd)\s*[:=]\s*['"][^'"]{8,}` | password='secret123' |
+| Bearer Token | `Bearer\s+[A-Za-z0-9\-._~+/]+=*` | Bearer eyJhbG... |
+| Private Key | `-----BEGIN\s+(RSA\s+)?PRIVATE KEY-----` | PEM block |
+
+## SQL Injection — Safe Parameterization by Tech
+
+| Technology | Safe Pattern | Unsafe Pattern |
+|-----------|-------------|----------------|
+| PostgreSQL | `$1, $2, $3` (positional) | String concatenation |
+| MySQL | `?` (positional) | Template literals |
+| SQLite (Bun) | `db.prepare(sql).get(param)` | `db.query(sql + value)` |
+| MongoDB | `{ field: value }` (object) | `{ $where: userInput }` |
+
+### Dynamic WHERE Clause (Safe)
+```typescript
+const conditions: string[] = [];
+const params: any[] = [];
+let idx = 1;
+if (filter.name) { conditions.push(`name = $${idx++}`); params.push(filter.name); }
+if (filter.status) { conditions.push(`status = $${idx++}`); params.push(filter.status); }
+const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+```
+
+## Emergency: Secret Committed to Git
+
+1. **Rotate the secret immediately** — assume compromised
+2. **Remove from history**: `git filter-branch --force --index-filter 'git rm --cached --ignore-unmatch PATH' HEAD`
+3. **Force push**: `git push --force` (coordinate with team)
+4. **Audit**: Check access logs for the compromised credential
+5. **Add to .gitignore**: Prevent recurrence
+
 ---
 
 **Version**: 2.0

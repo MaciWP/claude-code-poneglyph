@@ -30,7 +30,7 @@
   "agentDefaults": {
     "scout": "haiku",
     "reviewer": "sonnet",
-    "builder": "sonnet",
+    "builder": "opus",
     "planner": "opus",
     "architect": "opus",
     "error-analyzer": "sonnet"

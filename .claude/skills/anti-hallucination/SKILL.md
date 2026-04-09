@@ -191,5 +191,37 @@ graph TD
 
 ---
 
+## Domain-Adaptive Confidence Thresholds
+
+| Domain | Ask threshold | Verify threshold | Auto-proceed |
+|--------|-------------|-----------------|-------------|
+| Frontend (UI/CSS) | < 65% | 65-85% | > 85% |
+| Backend (logic) | < 70% | 70-90% | > 90% |
+| Database (schema/migrations) | < 75% | 75-95% | > 95% |
+| Security (auth/crypto) | < 75% | 75-95% | > 95% |
+
+**Confidence formula**: File verified (+30%) + Function verified (+25%) + Past success (+25%) + Clear requirements (+20%).
+
+Between "ask" and "auto-proceed" thresholds: hedge with "Let me check..." / "This appears to be...". Below "ask" threshold: use `AskUserQuestion`.
+
+## Critical Keywords — Always Verify
+
+When the prompt contains these keywords, force verification regardless of confidence:
+`delete`, `drop`, `remove`, `production`, `migration`, `deploy`, `secret`, `credential`, `rollback`
+
+Ask user even if confidence is high when multiple valid approaches exist (JWT vs OAuth vs Sessions) or requirements are ambiguous (vague verbs like "optimize", "fix", "improve" with no metrics).
+
+## Validation Pipeline
+
+| Stage | Method | Fallback |
+|-------|--------|----------|
+| 1. Exact match | Glob for exact path | → Stage 2 |
+| 2. Wildcard | Glob with `**/*name*` | → Stage 3 |
+| 3. Fuzzy | Grep for filename stem | → Ask user |
+
+If Stage 2 returns multiple matches, ask user which one. If Stage 3 also fails, ask user to provide the path — never assume.
+
+---
+
 **Version**: 1.0.0
 **Spec**: SPEC-018
