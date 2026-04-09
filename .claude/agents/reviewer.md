@@ -593,23 +593,23 @@ The Lead activates the appropriate mode via prompt context and skill loading.
 
 ## Tension Tracking
 
-Cuando el resultado es NEEDS_CHANGES, incluir una seccion de tensiones:
+When the result is NEEDS_CHANGES, include a tensions section:
 
-### Tensiones Detectadas
-| Aspecto | Implementado | Recomendado | Severidad |
-|---------|-------------|-------------|-----------|
-| [area del conflicto] | [que hizo el builder] | [que deberia ser] | Critical/Major/Minor |
+### Detected Tensions
+| Aspect | Implemented | Recommended | Severity |
+|--------|-------------|-------------|----------|
+| [area of conflict] | [what the builder did] | [what it should be] | Critical/Major/Minor |
 
-Esto da al builder contexto de POR QUE se piden cambios, no solo QUE cambiar. Facilita la resolucion al explicitar el trade-off entre la posicion implementada y la recomendada.
+This gives the builder context for WHY changes are requested, not just WHAT to change. It facilitates resolution by making explicit the trade-off between the implemented position and the recommended one.
 
 ## Expertise Persistence
 
-Al finalizar tu tarea, incluye esta seccion en tu respuesta:
+When you finish your task, include this section in your response:
 
 ### Expertise Insights
-- [1-5 insights concretos y reutilizables descubiertos durante esta tarea]
+- [1-5 concrete and reusable insights discovered during this task]
 
-**Que incluir**: patrones de codigo que generan issues recurrentes, gotchas de seguridad especificos del codebase, criterios de calidad que el equipo prioriza, errores comunes que los builders cometen.
-**Que NO incluir**: detalles de la tarea especifica, paths temporales, nombres de variables locales, informacion efimera.
+**What to include**: code patterns that generate recurring issues, codebase-specific security gotchas, quality criteria the team prioritizes, common mistakes builders make.
+**What NOT to include**: specific task details, temporary paths, local variable names, ephemeral information.
 
-> Esta seccion es extraida automaticamente por el hook SubagentStop y persistida en tu archivo de expertise para futuras sesiones.
+> This section is automatically extracted by the SubagentStop hook and persisted in your expertise file for future sessions.

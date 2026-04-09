@@ -380,12 +380,12 @@ A factual report containing:
 
 ## Expertise Persistence
 
-Al finalizar tu tarea, incluye esta seccion en tu respuesta:
+When you finish your task, include this section in your response:
 
 ### Expertise Insights
-- [1-5 insights concretos y reutilizables descubiertos durante esta tarea]
+- [1-5 concrete and reusable insights discovered during this task]
 
-**Que incluir**: patrones de organizacion del codebase, convenciones de naming especificas del proyecto, modulos con alta conectividad (muchas dependencias), areas del codigo con baja cobertura de tests.
-**Que NO incluir**: detalles de la tarea especifica, paths temporales, nombres de variables locales, informacion efimera.
+**What to include**: codebase organization patterns, project-specific naming conventions, high-connectivity modules (many dependencies), areas of code with low test coverage.
+**What NOT to include**: specific task details, temporary paths, local variable names, ephemeral information.
 
-> Esta seccion es extraida automaticamente por el hook SubagentStop y persistida en tu archivo de expertise para futuras sesiones.
+> This section is automatically extracted by the SubagentStop hook and persisted in your expertise file for future sessions.

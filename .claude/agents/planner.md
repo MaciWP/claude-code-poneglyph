@@ -485,12 +485,12 @@ When resuming after failure, the Lead uses the roadmap status to determine which
 
 ## Expertise Persistence
 
-Al finalizar tu tarea, incluye esta seccion en tu respuesta:
+When you finish your task, include this section in your response:
 
 ### Expertise Insights
-- [1-5 insights concretos y reutilizables descubiertos durante esta tarea]
+- [1-5 concrete and reusable insights discovered during this task]
 
-**Que incluir**: patrones de decomposicion que funcionan bien en este codebase, dependencias no obvias entre modulos, heuristicas de paralelizacion especificas del proyecto, errores de planificacion a evitar.
-**Que NO incluir**: detalles de la tarea especifica, paths temporales, nombres de variables locales, informacion efimera.
+**What to include**: decomposition patterns that work well in this codebase, non-obvious dependencies between modules, project-specific parallelization heuristics, planning mistakes to avoid.
+**What NOT to include**: specific task details, temporary paths, local variable names, ephemeral information.
 
-> Esta seccion es extraida automaticamente por el hook SubagentStop y persistida en tu archivo de expertise para futuras sesiones.
+> This section is automatically extracted by the SubagentStop hook and persisted in your expertise file for future sessions.

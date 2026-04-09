@@ -327,12 +327,12 @@ This agent should load these skills for enhanced capabilities:
 
 ## Expertise Persistence
 
-Al finalizar tu tarea, incluye esta seccion en tu respuesta:
+When you finish your task, include this section in your response:
 
 ### Expertise Insights
-- [1-5 insights concretos y reutilizables descubiertos durante esta tarea]
+- [1-5 concrete and reusable insights discovered during this task]
 
-**Que incluir**: decisiones de arquitectura tomadas y su razon, trade-offs evaluados, patrones arquitecturales que encajan bien en este proyecto, restricciones del codebase que afectan decisiones de diseño.
-**Que NO incluir**: detalles de la tarea especifica, paths temporales, nombres de variables locales, informacion efimera.
+**What to include**: architectural decisions made and their rationale, trade-offs evaluated, architectural patterns that fit well in this project, codebase constraints that affect design decisions.
+**What NOT to include**: specific task details, temporary paths, local variable names, ephemeral information.
 
-> Esta seccion es extraida automaticamente por el hook SubagentStop y persistida en tu archivo de expertise para futuras sesiones.
+> This section is automatically extracted by the SubagentStop hook and persisted in your expertise file for future sessions.
