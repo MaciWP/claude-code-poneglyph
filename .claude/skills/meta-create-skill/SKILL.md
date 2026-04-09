@@ -4,6 +4,10 @@ description: |
   Meta-skill para crear skills de Claude Code desde templates estandarizados.
   Use proactively when: crear nuevo skill, scaffolding de conocimiento, definir workflow.
   Keywords - create, skill, command, knowledge, workflow, template, scaffold
+type: encoded-preference
+disable-model-invocation: true
+argument-hint: "[skill-name] [type?]"
+effort: medium
 activation:
   keywords:
     - create skill
@@ -11,12 +15,7 @@ activation:
     - scaffold skill
     - make skill
     - add command
-type: encoded-preference
-disable-model-invocation: true
-argument-hint: [skill-name] [type?]
-allowed-tools: Read, Write, Glob, Bash
-for_agents:
-  - extension-architect
+for_agents: [extension-architect]
 version: "1.0"
 ---
 
@@ -50,11 +49,13 @@ Si `type` no fue proporcionado, preguntar:
 ```
 What type of skill do you want to create?
 
-| Type | Invocation | Context | Use Case |
-|------|------------|---------|----------|
-| reference | Auto by Claude | main | Knowledge, patterns, conventions |
-| workflow | Manual /command | main | Step-by-step tasks, automation |
-| research | Auto + fork | fork | Deep investigation, exploration |
+| Type | Description | Use Case |
+|------|-------------|----------|
+| knowledge-base | Domain patterns, conventions | API patterns, DB conventions, framework guides |
+| encoded-preference | Behavioral rules, standards | Code quality, security review, formatting rules |
+| workflow | Interactive step-by-step processes | Deploy, migration, scaffolding |
+| reference | Lookup material, cheat sheets | Quick reference, checklists |
+| capability-uplift | Tool guidance, advanced usage | LSP operations, advanced git |
 ```
 
 ### Step 3: Gather Details
@@ -137,7 +138,18 @@ What will this skill investigate?
 name: {skill-name}
 description: |
   {What knowledge this provides}.
-  Use when {trigger conditions - include keywords for auto-trigger}.
+  Use when: {trigger conditions}.
+  Keywords - {keyword1, keyword2, ...}
+type: knowledge-base
+disable-model-invocation: false
+argument-hint: "{hint if applicable}"
+effort: low
+activation:
+  keywords:
+    - keyword1
+    - keyword2
+for_agents: [{agent1}, {agent2}]
+version: "1.0"
 ---
 ```
 
@@ -173,10 +185,20 @@ description: |
 ```yaml
 ---
 name: {skill-name}
-description: {What this workflow does}
+description: |
+  {What this workflow does}.
+  Use when: {trigger conditions}.
+  Keywords - {keyword1, keyword2, ...}
+type: workflow
 disable-model-invocation: true
-argument-hint: [{arg1}] [{arg2}]
-allowed-tools: {comma-separated tools}
+argument-hint: "[{arg1}] [{arg2}]"
+effort: medium
+activation:
+  keywords:
+    - keyword1
+    - keyword2
+for_agents: [{agent1}, {agent2}]
+version: "1.0"
 ---
 ```
 
@@ -215,9 +237,18 @@ allowed-tools: {comma-separated tools}
 name: {skill-name}
 description: |
   {What this researches}.
-  Use when {trigger conditions - keywords for auto-trigger}.
-context: fork
-agent: Explore
+  Use when: {trigger conditions}.
+  Keywords - {keyword1, keyword2, ...}
+type: reference
+disable-model-invocation: false
+argument-hint: "{hint if applicable}"
+effort: high
+activation:
+  keywords:
+    - keyword1
+    - keyword2
+for_agents: [{agent1}, {agent2}]
+version: "1.0"
 ---
 ```
 
@@ -273,7 +304,20 @@ agent: Explore
 name: api-conventions
 description: |
   REST API design patterns and conventions for this project.
-  Use when creating or modifying API endpoints, routes, or handlers.
+  Use when: creating or modifying API endpoints, routes, or handlers.
+  Keywords - api, rest, endpoint, route, handler, validation
+type: knowledge-base
+disable-model-invocation: false
+argument-hint: "[endpoint-path]"
+effort: low
+activation:
+  keywords:
+    - api
+    - rest
+    - endpoint
+    - route
+for_agents: [builder, reviewer]
+version: "1.0"
 ---
 
 # API Conventions
@@ -367,10 +411,22 @@ Before completing, verify:
 ```yaml
 ---
 name: deploy
-description: Deploy application to specified environment
+description: |
+  Deploy application to specified environment.
+  Use when: deploying, releasing, pushing to staging or production.
+  Keywords - deploy, release, staging, production, rollout
+type: workflow
 disable-model-invocation: true
-argument-hint: [environment] [--dry-run?]
-allowed-tools: Bash, Read
+argument-hint: "[environment] [--dry-run?]"
+effort: medium
+activation:
+  keywords:
+    - deploy
+    - release
+    - staging
+    - production
+for_agents: [builder]
+version: "1.0"
 ---
 
 # Deploy Application
@@ -506,9 +562,20 @@ If something goes wrong:
 name: arch-analysis
 description: |
   Analyze codebase architecture patterns and structure.
-  Use when asked about architecture, module structure, or design decisions.
-context: fork
-agent: Explore
+  Use when: asked about architecture, module structure, or design decisions.
+  Keywords - architecture, structure, modules, design, patterns, analysis
+type: reference
+disable-model-invocation: false
+argument-hint: "[module-or-path]"
+effort: high
+activation:
+  keywords:
+    - architecture
+    - structure
+    - modules
+    - design patterns
+for_agents: [architect, scout]
+version: "1.0"
 ---
 
 # Architecture Analysis
@@ -619,22 +686,26 @@ project/
 
 ---
 
-## Frontmatter Reference
+## Frontmatter Reference (v2 Canonical)
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `name` | string | Yes | Unique kebab-case identifier |
-| `description` | string | Yes | Purpose + trigger keywords |
-| `disable-model-invocation` | boolean | No | `true` = manual only, `false` = auto-trigger por keywords |
-| `user-invocable` | boolean | No | `false` = solo invocable por Claude, no aparece en `/skills` |
-| `argument-hint` | string | No | Args en autocomplete (ej: `[file-path or module]`) |
-| `allowed-tools` | string/list | No | Tool whitelist. YAML list: `- Read\n- Glob` |
-| `context` | string | No | `fork` = contexto aislado (no contamina conversacion) |
-| `agent` | string | No | Delega a: Explore, Plan, builder, etc |
-| `model` | string | No | sonnet, opus, haiku |
-| `effort` | string | No | `low`/`medium`/`high`. Override effort al invocar skill |
-| `paths` | list | No | YAML list de globs — skill solo aplica a estos paths |
-| `hooks` | object | No | Hooks scoped al lifecycle de la skill |
+| `description` | string | Yes | Purpose + "Use when:" + "Keywords -" lines |
+| `type` | string | Yes | `knowledge-base` \| `encoded-preference` \| `workflow` \| `reference` \| `capability-uplift` |
+| `disable-model-invocation` | boolean | No | `true` = manual only (workflow), `false` = auto-trigger por keywords |
+| `argument-hint` | string | No | Args en autocomplete (ej: `"[file-path or module]"`) |
+| `effort` | string | No | `low` (quick reference) \| `medium` (moderate analysis) \| `high` (deep audit) |
+| `activation.keywords` | list | No | YAML list of keywords for auto-matching |
+| `for_agents` | list | No | Agents that benefit most from this skill |
+| `version` | string | No | Semantic version (default "1.0") |
+
+### Fields NOT valid in skill frontmatter
+
+| Invalid Field | Reason | Alternative |
+|---------------|--------|-------------|
+| `allowed-tools` | Not a valid skill field | Use agent frontmatter `allowedTools` instead |
+| `model` | Not a valid skill field | Model routing is handled by Lead dynamically |
 
 ---
 

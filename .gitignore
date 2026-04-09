@@ -94,6 +94,7 @@ poneglyph-analysis.md
 .claude/rules/skill-matching.md
 
 # Project-level TS hooks (not deployed globally)
+.claude/hooks/format-code.ts
 .claude/hooks/typecheck-guard.ts
 .claude/hooks/validators/ast/
 .claude/hooks/validators/typescript/

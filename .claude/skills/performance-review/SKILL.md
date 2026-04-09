@@ -4,6 +4,10 @@ description: |
   Performance audit for identifying bottlenecks, memory issues, and optimization opportunities.
   Use when: slow endpoint, response time degradation, memory growing, connection pool tuning, query optimization, latency investigation, N+1 queries, profiling results analysis.
   Keywords - performance, memory, optimization, bottleneck, slow, leak, profiling, n+1, latency, response time, connection pool
+type: knowledge-base
+disable-model-invocation: false
+argument-hint: "[file-path or module]"
+effort: high
 activation:
   keywords:
     - performance
@@ -15,10 +19,7 @@ activation:
     - profiling
     - n+1
     - latency
-for_agents: [reviewer]
-type: knowledge-base
-disable-model-invocation: false
-effort: high
+for_agents: [reviewer, builder]
 version: "2.0"
 ---
 

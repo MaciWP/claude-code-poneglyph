@@ -4,6 +4,10 @@ description: |
   Meta-skill para crear subagentes de Claude Code desde templates estandarizados.
   Use proactively when: crear nuevo agente, scaffolding de agente, definir especialista delegado.
   Keywords - create, agent, subagent, template, scaffold, specialist, delegate
+type: encoded-preference
+disable-model-invocation: true
+argument-hint: "[agent-name] [type?]"
+effort: medium
 activation:
   keywords:
     - create agent
@@ -11,12 +15,7 @@ activation:
     - scaffold agent
     - make agent
     - subagent
-type: encoded-preference
-disable-model-invocation: true
-argument-hint: [agent-name] [type?]
-allowed-tools: Read, Write, Glob, Bash
-for_agents:
-  - extension-architect
+for_agents: [extension-architect]
 version: "1.0"
 ---
 
@@ -108,10 +107,10 @@ What will this agent specialize in?
 
 ## Templates Available
 
-| Type | File | Tools | Permission | Best For |
-|------|------|-------|------------|----------|
+| Type | File | Tools | permissionMode | Best For |
+|------|------|-------|----------------|----------|
 | reader | `templates/reader.md` | Read, Grep, Glob | plan | Code review, analysis, audits |
-| builder | `templates/builder.md` | Read, Write, Edit, Bash, Grep, Glob | acceptEdits | Implementation, refactoring |
+| builder | `templates/builder.md` | Read, Write, Edit, Bash, Grep, Glob, LSP | acceptEdits | Implementation, refactoring |
 | executor | `templates/executor.md` | Bash, Read | default | Running tests, deployments |
 | researcher | `templates/researcher.md` | Read, Grep, Glob, WebSearch, WebFetch | plan | Investigation, documentation |
 
@@ -126,14 +125,17 @@ What will this agent specialize in?
 **Frontmatter**:
 ```yaml
 ---
-name: {agent-name}
 description: |
-  {Description of what it analyzes}.
-  Use when {trigger keywords - be specific}.
+  {{DESCRIPTION}}.
+  Use proactively when: {{TRIGGER_CONDITION}}.
+  Keywords - {{KEYWORDS}}
 tools: Read, Grep, Glob
+disallowedTools: Task, Edit, Write, Bash
 permissionMode: plan
-model: sonnet
-skills: []
+effort: low
+maxTurns: 15
+memory:
+  scope: project
 ---
 ```
 
@@ -141,9 +143,10 @@ skills: []
 
 | Placeholder | Description | Example |
 |-------------|-------------|---------|
-| `{{AGENT_NAME}}` | kebab-case name | `security-reviewer` |
+| `{{AGENT_NAME}}` | kebab-case name (used as filename) | `security-reviewer` |
 | `{{DESCRIPTION}}` | What it does | `Security analysis specialist` |
-| `{{TRIGGER_CONDITION}}` | When to delegate | `reviewing for security issues` |
+| `{{TRIGGER_CONDITION}}` | When to delegate | `reviewing for security issues, auditing code` |
+| `{{KEYWORDS}}` | Comma-separated keywords for matching | `security, review, audit, vulnerability` |
 | `{{DOMAIN}}` | Area of expertise | `security vulnerabilities` |
 | `{{WHAT_TO_ANALYZE}}` | Analysis target | `code for security issues` |
 | `{{PATTERNS_OR_ISSUES}}` | What to find | `vulnerabilities, insecure patterns` |
@@ -160,14 +163,16 @@ skills: []
 **Frontmatter**:
 ```yaml
 ---
-name: {agent-name}
 description: |
-  {Description of what it builds}.
-  Use when {trigger keywords}.
-tools: Read, Write, Edit, Bash, Grep, Glob
+  {{DESCRIPTION}}.
+  Use proactively when: {{TRIGGER_CONDITION}}.
+  Keywords - {{KEYWORDS}}
+tools: Read, Write, Edit, Bash, Grep, Glob, LSP
+disallowedTools: Task
 permissionMode: acceptEdits
-model: sonnet
-skills: []
+maxTurns: 30
+memory:
+  scope: project
 ---
 ```
 
@@ -175,9 +180,10 @@ skills: []
 
 | Placeholder | Description | Example |
 |-------------|-------------|---------|
-| `{{AGENT_NAME}}` | kebab-case name | `api-implementer` |
+| `{{AGENT_NAME}}` | kebab-case name (used as filename) | `api-implementer` |
 | `{{DESCRIPTION}}` | What it builds | `REST API endpoint specialist` |
-| `{{TRIGGER_CONDITION}}` | When to delegate | `implementing API endpoints` |
+| `{{TRIGGER_CONDITION}}` | When to delegate | `implementing API endpoints, building routes` |
+| `{{KEYWORDS}}` | Comma-separated keywords for matching | `api, endpoint, route, implement` |
 | `{{DOMAIN}}` | Area of expertise | `REST APIs with Elysia` |
 | `{{WHAT_TO_BUILD}}` | Implementation target | `API endpoints following project patterns` |
 
@@ -192,13 +198,15 @@ skills: []
 **Frontmatter**:
 ```yaml
 ---
-name: {agent-name}
 description: |
-  {Description of what commands it runs}.
-  Use when {trigger keywords}.
+  {{DESCRIPTION}}.
+  Use proactively when: {{TRIGGER_CONDITION}}.
+  Keywords - {{KEYWORDS}}
 tools: Bash, Read
+disallowedTools: Task, Edit, Write
 permissionMode: default
-model: haiku
+effort: low
+maxTurns: 10
 ---
 ```
 
@@ -206,9 +214,10 @@ model: haiku
 
 | Placeholder | Description | Example |
 |-------------|-------------|---------|
-| `{{AGENT_NAME}}` | kebab-case name | `test-runner` |
+| `{{AGENT_NAME}}` | kebab-case name (used as filename) | `test-runner` |
 | `{{DESCRIPTION}}` | What commands | `Test execution specialist` |
-| `{{TRIGGER_CONDITION}}` | When to delegate | `running tests` |
+| `{{TRIGGER_CONDITION}}` | When to delegate | `running tests, checking test results` |
+| `{{KEYWORDS}}` | Comma-separated keywords for matching | `test, run, execute, coverage` |
 | `{{PURPOSE}}` | Command purpose | `running and reporting test results` |
 | `{{COMMAND_1}}` | Allowed command | `bun test` |
 | `{{COMMAND_2}}` | Allowed command | `bun test --coverage` |
@@ -225,13 +234,16 @@ model: haiku
 **Frontmatter**:
 ```yaml
 ---
-name: {agent-name}
 description: |
-  {Description of what it researches}.
-  Use when {trigger keywords}.
+  {{DESCRIPTION}}.
+  Use proactively when: {{TRIGGER_CONDITION}}.
+  Keywords - {{KEYWORDS}}
 tools: Read, Grep, Glob, WebSearch, WebFetch
+disallowedTools: Task, Edit, Write
 permissionMode: plan
-model: sonnet
+maxTurns: 20
+memory:
+  scope: project
 ---
 ```
 
@@ -239,9 +251,10 @@ model: sonnet
 
 | Placeholder | Description | Example |
 |-------------|-------------|---------|
-| `{{AGENT_NAME}}` | kebab-case name | `library-researcher` |
+| `{{AGENT_NAME}}` | kebab-case name (used as filename) | `library-researcher` |
 | `{{DESCRIPTION}}` | Research focus | `Library and API documentation specialist` |
-| `{{TRIGGER_CONDITION}}` | When to delegate | `researching library usage` |
+| `{{TRIGGER_CONDITION}}` | When to delegate | `researching library usage, investigating APIs` |
+| `{{KEYWORDS}}` | Comma-separated keywords for matching | `research, investigate, library, documentation` |
 | `{{TOPIC}}` | Research topic | `library APIs and best practices` |
 | `{{WHAT_TO_RESEARCH}}` | Investigation target | `library documentation and examples` |
 
@@ -276,14 +289,18 @@ model: sonnet
 
 ```yaml
 ---
-name: security-reviewer
 description: |
   Security analysis specialist. Reviews code for vulnerabilities,
   injection risks, and insecure patterns.
-  Use when reviewing security, checking vulnerabilities, or auditing code.
+  Use proactively when: reviewing security, checking vulnerabilities, auditing code.
+  Keywords - security, vulnerability, audit, injection, review
 tools: Read, Grep, Glob
+disallowedTools: Task, Edit, Write, Bash
 permissionMode: plan
-model: sonnet
+effort: low
+maxTurns: 15
+memory:
+  scope: project
 skills:
   - security-patterns
 ---
@@ -334,13 +351,15 @@ When invoked:
 
 ```yaml
 ---
-name: test-runner
 description: |
   Test execution specialist. Runs tests and reports results clearly.
-  Use when running tests, checking test coverage, or test status.
+  Use proactively when: running tests, checking test coverage, test status.
+  Keywords - test, run, execute, coverage, results
 tools: Bash, Read
+disallowedTools: Task, Edit, Write
 permissionMode: default
-model: haiku
+effort: low
+maxTurns: 10
 ---
 
 You execute test commands and report results clearly.
@@ -395,13 +414,16 @@ Errors (if any):
 
 ```yaml
 ---
-name: api-implementer
 description: |
   REST API implementation specialist. Builds endpoints following project patterns.
-  Use when implementing API routes, endpoints, or handlers.
-tools: Read, Write, Edit, Bash, Grep, Glob
+  Use proactively when: implementing API routes, endpoints, handlers.
+  Keywords - api, endpoint, route, handler, implement, REST
+tools: Read, Write, Edit, Bash, Grep, Glob, LSP
+disallowedTools: Task
 permissionMode: acceptEdits
-model: sonnet
+maxTurns: 30
+memory:
+  scope: project
 skills: []
 ---
 
@@ -477,22 +499,29 @@ When invoked:
 
 ## Frontmatter Reference
 
+**CRITICAL**: `description` MUST include "Use proactively when:" and "Keywords -" lines. Without these, Claude Code will NOT register the agent as a valid `subagent_type`.
+
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `name` | string | Yes | Unique kebab-case identifier |
-| `description` | string | Yes | Purpose + triggers (include "Use proactively when:" and "Keywords -") |
-| `tools` | string | Yes | Comma-separated whitelist. `Task(agent)` restringe sub-delegacion |
-| `disallowedTools` | string/list | No | Tools bloqueadas (camelCase: `NotebookEdit`) |
-| `model` | string | No | `sonnet`, `opus`, `haiku`, `inherit`. Lead puede override per-invocacion |
+| `description` | string | **Yes** | Purpose + "Use proactively when: {situations}." + "Keywords - {kw1, kw2, ...}" |
+| `tools` | string | **Yes** | Comma-separated tool whitelist. Plain names only (no scoped syntax like `Task(scout)`) |
+| `disallowedTools` | string/list | No | Tools blocked. **camelCase** (e.g., `Task`, `NotebookEdit`) — NOT snake_case |
 | `permissionMode` | string | No | `default`, `plan`, `acceptEdits`, `dontAsk`, `bypassPermissions` |
-| `skills` | list | No | Skills auto-cargadas al iniciar agente |
-| `effort` | string | No | `low`/`medium`/`high`. Fijo — solo definir si invariable por diseno |
-| `maxTurns` | number | No | Max turnos. Solo safety net generoso, no control de flujo |
-| `memory` | string | No | Scope: `user`, `project`, `local` |
-| `background` | boolean | No | `true` = siempre background |
-| `hooks` | object | No | Hooks scoped al agente (PreToolUse, PostToolUse, Stop) |
-| `isolation` | string | No | `worktree` = git worktree aislado |
-| `initialPrompt` | string | No | Prompt auto-enviado al iniciar |
+| `effort` | string | No | `low`/`medium`/`high`. Only set if **invariable** for this agent type |
+| `maxTurns` | number | No | Safety net for max turns. Use generous values, not flow control |
+| `skills` | list | No | Skills auto-loaded when agent starts |
+| `memory` | object | No | `scope: user\|project\|local` |
+| `background` | boolean | No | `true` = always run in background |
+| `hooks` | object | No | Hooks scoped to agent (PreToolUse, PostToolUse, Stop) |
+| `isolation` | string | No | `worktree` = isolated git worktree |
+| `initialPrompt` | string | No | Auto-submitted prompt on agent start |
+
+### Fields NOT in agent frontmatter
+
+| Field | Reason |
+|-------|--------|
+| `name` | Agent is identified by filename, not a `name` field |
+| `model` | Model routing is dynamic — the Lead determines model per-invocation based on complexity |
 
 ---
 
@@ -508,14 +537,15 @@ When invoked:
 
 ---
 
-## Model Selection
+## Model Selection (Dynamic — NOT in Frontmatter)
 
-| Model | Cost | Speed | Recommended For |
-|-------|------|-------|-----------------|
-| `haiku` | Cheapest | Fastest | Simple executors, quick tasks |
-| `sonnet` | Balanced | Balanced | General purpose (default) |
-| `opus` | Expensive | Slowest | Complex reasoning, architecture |
-| `inherit` | Same as main | Same | Consistency with parent |
+Model is determined dynamically by the Lead based on agent category and task complexity. Do NOT set `model` in agent frontmatter.
+
+| Agent Category | Complexity < 30 | 30-50 | > 50 |
+|----------------|----------------|-------|------|
+| Code agents (builder, reviewer) | sonnet | sonnet | opus |
+| Read-only agents (scout, executor) | haiku | haiku | sonnet |
+| Strategic agents (planner, architect) | opus | opus | opus |
 
 ---
 

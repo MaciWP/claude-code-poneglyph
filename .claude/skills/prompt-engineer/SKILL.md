@@ -1,13 +1,22 @@
 ---
 name: prompt-engineer
-description: "Skill para mejorar prompts vagos o ambiguos mediante análisis y reformulación estructurada.\n\
-  Use proactively when: prompt score < 70, requirements unclear, vague instructions.\n\
-  Keywords - prompt, improve, refine, clarify, ambiguous, vague, requirements"
+description: |
+  Skill para mejorar prompts vagos o ambiguos mediante análisis y reformulación estructurada.
+  Use proactively when: prompt score < 70, requirements unclear, vague instructions.
+  Keywords - prompt, improve, refine, clarify, ambiguous, vague, requirements
 type: encoded-preference
-activation:
-  keywords: [prompt, improve, refine, clarify, ambiguous, vague]
-for_agents: [builder, planner, architect]
 disable-model-invocation: true
+argument-hint: "[prompt text or task description]"
+effort: medium
+activation:
+  keywords:
+    - prompt
+    - improve
+    - refine
+    - clarify
+    - ambiguous
+    - vague
+for_agents: [builder, planner, architect]
 version: "1.0"
 ---
 

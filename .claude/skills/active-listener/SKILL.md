@@ -1,10 +1,20 @@
 ---
 name: active-listener
-description: "Verifica contexto completo antes de actuar en sesiones largas o tareas multi-step. Use proactively when: long sessions, multi-step tasks, context-sensitive operations. Keywords - context, verify, long-session, multi-step, complex-chain"
+description: "Verifica contexto completo antes de actuar en sesiones largas o tareas multi-step.\n\
+  Use proactively when: long sessions, multi-step tasks, context-sensitive operations.\n\
+  Keywords - context, verify, long-session, multi-step, complex-chain"
 type: reference
+disable-model-invocation: true
+effort: low
 activation:
-  keywords: [long-session, multi-step, complex-chain, context-sensitive, verify-context]
+  keywords:
+    - long-session
+    - multi-step
+    - complex-chain
+    - context-sensitive
+    - verify-context
 for_agents: [builder, reviewer, architect]
+version: "1.0"
 ---
 
 # Active Listener

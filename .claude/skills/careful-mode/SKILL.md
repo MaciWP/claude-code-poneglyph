@@ -3,10 +3,21 @@ name: careful-mode
 description: |
   Activate strict validation mode with lower complexity thresholds and zero-tolerance security.
   Use when: pre-release review, critical code, production hotfix, high-risk changes.
-  Keywords - careful, strict, production, critical, zero-tolerance
+  Keywords - careful, strict, production, critical, zero-tolerance, pre-release
 type: workflow
 disable-model-invocation: true
 argument-hint: "[on|off]"
+effort: low
+activation:
+  keywords:
+    - careful
+    - strict
+    - production
+    - critical
+    - zero-tolerance
+    - pre-release
+for_agents: [builder, reviewer]
+version: "1.0"
 ---
 
 # Careful Mode

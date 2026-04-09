@@ -1,12 +1,24 @@
 ---
 name: decide
 description: |
-  Decision Mode — toma decisiones estrategicas usando 3 perspectivas de agentes (Pragmatico, Innovador, Critico) y genera memo HTML visual. Use when: architectural decisions, tech stack choices, approach evaluation, strategic trade-offs.
+  Decision Mode — toma decisiones estrategicas usando 3 perspectivas de agentes (Pragmatico, Innovador, Critico) y genera memo HTML visual.
+  Use when: architectural decisions, tech stack choices, approach evaluation, strategic trade-offs.
   Keywords - decide, decision, choose, evaluate, compare, trade-off, pros-cons, architecture-decision
 type: workflow
+disable-model-invocation: false
 argument-hint: "<pregunta o brief>"
-allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent
-model: opus
+effort: high
+activation:
+  keywords:
+    - decide
+    - decision
+    - choose
+    - evaluate
+    - compare
+    - trade-off
+    - pros-cons
+for_agents: [architect, planner]
+version: "1.0"
 ---
 
 # Decision Mode
