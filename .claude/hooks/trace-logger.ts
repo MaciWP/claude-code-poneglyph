@@ -90,6 +90,7 @@ export interface StopHookInput {
   transcript?: TranscriptMessage[];
   transcript_path?: string;
   stop_hook_event?: string;
+  stop_hook_active?: boolean;
   [key: string]: unknown;
 }
 
@@ -210,6 +211,9 @@ async function main(): Promise<void> {
     }
 
     const input: StopHookInput = JSON.parse(raw);
+    if (input.stop_hook_active === true) {
+      process.exit(0);
+    }
     let transcript = input.transcript || [];
     if (transcript.length === 0 && typeof input.transcript_path === "string") {
       transcript = await readTranscriptFromPath(input.transcript_path);

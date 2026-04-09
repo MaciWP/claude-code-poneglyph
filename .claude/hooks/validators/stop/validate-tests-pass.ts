@@ -242,6 +242,9 @@ async function main(): Promise<void> {
   let lastAssistantMessage = "";
   try {
     const parsed = JSON.parse(stdinRaw) as Record<string, unknown>;
+    if (parsed.stop_hook_active === true) {
+      process.exit(0);
+    }
     lastAssistantMessage =
       (typeof parsed.last_assistant_message === "string"
         ? parsed.last_assistant_message

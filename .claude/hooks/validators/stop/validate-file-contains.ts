@@ -18,12 +18,15 @@ import { EXIT_CODES } from "../config";
 // Stdin Consumption
 // =============================================================================
 
-async function consumeStdin(): Promise<void> {
+async function consumeStdin(): Promise<string> {
   return new Promise((resolve) => {
+    const chunks: string[] = [];
     process.stdin.setEncoding("utf8");
-    process.stdin.on("data", () => {});
-    process.stdin.on("end", resolve);
-    process.stdin.on("error", resolve);
+    process.stdin.on("data", (chunk: string) => {
+      chunks.push(chunk);
+    });
+    process.stdin.on("end", () => resolve(chunks.join("")));
+    process.stdin.on("error", () => resolve(""));
     process.stdin.resume();
   });
 }
@@ -74,7 +77,15 @@ function checkPatterns(content: string, patternsValue: string): string[] {
 // =============================================================================
 
 async function main(): Promise<void> {
-  await consumeStdin();
+  const stdinRaw = await consumeStdin();
+  try {
+    const parsed = JSON.parse(stdinRaw) as Record<string, unknown>;
+    if (parsed.stop_hook_active === true) {
+      process.exit(0);
+    }
+  } catch {
+    // stdin may be empty or invalid JSON — continue normally
+  }
 
   const containsValue = process.env.VALIDATE_CONTAINS;
   const patternsValue = process.env.VALIDATE_PATTERNS;

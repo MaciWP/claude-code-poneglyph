@@ -48,6 +48,7 @@ interface SubagentStopInput {
   agent_transcript_path?: string;
   tool_use_id?: string;
   last_assistant_message?: string;
+  stop_hook_active?: boolean;
   [key: string]: unknown;
 }
 
@@ -169,6 +170,9 @@ async function run(): Promise<void> {
   if (!raw.trim()) return;
 
   const input: SubagentStopInput = JSON.parse(raw);
+  if (input.stop_hook_active === true) {
+    return;
+  }
 
   const agentId = input.agent_id || "";
   const transcriptPath = input.agent_transcript_path || "";
