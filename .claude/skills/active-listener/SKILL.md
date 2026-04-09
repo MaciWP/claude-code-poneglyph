@@ -4,7 +4,7 @@ description: "Verifies complete context before acting in long sessions or multi-
   Use proactively when: long sessions, multi-step tasks, context-sensitive operations.\n\
   Keywords - context, verify, long-session, multi-step, complex-chain"
 type: reference
-disable-model-invocation: true
+disable-model-invocation: false
 effort: low
 activation:
   keywords:

@@ -150,7 +150,6 @@ Effort level per agent. Unlike model routing, effort CANNOT be passed dynamicall
 | Agent | effort | Rationale |
 |--------|--------|-----------|
 | scout | `low` | Only reads files. Does not require deep reasoning. |
-| command-loader | `low` | Only expands references. Purely mechanical. |
 | architect | `high` | High-impact strategic decisions. |
 | planner | `high` | Plan quality determines all execution. |
 | error-analyzer | `high` | Deep diagnosis requires extensive reasoning. |
@@ -175,7 +174,7 @@ Model selection per agent and complexity to optimize costs.
 | 30-50 | sonnet | Good balance for medium tasks |
 | >50 | opus | Deep reasoning for complex tasks |
 
-**Read-only agents** (scout, command-loader) — only read, don't produce:
+**Read-only agents** (scout) — only read, don't produce:
 
 | Complexity | Model | Rationale |
 |-------------|--------|-----------|

@@ -3,11 +3,12 @@ name: extension-architect
 description: |
   Meta-agent for Claude Code extension architecture. Creates and manages
   agents, skills, hooks, and MCP configurations.
-  Use proactively when: crear agente, crear skill, scaffolding, extensiones.
+  Use proactively when: create agent, create skill, scaffolding, extensions.
   Keywords - create agent, new skill, add hook, extension, meta, scaffold
 tools: Read, Write, Edit, Glob, Grep, Bash
-model: sonnet
 permissionMode: acceptEdits
+effort: medium
+memory: project
 skills:
   - meta-create-agent
   - meta-create-skill
@@ -23,7 +24,6 @@ Orchestrator of the Claude Code extension ecosystem. Responsible for:
 
 - Creating new agents, skills, and hooks
 - Maintaining consistent extension structure
-- Ensuring adherence to SPEC-020/021/022/023
 - Validating frontmatter and configuration
 
 ## Capabilities
@@ -40,12 +40,12 @@ Orchestrator of the Claude Code extension ecosystem. Responsible for:
 
 ### Extension Types Supported
 
-| Type | Spec | Location | Purpose |
-|------|------|----------|---------|
-| Agents | SPEC-021 | `.claude/agents/` | Delegated specialists |
-| Skills | SPEC-020 | `.claude/skills/` | Knowledge and workflows |
-| Hooks | SPEC-022 | `.claude/settings.json` | Validation and automation |
-| MCP Servers | SPEC-023 | External | Tool integration |
+| Type | Location | Purpose |
+|------|----------|---------|
+| Agents | `.claude/agents/` | Delegated specialists |
+| Skills | `.claude/skills/` | Knowledge and workflows |
+| Hooks | `.claude/settings.json` | Validation and automation |
+| MCP Servers | External | Tool integration |
 
 ---
 
@@ -319,7 +319,7 @@ allowed-tools: Bash, Read
 
 ## Frontmatter Reference
 
-### Agent Frontmatter (SPEC-021)
+### Agent Frontmatter
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -330,7 +330,7 @@ allowed-tools: Bash, Read
 | `model` | string | No | sonnet (default), opus, haiku, inherit |
 | `skills` | list | No | Pre-loaded skill names |
 
-### Skill Frontmatter (SPEC-020)
+### Skill Frontmatter
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -341,7 +341,7 @@ allowed-tools: Bash, Read
 | `allowed-tools` | string | No | Tool whitelist |
 | `context` | string | No | fork = isolated context |
 
-### Hook Configuration (SPEC-022)
+### Hook Configuration
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -363,11 +363,11 @@ allowed-tools: Bash, Read
 
 ---
 
-## Related Specifications
+## Related Documentation
 
-| Spec | Title | Governs |
-|------|-------|---------|
-| SPEC-020 | Skills Extension System | Skill format and behavior |
-| SPEC-021 | Subagents Extension System | Agent format and delegation |
-| SPEC-022 | Hooks Extension System | Hook events and configuration |
-| SPEC-023 | MCP Integration System | External tool integration |
+| Topic | Governs |
+|-------|---------|
+| Skills Extension System | Skill format and behavior |
+| Subagents Extension System | Agent format and delegation |
+| Hooks Extension System | Hook events and configuration |
+| MCP Integration System | External tool integration |

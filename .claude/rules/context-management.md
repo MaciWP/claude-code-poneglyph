@@ -12,7 +12,6 @@ Rules for loading skills and context into agents. Avoid overloading agents with 
 | architect | — | 4 | 4 | |
 | planner | — | 2 | 2 | High-level only |
 | scout | — | 1 | 1 | Minimal context |
-| command-loader | — | 0 | 0 | Infrastructure only |
 
 ## Precedence Rules
 

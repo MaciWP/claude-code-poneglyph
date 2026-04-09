@@ -5,7 +5,7 @@ description: |
   Use when: architectural decisions, tech stack choices, approach evaluation, strategic trade-offs.
   Keywords - decide, decision, choose, evaluate, compare, trade-off, pros-cons, architecture-decision
 type: workflow
-disable-model-invocation: false
+disable-model-invocation: true
 argument-hint: "<question or brief>"
 effort: high
 activation:
