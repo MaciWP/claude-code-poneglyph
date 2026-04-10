@@ -128,18 +128,33 @@ The `SKILL.md` entry ends with a `Deep references (Read on demand)` table mappin
 
 Concrete example: `.claude/skills/django-api/` ships a lean `SKILL.md` plus ~5 references for binora-specific patterns (frontend_permissions integration, drf-spectacular schema extensions, etc.). The base skill loads in every Django delegation; the references only load when the task matches.
 
+### Canonical solution: the Content Map
+
+The canonical realization of the pointer table is the **Content Map** — a 3-column `Topic | File | Contents` table placed at the bottom of the entry `SKILL.md`. It is now the mandatory format for any skill with subdirectories (see `.claude/rules/context-management.md`, section "Content Map pattern").
+
+| Column | Load-bearing role |
+|---|---|
+| **Topic** | Human-readable label, skimmable index |
+| **File** | `${CLAUDE_SKILL_DIR}/references/<file>.md` — Anthropic's official path variable, resolves at load time |
+| **Contents** | **This column is the trigger.** 1-2 sentences describing WHAT is inside AND WHEN to read it. Semantic richness here enables the subagent to match on *implicit relevance* — task phrasing that doesn't use domain keywords can still hit a Contents row whose situation description matches the work at hand. |
+
+This aligns with Anthropic's official skills guidance: *"Reference supporting files from SKILL.md so Claude knows what each file contains and when to load it."* — [code.claude.com/docs/en/skills](https://code.claude.com/docs/en/skills). The Contents column is the "when to load it" half of that instruction.
+
+Canonical reference: `.claude/rules/context-management.md` — "Content Map pattern (canonical for skills with subdirectories)". Canonical template: `.claude/skills/meta-create-skill/SKILL.md` (entry, post-P7.8a split).
+
 ### Limitations — lazy pointer-following
 
-Empirically tested on 2026-04-10 with `django-query-optimizer` plus its `references/binora-hierarchy-patterns.md` and `references/binora-deviations.md`: subagents **do** follow the `Deep references` pointer table, but **lazily and need-driven**, not eagerly. They Read only what the task phrasing seems to justify.
+The Content Map mitigates but does not fully eliminate lazy reading. Empirically tested on 2026-04-10 with `django-query-optimizer` plus its `references/binora-hierarchy-patterns.md` and `references/binora-deviations.md`: subagents **do** follow the pointer table, but **lazily and need-driven**, not eagerly. They Read only what the task phrasing seems to justify.
 
-The risk is **implicit relevance**. If the user prompt does not surface the domain keywords that match the pointer table's `When` column, the subagent may skip a reference that contains critical information. Concrete case: a reviewer given Django code using `GenericForeignKey` and a generic prompt of the form "check N+1" may stay with the main `SKILL.md` and never open `references/binora-hierarchy-patterns.md`, thereby missing that `select_related('parent')` on a `GenericForeignKey` is silently a no-op in Django — a serious footgun.
+The residual risk is **implicit relevance**. If neither the user prompt nor the Contents column surface a term the subagent can match to the task, a critical reference may be skipped. Concrete case: a reviewer given Django code using `GenericForeignKey` and a generic prompt of the form "check N+1" may stay with the main `SKILL.md` and never open `references/binora-hierarchy-patterns.md`, thereby missing that `select_related('parent')` on a `GenericForeignKey` is silently a no-op in Django — a serious footgun.
 
-Two mitigations apply to skills using this sub-pattern:
+Mitigations, in order of effectiveness:
 
-| Mitigation | How |
-|---|---|
-| **Inline high-impact gotchas** | Surface critical footguns directly in the main `SKILL.md` body so they are always loaded, independent of whether any reference is opened. Reserve this for items where silent failure has outsized cost. |
-| **Keyword triggers in the pointer table** | Add a `Triggers` column with explicit code/task keywords alongside the `When` description. Gives the subagent concrete semantic hooks to detect relevance even when the task phrasing is generic. |
+| Mitigation | Role | How |
+|---|---|---|
+| **Content Map with rich semantic Contents** | Primary | Write the Contents column so it describes the *situation* that should trigger the read, not just the file's contents. Semantic match on implicit relevance is the main defence. |
+| **Inline high-impact gotchas in `SKILL.md`** | Secondary | Surface critical footguns directly in the main entry so they are always loaded, independent of whether any reference is opened. Reserve for items where silent failure has outsized cost. |
+| **Keyword triggers column** | Fallback | Add a `Triggers` column with explicit code/task keywords alongside Contents. Concrete hooks for cases where the semantic description alone is not enough. |
 
 ## 9. Implementation reference
 
