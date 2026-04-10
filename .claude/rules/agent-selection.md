@@ -2,23 +2,32 @@
 
 ## Selection Matrix
 
-| Signal | Agent | Skill/Mode | Fallback |
-|--------|-------|------------|----------|
-| implement, create, fix, build | builder | (by prompt) | — |
-| refactor, extract, simplify, restructure | builder | code-quality | — |
-| merge conflict, git conflict | builder | (prompt context) | — |
-| docs, sync, documentation | builder | (doc task) | — |
-| bug documentation, knowledge base | builder | diagnostic-patterns | — |
-| review, validate, check | reviewer | standard mode | — |
-| security, audit, vulnerability, owasp | reviewer | security-review | — |
-| code quality, smells, SOLID, complexity | reviewer | code-quality | — |
-| test coverage, missing tests | reviewer | coverage mode | — |
-| performance, slow, bottleneck, N+1 | reviewer | performance-review | — |
-| plan, design, decompose, workflow | planner | — | architect |
-| >3 subtasks, breakdown, dependencies | planner | (decomposition built-in) | — |
-| find, explore, search codebase | scout | — | Explore agent |
-| error, failing, debug, diagnose | error-analyzer | diagnostic-patterns | builder (obvious fix) |
-| architecture, RFC, design system | architect | — | planner |
+The "Suggested skills to Read (for delegation)" column lists `.claude/skills/<name>/SKILL.md` paths the Lead should include in the delegation prompt's `[RELEVANT SKILLS FOR THIS TASK]` block (Arch H). Max 3 per delegation. Pick the ones whose paths actually match the task context; skip the column if none apply.
+
+| Signal | Agent | Skill/Mode | Suggested skills to Read (for delegation) | Fallback |
+|--------|-------|------------|-------------------------------------------|----------|
+| implement, create, fix, build | builder | (by prompt) | (match domain below) | — |
+| implement Django endpoint/model/service | builder | (by prompt) | django-api, django-architecture, django-query-optimizer | — |
+| implement React component/hook | builder | (by prompt) | react-best-practices, bulletproof-architecture, frontend-code-style | — |
+| implement React form | builder | (by prompt) | form-patterns, frontend-code-style | — |
+| refactor, extract, simplify, restructure | builder | code-quality | code-quality, code-style-enforcer | — |
+| merge conflict, git conflict | builder | (prompt context) | — | — |
+| docs, sync, documentation | builder | (doc task) | — | — |
+| bug documentation, knowledge base | builder | diagnostic-patterns | diagnostic-patterns | — |
+| review, validate, check (generic) | reviewer | standard mode | code-quality, pr-conventional-comments | — |
+| review Django code | reviewer | standard mode | django-review-lessons, django-api, pr-conventional-comments | — |
+| review React code | reviewer | standard mode | frontend-review-lessons, react-best-practices, pr-conventional-comments | — |
+| security, audit, vulnerability, owasp | reviewer | security-review | security-review, django-review-lessons | — |
+| code quality, smells, SOLID, complexity | reviewer | code-quality | code-quality, code-style-enforcer | — |
+| test coverage, missing tests (Django) | reviewer | coverage mode | django-testing-patterns | — |
+| test coverage, missing tests (React) | reviewer | coverage mode | frontend-testing-patterns | — |
+| performance, slow, bottleneck, N+1 | reviewer | performance-review | performance-review, django-query-optimizer | — |
+| OpenAPI contract, API schema | builder / reviewer | (by prompt) | openapi-contract, openapi-frontend-contract | — |
+| plan, design, decompose, workflow | planner | — | — | architect |
+| >3 subtasks, breakdown, dependencies | planner | (decomposition built-in) | — | — |
+| find, explore, search codebase | scout | — | — | Explore agent |
+| error, failing, debug, diagnose | error-analyzer | diagnostic-patterns | diagnostic-patterns | builder (obvious fix) |
+| architecture, RFC, design system | architect | — | bulletproof-architecture, django-architecture | planner |
 
 ## Multi-Agent Patterns
 

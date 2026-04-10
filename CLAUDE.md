@@ -142,7 +142,7 @@ This session acts as a **pure orchestrator**. It does not execute code directly.
 | Tool | Use |
 |------|-----|
 | `Agent` | Delegate to specialized subagents (builder, reviewer, planner, error-analyzer, scout, architect, extension-architect) |
-| `Skill` | Load skill context (domain patterns, prompt refinement, etc.) |
+| `Skill` | Load skill context **into the Lead's own session only** (domain patterns, prompt refinement). NOT a delegation mechanism — to give skills to a subagent, include `Read .claude/skills/<name>/SKILL.md` in the delegation prompt (Arch H) |
 | `AskUserQuestion` | Clarify requirements or validate a doubtful prompt |
 | `TaskCreate/TaskList/TaskUpdate` | Manage the in-conversation task list |
 
@@ -156,16 +156,19 @@ graph TD
     S -->|doubt| AQ[AskUserQuestion or Skill prompt-engineer]
     AQ --> S
     S -->|clear| C[Calculate complexity]
-    C -->|< 30| B[builder direct]
+    C -->|< 30| SK[Pick relevant skills via path hints / keywords]
     C -->|30-60| P1[planner optional]
     C -->|> 60| P2[planner mandatory]
-    P1 & P2 --> B
+    P1 & P2 --> SK
+    SK --> B[builder with Read SKILL.md instructions in prompt]
     B --> R[reviewer checkpoint]
     R -->|APPROVED| D[Done]
     R -->|NEEDS_CHANGES| B
     B -->|Error| EA[error-analyzer]
     EA --> B
 ```
+
+**Arch H — Lead-Directed Skill Reads**: before delegating, the Lead picks up to 3 relevant skills (via `memory-inject.ts` path-based hints or manual keyword matching against `.claude/rules/paths/*.md`) and embeds `Read .claude/skills/<name>/SKILL.md` instructions in the delegation prompt's `[RELEVANT SKILLS FOR THIS TASK]` block. The subagent then Reads those files as its first actions. Default subagents cannot invoke `Skill()` — this is the canonical way to give them task-specific skill context.
 
 Score<70 is a **signal of doubt**, not a hard stop. If the prompt is ambiguous or the resulting plan needs validation, ask (`AskUserQuestion`) or refine with the `prompt-engineer` skill. If the prompt is pragmatically clear despite a low score, proceed and flag uncertainty.
 
@@ -203,7 +206,7 @@ Builder verifies automatically via the `validate-tests-pass.ts` Stop hook. The L
 | **Agent** | The `Agent` tool used by the Lead to spawn a specialized subagent in a fresh context |
 | **Subagent** | A spawned instance of a specialized agent (builder, reviewer, planner, etc.) |
 | **Teammate** | A teammate spawned in team mode — an independent Claude Code process per domain. Only when `executionMode=team` |
-| **Skill** | Loadable domain context / pattern library. Invoked with `Skill()` (or auto-matched) |
+| **Skill** | Loadable domain context / pattern library. Full `SKILL.md` body is loaded either via `Skill()` in the Lead (for the Lead's own context), OR via a subagent `Read .claude/skills/<name>/SKILL.md` instruction that the Lead places in the delegation prompt (Arch H — the canonical way to propagate skills to subagents) |
 | **Rule** | Behavioral policy in `.claude/rules/*.md`. Loaded implicitly or path-scoped via frontmatter |
 | **Hook** | TypeScript script (run via `bun`) triggered by Claude Code events (pre/post tool, stop, subagent, permission, etc.) configured in `settings.json` |
 | **Command** | Slash command in `.claude/commands/*.md` |

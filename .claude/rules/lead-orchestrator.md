@@ -66,29 +66,45 @@ graph TD
 | `AskUserQuestion` | Clarify requirements |
 | `TaskList/TaskCreate/TaskUpdate` | Manage task list |
 
-## Memory Injection When Delegating
+## Memory + Skill Injection When Delegating (Arch H: Lead-Directed Skill Reads)
 
-When delegating to any agent, the Lead MUST include the agent's accumulated memory in the prompt:
+When delegating to any agent, the Lead MUST build the prompt with TWO pre-injected context blocks: accumulated memory AND a list of skill files for the subagent to Read as its first actions.
+
+**Why**: default subagents (`builder`, `reviewer`, `scout`, `error-analyzer`, `planner`, `architect`) do NOT have `Skill` in their tools allowlist and cannot invoke `Skill()` dynamically. The Lead must instead put explicit `Read .claude/skills/<name>/SKILL.md` instructions into the delegation prompt. The subagent then Reads those files with its own `Read` tool. This is **Architecture H — Lead-Directed Skill Reads**, empirically validated on 2026-04-10 (Commandment VIII).
 
 | Step | Action |
 |------|--------|
-| 1 | Read `.claude/agent-memory/{agent}/MEMORY.md` |
-| 2 | Include last ~3K tokens in the agent's prompt |
-| 3 | Prefix: `[ACCUMULATED MEMORY]\n{content}` |
-| 4 | If the file does not exist or is empty, omit |
+| 1 | Read `.claude/agent-memory/{agent}/MEMORY.md` (last ~3K tokens) |
+| 2 | Check if `memory-inject.ts` emitted a `## Path-Based Skills (for delegation)` section based on the user prompt's file paths — if yes, copy those `Read` suggestions into the delegation prompt |
+| 3 | If no hook suggestions, match task keywords manually against `.claude/rules/paths/*.md` or the skills inventory, pick up to 3 skills |
+| 4 | Build the prompt using the template below; omit any block that is empty (no memory → drop `[ACCUMULATED MEMORY]`; no relevant skills → drop `[RELEVANT SKILLS FOR THIS TASK]`) |
 
-### Delegation Template with Memory
+### Delegation Template (Arch H)
 
 ```
 [ACCUMULATED MEMORY - {agent}]
 {content of MEMORY.md, last 3K tokens}
 
+[RELEVANT SKILLS FOR THIS TASK]
+Before starting, your first actions must be to Read these skill files for context.
+After loading them, proceed with the task.
+- Read .claude/skills/<skill-1>/SKILL.md
+- Read .claude/skills/<skill-2>/SKILL.md
+- Read .claude/skills/<skill-3>/SKILL.md
+
 [TASK]
 {task instructions}
 
 [MEMORY OUTPUT]
-When finished, include "### Expertise Insights" with 1-5 reusable insights discovered during this task.
+When finished, include "### Memory Insights" with 1-5 reusable insights discovered during this task.
 ```
+
+| Rule | Detail |
+|------|--------|
+| Max skills | 3 per delegation (avoid token bloat) |
+| Source of truth | Hook-emitted suggestions > manual keyword match > omit |
+| `Skill()` by the Lead | Still valid — loads domain context into the Lead's OWN session, but does NOT propagate to delegated subagents |
+| Empty blocks | Omit the header entirely rather than leaving an empty section |
 
 > **Note**: The reminder in the delegation prompt is NECESSARY. The instruction in the agent's system prompt (section "Expertise Persistence") is at line 400+ and agents do not follow it consistently. The explicit reminder in the delegation prompt guarantees that insights are produced.
 

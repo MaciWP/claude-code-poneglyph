@@ -25,12 +25,14 @@ Calculate score and show inline: `Complexity: ~XX`
 
 Factors: Files, Domains, Dependencies, Security, Integrations (see `complexity-routing.md`).
 
-## Step 3: Prepare Context
+## Step 3: Prepare Context (Arch H: Lead-Directed Skill Reads)
 
-1. Extract keywords from prompt
-2. Consult `skill-matching.md` of the project (if it exists) or global
-3. Load max 3 skills via `Skill()` BEFORE delegating
-4. Check if there is a specialized agent (e.g.: `django-refactor-agent`, `django-security-auditor`)
+1. Check if `memory-inject.ts` emitted a `## Path-Based Skills (for delegation)` section based on paths in the user prompt
+2. If yes → copy those `Read .claude/skills/<name>/SKILL.md` suggestions verbatim into the delegation prompt's `[RELEVANT SKILLS FOR THIS TASK]` block
+3. If no → match keywords manually against `.claude/rules/paths/*.md` or the skills inventory, pick max 3 skills
+4. Do NOT invoke `Skill()` as a delegation mechanism — default subagents cannot access skills via that tool; instruct the subagent to `Read` the SKILL.md files instead
+5. `Skill()` invocation by the Lead is still valid for the Lead's OWN context (main session only), but it does NOT propagate to delegated subagents
+6. Check if there is a specialized agent (e.g.: `django-refactor-agent`, `django-security-auditor`)
 
 ## Step 4: Delegate
 
