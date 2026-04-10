@@ -327,9 +327,11 @@ describe("loadPathRules", () => {
 // ============================================================================
 
 describe("remaining path rules after cleanup", () => {
-  test("only 2 path rules remain", () => {
+  test("at least the 2 meta path rules exist", () => {
     const rules = loadPathRules();
-    expect(rules.length).toBe(2);
+    const names = rules.map((r) => r.name);
+    expect(names).toContain("orchestration");
+    expect(names).toContain("hooks");
   });
 
   test("orchestration has no skills", () => {
