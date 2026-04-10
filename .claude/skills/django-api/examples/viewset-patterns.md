@@ -15,7 +15,7 @@ class BadUserViewSet(ModelViewSet):
         serializer.is_valid(raise_exception=True)
         password = generate_password()  # Business logic in view
         user = User.objects.create(email=serializer.validated_data['email'], password=make_password(password))
-        send_mail('Welcome', f'Password: {password}', 'noreply@binora.com', [user.email])  # Side effect
+        send_mail('Welcome', f'Password: {password}', 'noreply@example.com', [user.email])  # Side effect
         return Response(UserSerializer(user).data, status=201)
 ```
 
