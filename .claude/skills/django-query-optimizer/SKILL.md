@@ -143,17 +143,6 @@ blogs = Blog.objects.annotate(entry_count=Count('entry'))
 
 Items #3, #7, #12 in `django-review-lessons` cover query optimization errors found in real PRs.
 
-## Documentation
-
-| Type | File | Content |
-|------|------|---------|
-| Example | `examples/n_plus_one_detection.md` | N+1 detection methods: logging, pytest, CaptureQueriesContext |
-| Example | `examples/select_related_patterns.md` | ForeignKey/OneToOne optimization |
-| Example | `examples/prefetch_related_patterns.md` | ManyToMany/Reverse FK optimization |
-| Checklist | `checklists/query_optimization.md` | N+1, ViewSet querysets, missing order_by |
-| Checklist | `checklists/performance_checklist.md` | Query count testing, profiling levels |
-| Template | `templates/optimized_queryset.md` | Copy-paste ViewSet queryset template |
-
 ## Critical Reminders
 
 1. ALWAYS check serializer field sources -- if it traverses a FK, you need `select_related`
@@ -162,16 +151,22 @@ Items #3, #7, #12 in `django-review-lessons` cover query optimization errors fou
 4. `annotate()` > Python-level aggregation (always)
 5. `.only()`/`.defer()` for large text/blob fields you do not need
 6. Every list queryset MUST have `order_by` -- pagination requires deterministic ordering
-7. **CRITICAL -- GenericForeignKey silent ignore**: `select_related('parent')` on a `GenericForeignKey` does NOTHING (Django silently ignores it because the target table is not known at query time). Use `prefetch_related('parent')` with a `GenericPrefetch`, or fetch `parent_type`/`parent_id` and resolve in Python. Inlined here because reviewers may not open `references/binora-hierarchy-patterns.md` for tasks that do not explicitly mention Binora or GenericFK.
+7. **CRITICAL -- GenericForeignKey silent ignore**: `select_related('parent')` on a `GenericForeignKey` does NOTHING (Django silently ignores it because the target table is not known at query time). Use `prefetch_related('parent')` with a `GenericPrefetch`, or fetch `parent_type`/`parent_id` and resolve in Python. Inlined here because reviewers may not open references for tasks that do not explicitly mention GenericFK.
 
-## Deep references (Read on demand)
+## Content Map
 
-When working on a Binora-specific project, additional context is available. The `Triggers` column lists concrete code/task keywords that should make you Read the reference even if the task phrasing is generic.
+Supporting files loaded on demand based on task context. Consult the Contents column to decide which to Read for your current task.
 
-| When | Triggers (keywords in code/task) | Read file |
+| Topic | File | Contents |
 |---|---|---|
-| Binora hierarchy queries with GenericFK | `GenericForeignKey`, `parent_type`, `parent_id`, `ContentType`, hierarchy traversal | `.claude/skills/django-query-optimizer/references/binora-hierarchy-patterns.md` |
-| Binora Rack MTI and model patterns | `Rack`, multi-table inheritance, `InheritanceManager`, `asset_ptr` | `.claude/skills/django-query-optimizer/references/binora-model-patterns.md` |
-| Known deviations (user.py, etc.) | empty `select_related()`, unaudited legacy, `user.py` | `.claude/skills/django-query-optimizer/references/binora-deviations.md` |
+| N+1 detection | `${CLAUDE_SKILL_DIR}/examples/n_plus_one_detection.md` | Detection methods: logging, pytest, `CaptureQueriesContext`. Read when auditing a QuerySet for hidden N+1 queries or writing a test that asserts query count. |
+| select_related patterns | `${CLAUDE_SKILL_DIR}/examples/select_related_patterns.md` | ForeignKey and OneToOne optimization recipes. Read when the code has FK traversals in serializers or templates and you need to pre-fetch them. |
+| prefetch_related patterns | `${CLAUDE_SKILL_DIR}/examples/prefetch_related_patterns.md` | ManyToMany and reverse FK optimization. Read when the code iterates over reverse relations or M2M sets. |
+| Query optimization checklist | `${CLAUDE_SKILL_DIR}/checklists/query_optimization.md` | Formal checklist covering N+1, ViewSet querysets, missing `order_by`. Read when doing a pre-merge review of a ViewSet or QuerySet. |
+| Performance checklist | `${CLAUDE_SKILL_DIR}/checklists/performance_checklist.md` | Query count testing and profiling levels. Read when investigating a slow endpoint or setting up performance regression tests. |
+| Optimized queryset template | `${CLAUDE_SKILL_DIR}/templates/optimized_queryset.md` | Copy-paste ViewSet queryset template. Read when scaffolding a new ViewSet and you want an optimized starting point. |
+| Binora hierarchy with GenericFK | `${CLAUDE_SKILL_DIR}/references/binora-hierarchy-patterns.md` | How Binora handles hierarchy traversal using `GenericForeignKey`, `parent_type`, `parent_id`, ContentType. Read when the code uses GenericFK, references `parent_type`/`parent_id` fields, or does ContentType-based hierarchy traversal. Critical for avoiding the silent `select_related('parent')` no-op. |
+| Binora Rack MTI patterns | `${CLAUDE_SKILL_DIR}/references/binora-model-patterns.md` | Multi-table inheritance patterns for the Binora `Rack` hierarchy, `InheritanceManager`, `asset_ptr`. Read when the code touches `Rack`, uses `InheritanceManager`, or queries across an MTI chain. |
+| Binora known deviations | `${CLAUDE_SKILL_DIR}/references/binora-deviations.md` | Legacy patterns that are known deviations from the canonical approach (e.g., empty `select_related()` in `user.py`). Read when you encounter an empty `select_related()`, unaudited legacy code, or something that looks like a tech-debt workaround. |
 
 **Last Updated**: 2026-04-10

@@ -145,19 +145,6 @@ All from `drf_spectacular.utils`: `extend_schema`, `extend_schema_view`, `OpenAp
 - `COMPONENT_SPLIT_REQUEST = True` — request/response schemas are separate
 - Verify with the project's contract test suite
 
-## Documentation
-
-| Type | File | Content |
-|------|------|---------|
-| reference | `references/viewset-checklist.md` | 29-rule ViewSet analysis checklist |
-| reference | `references/serializer-rules.md` | Naming conventions, field configuration, validation patterns |
-| example | `examples/viewset-patterns.md` | Anti-patterns, @action, queryset optimization, mixin composition |
-| example | `examples/serializer-patterns.md` | Serializer implementation examples |
-| example | `examples/input-output-separation.md` | I/O serializer split examples |
-| checklist | `checklists/api-validation.md` | Violation severity guide for code review |
-| template | `templates/viewset-template.md` | ViewSet copy-paste template |
-| template | `templates/serializer-template.md` | Serializer pair copy-paste template |
-
 ## Critical Reminders
 
 1. **ALWAYS** separate Input and Output serializers -- use `get_serializer_class()` with dict by action
@@ -174,12 +161,22 @@ All from `drf_spectacular.utils`: `extend_schema`, `extend_schema_view`, `OpenAp
 - [HackSoftware Django Styleguide](https://github.com/HackSoftware/Django-Styleguide)
 - [Django Query Optimization](https://docs.djangoproject.com/en/stable/topics/db/optimization/)
 
-## Deep references (Read on demand)
+## Content Map
 
-| When | Read file |
-|---|---|
-| Binora frontend_permissions dict pattern | `.claude/skills/django-api/references/binora-frontend-permissions.md` |
-| Binora custom drf-spectacular field extensions | `.claude/skills/django-api/references/binora-drf-spectacular-extensions.md` |
-| Binora custom API utilities and workarounds | `.claude/skills/django-api/references/binora-api-utilities.md` |
+Supporting files loaded on demand based on task context. Consult the Contents column to decide which to Read for your current task.
+
+| Topic | File | Contents |
+|---|---|---|
+| ViewSet checklist | `${CLAUDE_SKILL_DIR}/references/viewset-checklist.md` | 29-rule ViewSet analysis checklist. Read when doing a formal ViewSet review or pre-merge audit of DRF endpoint code. |
+| Serializer rules | `${CLAUDE_SKILL_DIR}/references/serializer-rules.md` | Naming conventions (`*CreateSerializer` / `*OutputSerializer` / etc.), field configuration, validation patterns. Read when writing or reviewing a serializer and unsure about the naming convention or validation placement. |
+| ViewSet patterns | `${CLAUDE_SKILL_DIR}/examples/viewset-patterns.md` | Anti-patterns, `@action` decorators, queryset optimization, mixin composition. Read when you need concrete examples of how a good ViewSet is structured or you're about to add a custom action. |
+| Serializer patterns | `${CLAUDE_SKILL_DIR}/examples/serializer-patterns.md` | Implementation examples for common serializer scenarios. Read when you need a concrete example beyond the naming conventions. |
+| Input/Output separation | `${CLAUDE_SKILL_DIR}/examples/input-output-separation.md` | Worked examples of splitting a single serializer into input and output pairs. Read when refactoring a ViewSet that currently uses one serializer for both read and write. |
+| API validation severity | `${CLAUDE_SKILL_DIR}/checklists/api-validation.md` | Violation severity guide for code review (blocking vs non-blocking). Read when writing PR review comments or deciding whether a finding should block merge. |
+| ViewSet template | `${CLAUDE_SKILL_DIR}/templates/viewset-template.md` | Copy-paste ViewSet template. Read when scaffolding a new ViewSet and want a canonical starting point. |
+| Serializer pair template | `${CLAUDE_SKILL_DIR}/templates/serializer-template.md` | Copy-paste Input/Output serializer pair template. Read when creating serializers for a new resource. |
+| Binora `frontend_permissions` | `${CLAUDE_SKILL_DIR}/references/binora-frontend-permissions.md` | Binora's `frontend_permissions` dict + `FrontendPermissions` enum pattern that bridges DRF backend permissions with frontend UI gating. Read when the code uses `frontend_permissions`, references `FrontendPermissions` enum, or sets up UI-aware permission declarations. |
+| Binora drf-spectacular extensions | `${CLAUDE_SKILL_DIR}/references/binora-drf-spectacular-extensions.md` | Custom drf-spectacular field extensions used in Binora (e.g. `DatacenterFieldFix`) to work around schema generation issues. Read when the code imports custom field extensions or when drf-spectacular produces incorrect schemas for a custom field. |
+| Binora API utilities | `${CLAUDE_SKILL_DIR}/references/binora-api-utilities.md` | Project-specific API utilities and workarounds (`StrictSerializerMixin`, custom routers, etc.). Read when the code uses a Binora-specific utility that isn't part of stock DRF. |
 
 **Last Updated**: 2026-04-10
