@@ -1,8 +1,7 @@
 ---
 name: frontend-code-style
 description: |
-  Consolidated code style standards for binora-frontend: naming, imports, formatting,
-  function design, and component structure. Quick reference for all project conventions.
+  Consolidated code style standards for React/TypeScript frontends: naming, imports, formatting, function design, and component structure. Quick reference for all project conventions.
   Use when writing or reviewing any frontend code.
 allowed-tools: [Read, Grep, Glob]
 context: fork

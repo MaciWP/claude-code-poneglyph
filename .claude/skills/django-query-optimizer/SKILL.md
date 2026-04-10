@@ -25,7 +25,7 @@ Detects and fixes N+1 queries, enforces select_related/prefetch_related, and opt
 | ForeignKey (forward) | `select_related` | `Asset.objects.select_related('parent', 'product_model')` |
 | OneToOne | `select_related` | `Rack.objects.select_related('asset_ptr')` |
 | ManyToMany / Reverse FK | `prefetch_related` | `Asset.objects.prefetch_related('attachments')` |
-| Nested FK chain | `select_related` with `__` | `select_related('parent__datacenter')` |
+| Nested FK chain | `select_related` with `__` | `select_related('entry__blog')`  # example from Django docs: https://docs.djangoproject.com/en/stable/topics/db/optimization/ |
 | Conditional prefetch | `Prefetch` object | `Prefetch('tasks', queryset=Task.objects.filter(active=True))` |
 
 ## Decision Table
@@ -78,43 +78,18 @@ def get_queryset(self):
     return Rack.objects.prefetch_related('asset_set')
 ```
 
-## Binora-Specific Patterns
-
-### Golden Reference: `apps/core/views/user.py`
-
-```python
-queryset = User.objects.select_related(
-    'company',
-).prefetch_related(
-    'groups',
-    'companies',
-).order_by('email')
-```
-
-### Hierarchy Traversal
-
-ContentType-based parent uses GenericFK. Always use the `parent` property (not raw `parent_type`/`parent_id`).
-
-```python
-# Hierarchy chain: use select_related for known depth
-Asset.objects.select_related(
-    'datacenter',
-    'product_model',
-    'product_model__brand',
-)
-```
-
-### Annotation over Python aggregation
+## Annotation over Python aggregation
 
 ```python
 # BAD: Python-level counting
-racks = Rack.objects.all()
-for rack in racks:
-    count = rack.asset_set.count()  # N+1!
+# example from Django docs: https://docs.djangoproject.com/en/stable/topics/db/optimization/
+blogs = Blog.objects.all()
+for blog in blogs:
+    count = blog.entry_set.count()  # N+1!
 
 # GOOD: DB-level annotation
 from django.db.models import Count
-racks = Rack.objects.annotate(asset_count=Count('asset'))
+blogs = Blog.objects.annotate(entry_count=Count('entry'))
 ```
 
 ## Anti-Patterns
@@ -145,52 +120,14 @@ racks = Rack.objects.annotate(asset_count=Count('asset'))
 
 | Action | Strategy | Example |
 |--------|----------|---------|
-| `list` | `.only()` for minimal payload + `select_related` for displayed FKs | `.only('id', 'name', 'code').select_related('datacenter')` |
-| `retrieve` | Full `select_related` chain for detail view | `.select_related('parent', 'product_model__brand')` |
+| `list` | `.only()` for minimal payload + `select_related` for displayed FKs | `.only('id', 'name').select_related('blog')`  # example from Django docs: https://docs.djangoproject.com/en/stable/topics/db/optimization/ |
+| `retrieve` | Full `select_related` chain for detail view | `.select_related('blog', 'author__profile')` |
 | `create`/`update` | Minimal queryset, optimization in `get_object()` | Default queryset fine |
 | Custom `@action` | Tailor to what the action returns | Depends on response serializer |
 
 ## Cross-Reference to Review Lessons
 
 Items #3, #7, #12 in `django-review-lessons` cover query optimization errors found in real PRs.
-
-## Binora-Specific Gotchas
-
-### Rack Multi-Table Inheritance
-
-Rack inherits from Asset via multi-table inheritance (`asset_ptr`). Every Rack query has an implicit JOIN:
-
-```python
-# This generates 2 queries minimum (Asset + Rack tables)
-Rack.objects.select_related('parent_object').all()
-```
-
-Factor this into query count targets:
-- Simple Asset list: 1-3 queries
-- Rack list: 2-4 queries (includes asset_ptr JOIN)
-
-### GenericFK Parent (ContentType)
-
-The hierarchy `parent` field uses GenericForeignKey (`parent_type` + `parent_id`).
-GenericFK CANNOT use `select_related` -- you MUST use `prefetch_related`:
-
-| Field Type | select_related | prefetch_related |
-|------------|---------------|-----------------|
-| Regular FK | YES | YES |
-| GenericFK (parent) | NO | YES (only option) |
-
-```python
-# WRONG -- GenericFK ignores select_related silently
-Asset.objects.select_related('parent')
-
-# CORRECT -- use prefetch_related for GenericFK
-Asset.objects.prefetch_related('parent_object')
-```
-
-### Known Deviation: user.py
-
-`apps/core/views/user.py` uses empty `.select_related()` without specifying fields.
-This is a known deviation -- always specify fields explicitly in new code.
 
 ## Documentation
 
@@ -211,6 +148,15 @@ This is a known deviation -- always specify fields explicitly in new code.
 4. `annotate()` > Python-level aggregation (always)
 5. `.only()`/`.defer()` for large text/blob fields you do not need
 6. Every list queryset MUST have `order_by` -- pagination requires deterministic ordering
-7. In Binora, hierarchy queries use ContentType GenericFK -- always use the `parent` property
 
-**Last Updated**: 2026-03-18
+## Deep references (Read on demand)
+
+When working on a Binora-specific project, additional context is available:
+
+| When | Read file |
+|---|---|
+| Binora hierarchy queries with GenericFK | `.claude/skills/django-query-optimizer/references/binora-hierarchy-patterns.md` |
+| Binora Rack MTI and model patterns | `.claude/skills/django-query-optimizer/references/binora-model-patterns.md` |
+| Known deviations (user.py, etc.) | `.claude/skills/django-query-optimizer/references/binora-deviations.md` |
+
+**Last Updated**: 2026-04-10

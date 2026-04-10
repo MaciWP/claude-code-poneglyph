@@ -13,7 +13,7 @@ for_agents: [builder, reviewer, planner]
 
 # Django API Layer
 
-Complete reference for the DRF API layer in Binora: ViewSets, serializers, permissions, routing, and query optimization. Merges viewset-analyzer and serializer-patterns into a single coherent skill.
+Complete reference for the DRF API layer: ViewSets, serializers (input/output separation), permissions, routing, and query optimization. Based on the official DRF tutorial and HackSoftware Django Styleguide.
 
 ## Core Principle
 
@@ -23,15 +23,14 @@ Complete reference for the DRF API layer in Binora: ViewSets, serializers, permi
 
 | Pattern | When | Quick Example |
 |---------|------|---------------|
-| Input/Output serializers | Every endpoint | `UserCreateSerializer` / `UserMeSerializer` |
+| Input/Output serializers | Every endpoint | `SnippetCreateSerializer` / `SnippetOutputSerializer` |
 | `get_serializer_class` | ViewSet needs different serializers | `action_serializer_map` dict pattern |
-| `DualSystemPermissions` | Every ViewSet | `permission_classes = [IsAuthenticated, DualSystemPermissions]` |
-| `frontend_permissions` | Every ViewSet | `{"list": [FrontendPermissions.USERS_VIEW]}` |
-| Nested router | Sub-resources | `NestedDefaultRouterSanitized` |
+| `permission_classes` | Every ViewSet | `permission_classes = [IsAuthenticated, DjangoModelPermissions]`  # https://www.django-rest-framework.org/api-guide/permissions/ |
+| Nested router | Sub-resources | drf-nested-routers package |
 | `perform_create` | Service call on create | `self.service.create(serializer.validated_data)` |
-| `StrictSerializerMixin` | Reject unknown fields on input | Inherit from `StrictSerializerMixin` |
-| `select_related` / `prefetch_related` | Every queryset with FK/M2M | `.select_related('company').prefetch_related('permissions')` |
-| Service injection | Every ViewSet with business logic | `auth_service_class = AuthService` (class attr for DI) |
+| Strict serializer mixin | Reject unknown fields on input | Custom mixin over `Serializer` |
+| `select_related` / `prefetch_related` | Every queryset with FK/M2M | `.select_related('author').prefetch_related('tags')` |
+| Service injection | Every ViewSet with business logic | Class attribute for DI, e.g. `service_class = SnippetService` |
 
 ## ViewSet Anatomy
 
@@ -43,16 +42,14 @@ Request -> Permissions -> get_queryset() -> get_serializer_class() -> action -> 
 
 | Attribute | Purpose | Example |
 |-----------|---------|---------|
-| `queryset` | Optimized base with `select_related` + `order_by` | `User.objects.select_related('company').order_by('id')` |
-| `serializer_class` | Default serializer (output) | `UserMeSerializer` |
-| `frontend_permissions` | Dict with `FrontendPermissions` enums | `{"list": [FrontendPermissions.USERS_VIEW]}` |
-| `{service}_class` | DI for service layer | `auth_service_class = AuthService` |
+| `queryset` | Optimized base with `select_related` + `order_by` | `Snippet.objects.select_related('owner').order_by('id')` |
+| `serializer_class` | Default serializer (output) | `SnippetOutputSerializer` |
+| `permission_classes` | DRF permission classes | `[IsAuthenticated, DjangoModelPermissions]` |
+| `{service}_class` | DI for service layer | `service_class = SnippetService` |
 
-### Golden Reference
+### Canonical Reference
 
-`apps/core/views/user.py` -- demonstrates all patterns (service DI, serializer split, query optimization, custom actions).
-
-> **Note**: `user.py` uses empty `.select_related()` without specifying fields -- always specify fields explicitly in new code.
+See the DRF tutorial ViewSet example: https://www.django-rest-framework.org/tutorial/6-viewsets-and-routers/
 
 ## Serializer Rules
 
@@ -60,21 +57,11 @@ Request -> Permissions -> get_queryset() -> get_serializer_class() -> action -> 
 
 | Suffix | Purpose | Example |
 |--------|---------|---------|
-| `*CreateSerializer` | Create operations (input) | `UserCreateSerializer` |
-| `*UpdateSerializer` | Update/PATCH operations (input) | `UserUpdateSerializer` |
-| `*OutputSerializer` | Detail read operations | `AssetOutputSerializer` |
+| `*CreateSerializer` | Create operations (input) | `SnippetCreateSerializer` |
+| `*UpdateSerializer` | Update/PATCH operations (input) | `SnippetUpdateSerializer` |
+| `*OutputSerializer` | Detail read operations | `SnippetOutputSerializer` |
 | `*InfoSerializer` | Minimal read-only nested data | `UserInfoSerializer` |
-| `*ListSerializer` | Optimized for list views | `GroupListSerializer` |
-
-### Project Utilities (`apps/core/utils/serializers/`)
-
-| Utility | Purpose |
-|---------|---------|
-| `StrictSerializerMixin` | Rejects unknown fields (prevents silent ignore) |
-| `EnumChoiceField` | Maps `TextChoices` to API values |
-| `EmailListField` | Validates list of emails |
-| `ModelURLListField` | Accepts list of hyperlinked URLs |
-| `FormSerializer` | Form-based serialization |
+| `*ListSerializer` | Optimized for list views | `SnippetListSerializer` |
 
 ### Base Patterns
 
@@ -114,7 +101,7 @@ Request -> Permissions -> get_queryset() -> get_serializer_class() -> action -> 
 | Manual tenant filtering | Trust middleware | Instance-level isolation is automatic |
 | Fat views (>15 lines) | Extract to service | Testing and reuse |
 | `@action` without `permission_classes` | Define explicit permissions | Inherits ViewSet default (may be wrong) |
-| Missing `StrictSerializerMixin` on input | Add mixin | Rejects unknown fields |
+| Silently accepting unknown fields on input | Add a strict serializer mixin | Prevents silent ignore of typos |
 | `required=False` without `allow_null`/`allow_blank` | Specify both | Ambiguous DRF behavior |
 
 ## drf-spectacular Integration (v0.28.0)
@@ -123,22 +110,18 @@ Auto-schema handles standard CRUD correctly — most ViewSets don't need explici
 
 ### When to add decorators
 
-| Scenario | Decorator | Reference |
-|----------|-----------|-----------|
-| Custom `@action` with non-standard request/response | `@extend_schema(request=..., responses=...)` | `core/views/auth.py` |
-| Multipart file upload | `@extend_schema(request={"multipart/form-data": Serializer})` | `assets/views/documents.py` |
-| Query params not from FilterSet | `@extend_schema(parameters=[OpenApiParameter(...)])` | `assets/views/assets.py` |
-| Custom tags | `@extend_schema(tags=["name"])` | `catalog/views.py` |
-| Exclude endpoint from schema | `@extend_schema(exclude=True)` | `core/views/static.py` |
-| Different response schema per action | `@extend_schema_view(action=extend_schema(responses=...))` | `processes/views.py` |
+| Scenario | Decorator |
+|----------|-----------|
+| Custom `@action` with non-standard request/response | `@extend_schema(request=..., responses=...)` |
+| Multipart file upload | `@extend_schema(request={"multipart/form-data": Serializer})` |
+| Query params not from FilterSet | `@extend_schema(parameters=[OpenApiParameter(...)])` |
+| Custom tags | `@extend_schema(tags=["name"])` |
+| Exclude endpoint from schema | `@extend_schema(exclude=True)` |
+| Different response schema per action | `@extend_schema_view(action=extend_schema(responses=...))` |
 
 ### Imports
 
 All from `drf_spectacular.utils`: `extend_schema`, `extend_schema_view`, `OpenApiParameter`. Types from `drf_spectacular.types`: `OpenApiTypes`.
-
-### Custom field extensions (already exist)
-
-`DatacenterFieldFix`, `_ProcessTypeFieldFix`, `_WorkflowFieldFix`, `_ProcessAssetInputFieldFix` — check `hierarchy/utils/serializers.py` and `processes/utils/serializers/` before creating new ones.
 
 ### Recommendations
 
@@ -146,7 +129,7 @@ All from `drf_spectacular.utils`: `extend_schema`, `extend_schema_view`, `OpenAp
 - Never use `@swagger_auto_schema` (drf-yasg, not this project)
 - Prefer referencing existing serializer classes over `inline_serializer()`
 - `COMPONENT_SPLIT_REQUEST = True` — request/response schemas are separate
-- Verify with `nox -s test_contract`
+- Verify with the project's contract test suite
 
 ## Documentation
 
@@ -166,15 +149,23 @@ All from `drf_spectacular.utils`: `extend_schema`, `extend_schema_view`, `OpenAp
 1. **ALWAYS** separate Input and Output serializers -- use `get_serializer_class()` with dict by action
 2. **ALWAYS** optimize querysets with `select_related`/`prefetch_related` + `order_by`
 3. **NEVER** put business logic in views or serializers -- delegate to services via `perform_*`
-4. **ALWAYS** use `StrictSerializerMixin` on input serializers to reject unknown fields
-5. **ALWAYS** set `frontend_permissions` dict and explicit `permission_classes` on `@action`
+4. **ALWAYS** use a strict serializer mixin on input serializers to reject unknown fields
+5. **ALWAYS** set explicit `permission_classes` on `@action` (never rely on ViewSet default)
 
 ## Sources
 
 - [DRF ViewSets](https://www.django-rest-framework.org/api-guide/viewsets/)
 - [DRF Serializers](https://www.django-rest-framework.org/api-guide/serializers/)
+- [DRF Tutorial — ViewSets and Routers](https://www.django-rest-framework.org/tutorial/6-viewsets-and-routers/)
 - [HackSoftware Django Styleguide](https://github.com/HackSoftware/Django-Styleguide)
-- [Django Query Optimization](https://docs.djangoproject.com/en/5.0/topics/db/optimization/)
-- Reference: `apps/core/views/user.py`, `apps/core/serializers/accessprofile.py`
+- [Django Query Optimization](https://docs.djangoproject.com/en/stable/topics/db/optimization/)
 
-**Last Updated**: 2026-03-18
+## Deep references (Read on demand)
+
+| When | Read file |
+|---|---|
+| Binora frontend_permissions dict pattern | `.claude/skills/django-api/references/binora-frontend-permissions.md` |
+| Binora custom drf-spectacular field extensions | `.claude/skills/django-api/references/binora-drf-spectacular-extensions.md` |
+| Binora custom API utilities and workarounds | `.claude/skills/django-api/references/binora-api-utilities.md` |
+
+**Last Updated**: 2026-04-10

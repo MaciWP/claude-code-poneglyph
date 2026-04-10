@@ -1,8 +1,7 @@
 ---
 name: bulletproof-architecture
 description: |
-  Bulletproof React architecture rules for binora-frontend: feature-based slicing,
-  module boundaries, state management decisions, route registration, and i18n integration.
+  Architecture rules for React/TypeScript frontends following the Bulletproof React pattern (alan2207/bulletproof-react): feature-based slicing, module boundaries, state management, route registration, and i18n integration.
   Use when creating features, reviewing imports, or deciding where code belongs.
 allowed-tools: [Read, Grep, Glob]
 context: fork
