@@ -28,6 +28,7 @@ export type ErrorCategory =
   | "NetworkError"
   | "PermissionError"
   | "HallucinationError"
+  | "permission_denial"
   | "Unknown";
 
 export interface ErrorFix {
@@ -70,7 +71,7 @@ const TEST_FIXTURE_PATTERNS: RegExp[] = [
 // ============================================================================
 
 export function isTestFixtureError(message: string): boolean {
-  return TEST_FIXTURE_PATTERNS.some(pattern => pattern.test(message));
+  return TEST_FIXTURE_PATTERNS.some((pattern) => pattern.test(message));
 }
 
 // ============================================================================
@@ -239,7 +240,7 @@ export function getBestFix(pattern: ErrorPattern): string | null {
 
 export function cleanTestFixturePatterns(): number {
   const patterns = loadPatterns();
-  const clean = patterns.filter(p => !isTestFixtureError(p.originalMessage));
+  const clean = patterns.filter((p) => !isTestFixtureError(p.originalMessage));
   const removed = patterns.length - clean.length;
   if (removed > 0) {
     savePatterns(clean);

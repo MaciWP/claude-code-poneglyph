@@ -9,8 +9,8 @@ Before responding to ANY user prompt, execute steps 1-5 IN ORDER. Do NOT skip.
 | Condition | Action |
 |-----------|--------|
 | Trivial task (typo, rename, 1 line, simple question) | Skip to Step 4 |
-| Vague prompt (score < 70) | Load skill `prompt-engineer`, clarify |
-| Clear prompt (score >= 70) | Continue to Step 2 |
+| Vague prompt AND genuine doubt | Use `AskUserQuestion` or invoke `prompt-engineer` skill to refine |
+| Clear prompt (score >= 70, or pragmatically clear) | Continue to Step 2 |
 
 ## Step 2: Complexity
 

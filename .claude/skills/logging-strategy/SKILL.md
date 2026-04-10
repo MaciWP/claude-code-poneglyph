@@ -18,6 +18,10 @@ activation:
     - log levels
 for_agents: [builder]
 version: "2.0"
+paths:
+  - "**/logger*.{ts,js,py}"
+  - "**/logging/**"
+  - "**/observability/**"
 ---
 
 # Logging Strategy

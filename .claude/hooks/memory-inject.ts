@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { loadPatterns } from "./lib/pattern-learning";
 import { loadScores } from "./lib/agent-scorer";
 import { loadRecentLessons } from "./lib/lessons-recorder";
@@ -54,7 +54,31 @@ interface HookOutput {
   hookSpecificOutput: {
     hookEventName: string;
     additionalContext: string;
+    sessionTitle?: string;
   };
+}
+
+const TITLE_MAX_LEN = 50;
+
+export function buildSessionTitle(prompt: string): string {
+  const normalized = prompt.replace(/\s+/g, " ").trim();
+  if (normalized.length <= TITLE_MAX_LEN) return normalized;
+  const slice = normalized.slice(0, TITLE_MAX_LEN);
+  const lastSpace = slice.lastIndexOf(" ");
+  const cut = lastSpace > 0 ? slice.slice(0, lastSpace) : slice;
+  return `${cut}…`;
+}
+
+export function isFirstTurn(transcriptPath: string | undefined): boolean {
+  try {
+    if (!transcriptPath || !existsSync(transcriptPath)) return true;
+    const content = readFileSync(transcriptPath, "utf-8").trim();
+    if (content.length === 0) return true;
+    const lines = content.split("\n").filter((l) => l.trim().length > 0);
+    return lines.length <= 1;
+  } catch {
+    return false;
+  }
 }
 
 const API_URL = process.env.MEMORY_API_URL || "http://localhost:8080";
@@ -113,7 +137,11 @@ function extractPathSkills(prompt: string): string[] {
   }
 }
 
-function emitOutput(context: string, prompt: string): void {
+function emitOutput(
+  context: string,
+  prompt: string,
+  sessionTitle?: string,
+): void {
   const warmStart = recoverWarmStartContext(prompt);
   let enrichedContext = context + warmStart;
 
@@ -126,14 +154,16 @@ function emitOutput(context: string, prompt: string): void {
     // best-effort — never break memory-inject
   }
 
-  if (!enrichedContext || enrichedContext.trim().length === 0) return;
+  const hasContext = enrichedContext && enrichedContext.trim().length > 0;
+  if (!hasContext && !sessionTitle) return;
 
-  const output: HookOutput = {
-    hookSpecificOutput: {
-      hookEventName: "UserPromptSubmit",
-      additionalContext: enrichedContext,
-    },
+  const hookSpecificOutput: HookOutput["hookSpecificOutput"] = {
+    hookEventName: "UserPromptSubmit",
+    additionalContext: hasContext ? enrichedContext : "",
   };
+  if (sessionTitle) hookSpecificOutput.sessionTitle = sessionTitle;
+
+  const output: HookOutput = { hookSpecificOutput };
   console.log(JSON.stringify(output));
 }
 
@@ -216,13 +246,16 @@ async function buildEnrichmentContext(): Promise<string> {
   }
 }
 
-async function emitRoutingSuggestionsFallback(prompt: string): Promise<void> {
+async function emitRoutingSuggestionsFallback(
+  prompt: string,
+  sessionTitle?: string,
+): Promise<void> {
   try {
     const context = await buildEnrichmentContext();
-    emitOutput(context, prompt);
+    emitOutput(context, prompt, sessionTitle);
   } catch {
     try {
-      emitOutput("", prompt);
+      emitOutput("", prompt, sessionTitle);
     } catch {
       // best effort - never block Claude Code
     }
@@ -239,11 +272,15 @@ async function main(): Promise<void> {
     process.exit(0);
   }
 
-  const { prompt, session_id } = input;
+  const { prompt, session_id, transcript_path } = input;
 
   if (!prompt || prompt.trim().length < 5) {
     process.exit(0);
   }
+
+  const sessionTitle = isFirstTurn(transcript_path)
+    ? buildSessionTitle(prompt)
+    : undefined;
 
   try {
     const controller = new AbortController();
@@ -265,22 +302,24 @@ async function main(): Promise<void> {
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      await emitRoutingSuggestionsFallback(prompt);
+      await emitRoutingSuggestionsFallback(prompt, sessionTitle);
       process.exit(0);
     }
 
     const result = (await response.json()) as InjectionResponse;
 
     if (!result.context || result.context.trim().length === 0) {
-      await emitRoutingSuggestionsFallback(prompt);
+      await emitRoutingSuggestionsFallback(prompt, sessionTitle);
       process.exit(0);
     }
 
-    emitOutput(result.context, prompt);
+    emitOutput(result.context, prompt, sessionTitle);
   } catch {
-    await emitRoutingSuggestionsFallback(prompt);
+    await emitRoutingSuggestionsFallback(prompt, sessionTitle);
     process.exit(0);
   }
 }
 
-main();
+if (import.meta.main) {
+  main();
+}

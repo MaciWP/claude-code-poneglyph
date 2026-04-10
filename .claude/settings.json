@@ -207,6 +207,30 @@
         ]
       }
     ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun run $HOME/.claude/hooks/subagent-start.ts",
+            "timeout": 5000,
+            "async": true
+          }
+        ]
+      }
+    ],
+    "PermissionDenied": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun run $HOME/.claude/hooks/permission-denied.ts",
+            "timeout": 5000,
+            "async": true
+          }
+        ]
+      }
+    ],
     "StopFailure": [
       {
         "hooks": [

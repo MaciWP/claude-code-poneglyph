@@ -12,6 +12,7 @@ skills:
   - lsp-operations
   - anti-hallucination
 color: cyan
+initialPrompt: "Before answering, run one LSP documentSymbol or Glob to orient yourself on top-level project structure if you don't already know it. Skip if the user's request names specific files."
 ---
 # Scout Agent
 

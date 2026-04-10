@@ -21,6 +21,12 @@ activation:
     - auth
 for_agents: [reviewer, builder]
 version: "2.0"
+paths:
+  - "**/auth/**"
+  - "**/api/**"
+  - "**/middleware/**"
+  - "**/*security*"
+  - "**/*.env*"
 ---
 
 # Security Review Checklist

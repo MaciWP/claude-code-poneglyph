@@ -10,6 +10,11 @@ import type {
 
 const CATEGORY_REGEXES: Array<{ category: ErrorCategory; regex: RegExp }> = [
   {
+    // MUST stay before PermissionError regex — classifyError returns on first match
+    category: "permission_denial",
+    regex: /^\[tool-deny\]/,
+  },
+  {
     category: "TypeError",
     regex: /TypeError|cannot read propert|is not a function|undefined is not/i,
   },

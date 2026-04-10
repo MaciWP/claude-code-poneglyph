@@ -21,6 +21,10 @@ activation:
     - latency
 for_agents: [reviewer, builder]
 version: "2.0"
+paths:
+  - "**/*perf*"
+  - "**/benchmark*/**"
+  - "**/*.bench.*"
 ---
 
 # Performance Review Patterns

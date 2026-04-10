@@ -23,6 +23,12 @@ activation:
     - isolation
 for_agents: [builder, reviewer]
 version: "2.0.0"
+paths:
+  - "**/*.sql"
+  - "**/migrations/**"
+  - "**/models/**"
+  - "**/schema*.ts"
+  - "**/schema*.py"
 ---
 
 # Database Patterns Skill

@@ -5,7 +5,6 @@ description: |
   Use proactively when: prompt score < 70, requirements unclear, vague instructions.
   Keywords - prompt, improve, refine, clarify, ambiguous, vague, requirements
 type: encoded-preference
-disable-model-invocation: true
 argument-hint: "[prompt text or task description]"
 effort: medium
 activation:

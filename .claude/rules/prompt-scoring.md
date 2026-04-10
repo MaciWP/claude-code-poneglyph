@@ -1,6 +1,6 @@
 # Prompt Scoring Rule
 
-Before any action, evaluate the user's prompt against 5 criteria.
+Evaluate the user's prompt against 5 criteria. The score is a **signal, not a hard gate** — use it to decide when to ask for validation, not as an automatic block.
 
 ## Evaluation Criteria
 
@@ -18,7 +18,9 @@ Before any action, evaluate the user's prompt against 5 criteria.
 |-------|--------|
 | 80-100 | Proceed directly |
 | 70-79 | Proceed with caution |
-| **< 70** | **Use `AskUserQuestion` to ask the user to clarify** |
+| **< 70** | **Signal of doubt**: if the prompt is genuinely ambiguous or the resulting plan needs validation, use `AskUserQuestion` — or invoke the `prompt-engineer` skill to refine. If the intent is pragmatically clear despite low formal score, proceed and flag the uncertainty |
+
+> **Commandment I (Honest symbiosis)**: asking is not friction — it's the right move when in doubt. But don't ask ceremonial questions when the intent is obvious.
 
 ## Improvement Questions
 
@@ -67,6 +69,6 @@ When a criterion scores low, use these questions to improve the prompt:
 ## Process
 
 1. Receive user prompt
-2. Evaluate against the 5 criteria
-3. If score < 70: use `AskUserQuestion` to ask the user to clarify
-4. If score >= 70: proceed with complexity analysis
+2. Evaluate against the 5 criteria (mentally, don't make a ceremony of it)
+3. If score < 70 **and** there's genuine doubt about intent: use `AskUserQuestion` or invoke the `prompt-engineer` skill to refine
+4. If score >= 70, **or** the intent is pragmatically clear despite low score: proceed with complexity analysis and flag any remaining uncertainty inline

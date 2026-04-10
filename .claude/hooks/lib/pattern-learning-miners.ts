@@ -13,6 +13,17 @@ import {
   calculateOutcome,
 } from "./pattern-learning-utils";
 
+export {
+  mineSpawnSuccessPatterns,
+  toExpertiseBucket,
+} from "./pattern-learning-spawn";
+export type {
+  SpawnRecord,
+  SpawnScoreRecord,
+  SpawnSuccessPattern,
+  ExpertiseBucket,
+} from "./pattern-learning-spawn";
+
 export interface CountEntry {
   count: number;
   traces: ResolvedTraceEntry[];
@@ -153,7 +164,11 @@ function findTopAgent(traces: ResolvedTraceEntry[]): string {
   return topAgent;
 }
 
-function isInRange(trace: ResolvedTraceEntry, low: number, high: number): boolean {
+function isInRange(
+  trace: ResolvedTraceEntry,
+  low: number,
+  high: number,
+): boolean {
   const c = estimateComplexity(trace);
   return c >= low && c <= high;
 }
