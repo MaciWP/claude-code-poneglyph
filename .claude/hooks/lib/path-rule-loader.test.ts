@@ -4,6 +4,7 @@ import {
   globMatch,
   matchRules,
   getSkillsForPath,
+  getSkillReadPaths,
   getKeywordsForPath,
   loadPathRules,
   type PathRule,
@@ -207,6 +208,55 @@ describe("getSkillsForPath", () => {
 
   test("returns empty for non-matching path", () => {
     expect(getSkillsForPath("README.md", testRules)).toEqual([]);
+  });
+});
+
+// ============================================================================
+// getSkillReadPaths
+// ============================================================================
+
+describe("getSkillReadPaths", () => {
+  const testRules: PathRule[] = [
+    {
+      name: "django-api",
+      globs: ["apps/**/views/*.py"],
+      priority: 20,
+      skills: ["django-api", "django-query-optimizer"],
+      keywords: [],
+      context: "",
+    },
+    {
+      name: "django-models",
+      globs: ["apps/**/models/*.py"],
+      priority: 15,
+      skills: ["django-query-optimizer"],
+      keywords: [],
+      context: "",
+    },
+  ];
+
+  test("returns structured read paths for matching file", () => {
+    const result = getSkillReadPaths("apps/users/views/login.py", testRules);
+    expect(result).toHaveLength(2);
+    expect(result[0]).toEqual({
+      name: "django-api",
+      readPath: ".claude/skills/django-api/SKILL.md",
+      matchedGlob: "apps/**/views/*.py",
+    });
+    expect(result[1].name).toBe("django-query-optimizer");
+    expect(result[1].readPath).toBe(
+      ".claude/skills/django-query-optimizer/SKILL.md",
+    );
+  });
+
+  test("returns empty for non-matching path", () => {
+    expect(getSkillReadPaths("README.md", testRules)).toEqual([]);
+  });
+
+  test("deduplicates skills across matching rules", () => {
+    const result = getSkillReadPaths("apps/users/models/user.py", testRules);
+    expect(result).toHaveLength(1);
+    expect(result[0].name).toBe("django-query-optimizer");
   });
 });
 

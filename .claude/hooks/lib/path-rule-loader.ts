@@ -109,6 +109,36 @@ export function getSkillsForPath(
   return skills;
 }
 
+export interface SkillReadPath {
+  name: string;
+  readPath: string;
+  matchedGlob: string;
+}
+
+export function getSkillReadPaths(
+  filePath: string,
+  rules?: PathRule[],
+): SkillReadPath[] {
+  const matches = matchRules(filePath, rules);
+  const seen = new Set<string>();
+  const result: SkillReadPath[] = [];
+
+  for (const match of matches) {
+    for (const skill of match.rule.skills) {
+      if (!seen.has(skill)) {
+        seen.add(skill);
+        result.push({
+          name: skill,
+          readPath: `.claude/skills/${skill}/SKILL.md`,
+          matchedGlob: match.matchedGlob,
+        });
+      }
+    }
+  }
+
+  return result;
+}
+
 export function getKeywordsForPath(
   filePath: string,
   rules?: PathRule[],

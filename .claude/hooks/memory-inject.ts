@@ -8,7 +8,10 @@ import {
   loadPatterns as loadErrorPatterns,
   getBestFix,
 } from "./lib/error-patterns";
-import { getSkillsForPath } from "./lib/path-rule-loader";
+import {
+  getSkillReadPaths,
+  type SkillReadPath,
+} from "./lib/path-rule-loader";
 import {
   createStore,
   closeStore,
@@ -113,25 +116,25 @@ function recoverWarmStartContext(prompt: string): string {
 const PATH_REGEX =
   /(?:[\w./\\-]+\.(?:ts|tsx|js|jsx|py|go|rs|java|rb|php|swift|kt|c|cpp|cs|md|json|yaml|yml|toml|cfg|ini))/g;
 
-function extractPathSkills(prompt: string): string[] {
+function extractPathSkills(prompt: string): SkillReadPath[] {
   try {
     const matches = prompt.match(PATH_REGEX);
     if (!matches) return [];
 
     const seen = new Set<string>();
-    const skills: string[] = [];
+    const result: SkillReadPath[] = [];
 
     for (const filePath of matches) {
-      const pathSkills = getSkillsForPath(filePath);
-      for (const skill of pathSkills) {
-        if (!seen.has(skill)) {
-          seen.add(skill);
-          skills.push(skill);
+      const readPaths = getSkillReadPaths(filePath);
+      for (const entry of readPaths) {
+        if (!seen.has(entry.name)) {
+          seen.add(entry.name);
+          result.push(entry);
         }
       }
     }
 
-    return skills;
+    return result;
   } catch {
     return [];
   }
@@ -148,7 +151,14 @@ function emitOutput(
   try {
     const pathSkills = extractPathSkills(prompt);
     if (pathSkills.length > 0) {
-      enrichedContext += `\n\n## Path-Based Skills\nRecommended skills based on files in prompt: ${pathSkills.join(", ")}`;
+      const lines = pathSkills.map(
+        (s) =>
+          `- \`Read ${s.readPath}\` — matched path glob in ${s.matchedGlob}`,
+      );
+      enrichedContext +=
+        `\n\n## Path-Based Skills (for delegation)\n\n` +
+        `Based on files in your prompt, these skills likely apply. When delegating to a subagent, include a \`Read\` instruction for each:\n\n` +
+        lines.join("\n");
     }
   } catch {
     // best-effort — never break memory-inject
