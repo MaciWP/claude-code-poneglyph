@@ -4,6 +4,9 @@ description: |
   Contract-first development for React/TypeScript frontends: OpenAPI spec consumed as a submodule
   or local file, type generation with @hey-api/openapi-ts, API client integration, and type usage patterns.
   Use when creating API hooks, updating types, or debugging type mismatches.
+type: knowledge-base
+disable-model-invocation: false
+effort: high
 activation:
   keywords:
     - openapi frontend
@@ -15,10 +18,9 @@ activation:
     - api client types
     - contract frontend
     - schema types
-allowed-tools: [Read, Grep, Glob]
+for_agents: [builder, reviewer, scout]
 context: fork
 version: "1.0.0"
-for_agents: [builder, reviewer, scout]
 ---
 
 # OpenAPI Frontend Contract

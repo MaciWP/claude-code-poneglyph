@@ -4,6 +4,9 @@ description: |
   Accumulated review lessons and common pitfalls for React/TypeScript frontends. Contains patterns
   that have caused bugs, PR rejections, or maintenance issues. Growing knowledge base.
   Use when reviewing code or before implementing to avoid known pitfalls.
+type: knowledge-base
+disable-model-invocation: false
+effort: high
 activation:
   keywords:
     - frontend review
@@ -15,10 +18,9 @@ activation:
     - past pr lessons
     - review checklist
     - frontend mistakes
-allowed-tools: [Read, Grep, Glob]
+for_agents: [builder, reviewer]
 context: fork
 version: "1.0.0"
-for_agents: [builder, reviewer]
 ---
 
 # Frontend Review Lessons

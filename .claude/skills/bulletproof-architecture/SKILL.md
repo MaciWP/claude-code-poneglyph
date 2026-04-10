@@ -3,6 +3,9 @@ name: bulletproof-architecture
 description: |
   Architecture rules for React/TypeScript frontends following the Bulletproof React pattern (alan2207/bulletproof-react): feature-based slicing, module boundaries, state management, route registration, and i18n integration.
   Use when creating features, reviewing imports, or deciding where code belongs.
+type: knowledge-base
+disable-model-invocation: false
+effort: high
 activation:
   keywords:
     - bulletproof
@@ -15,10 +18,9 @@ activation:
     - cross-feature import
     - feature index
     - public api
-allowed-tools: [Read, Grep, Glob]
+for_agents: [builder, reviewer, planner, scout]
 context: fork
 version: "1.0.0"
-for_agents: [builder, reviewer, planner, scout]
 ---
 
 # Bulletproof Architecture

@@ -1,9 +1,12 @@
 ---
 name: frontend-testing-patterns
 description: |
-  Testing patterns for binora-frontend: Vitest + Testing Library + MSW setup, test utilities,
+  Testing patterns for React/TypeScript frontends: Vitest + Testing Library + MSW setup, test utilities,
   component/hook/API testing, form testing, and DataTable testing.
   Use when writing tests, reviewing test coverage, or setting up test infrastructure.
+type: knowledge-base
+disable-model-invocation: false
+effort: medium
 activation:
   keywords:
     - vitest
@@ -16,10 +19,9 @@ activation:
     - frontend test
     - mock service worker
     - react testing library
-allowed-tools: [Read, Grep, Glob]
+for_agents: [builder, reviewer]
 context: fork
 version: "1.0.0"
-for_agents: [builder, reviewer]
 ---
 
 # Frontend Testing Patterns

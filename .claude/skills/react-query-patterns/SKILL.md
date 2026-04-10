@@ -1,9 +1,12 @@
 ---
 name: react-query-patterns
 description: |
-  React Query v5 patterns for binora-frontend: standard API hook pattern (getFoo + queryOptions + useFoo),
+  React Query v5 patterns for React/TypeScript frontends: standard API hook pattern (getFoo + queryOptions + useFoo),
   query key factories, mutations with cache invalidation, pagination, and API deduplication rules.
   Use when creating API hooks, implementing data fetching, or reviewing query patterns.
+type: knowledge-base
+disable-model-invocation: false
+effort: medium
 activation:
   keywords:
     - react query
@@ -16,10 +19,9 @@ activation:
     - api hook
     - react query v5
     - data fetching hook
-allowed-tools: [Read, Grep, Glob]
+for_agents: [builder, reviewer, planner]
 context: fork
 version: "1.0.0"
-for_agents: [builder, reviewer, planner]
 ---
 
 # React Query Patterns

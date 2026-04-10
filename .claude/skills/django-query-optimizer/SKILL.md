@@ -4,6 +4,9 @@ description: |
   Django ORM query optimization -- N+1 detection, select_related/prefetch_related enforcement,
   QuerySet performance patterns, and database access optimization.
   Use when working with Django QuerySets, reviewing database queries, or fixing N+1 problems.
+type: knowledge-base
+disable-model-invocation: false
+effort: medium
 activation:
   keywords:
     - n+1
@@ -16,10 +19,9 @@ activation:
     - slow query
     - prefetch
     - optimize queries
-allowed-tools: [Read, Grep, Glob]
+for_agents: [builder, reviewer, scout]
 context: fork
 version: "2.0.0"
-for_agents: [builder, reviewer, scout]
 ---
 
 # Django Query Optimizer

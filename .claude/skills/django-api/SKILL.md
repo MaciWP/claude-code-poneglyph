@@ -5,6 +5,9 @@ description: |
   permissions, routing, and request/response handling.
   Use when implementing endpoints, reviewing API code, creating serializers,
   or designing ViewSet patterns in Django/DRF projects.
+type: knowledge-base
+disable-model-invocation: false
+effort: medium
 activation:
   keywords:
     - viewset
@@ -17,10 +20,9 @@ activation:
     - get_serializer_class
     - drf router
     - rest endpoint
-allowed-tools: [Read, Grep, Glob]
+for_agents: [builder, reviewer, planner]
 context: fork
 version: "2.0.0"
-for_agents: [builder, reviewer, planner]
 ---
 
 # Django API Layer

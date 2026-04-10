@@ -4,6 +4,9 @@ description: |
   Conventional Comments format for PR reviews -- structured, actionable feedback
   with decorators (blocking/non-blocking), praise, and Spanish informal tone.
   Use when generating PR review comments or code review feedback.
+type: encoded-preference
+disable-model-invocation: false
+effort: low
 activation:
   keywords:
     - pr review
@@ -15,10 +18,9 @@ activation:
     - pull request review
     - suggestion
     - nitpick
-allowed-tools: [Read, Grep, Glob]
+for_agents: [reviewer]
 context: fork
 version: "2.0.0"
-for_agents: [reviewer]
 ---
 
 # PR Conventional Comments

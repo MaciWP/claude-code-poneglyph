@@ -1,9 +1,12 @@
 ---
 name: form-patterns
 description: |
-  Form implementation patterns for binora-frontend: React Hook Form v7 + Zod validation,
+  Form implementation patterns for React/TypeScript frontends: React Hook Form v7 + Zod validation,
   form-field components, submission with React Query mutations, and error display.
   Use when creating forms, adding validation, or reviewing form implementations.
+type: knowledge-base
+disable-model-invocation: false
+effort: medium
 activation:
   keywords:
     - react hook form
@@ -16,10 +19,9 @@ activation:
     - form submission
     - schema validation
     - rhf
-allowed-tools: [Read, Grep, Glob]
+for_agents: [builder, reviewer]
 context: fork
 version: "1.0.0"
-for_agents: [builder, reviewer]
 ---
 
 # Form Patterns

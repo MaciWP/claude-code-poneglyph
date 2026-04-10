@@ -4,6 +4,9 @@ description: |
   Python/Django code style enforcement -- YOLO philosophy (minimal comments), type hints,
   imports organization, naming conventions, and Black/isort formatting.
   Use when writing or reviewing Python code in this project.
+type: encoded-preference
+disable-model-invocation: false
+effort: low
 activation:
   keywords:
     - python style
@@ -16,10 +19,9 @@ activation:
     - django style
     - pep8
     - code style
-allowed-tools: [Read, Grep, Glob]
+for_agents: [builder]
 context: fork
 version: "2.0.0"
-for_agents: [builder]
 ---
 
 # Code Style Enforcer

@@ -1,9 +1,12 @@
 ---
 name: data-table-patterns
 description: |
-  DataTable component patterns for binora-frontend: shared DataTable from data-table.tsx,
+  DataTable component patterns for React/TypeScript frontends: shared DataTable from data-table.tsx,
   column definitions, server-side pagination, sorting, filtering, row selection, and column ordering.
   Use when implementing tables, adding pagination, or extending DataTable features.
+type: knowledge-base
+disable-model-invocation: false
+effort: medium
 activation:
   keywords:
     - data table
@@ -16,10 +19,9 @@ activation:
     - shadcn table
     - tanstack table
     - faceted filter
-allowed-tools: [Read, Grep, Glob]
+for_agents: [builder, reviewer]
 context: fork
 version: "1.0.0"
-for_agents: [builder, reviewer]
 ---
 
 # DataTable Patterns

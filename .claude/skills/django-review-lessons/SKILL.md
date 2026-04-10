@@ -4,6 +4,9 @@ description: |
   Personal code review lessons learned from past PRs — errors that must never be repeated.
   Covers architecture, style, testing, models, serializers, and contract patterns.
   Use when reviewing code, before PRs, during quality audits, or pre-commit checks.
+type: knowledge-base
+disable-model-invocation: false
+effort: high
 activation:
   keywords:
     - django review
@@ -15,10 +18,9 @@ activation:
     - quality audit
     - django checklist
     - pr checklist
-allowed-tools: [Read, Grep, Glob]
+for_agents: [reviewer, builder]
 context: fork
 version: "2.0.0"
-for_agents: [reviewer, builder]
 ---
 
 # Django Review Lessons

@@ -5,6 +5,9 @@ description: |
   transaction management, and service layer best practices.
   Use when implementing features, reviewing architecture, refactoring business logic,
   or designing new services in Django/DRF projects.
+type: knowledge-base
+disable-model-invocation: false
+effort: high
 activation:
   keywords:
     - django architecture
@@ -17,10 +20,9 @@ activation:
     - atomic
     - django service
     - refactor views
-allowed-tools: [Read, Grep, Glob]
+for_agents: [builder, reviewer, planner, scout]
 context: fork
 version: "2.0.0"
-for_agents: [builder, reviewer, planner, scout]
 ---
 
 # Django Architecture
