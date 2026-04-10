@@ -1,36 +1,56 @@
 /**
  * Parsers for the SubagentStart hook. Extracts spawn context
- * (expertise, skills, effort) from the agent's initial prompt.
+ * (memory, skills, effort) from the agent's initial prompt.
  */
 
 import { createHash } from "node:crypto";
 
-const EXPERTISE_MARKER = "[ACCUMULATED EXPERTISE";
+// Backward compat: historical traces used "[ACCUMULATED EXPERTISE" as the
+// delegation marker. Phase 3 renamed it to "[ACCUMULATED MEMORY". Both are
+// accepted here so old JSONL spawn records remain parseable and newer
+// delegation templates work immediately.
+const MEMORY_MARKER = "[ACCUMULATED MEMORY";
+const LEGACY_EXPERTISE_MARKER = "[ACCUMULATED EXPERTISE";
 const TASK_MARKER = "[TASK]";
-const EXPERTISE_OUTPUT_MARKER = "[EXPERTISE OUTPUT]";
+const MEMORY_OUTPUT_MARKER = "[MEMORY OUTPUT]";
+const LEGACY_EXPERTISE_OUTPUT_MARKER = "[EXPERTISE OUTPUT]";
 const SKILLS_LINE_REGEX =
   /^(?:Loaded skills|Skills loaded|Skills):\s*([^\n]+)/im;
 const EFFORT_REGEX = /\[effort:\s*(high|medium|low)\]/i;
 
+function findMarker(prompt: string, markers: string[]): number {
+  for (const m of markers) {
+    const idx = prompt.indexOf(m);
+    if (idx >= 0) return idx;
+  }
+  return -1;
+}
+
 /**
- * Count bytes of expertise content between [ACCUMULATED EXPERTISE...
- * and the next [TASK] or [EXPERTISE OUTPUT] marker. Returns 0 if absent.
+ * Count bytes of memory content between [ACCUMULATED MEMORY... (or the
+ * legacy [ACCUMULATED EXPERTISE marker) and the next [TASK] / [MEMORY OUTPUT]
+ * / [EXPERTISE OUTPUT] marker. Returns 0 if absent.
  */
-export function extractExpertiseBytes(prompt: string): number {
-  const start = prompt.indexOf(EXPERTISE_MARKER);
+export function extractMemoryBytes(prompt: string): number {
+  const start = findMarker(prompt, [MEMORY_MARKER, LEGACY_EXPERTISE_MARKER]);
   if (start < 0) return 0;
   const bracketEnd = prompt.indexOf("]", start);
   const contentStart =
-    bracketEnd >= 0 ? bracketEnd + 1 : start + EXPERTISE_MARKER.length;
+    bracketEnd >= 0 ? bracketEnd + 1 : start + MEMORY_MARKER.length;
   const rest = prompt.slice(contentStart);
   const taskIdx = rest.indexOf(TASK_MARKER);
-  const outIdx = rest.indexOf(EXPERTISE_OUTPUT_MARKER);
-  const candidates = [taskIdx, outIdx].filter((i) => i >= 0);
+  const memOutIdx = rest.indexOf(MEMORY_OUTPUT_MARKER);
+  const expOutIdx = rest.indexOf(LEGACY_EXPERTISE_OUTPUT_MARKER);
+  const candidates = [taskIdx, memOutIdx, expOutIdx].filter((i) => i >= 0);
   const endOffset =
     candidates.length > 0 ? Math.min(...candidates) : rest.length;
   const content = rest.slice(0, endOffset);
   return Buffer.byteLength(content, "utf8");
 }
+
+// Backward-compat alias: external telemetry consumers still refer to
+// "expertise bytes". Kept as a named export for one release cycle.
+export const extractExpertiseBytes = extractMemoryBytes;
 
 function splitCsv(line: string): string[] {
   return line
@@ -76,7 +96,10 @@ export function promptHash(prompt: string): string {
 }
 
 export interface SpawnContext {
+  // Backward-compat field name. Consumers (pattern-learning-spawn) still read
+  // `expertiseBytes`; kept until the rename is propagated through telemetry.
   expertiseBytes: number;
+  memoryBytes: number;
   skillsInjected: string[];
   effort: "high" | "medium" | "low" | null;
   promptHash: string;
@@ -86,8 +109,10 @@ export function parseSpawnContext(
   prompt: string,
   knownSkills: readonly string[] = [],
 ): SpawnContext {
+  const bytes = extractMemoryBytes(prompt);
   return {
-    expertiseBytes: extractExpertiseBytes(prompt),
+    expertiseBytes: bytes,
+    memoryBytes: bytes,
     skillsInjected: extractSkillsInjected(prompt, knownSkills),
     effort: extractEffort(prompt),
     promptHash: promptHash(prompt),

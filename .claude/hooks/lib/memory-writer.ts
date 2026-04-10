@@ -2,10 +2,10 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync, appendFileSync } fr
 import { join } from "path";
 
 const DEFAULT_BASE_DIR = join(import.meta.dir, "..", "..", "agent-memory");
-const MAX_EXPERTISE_CHARS = 20000;
+const MAX_MEMORY_CHARS = 20000;
 
 function getBaseDir(): string {
-  return process.env.CLAUDE_EXPERTISE_DIR ?? DEFAULT_BASE_DIR;
+  return process.env.CLAUDE_MEMORY_DIR ?? DEFAULT_BASE_DIR;
 }
 
 export interface TranscriptMessage {
@@ -29,7 +29,7 @@ function getTextFromContent(content: unknown): string {
   return parts.join("\n");
 }
 
-export function extractExpertiseInsights(transcript: TranscriptMessage[]): string | null {
+export function extractMemoryInsights(transcript: TranscriptMessage[]): string | null {
   const assistantMessages = transcript.filter((m) => m.role === "assistant");
   if (assistantMessages.length === 0) return null;
 
@@ -48,8 +48,8 @@ export function extractExpertiseInsights(transcript: TranscriptMessage[]): strin
   return body;
 }
 
-function expertisePath(agentName: string): string {
-  return join(getBaseDir(), agentName, "EXPERTISE.md");
+function memoryPath(agentName: string): string {
+  return join(getBaseDir(), agentName, "MEMORY.md");
 }
 
 function agentDir(agentName: string): string {
@@ -71,8 +71,8 @@ function removeOldestSection(content: string): string {
   return content.slice(0, firstSection) + content.slice(nextSection);
 }
 
-export function pruneExpertise(agentName: string, maxChars: number = MAX_EXPERTISE_CHARS): void {
-  const path = expertisePath(agentName);
+export function pruneMemory(agentName: string, maxChars: number = MAX_MEMORY_CHARS): void {
+  const path = memoryPath(agentName);
   if (!existsSync(path)) return;
 
   let content = readFileSync(path, "utf-8");
@@ -84,15 +84,15 @@ export function pruneExpertise(agentName: string, maxChars: number = MAX_EXPERTI
   writeFileSync(path, content, "utf-8");
 }
 
-export function persistExpertise(agentName: string, sessionId: string, insights: string): void {
+export function persistMemory(agentName: string, sessionId: string, insights: string): void {
   const dir = agentDir(agentName);
-  const path = expertisePath(agentName);
+  const path = memoryPath(agentName);
 
   mkdirSync(dir, { recursive: true });
 
   if (!existsSync(path)) {
     const agentTitle = agentName.charAt(0).toUpperCase() + agentName.slice(1);
-    writeFileSync(path, `# ${agentTitle} Expertise\n\n`, "utf-8");
+    writeFileSync(path, `# ${agentTitle} Memory\n\n`, "utf-8");
   }
 
   const sessionShort = sessionId.slice(0, 8);
@@ -100,5 +100,5 @@ export function persistExpertise(agentName: string, sessionId: string, insights:
   const section = `\n## ${dateStr} — Session ${sessionShort}\n${insights}\n`;
 
   appendFileSync(path, section, "utf-8");
-  pruneExpertise(agentName, MAX_EXPERTISE_CHARS);
+  pruneMemory(agentName, MAX_MEMORY_CHARS);
 }

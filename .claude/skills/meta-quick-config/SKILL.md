@@ -372,7 +372,7 @@ Format: `Tool` or `Tool(specifier)`
 CLAUDE.local.md
 
 # Claude Code auto-generated
-.claude/agent-memory/*/EXPERTISE.md
+.claude/agent-memory/*/MEMORY.md
 ```
 
 ### What to Commit vs Gitignore

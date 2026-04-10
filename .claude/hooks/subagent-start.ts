@@ -50,19 +50,22 @@ async function main(): Promise<void> {
 
     const ctx = parseSpawnContext(prompt);
 
+    // Emit both `expertiseBytes` (legacy) and `memoryBytes` (new) for one
+    // release so JSONL consumers can migrate without breakage.
     const record = {
       ts: Math.floor(Date.now() / 1000),
       sessionId,
       agentType,
       promptHash: ctx.promptHash,
-      expertiseBytes: ctx.expertiseBytes,
+      expertiseBytes: ctx.memoryBytes,
+      memoryBytes: ctx.memoryBytes,
       skillsInjected: ctx.skillsInjected,
       effort: ctx.effort,
     };
 
     appendSpawnRecord(record);
     log(
-      `Spawned ${agentType}: expertise=${ctx.expertiseBytes}B skills=${ctx.skillsInjected.length} effort=${ctx.effort ?? "null"}`,
+      `Spawned ${agentType}: memory=${ctx.memoryBytes}B skills=${ctx.skillsInjected.length} effort=${ctx.effort ?? "null"}`,
     );
   } catch {
     // Never block - recording is best-effort

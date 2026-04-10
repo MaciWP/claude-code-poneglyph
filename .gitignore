@@ -40,8 +40,9 @@ npm-debug.log*
 # Claude Code local settings
 .claude/settings.local.json
 
-# Agent expertise (auto-generated per session, FIFO-pruned)
-.claude/agent-memory/*/EXPERTISE.md
+# Agent memory (auto-generated per session, FIFO-pruned; builder/MEMORY.md is tracked intentionally)
+.claude/agent-memory/*/MEMORY.md
+!.claude/agent-memory/builder/MEMORY.md
 
 # Test coverage
 coverage/

@@ -3,16 +3,16 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync, rmSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 import {
-  extractExpertiseInsights,
-  persistExpertise,
-  pruneExpertise,
-} from "./expertise-writer";
-import type { TranscriptMessage } from "./expertise-writer";
+  extractMemoryInsights,
+  persistMemory,
+  pruneMemory,
+} from "./memory-writer";
+import type { TranscriptMessage } from "./memory-writer";
 
-const TEST_DIR = join(tmpdir(), `expertise-writer-test-${process.pid}`);
+const TEST_DIR = join(tmpdir(), `memory-writer-test-${process.pid}`);
 
 function setTestDir(): void {
-  process.env.CLAUDE_EXPERTISE_DIR = TEST_DIR;
+  process.env.CLAUDE_MEMORY_DIR = TEST_DIR;
 }
 
 function cleanup(): void {
@@ -21,14 +21,14 @@ function cleanup(): void {
   } catch {
     // best effort
   }
-  delete process.env.CLAUDE_EXPERTISE_DIR;
+  delete process.env.CLAUDE_MEMORY_DIR;
 }
 
 function makeTranscript(messages: Array<{ role: string; content: string }>): TranscriptMessage[] {
   return messages.map((m) => ({ role: m.role, content: m.content }));
 }
 
-describe("extractExpertiseInsights", () => {
+describe("extractMemoryInsights", () => {
   test("finds insights section with ### header in last assistant message", () => {
     const transcript = makeTranscript([
       { role: "user", content: "do some work" },
@@ -38,7 +38,7 @@ describe("extractExpertiseInsights", () => {
           "Done work.\n\n### Expertise Insights\n- insight one\n- insight two\n",
       },
     ]);
-    const result = extractExpertiseInsights(transcript);
+    const result = extractMemoryInsights(transcript);
     expect(result).not.toBeNull();
     expect(result).toContain("- insight one");
     expect(result).toContain("- insight two");
@@ -52,7 +52,7 @@ describe("extractExpertiseInsights", () => {
         content: "Done.\n\n## Expertise Insights\n- only insight\n",
       },
     ]);
-    const result = extractExpertiseInsights(transcript);
+    const result = extractMemoryInsights(transcript);
     expect(result).toBe("- only insight");
   });
 
@@ -61,16 +61,16 @@ describe("extractExpertiseInsights", () => {
       { role: "user", content: "task" },
       { role: "assistant", content: "All done, no insights here." },
     ]);
-    expect(extractExpertiseInsights(transcript)).toBeNull();
+    expect(extractMemoryInsights(transcript)).toBeNull();
   });
 
   test("returns null for empty transcript", () => {
-    expect(extractExpertiseInsights([])).toBeNull();
+    expect(extractMemoryInsights([])).toBeNull();
   });
 
   test("returns null when only user messages", () => {
     const transcript = makeTranscript([{ role: "user", content: "### Expertise Insights\n- hacked" }]);
-    expect(extractExpertiseInsights(transcript)).toBeNull();
+    expect(extractMemoryInsights(transcript)).toBeNull();
   });
 
   test("searches only the last assistant message", () => {
@@ -82,7 +82,7 @@ describe("extractExpertiseInsights", () => {
       { role: "user", content: "continue" },
       { role: "assistant", content: "Second message with no insights." },
     ]);
-    expect(extractExpertiseInsights(transcript)).toBeNull();
+    expect(extractMemoryInsights(transcript)).toBeNull();
   });
 
   test("handles array content blocks", () => {
@@ -95,7 +95,7 @@ describe("extractExpertiseInsights", () => {
         ],
       },
     ];
-    const result = extractExpertiseInsights(transcript);
+    const result = extractMemoryInsights(transcript);
     expect(result).toContain("- block insight");
   });
 
@@ -108,7 +108,7 @@ describe("extractExpertiseInsights", () => {
           "Done.\n\n### Expertise Insights\n- [1-5 insights concretos y reutilizables]\n",
       },
     ]);
-    expect(extractExpertiseInsights(transcript)).toBeNull();
+    expect(extractMemoryInsights(transcript)).toBeNull();
   });
 
   test("returns null when insights contain 'What to include' instructions", () => {
@@ -120,7 +120,7 @@ describe("extractExpertiseInsights", () => {
           "Done.\n\n### Expertise Insights\n- real insight\n\n**What to include**: patterns\n**What NOT to include**: ephemeral data\n",
       },
     ]);
-    expect(extractExpertiseInsights(transcript)).toBeNull();
+    expect(extractMemoryInsights(transcript)).toBeNull();
   });
 
   test("returns null when insights contain 'Que incluir' instructions", () => {
@@ -132,7 +132,7 @@ describe("extractExpertiseInsights", () => {
           "Done.\n\n### Expertise Insights\n- insight\n\n**Que incluir**: patrones\n**Que NO incluir**: detalles\n",
       },
     ]);
-    expect(extractExpertiseInsights(transcript)).toBeNull();
+    expect(extractMemoryInsights(transcript)).toBeNull();
   });
 
   test("still returns valid insights after contamination guard", () => {
@@ -144,14 +144,14 @@ describe("extractExpertiseInsights", () => {
           "Done.\n\n### Expertise Insights\n- Bun mock.module is global and persistent across test files\n- Always use spyOn instead of mock.module when possible\n",
       },
     ]);
-    const result = extractExpertiseInsights(transcript);
+    const result = extractMemoryInsights(transcript);
     expect(result).not.toBeNull();
     expect(result).toContain("Bun mock.module is global");
     expect(result).toContain("spyOn instead of mock.module");
   });
 });
 
-describe("persistExpertise", () => {
+describe("persistMemory", () => {
   beforeEach(() => {
     mkdirSync(TEST_DIR, { recursive: true });
     setTestDir();
@@ -161,27 +161,27 @@ describe("persistExpertise", () => {
     cleanup();
   });
 
-  test("creates EXPERTISE.md with header when file does not exist", () => {
-    persistExpertise("builder", "abc12345", "- insight one");
-    const path = join(TEST_DIR, "builder", "EXPERTISE.md");
+  test("creates MEMORY.md with header when file does not exist", () => {
+    persistMemory("builder", "abc12345", "- insight one");
+    const path = join(TEST_DIR, "builder", "MEMORY.md");
     expect(existsSync(path)).toBe(true);
     const content = readFileSync(path, "utf-8");
-    expect(content).toContain("# Builder Expertise");
+    expect(content).toContain("# Builder Memory");
     expect(content).toContain("- insight one");
   });
 
-  test("appends to existing EXPERTISE.md", () => {
-    persistExpertise("builder", "session1a", "- first");
-    persistExpertise("builder", "session2b", "- second");
-    const path = join(TEST_DIR, "builder", "EXPERTISE.md");
+  test("appends to existing MEMORY.md", () => {
+    persistMemory("builder", "session1a", "- first");
+    persistMemory("builder", "session2b", "- second");
+    const path = join(TEST_DIR, "builder", "MEMORY.md");
     const content = readFileSync(path, "utf-8");
     expect(content).toContain("- first");
     expect(content).toContain("- second");
   });
 
   test("includes session short id and date in section header", () => {
-    persistExpertise("reviewer", "abcdef99xyz", "- review insight");
-    const path = join(TEST_DIR, "reviewer", "EXPERTISE.md");
+    persistMemory("reviewer", "abcdef99xyz", "- review insight");
+    const path = join(TEST_DIR, "reviewer", "MEMORY.md");
     const content = readFileSync(path, "utf-8");
     expect(content).toContain("Session abcdef99");
     expect(content).toMatch(/## \d{4}-\d{2}-\d{2}/);
@@ -190,12 +190,12 @@ describe("persistExpertise", () => {
   test("creates agent directory when it does not exist", () => {
     const agentDir = join(TEST_DIR, "scout");
     expect(existsSync(agentDir)).toBe(false);
-    persistExpertise("scout", "sess1234", "- scout insight");
+    persistMemory("scout", "sess1234", "- scout insight");
     expect(existsSync(agentDir)).toBe(true);
   });
 });
 
-describe("pruneExpertise", () => {
+describe("pruneMemory", () => {
   beforeEach(() => {
     mkdirSync(TEST_DIR, { recursive: true });
     setTestDir();
@@ -206,47 +206,47 @@ describe("pruneExpertise", () => {
   });
 
   test("does nothing when file does not exist", () => {
-    expect(() => pruneExpertise("nobody", 100)).not.toThrow();
+    expect(() => pruneMemory("nobody", 100)).not.toThrow();
   });
 
   test("does nothing when file is under limit", () => {
     const agentDir = join(TEST_DIR, "builder");
     mkdirSync(agentDir, { recursive: true });
-    const path = join(agentDir, "EXPERTISE.md");
-    const content = "# Builder Expertise\n\n## 2026-01-01 — Session abc\n- insight\n";
+    const path = join(agentDir, "MEMORY.md");
+    const content = "# Builder Memory\n\n## 2026-01-01 — Session abc\n- insight\n";
     writeFileSync(path, content);
-    pruneExpertise("builder", 20000);
+    pruneMemory("builder", 20000);
     expect(readFileSync(path, "utf-8")).toBe(content);
   });
 
   test("removes oldest section when over limit", () => {
     const agentDir = join(TEST_DIR, "builder");
     mkdirSync(agentDir, { recursive: true });
-    const path = join(agentDir, "EXPERTISE.md");
+    const path = join(agentDir, "MEMORY.md");
     const old = "## 2026-01-01 — Session old\n" + "- " + "x".repeat(100) + "\n";
     const recent = "## 2026-01-02 — Session new\n- recent insight\n";
-    const content = `# Builder Expertise\n\n${old}\n${recent}`;
+    const content = `# Builder Memory\n\n${old}\n${recent}`;
     writeFileSync(path, content);
 
-    pruneExpertise("builder", content.length - 10);
+    pruneMemory("builder", content.length - 10);
 
     const result = readFileSync(path, "utf-8");
     expect(result).not.toContain("Session old");
     expect(result).toContain("Session new");
-    expect(result).toContain("# Builder Expertise");
+    expect(result).toContain("# Builder Memory");
   });
 
   test("removes multiple oldest sections when needed", () => {
     const agentDir = join(TEST_DIR, "builder");
     mkdirSync(agentDir, { recursive: true });
-    const path = join(agentDir, "EXPERTISE.md");
+    const path = join(agentDir, "MEMORY.md");
     const sections = [1, 2, 3].map(
       (i) => `## 2026-01-0${i} — Session s${i}\n- insight ${i}\n`,
     );
-    writeFileSync(path, `# Builder Expertise\n\n${sections.join("\n")}`);
+    writeFileSync(path, `# Builder Memory\n\n${sections.join("\n")}`);
 
     const fullSize = readFileSync(path, "utf-8").length;
-    pruneExpertise("builder", fullSize - sections[0].length - sections[1].length);
+    pruneMemory("builder", fullSize - sections[0].length - sections[1].length);
 
     const result = readFileSync(path, "utf-8");
     expect(result).toContain("Session s3");

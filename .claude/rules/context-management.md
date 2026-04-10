@@ -38,9 +38,9 @@ When multiple skills apply, respect synergies and conflicts:
 | Scout agent | Codebase exploration, finding files | "Find all auth-related files" |
 | Explore agent | Deep codebase analysis | "How does the auth system work?" |
 
-## Agent Expertise (Does Not Count Against Skill Limits)
+## Agent Memory (Does Not Count Against Skill Limits)
 
-Each agent has a persistent expertise file at `.claude/agent-memory/{agent}/EXPERTISE.md`.
+Each agent has a persistent memory file at `.claude/agent-memory/{agent}/MEMORY.md`.
 
 | Aspect | Detail |
 |--------|--------|
@@ -49,13 +49,12 @@ Each agent has a persistent expertise file at `.claude/agent-memory/{agent}/EXPE
 | Updates | Automatic via SubagentStop hook |
 | Max size | 5K tokens (~20K chars) with FIFO pruning |
 
-### Expertise vs Skills vs Memory
+### Memory vs Skills vs Patterns
 
 | Type | Maintained by | Content | Persistence |
 |------|---------------|---------|-------------|
 | Skills | Developer (manual) | Generic patterns and best practices | Static |
-| Expertise | Automatic hook | Agent insights about the codebase | Grows per session |
-| Memory | User | Preferences, feedback, project context | Manual |
+| Memory | Automatic hook + user | Agent insights about the codebase, user preferences, project context | Grows per session |
 | Patterns | Automatic hook | Successful agent→agent sequences | Grows per session |
 
 ## Skill Propagation Model (Empirically Verified)
@@ -70,7 +69,7 @@ Ground-truth rules for how skill and context content reach subagents. Verified v
 | `CLAUDE.md` (project + global) | **YES** | Both levels auto-propagate. |
 | Frontmatter `skills:` in the agent definition | **YES** | Full `SKILL.md` bodies are pre-injected at spawn via `<command-message>` wrappers, unconditionally. This is the practical mechanism for project-specific skill bundles. |
 | Baseline skills pre-declared per agent role (e.g., reviewer always gets `code-quality` + `anti-hallucination`) | **YES** | Arrive at spawn regardless of task. |
-| Content pasted verbatim by the Lead into the delegation prompt (including `EXPERTISE.md` injection) | **YES** | Behaves like any other prompt content. |
+| Content pasted verbatim by the Lead into the delegation prompt (including `MEMORY.md` injection) | **YES** | Behaves like any other prompt content. |
 
 ### What does NOT reach a subagent
 

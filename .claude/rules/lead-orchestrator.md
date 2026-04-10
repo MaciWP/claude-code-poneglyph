@@ -66,34 +66,34 @@ graph TD
 | `AskUserQuestion` | Clarify requirements |
 | `TaskList/TaskCreate/TaskUpdate` | Manage task list |
 
-## Expertise Injection When Delegating
+## Memory Injection When Delegating
 
-When delegating to any agent, the Lead MUST include the agent's accumulated expertise in the prompt:
+When delegating to any agent, the Lead MUST include the agent's accumulated memory in the prompt:
 
 | Step | Action |
 |------|--------|
-| 1 | Read `.claude/agent-memory/{agent}/EXPERTISE.md` |
+| 1 | Read `.claude/agent-memory/{agent}/MEMORY.md` |
 | 2 | Include last ~3K tokens in the agent's prompt |
-| 3 | Prefix: `[ACCUMULATED EXPERTISE]\n{content}` |
+| 3 | Prefix: `[ACCUMULATED MEMORY]\n{content}` |
 | 4 | If the file does not exist or is empty, omit |
 
-### Delegation Template with Expertise
+### Delegation Template with Memory
 
 ```
-[ACCUMULATED EXPERTISE - {agent}]
-{content of EXPERTISE.md, last 3K tokens}
+[ACCUMULATED MEMORY - {agent}]
+{content of MEMORY.md, last 3K tokens}
 
 [TASK]
 {task instructions}
 
-[EXPERTISE OUTPUT]
+[MEMORY OUTPUT]
 When finished, include "### Expertise Insights" with 1-5 reusable insights discovered during this task.
 ```
 
 > **Note**: The reminder in the delegation prompt is NECESSARY. The instruction in the agent's system prompt (section "Expertise Persistence") is at line 400+ and agents do not follow it consistently. The explicit reminder in the delegation prompt guarantees that insights are produced.
 
-> Expertise is read-only context. The agent uses it to inform decisions but does NOT repeat it in its output.
-> Expertise is updated automatically via the SubagentStop hook — the Lead does not need to manage it.
+> Memory is read-only context. The agent uses it to inform decisions but does NOT repeat it in its output.
+> Memory is updated automatically via the SubagentStop hook — the Lead does not need to manage it.
 
 ## Worktree Isolation
 

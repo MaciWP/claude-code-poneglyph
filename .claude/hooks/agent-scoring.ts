@@ -14,8 +14,8 @@
 import { readFileSync } from "node:fs";
 import { updateScores } from "./lib/agent-scorer";
 import type { ResolvedTraceEntry } from "./lib/agent-scorer-types";
-import { extractExpertiseInsights, persistExpertise } from "./lib/expertise-writer";
-import type { TranscriptMessage } from "./lib/expertise-writer";
+import { extractMemoryInsights, persistMemory } from "./lib/memory-writer";
+import type { TranscriptMessage } from "./lib/memory-writer";
 
 const TAG = "[agent-scoring]";
 
@@ -190,16 +190,16 @@ async function run(): Promise<void> {
   log(`Scored ${agentType}: status=${entry.status}, tools=${entry.toolCalls}, tokens=${entry.tokens}`);
 
   try {
-    let insights = extractExpertiseInsights(lines as TranscriptMessage[]);
+    let insights = extractMemoryInsights(lines as TranscriptMessage[]);
 
     if (!insights && typeof input.last_assistant_message === "string") {
-      insights = extractExpertiseInsights([
+      insights = extractMemoryInsights([
         { role: "assistant", content: input.last_assistant_message },
       ]);
     }
 
     if (insights) {
-      persistExpertise(agentType, input.session_id || "unknown", insights);
+      persistMemory(agentType, input.session_id || "unknown", insights);
       log(`Persisted expertise for ${agentType}`);
     }
   } catch (err) {

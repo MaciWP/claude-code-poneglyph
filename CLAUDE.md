@@ -71,7 +71,7 @@ The backbone of the project. Ordered from most fundamental (the human↔Claude r
 | **V** | **Understand before acting** — context and alignment | Get the relevant context and use it. Understand the real intent before executing. Perfect code of the wrong thing is worthless. |
 | **VI** | **Security without ambiguity** — protect data and work | Prevent secret leaks. Block or ask before irreversible deletions. `--no-verify`, `--force`, `reset --hard` require explicit authorization. Investigate unexpected state before overwriting. |
 | **VII** | **Performance and efficiency** — parallelize, use tokens well | Parallelize everything independent. Each token consumed should yield more product than ceremony. Fewer round-trips, fewer re-reads, less noise. |
-| **VIII** | **Optimal meta-prompting** — invoke your own agents well | The Lead invokes its agents with complete prompts: context, goal, constraints, deliverable, and injected expertise (`.claude/agent-memory/{agent}/EXPERTISE.md`). A poor prompt produces a poor agent. The prompt to an agent is as important as the code it generates. The `prompt-engineer` skill is available for refinement when needed. |
+| **VIII** | **Optimal meta-prompting** — invoke your own agents well | The Lead invokes its agents with complete prompts: context, goal, constraints, deliverable, and injected memory (`.claude/agent-memory/{agent}/MEMORY.md`). A poor prompt produces a poor agent. The prompt to an agent is as important as the code it generates. The `prompt-engineer` skill is available for refinement when needed. |
 | **IX** | **Observability and self-improvement** — measure to know you're improving | Without metrics, the other commandments are blind faith. Traces, scoring, error patterns and lessons feed a continuous improvement cycle. |
 | **X** | **Poneglyph maintainability** — the system doesn't rot | The meta-system itself needs care: skills with valid triggers, no duplicate agents, no contradictory rules, dead code detected. Each component gets reviewed against the earlier commandments. |
 
@@ -94,7 +94,7 @@ Orchestration system that powers Claude Code with specialized agents, skills, ho
 | No orchestration | 6 core agents + 1 meta agent (`extension-architect`) with complexity-based routing |
 | No automatic validation | 21 hooks (pre/post/stop/subagent/permission) |
 | No domain knowledge | 23 skills auto-matched by keywords, including 7 meta-skills for scaffolding |
-| No persistent memory | Semantic memory system + per-agent `EXPERTISE.md` |
+| No persistent memory | Semantic memory system + per-agent `MEMORY.md` |
 
 ## HOW
 
@@ -114,7 +114,7 @@ graph LR
 .claude/
 ├── agents/          # 6 core (architect, builder, error-analyzer, planner, reviewer, scout)
 │   └── meta/        # 1 meta agent (extension-architect)
-├── agent-memory/    # Per-agent EXPERTISE.md accumulated across sessions
+├── agent-memory/    # Per-agent MEMORY.md accumulated across sessions
 ├── skills/          # 23 skills with auto-matching (7 meta-skills for scaffolding)
 ├── hooks/           # 21 hooks (pre/post/stop/subagent/permission)
 ├── rules/           # 14 orchestration rules (12 global + 2 path-scoped)
