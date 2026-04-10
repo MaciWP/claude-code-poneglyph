@@ -86,6 +86,34 @@ Ground-truth rules for how skill and context content reach subagents. Verified v
 - **Frontmatter `skills:` is still useful** as a baseline for agents whose role always needs the same skills (e.g., reviewer's `code-quality`). For anything variable per task, use Arch H.
 - **Path-scoped loader quirk**: in `.claude/rules/paths/*.md`, globs starting with `**` require at least one leading path segment to match. A raw `apps/...` pattern will NOT match `apps/foo.py`; use `src/apps/...`, `backend/apps/...`, or prefix with `**/` explicitly.
 
+### Content Map pattern (canonical for skills with subdirectories)
+
+Any skill that has a subdirectory (`references/`, `examples/`, `templates/`, `scripts/`, `checklists/`, `integrations/`) **MUST** include a canonical "Content Map" table in its main `SKILL.md`. This is the single source of truth that tells subagents what each supporting file contains and when to read it.
+
+**Canonical format — 3 columns**:
+
+| Topic | File | Contents |
+|---|---|---|
+| <short topic name> | `${CLAUDE_SKILL_DIR}/<subdir>/<file>.md` | Semantic description of what the file contains + when it is useful. Phrase as a trigger: *"Read when…"* rather than *"contains…"* so the subagent can make a load decision based on task relevance. |
+
+**Rules**:
+
+1. **Use `${CLAUDE_SKILL_DIR}/` prefix** for all file paths — it is the Anthropic-official variable that resolves to the skill's own directory, making paths portable across machines and invocations.
+2. **Contents column is load-bearing** — the subagent decides whether to Read each supporting file based on the semantic description here. A weak Contents cell leads to lazy reference-following and missed context. Rich Contents cells describing both *what* and *when* let subagents decide with criterion.
+3. **3 columns, not 4** — keyword triggers (when useful) fold into the Contents prose naturally (*"Read when working with GenericForeignKey, ContentType hierarchy, or parent_type/parent_id fields"*). A separate Triggers column creates redundancy.
+4. **Reference file frontmatter is minimal** (`parent`, `name`, `description`) — reference files are not loaded as standalone skills, so `type`, `version`, `activation`, `for_agents` are noise.
+5. **Main SKILL.md stays ≤ 500 lines** per Anthropic official guidance. Content that doesn't fit belongs in references.
+6. **Critical gotchas stay inline** in the main SKILL.md, not in references. Footguns with silent-failure semantics (e.g., `select_related('parent')` no-op on GenericFK) must be surfaced in the entry file because reviewers may not open references under generic task phrasings.
+
+This pattern aligns with Anthropic's official guidance:
+
+> *"Reference supporting files from SKILL.md so Claude knows what each file contains and when to load it."*
+> — [code.claude.com/docs/en/skills](https://code.claude.com/docs/en/skills)
+
+**Subagent behavior** (auto-loaded via this rule): when you Read a main SKILL.md that has a Content Map, consult the Contents column to judge which supporting files apply to your current task. Read the relevant ones. Do NOT read all blindly (defeats on-demand). Do NOT skip them when the Contents description matches your task even if task phrasing didn't explicitly mention the domain — semantic match is a valid trigger.
+
+The canonical template for this pattern lives in `.claude/skills/meta-create-skill/SKILL.md` (the split produced in Phase P7.8a). Reference it when creating new skills with subdirectories.
+
 ### Anti-claims (do not repeat)
 
 1. *"Skill loaded by the Lead is automatically available to subagents."* — False. Lead context does not transit.
