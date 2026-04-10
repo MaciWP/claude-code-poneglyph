@@ -142,18 +142,18 @@ class AssetViewSet(viewsets.ModelViewSet):
 
 | Document | Description |
 |----------|-------------|
-| `references/architecture-principles.md` | 10 core principles with code examples (SRP, DI, DRY, transactions, fail fast, composition) |
-| `references/service-patterns.md` | All service patterns: Factory, DI, Static, Rules Decorator, Cleaned Data with tests |
-| `references/transaction-management.md` | Decorator, context manager, savepoints, select_for_update with rules |
-| `examples/three-layer-workflow.md` | End-to-end feature: Model -> Service -> Serializer -> ViewSet -> Tests |
-| `examples/business-logic-separation.md` | Before/after: monolithic ViewSet refactored to service layer |
-| `examples/dependency-injection.md` | DI patterns: anti-pattern, correct pattern, usage, testing |
-| `examples/service-violation-detection.md` | Detection patterns with grep commands and refactoring guide |
-| `checklists/architecture-validation.md` | 3-level validation (Quick Scan, Detailed, Compliance) with bash scripts |
-| `checklists/refactoring-guide.md` | 5-step process: Analyze -> Create Service -> Refactor ViewSet -> Update Tests -> Validate |
-| `templates/service-boilerplate.md` | 5 canonical templates: Basic CRUD, Complex Logic, External Deps, Read-Only, Multi-Model |
-| `templates/viewset-boilerplate.md` | 5 templates: Basic, Custom Actions, Read-Only, I/O Serializers, Filters+Permissions |
-| `templates/testing-boilerplate.md` | Service tests, ViewSet tests, Integration tests, Fixtures/Factories |
+| `${CLAUDE_SKILL_DIR}/references/architecture-principles.md` | 10 core principles with code examples (SRP, DI, DRY, transactions, fail fast, composition) |
+| `${CLAUDE_SKILL_DIR}/references/service-patterns.md` | All service patterns: Factory, DI, Static, Rules Decorator, Cleaned Data with tests |
+| `${CLAUDE_SKILL_DIR}/references/transaction-management.md` | Decorator, context manager, savepoints, select_for_update with rules |
+| `${CLAUDE_SKILL_DIR}/examples/three-layer-workflow.md` | End-to-end feature: Model -> Service -> Serializer -> ViewSet -> Tests |
+| `${CLAUDE_SKILL_DIR}/examples/business-logic-separation.md` | Before/after: monolithic ViewSet refactored to service layer |
+| `${CLAUDE_SKILL_DIR}/examples/dependency-injection.md` | DI patterns: anti-pattern, correct pattern, usage, testing |
+| `${CLAUDE_SKILL_DIR}/examples/service-violation-detection.md` | Detection patterns with grep commands and refactoring guide |
+| `${CLAUDE_SKILL_DIR}/checklists/architecture-validation.md` | 3-level validation (Quick Scan, Detailed, Compliance) with bash scripts |
+| `${CLAUDE_SKILL_DIR}/checklists/refactoring-guide.md` | 5-step process: Analyze -> Create Service -> Refactor ViewSet -> Update Tests -> Validate |
+| `${CLAUDE_SKILL_DIR}/templates/service-boilerplate.md` | 5 canonical templates: Basic CRUD, Complex Logic, External Deps, Read-Only, Multi-Model |
+| `${CLAUDE_SKILL_DIR}/templates/viewset-boilerplate.md` | 5 templates: Basic, Custom Actions, Read-Only, I/O Serializers, Filters+Permissions |
+| `${CLAUDE_SKILL_DIR}/templates/testing-boilerplate.md` | Service tests, ViewSet tests, Integration tests, Fixtures/Factories |
 
 ---
 

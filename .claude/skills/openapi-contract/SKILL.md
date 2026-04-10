@@ -54,12 +54,12 @@ Key points:
 
 | Task | What to Check | Reference |
 |------|---------------|-----------|
-| Writing new endpoint | Use endpoint template | `templates/endpoint-template.md` |
-| Adding query params | Use correct YAML template per type | `examples/query-param-templates.md` |
-| Writing or reviewing contract | Full checklist (writing + review) | `checklists/contract-checklist.md` |
-| Verifying backend alignment | Cross-reference serializers, filters, routes | `references/backend-alignment.md` |
-| Checking schema correctness | Compare with serializer output | `examples/schema-examples.md` |
-| Contract rules (C1-C19) | Schema, pagination, enum, examples | `references/contract-rules.md` |
+| Writing new endpoint | Use endpoint template | `${CLAUDE_SKILL_DIR}/templates/endpoint-template.md` |
+| Adding query params | Use correct YAML template per type | `${CLAUDE_SKILL_DIR}/examples/query-param-templates.md` |
+| Writing or reviewing contract | Full checklist (writing + review) | `${CLAUDE_SKILL_DIR}/checklists/contract-checklist.md` |
+| Verifying backend alignment | Cross-reference serializers, filters, routes | `${CLAUDE_SKILL_DIR}/references/backend-alignment.md` |
+| Checking schema correctness | Compare with serializer output | `${CLAUDE_SKILL_DIR}/examples/schema-examples.md` |
+| Contract rules (C1-C19) | Schema, pagination, enum, examples | `${CLAUDE_SKILL_DIR}/references/contract-rules.md` |
 
 ## Anti-Patterns
 
@@ -88,12 +88,12 @@ Key points:
 
 | File | Content |
 |------|---------|
-| `references/backend-alignment.md` | How to verify backend matches contract |
-| `references/contract-rules.md` | C1-C19 rules (schema, pagination, enum, examples) |
-| `examples/query-param-templates.md` | YAML copy-paste templates per param type |
-| `examples/schema-examples.md` | Correct vs incorrect schema patterns |
-| `checklists/contract-checklist.md` | Unified checklist for writing and reviewing contracts |
-| `templates/endpoint-template.md` | YAML template for new endpoints |
+| `${CLAUDE_SKILL_DIR}/references/backend-alignment.md` | How to verify backend matches contract |
+| `${CLAUDE_SKILL_DIR}/references/contract-rules.md` | C1-C19 rules (schema, pagination, enum, examples) |
+| `${CLAUDE_SKILL_DIR}/examples/query-param-templates.md` | YAML copy-paste templates per param type |
+| `${CLAUDE_SKILL_DIR}/examples/schema-examples.md` | Correct vs incorrect schema patterns |
+| `${CLAUDE_SKILL_DIR}/checklists/contract-checklist.md` | Unified checklist for writing and reviewing contracts |
+| `${CLAUDE_SKILL_DIR}/templates/endpoint-template.md` | YAML template for new endpoints |
 
 ## Serializer-to-Schema Type Mapping
 

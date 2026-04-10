@@ -111,11 +111,11 @@ search_fields = ["name", "code"]
 
 | Type | File | Content |
 |------|------|---------|
-| reference | `references/general-lessons.md` | 27 general review lessons (#1-#26 + #3b) |
-| reference | `references/serializer-lessons.md` | S1-S4 serializer-specific lessons |
-| reference | `references/contract-lessons.md` | C1-C19 contract-specific lessons |
-| example | `examples/common-violations.md` | 6 detailed violation examples with code |
-| checklist | `checklists/pre-pr-checklist.md` | Quick pre-PR checklist |
+| reference | `${CLAUDE_SKILL_DIR}/references/general-lessons.md` | 27 general review lessons (#1-#26 + #3b) |
+| reference | `${CLAUDE_SKILL_DIR}/references/serializer-lessons.md` | S1-S4 serializer-specific lessons |
+| reference | `${CLAUDE_SKILL_DIR}/references/contract-lessons.md` | C1-C19 contract-specific lessons |
+| example | `${CLAUDE_SKILL_DIR}/examples/common-violations.md` | 6 detailed violation examples with code |
+| checklist | `${CLAUDE_SKILL_DIR}/checklists/pre-pr-checklist.md` | Quick pre-PR checklist |
 
 ## Item Counts
 

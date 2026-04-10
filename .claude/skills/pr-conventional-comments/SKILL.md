@@ -151,7 +151,7 @@ Based on Google Eng Practices, Graphite, and Dr. McKayla. Written in Spanish, in
 
 | Document | Path | Content |
 |----------|------|---------|
-| Comment Examples | `examples/comment-examples.md` | Real examples of each label type with context |
+| Comment Examples | `${CLAUDE_SKILL_DIR}/examples/comment-examples.md` | Real examples of each label type with context |
 
 ## Quality Checklist
 
