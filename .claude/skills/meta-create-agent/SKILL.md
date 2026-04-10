@@ -16,69 +16,68 @@ activation:
     - make agent
     - subagent
 for_agents: [extension-architect]
-version: "1.0"
+version: "1.1"
 ---
 
 # Create Agent
 
-Meta-skill for generating Claude Code subagents from standardized templates.
+Meta-skill for generating Claude Code subagents (`.claude/agents/{category}/{name}.md`) from 4 canonical templates: reader, builder, executor, researcher.
 
 ## When to Use
 
-Activate this skill when:
 - User requests creating a new agent/subagent
-- Need for scaffolding a delegated specialist
+- Scaffolding a delegated specialist
 - Request for an agent template
 
 ## Official Documentation
 
-Before generating, fetch the latest agent format:
-`https://code.claude.com/docs/en/sub-agents.md`
+Before generating, fetch the latest agent format: `https://code.claude.com/docs/en/sub-agents.md`
 
-## Workflow
+## Quick Workflow
+
+```mermaid
+graph LR
+    A[Parse args] --> B[Pick type]
+    B --> C[Gather specialization]
+    C --> D[Read template]
+    D --> E[Replace placeholders]
+    E --> F[Write agent file]
+    F --> G[Confirm]
+```
 
 ### Step 1: Parse Arguments
 
-Extract from `$ARGUMENTS`:
-
 | Argument | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `agent-name` | Yes | - | Name in kebab-case |
-| `type` | No | prompt user | reader, builder, executor, researcher |
+| `agent-name` | Yes | — | Name in kebab-case |
+| `type` | No | prompt user | `reader`, `builder`, `executor`, `researcher` |
 
 ### Step 2: Determine Type
 
-If `type` was not provided, ask:
-
-```
-What type of agent do you want to create?
+If `type` was not provided, ask. The 4 types at a glance:
 
 | Type | Tools | Permission | Use Case |
 |------|-------|------------|----------|
-| reader | Read, Grep, Glob | plan | Analysis, review, audit |
-| builder | Read, Write, Edit, Bash | acceptEdits | Implementation, refactoring |
-| executor | Bash, Read | default | Commands, automation |
-| researcher | Read, Grep, Glob, WebSearch | plan | Investigation, documentation |
-```
+| `reader` | Read, Grep, Glob | plan | Analysis, review, audit |
+| `builder` | Read, Write, Edit, Bash, Grep, Glob, LSP | acceptEdits | Implementation, refactoring |
+| `executor` | Bash, Read | default | Commands, automation |
+| `researcher` | Read, Grep, Glob, WebSearch, WebFetch | plan | Investigation, documentation |
+
+For the full frontmatter of each template (with every placeholder), read `${CLAUDE_SKILL_DIR}/references/templates-spec.md`.
 
 ### Step 3: Gather Specialization
 
 Ask the user:
 
-```
-What will this agent specialize in?
-- Domain: (e.g., security, performance, API design)
-- Primary task: (e.g., review code, implement features)
-- Key outputs: (e.g., reports, code changes, recommendations)
-```
+- **Domain**: e.g., security, performance, API design
+- **Primary task**: e.g., review code, implement features
+- **Key outputs**: e.g., reports, code changes, recommendations
 
 ### Step 4: Generate Agent File
 
-1. Read template from `.claude/skills/meta-create-agent/templates/{type}.md`
-2. Replace placeholders with user-provided values
-3. Write file to `.claude/agents/{category}/{agent-name}.md`
-
-**Category mapping:**
+1. Read template from `${CLAUDE_SKILL_DIR}/templates/{type}.md`
+2. Replace `{{PLACEHOLDERS}}` with user-provided values
+3. Write file to the category directory:
 
 | Type | Directory |
 |------|-----------|
@@ -100,7 +99,6 @@ What will this agent specialize in?
 |-------|-------|
 | tools | {tools} |
 | permissionMode | {mode} |
-| model | {model} |
 
 ### Next Steps
 1. Edit system prompt in the agent file
@@ -108,454 +106,42 @@ What will this agent specialize in?
 3. Test with: "delegate to {agent-name}"
 ```
 
----
-
-## Templates Available
-
-| Type | File | Tools | permissionMode | Best For |
-|------|------|-------|----------------|----------|
-| reader | `templates/reader.md` | Read, Grep, Glob | plan | Code review, analysis, audits |
-| builder | `templates/builder.md` | Read, Write, Edit, Bash, Grep, Glob, LSP | acceptEdits | Implementation, refactoring |
-| executor | `templates/executor.md` | Bash, Read | default | Running tests, deployments |
-| researcher | `templates/researcher.md` | Read, Grep, Glob, WebSearch, WebFetch | plan | Investigation, documentation |
-
----
-
-## Template: Reader
-
-**Location**: `templates/reader.md`
-
-**Use when**: Analysis, code review, security audit, quality checks.
-
-**Frontmatter**:
-```yaml
----
-description: |
-  {{DESCRIPTION}}.
-  Use proactively when: {{TRIGGER_CONDITION}}.
-  Keywords - {{KEYWORDS}}
-tools: Read, Grep, Glob
-disallowedTools: Task, Edit, Write, Bash
-permissionMode: plan
-effort: low
-color: cyan
-memory:
-  scope: project
----
-```
-
-**Placeholders to replace**:
-
-| Placeholder | Description | Example |
-|-------------|-------------|---------|
-| `{{AGENT_NAME}}` | kebab-case name (used as filename) | `security-reviewer` |
-| `{{DESCRIPTION}}` | What it does | `Security analysis specialist` |
-| `{{TRIGGER_CONDITION}}` | When to delegate | `reviewing for security issues, auditing code` |
-| `{{KEYWORDS}}` | Comma-separated keywords for matching | `security, review, audit, vulnerability` |
-| `{{DOMAIN}}` | Area of expertise | `security vulnerabilities` |
-| `{{WHAT_TO_ANALYZE}}` | Analysis target | `code for security issues` |
-| `{{PATTERNS_OR_ISSUES}}` | What to find | `vulnerabilities, insecure patterns` |
-| `{{CRITERIA}}` | Analysis criteria | `OWASP Top 10, input validation` |
-
----
-
-## Template: Builder
-
-**Location**: `templates/builder.md`
-
-**Use when**: Feature implementation, code changes, refactoring.
-
-**Frontmatter**:
-```yaml
----
-description: |
-  {{DESCRIPTION}}.
-  Use proactively when: {{TRIGGER_CONDITION}}.
-  Keywords - {{KEYWORDS}}
-tools: Read, Write, Edit, Bash, Grep, Glob, LSP
-disallowedTools: Task
-permissionMode: acceptEdits
-color: blue
-memory:
-  scope: project
----
-```
-
-**Placeholders to replace**:
-
-| Placeholder | Description | Example |
-|-------------|-------------|---------|
-| `{{AGENT_NAME}}` | kebab-case name (used as filename) | `api-implementer` |
-| `{{DESCRIPTION}}` | What it builds | `REST API endpoint specialist` |
-| `{{TRIGGER_CONDITION}}` | When to delegate | `implementing API endpoints, building routes` |
-| `{{KEYWORDS}}` | Comma-separated keywords for matching | `api, endpoint, route, implement` |
-| `{{DOMAIN}}` | Area of expertise | `REST APIs with Elysia` |
-| `{{WHAT_TO_BUILD}}` | Implementation target | `API endpoints following project patterns` |
-
----
-
-## Template: Executor
-
-**Location**: `templates/executor.md`
-
-**Use when**: Running commands, tests, deployments, automation.
-
-**Frontmatter**:
-```yaml
----
-description: |
-  {{DESCRIPTION}}.
-  Use proactively when: {{TRIGGER_CONDITION}}.
-  Keywords - {{KEYWORDS}}
-tools: Bash, Read
-disallowedTools: Task, Edit, Write
-permissionMode: default
-effort: low
-color: orange
----
-```
-
-**Placeholders to replace**:
-
-| Placeholder | Description | Example |
-|-------------|-------------|---------|
-| `{{AGENT_NAME}}` | kebab-case name (used as filename) | `test-runner` |
-| `{{DESCRIPTION}}` | What commands it runs | `Test execution specialist` |
-| `{{TRIGGER_CONDITION}}` | When to delegate | `running tests, checking test results` |
-| `{{KEYWORDS}}` | Comma-separated keywords for matching | `test, run, execute, coverage` |
-| `{{PURPOSE}}` | Command purpose | `running and reporting test results` |
-| `{{COMMAND_1}}` | Allowed command | `bun test` |
-| `{{COMMAND_2}}` | Allowed command | `bun test --coverage` |
-| `{{COMMAND_3}}` | Allowed command | `bun test --watch` |
-
----
-
-## Template: Researcher
-
-**Location**: `templates/researcher.md`
-
-**Use when**: Investigation, documentation research, complex questions.
-
-**Frontmatter**:
-```yaml
----
-description: |
-  {{DESCRIPTION}}.
-  Use proactively when: {{TRIGGER_CONDITION}}.
-  Keywords - {{KEYWORDS}}
-tools: Read, Grep, Glob, WebSearch, WebFetch
-disallowedTools: Task, Edit, Write
-permissionMode: plan
-color: purple
-memory:
-  scope: project
----
-```
-
-**Placeholders to replace**:
-
-| Placeholder | Description | Example |
-|-------------|-------------|---------|
-| `{{AGENT_NAME}}` | kebab-case name (used as filename) | `library-researcher` |
-| `{{DESCRIPTION}}` | Research focus | `Library and API documentation specialist` |
-| `{{TRIGGER_CONDITION}}` | When to delegate | `researching library usage, investigating APIs` |
-| `{{KEYWORDS}}` | Comma-separated keywords for matching | `research, investigate, library, documentation` |
-| `{{TOPIC}}` | Research topic | `library APIs and best practices` |
-| `{{WHAT_TO_RESEARCH}}` | Investigation target | `library documentation and examples` |
-
----
-
-## Arguments
+## Arguments & Validation
 
 | Argument | Required | Format | Description |
 |----------|----------|--------|-------------|
-| `agent-name` | Yes | kebab-case | Unique identifier for the agent |
-| `type` | No | reader\|builder\|executor\|researcher | Agent category |
+| `agent-name` | Yes | kebab-case | Unique identifier |
+| `type` | No | `reader` \| `builder` \| `executor` \| `researcher` | Agent category |
 
-### Validation Rules
-
-| Rule | Check | Error Message |
-|------|-------|---------------|
-| Name format | Must be kebab-case | "Agent name must be kebab-case (e.g., code-reviewer)" |
+| Rule | Check | Error |
+|------|-------|-------|
+| Name format | kebab-case | "Agent name must be kebab-case (e.g., code-reviewer)" |
 | Name unique | No existing file | "Agent {name} already exists at {path}" |
 | Type valid | One of 4 types | "Type must be: reader, builder, executor, researcher" |
 
----
-
-## Examples
-
-### Example 1: Security Reviewer
-
-```
-/meta-create-agent security-reviewer reader
-```
-
-**Creates**: `.claude/agents/readers/security-reviewer.md`
-
-```yaml
----
-description: |
-  Security analysis specialist. Reviews code for vulnerabilities,
-  injection risks, and insecure patterns.
-  Use proactively when: reviewing security, checking vulnerabilities, auditing code.
-  Keywords - security, vulnerability, audit, injection, review
-tools: Read, Grep, Glob
-disallowedTools: Task, Edit, Write, Bash
-permissionMode: plan
-effort: low
-color: cyan
-memory:
-  scope: project
-skills:
-  - security-patterns
----
-
-You are a specialized analyst focused on security vulnerabilities.
-
-## Primary Responsibilities
-
-- Analyze code for security issues
-- Identify vulnerabilities, injection risks, insecure patterns
-- Report findings clearly with file:line references
-
-## Workflow
-
-When invoked:
-
-1. Understand the security review scope
-2. Gather relevant files using Read/Grep/Glob
-3. Analyze for OWASP Top 10, input validation, auth issues
-4. Report findings organized by severity
-
-## Output Format
-
-### Critical Issues (Must Fix)
-- {issue} (`file.ts:123`)
-
-### Warnings (Should Fix)
-- {issue} (`file.ts:45`)
-
-### Suggestions (Consider)
-- {improvement}
-
-## Constraints
-
-- Read-only analysis - no modifications
-- Always cite file:line for findings
-- Prioritize actionable feedback
-- Be specific, not generic
-```
-
-### Example 2: Test Runner
-
-```
-/meta-create-agent test-runner executor
-```
-
-**Creates**: `.claude/agents/executors/test-runner.md`
-
-```yaml
----
-description: |
-  Test execution specialist. Runs tests and reports results clearly.
-  Use proactively when: running tests, checking test coverage, test status.
-  Keywords - test, run, execute, coverage, results
-tools: Bash, Read
-disallowedTools: Task, Edit, Write
-permissionMode: default
-effort: low
-color: orange
----
-
-You execute test commands and report results clearly.
-
-## Allowed Commands
-
-Only execute these commands:
-- `bun test`
-- `bun test --coverage`
-- `bun test {specific-file}`
-
-## Workflow
-
-1. Validate the request matches allowed commands
-2. Execute command with appropriate flags
-3. Capture output and errors
-4. Report results clearly
-
-## Output Format
-
-```
-Command: {exact command run}
-Exit Code: {0 for success, non-zero for failure}
-
-Output:
-{stdout content}
-
-Errors (if any):
-{stderr content}
-```
-
-### Summary
-- Tests passed: {count}
-- Tests failed: {count}
-- Coverage: {percentage}
-
-## Constraints
-
-- Only run allowed commands from the list above
-- Never modify files directly
-- Report all errors clearly
-- Timeout after 5 minutes
-```
-
-### Example 3: API Implementer
-
-```
-/meta-create-agent api-implementer builder
-```
-
-**Creates**: `.claude/agents/builders/api-implementer.md`
-
-```yaml
----
-description: |
-  REST API implementation specialist. Builds endpoints following project patterns.
-  Use proactively when: implementing API routes, endpoints, handlers.
-  Keywords - api, endpoint, route, handler, implement, REST
-tools: Read, Write, Edit, Bash, Grep, Glob, LSP
-disallowedTools: Task
-permissionMode: acceptEdits
-color: blue
-memory:
-  scope: project
-skills: []
----
-
-You are a specialized developer focused on REST APIs with Elysia.
-
-## Primary Responsibilities
-
-- Implement API endpoints following project patterns
-- Follow project conventions and patterns
-- Write tests for new endpoints
-- Ensure proper validation and error handling
-
-## Workflow
-
-When invoked:
-
-1. Understand endpoint requirements
-2. Read existing routes for patterns
-3. Implement following project conventions
-4. Write tests covering main scenarios
-5. Verify implementation works
-
-## Output Format
-
-### Files Created/Modified
-- `path/to/file.ts` - {what was done}
-
-### Tests Added
-- `path/to/file.test.ts` - {what is covered}
-
-### Verification
-- [ ] Code compiles
-- [ ] Tests pass
-- [ ] Follows project style
-
-### Notes
-- {any important decisions}
-
-## Constraints
-
-- Follow existing route patterns strictly
-- Add tests for new endpoints
-- Don't break existing tests
-- Include input validation
-- Handle errors properly
-```
-
----
-
-## Directory Structure
-
-```
-.claude/agents/
-├── readers/
-│   ├── code-reviewer.md
-│   ├── security-reviewer.md
-│   └── performance-auditor.md
-├── builders/
-│   ├── api-implementer.md
-│   ├── feature-developer.md
-│   └── refactorer.md
-├── executors/
-│   ├── test-runner.md
-│   ├── build-runner.md
-│   └── deployer.md
-└── researchers/
-    ├── library-researcher.md
-    ├── architecture-analyst.md
-    └── documentation-writer.md
-```
-
----
-
-## Frontmatter Reference
-
-**CRITICAL**: `description` MUST include "Use proactively when:" and "Keywords -" lines. Without these, Claude Code will NOT register the agent as a valid `subagent_type`.
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `description` | string | **Yes** | Purpose + "Use proactively when: {situations}." + "Keywords - {kw1, kw2, ...}" |
-| `tools` | string | **Yes** | Comma-separated tool whitelist. Plain names only (no scoped syntax like `Task(scout)`) |
-| `disallowedTools` | string/list | No | Tools blocked. **camelCase** (e.g., `Task`, `NotebookEdit`) — NOT snake_case |
-| `permissionMode` | string | No | `default`, `plan`, `acceptEdits`, `dontAsk`, `bypassPermissions` |
-| `effort` | string | No | Only if invariable. Options: `low`, `medium`, `high`, `max` (Opus 4.6 only) |
-| `maxTurns` | number | No | Optional hard stop. **Caution**: when reached, no result is returned and work is lost. Default (no limit) is correct for well-scoped tasks. Only set if running in CI/production pipelines. |
-| `color` | string | No | Visual identifier: `red`, `blue`, `green`, `yellow`, `purple`, `orange`, `pink`, `cyan` |
-| `skills` | list | No | Skills auto-loaded when agent starts |
-| `memory` | object | No | `scope: user\|project\|local` |
-| `background` | boolean | No | `true` = always run in background |
-| `hooks` | object | No | Hooks scoped to agent (PreToolUse, PostToolUse, Stop) |
-| `isolation` | string | No | `worktree` = isolated git worktree |
-| `initialPrompt` | string | No | Auto-submitted prompt on agent start |
-
-### Fields NOT in agent frontmatter
-
-| Field | Reason |
-|-------|--------|
-| `name` | Agent is identified by filename, not a `name` field |
-| `model` | Model routing is dynamic — the Lead determines model per-invocation based on complexity |
-
----
-
-## Permission Modes
-
-| Mode | Behavior | Recommended For |
-|------|----------|-----------------|
-| `default` | Standard permission prompts | General purpose |
-| `plan` | Read-only, no write operations | Readers, researchers |
-| `acceptEdits` | Auto-accept file edits | Trusted builders |
-| `dontAsk` | Auto-deny permission requests | Strict read-only |
-| `bypassPermissions` | Skip all permission checks | Automation only |
-
----
-
-## Model Selection (Dynamic — NOT in Frontmatter)
-
-Model is determined dynamically by the Lead based on agent category and task complexity. Do NOT set `model` in agent frontmatter.
-
-| Agent Category | Complexity < 30 | 30-50 | > 50 |
-|----------------|----------------|-------|------|
-| Code agents (builder, reviewer) | sonnet | sonnet | opus |
-| Read-only agents (scout, executor) | haiku | haiku | sonnet |
-| Strategic agents (planner, architect) | opus | opus | opus |
-
----
+## Critical Reminders
+
+1. **`description` MUST include the 3-line format** (`purpose` / `Use proactively when:` / `Keywords -`) — without it, Claude Code does NOT register the agent as a valid `subagent_type`.
+2. **`name` is NOT a frontmatter field** — agents are identified by filename.
+3. **`model` is NOT a frontmatter field** — model routing is dynamic, determined by the Lead per-invocation based on agent category and task complexity.
+4. **`disallowedTools` is camelCase** (e.g., `Task`, `NotebookEdit`) — NOT snake_case.
+5. **`tools` uses plain names only** — no scoped syntax like `Task(scout)`.
+6. **`maxTurns` is dangerous** — when reached, no result is returned and work is lost. Only set in CI/production pipelines where hard stops are required; for interactive use, leave it unset.
+7. **`permissionMode: plan`** is the safe default for read-only agents (readers, researchers); `acceptEdits` only for trusted builders.
+
+## Deep references (read on demand)
+
+| Topic | File | Contents |
+|---|---|---|
+| Frontmatter spec | `${CLAUDE_SKILL_DIR}/references/frontmatter-spec.md` | Full field reference (required/optional), fields NOT supported (`name`, `model`) with rationale, permission mode table, dynamic model selection matrix by agent category and complexity. Read when authoring an agent's frontmatter or when the user asks why a field doesn't work. |
+| Template specifications | `${CLAUDE_SKILL_DIR}/references/templates-spec.md` | The 4 templates (reader/builder/executor/researcher) each with full frontmatter block and the complete placeholder set. Read in Step 4 when you need the exact placeholder list for a template — this reference documents what `templates/{type}.md` contains. |
+| Worked examples | `${CLAUDE_SKILL_DIR}/references/examples.md` | Three complete agents end-to-end: `security-reviewer` (reader with skills), `test-runner` (executor with allowed-commands pattern), `api-implementer` (builder). Shows frontmatter + system prompt + output format + constraints. Read to see the shape of a finished agent or copy-adapt a known-good structure. Also contains the agent directory structure reference. |
 
 ## Related
 
 - `/meta-create-skill`: Create skills for agents to use
 - `extension-architect`: Meta-agent managing all extensions
+
+---
+
+**Version**: 1.1.0
