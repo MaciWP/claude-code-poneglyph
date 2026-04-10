@@ -65,6 +65,13 @@ The entry `SKILL.md` must include a **Content Map** table that points to every r
 
 The "when to read it" phrasing is critical — it tells the reader which trigger should make them open the reference.
 
+This aligns with Anthropic's official skills guidance:
+
+> *"Reference supporting files from SKILL.md so Claude knows what each file contains and when to load it."*
+> — [code.claude.com/docs/en/skills](https://code.claude.com/docs/en/skills)
+
+The Contents column is the "when to load it" half of that instruction. See `.claude/rules/context-management.md` ("Content Map pattern") for the canonical repo-wide rule.
+
 ## Reference file frontmatter
 
 Files under `references/` need minimal frontmatter:
