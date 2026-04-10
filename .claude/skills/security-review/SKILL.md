@@ -1,9 +1,9 @@
 ---
 name: security-review
 description: |
-  OWASP Top 10 based security audit for authentication, input handling, and vulnerability detection.
-  Use when: CORS configuration, rate limiting, input sanitization, secrets in code, token storage, OWASP compliance, pre-deployment security check, auth code review.
-  Keywords - security, owasp, vulnerability, injection, xss, csrf, audit, secrets, auth, CORS, rate limiting, input sanitization, token storage
+  OWASP Top 10 security audit for auth, input handling, and vulnerability detection.
+  Use when: CORS, rate limiting, input sanitization, secrets in code, token storage, OWASP compliance, pre-deployment check, auth review.
+  Keywords - security, owasp, vulnerability, injection, xss, csrf, audit
 type: knowledge-base
 disable-model-invocation: false
 argument-hint: "[file-path or module]"

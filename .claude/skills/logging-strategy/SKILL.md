@@ -1,9 +1,9 @@
 ---
 name: logging-strategy
 description: |
-  Structured logging patterns with context, log levels, and production-ready observability.
-  Use when: correlation ID setup, JSON log format, request tracing implementation, log aggregation, observability setup, debug logging strategy, adding contextual logging.
-  Keywords - log, logging, logger, structured, contextual logging, correlation, trace id, log levels, observability, JSON logs, request tracing
+  Structured logging patterns with context, log levels, and production observability.
+  Use when: correlation ID setup, JSON log format, request tracing, log aggregation, observability setup, contextual logging.
+  Keywords - log, logger, structured, correlation, trace id, observability
 type: knowledge-base
 disable-model-invocation: false
 activation:

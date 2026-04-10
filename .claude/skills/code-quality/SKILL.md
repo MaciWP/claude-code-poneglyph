@@ -1,9 +1,9 @@
 ---
 name: code-quality
 description: |
-  Code quality review, best practices enforcement, and safe refactoring guidance.
-  Use when: refactoring planning, technical debt assessment, pre-merge review, extract function, reduce complexity, SOLID violations, code smells, duplication detection.
-  Keywords - code quality, code smells, SOLID, complexity, duplication, refactoring, clean code, extract function, reduce complexity, technical debt, pre-merge review, decompose, DRY, single responsibility
+  Code quality review, best practices, safe refactoring guidance.
+  Use when: refactoring, technical debt, pre-merge review, SOLID violations, code smells, duplication, extract function, reduce complexity.
+  Keywords - code quality, SOLID, DRY, clean code, technical debt, decompose
 type: knowledge-base
 disable-model-invocation: false
 argument-hint: "[file-path or module]"
