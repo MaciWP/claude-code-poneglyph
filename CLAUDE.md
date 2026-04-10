@@ -87,8 +87,6 @@ The backbone of the project. Ordered from most fundamental (the human↔Claude r
 
 Orchestration system that powers Claude Code with specialized agents, skills, hooks and rules.
 
-<!-- Counts verified 2026-04-10 via Glob on .claude/. Re-verify whenever inventory changes. -->
-
 ## WHY
 
 | Problem | Solution |
@@ -107,7 +105,7 @@ graph LR
     Orch --> Agents[6 core + 1 meta]
     Orch --> Skills[23 Skills]
     Orch --> Hooks[21 Hooks]
-    Orch --> Rules[15 Rules]
+    Orch --> Rules[14 Rules]
 ```
 
 ## Structure
@@ -119,7 +117,7 @@ graph LR
 ├── agent-memory/    # Per-agent EXPERTISE.md accumulated across sessions
 ├── skills/          # 23 skills with auto-matching (7 meta-skills for scaffolding)
 ├── hooks/           # 21 hooks (pre/post/stop/subagent/permission)
-├── rules/           # 15 orchestration rules (13 global + 2 path-scoped)
+├── rules/           # 14 orchestration rules (12 global + 2 path-scoped)
 └── commands/        # 9 slash commands
 ```
 
@@ -207,6 +205,6 @@ Builder verifies automatically via the `validate-tests-pass.ts` Stop hook. The L
 | **Teammate** | A teammate spawned in team mode — an independent Claude Code process per domain. Only when `executionMode=team` |
 | **Skill** | Loadable domain context / pattern library. Invoked with `Skill()` (or auto-matched) |
 | **Rule** | Behavioral policy in `.claude/rules/*.md`. Loaded implicitly or path-scoped via frontmatter |
-| **Hook** | Shell script triggered by Claude Code events (pre/post tool, stop, etc.) configured in `settings.json` |
+| **Hook** | TypeScript script (run via `bun`) triggered by Claude Code events (pre/post tool, stop, subagent, permission, etc.) configured in `settings.json` |
 | **Command** | Slash command in `.claude/commands/*.md` |
 | **Meta agent / meta skill** | Agent or skill whose purpose is to create, manage or evolve the Poneglyph system itself |
