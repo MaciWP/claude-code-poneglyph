@@ -92,6 +92,8 @@ After loading them, proceed with the task.
 - Read .claude/skills/<skill-2>/SKILL.md
 - Read .claude/skills/<skill-3>/SKILL.md
 
+After loading each skill file, check if its main SKILL.md has a "Content Map", "Reference Files", or "Documentation" section (a canonical 3-column `Topic | File | Contents` table). If present, consult the Contents column to judge which supporting files are semantically relevant to your current task and Read them selectively. A semantic match in the Contents description is a valid trigger even when task phrasing doesn't explicitly mention the domain. Do NOT read all references blindly (defeats on-demand loading), but DO read those where the Contents row describes your task situation.
+
 [TASK]
 {task instructions}
 
