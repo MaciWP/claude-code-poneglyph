@@ -224,4 +224,3 @@ If Stage 2 returns multiple matches, ask user which one. If Stage 3 also fails, 
 ---
 
 **Version**: 1.0.0
-**Spec**: SPEC-018

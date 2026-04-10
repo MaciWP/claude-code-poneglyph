@@ -268,4 +268,3 @@ Use `Glob` to discover project files before applying LSP operations. Each projec
 ---
 
 **Version**: 1.0.0
-**Spec**: SPEC-020

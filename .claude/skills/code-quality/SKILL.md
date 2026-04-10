@@ -206,6 +206,5 @@ graph LR
 ---
 
 **Version**: 3.0
-**Spec**: SPEC-020
 **For**: reviewer, builder agents
 **Patterns**: Language-agnostic

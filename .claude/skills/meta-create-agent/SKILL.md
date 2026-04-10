@@ -30,6 +30,11 @@ Activate this skill when:
 - Need for scaffolding a delegated specialist
 - Request for an agent template
 
+## Official Documentation
+
+Before generating, fetch the latest agent format:
+`https://code.claude.com/docs/en/sub-agents.md`
+
 ## Workflow
 
 ### Step 1: Parse Arguments
@@ -552,7 +557,5 @@ Model is determined dynamically by the Lead based on agent category and task com
 
 ## Related
 
-- **SPEC-021**: Subagents Extension System
-- **SPEC-020**: Skills Extension System
 - `/meta-create-skill`: Create skills for agents to use
 - `extension-architect`: Meta-agent managing all extensions

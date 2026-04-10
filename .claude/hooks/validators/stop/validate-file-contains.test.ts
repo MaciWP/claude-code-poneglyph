@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeAll, afterAll } from "bun:test";
 import { join } from "path";
-import { mkdirSync, rmSync } from "fs";
+import { mkdirSync, rmSync, writeFileSync } from "fs";
 
 const VALIDATOR_PATH = join(import.meta.dir, "validate-file-contains.ts");
 
@@ -29,9 +29,9 @@ describe("validate-file-contains", () => {
   const tempDir = join(import.meta.dir, "__test_temp_contains__");
   const sampleFile = join(tempDir, "sample.ts");
 
-  beforeAll(async () => {
+  beforeAll(() => {
     mkdirSync(tempDir, { recursive: true });
-    await Bun.write(
+    writeFileSync(
       sampleFile,
       [
         "export interface User {",
@@ -44,6 +44,7 @@ describe("validate-file-contains", () => {
         '  return { id: crypto.randomUUID(), name, email: "" }',
         "}",
       ].join("\n"),
+      "utf-8",
     );
   });
 

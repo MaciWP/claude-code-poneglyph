@@ -31,6 +31,11 @@ Activate this skill when:
 - Request for an automated workflow
 - Deep investigation scaffolding
 
+## Official Documentation
+
+Before generating, fetch the latest skill format:
+`https://code.claude.com/docs/en/skills.md`
+
 ## Workflow
 
 ### Step 1: Parse Arguments
@@ -892,6 +897,5 @@ A builder working on Django can self-invoke a `django-patterns` skill. A reviewe
 
 ## Related
 
-- **SPEC-020**: Skills Extension System
 - `/meta-create-agent`: Create subagents that can use skills
 - `extension-architect`: Meta-agent managing all extensions
