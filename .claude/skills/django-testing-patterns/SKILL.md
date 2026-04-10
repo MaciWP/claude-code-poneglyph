@@ -190,17 +190,17 @@ pytest apps/core/tests/ --cov=apps/core --cov-report=term-missing
 
 | Type | File | Content |
 |------|------|---------|
-| Example | `examples/aaa_pattern_real_tests.md` | AAA pattern examples following Binora conventions |
-| Example | `examples/fixture_patterns_conftest.md` | Factory registration, API client, tenant fixtures |
-| Example | `examples/mocker_vs_mock_violations.md` | Why mocker.Mock() over unittest.mock.Mock |
-| Example | `examples/service_vs_viewset_testing.md` | Layer-specific testing strategies |
-| Checklist | `checklists/coverage_improvement_guide.md` | Steps to reach 100% coverage |
-| Checklist | `checklists/test_quality_validation.md` | Quick/detailed/quality validation levels |
-| Template | `templates/conftest_patterns.md` | Factory, API client, tenant fixture templates |
-| Template | `templates/service_test_template.md` | Copy-paste service test with mocked deps |
-| Template | `templates/viewset_test_template.md` | Copy-paste ViewSet test with mocked service |
-| Reference | `references/common_test_mistakes.md` | 10 common mistakes with fixes |
-| Reference | `references/pytest_django_best_practices.md` | Markers, parametrize, fixtures, running tests |
+| Example | `${CLAUDE_SKILL_DIR}/examples/aaa_pattern_real_tests.md` | AAA pattern examples following Binora conventions |
+| Example | `${CLAUDE_SKILL_DIR}/examples/fixture_patterns_conftest.md` | Factory registration, API client, tenant fixtures |
+| Example | `${CLAUDE_SKILL_DIR}/examples/mocker_vs_mock_violations.md` | Why mocker.Mock() over unittest.mock.Mock |
+| Example | `${CLAUDE_SKILL_DIR}/examples/service_vs_viewset_testing.md` | Layer-specific testing strategies |
+| Checklist | `${CLAUDE_SKILL_DIR}/checklists/coverage_improvement_guide.md` | Steps to reach 100% coverage |
+| Checklist | `${CLAUDE_SKILL_DIR}/checklists/test_quality_validation.md` | Quick/detailed/quality validation levels |
+| Template | `${CLAUDE_SKILL_DIR}/templates/conftest_patterns.md` | Factory, API client, tenant fixture templates |
+| Template | `${CLAUDE_SKILL_DIR}/templates/service_test_template.md` | Copy-paste service test with mocked deps |
+| Template | `${CLAUDE_SKILL_DIR}/templates/viewset_test_template.md` | Copy-paste ViewSet test with mocked service |
+| Reference | `${CLAUDE_SKILL_DIR}/references/common_test_mistakes.md` | 10 common mistakes with fixes |
+| Reference | `${CLAUDE_SKILL_DIR}/references/pytest_django_best_practices.md` | Markers, parametrize, fixtures, running tests |
 
 ## Critical Reminders
 

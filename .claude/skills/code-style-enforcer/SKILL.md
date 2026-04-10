@@ -136,14 +136,14 @@ class AssetService:
 
 | Document | Path | Content |
 |----------|------|---------|
-| Detecting YOLO Violations | `examples/yolo_comment_violations.md` | Grep commands and before/after refactoring patterns |
-| Import Organization | `examples/import_organization.md` | Import ordering patterns |
-| Type Hint Patterns | `examples/type_hint_patterns.md` | Type hint examples for Django |
-| Naming Conventions | `examples/naming_conventions.md` | Naming rules and examples |
-| Style Validation | `checklists/style_validation.md` | Full style validation checklist |
-| Quick Fixes | `checklists/quick_fixes.md` | Common quick fix patterns |
-| YOLO Philosophy | `references/yolo_philosophy.md` | Why YOLO and how to write self-documenting code |
-| Module Template | `templates/module_template.md` | Standard module structure template |
+| Detecting YOLO Violations | `${CLAUDE_SKILL_DIR}/examples/yolo_comment_violations.md` | Grep commands and before/after refactoring patterns |
+| Import Organization | `${CLAUDE_SKILL_DIR}/examples/import_organization.md` | Import ordering patterns |
+| Type Hint Patterns | `${CLAUDE_SKILL_DIR}/examples/type_hint_patterns.md` | Type hint examples for Django |
+| Naming Conventions | `${CLAUDE_SKILL_DIR}/examples/naming_conventions.md` | Naming rules and examples |
+| Style Validation | `${CLAUDE_SKILL_DIR}/checklists/style_validation.md` | Full style validation checklist |
+| Quick Fixes | `${CLAUDE_SKILL_DIR}/checklists/quick_fixes.md` | Common quick fix patterns |
+| YOLO Philosophy | `${CLAUDE_SKILL_DIR}/references/yolo_philosophy.md` | Why YOLO and how to write self-documenting code |
+| Module Template | `${CLAUDE_SKILL_DIR}/templates/module_template.md` | Standard module structure template |
 
 ## Critical Reminders
 
