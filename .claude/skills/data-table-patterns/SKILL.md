@@ -103,11 +103,6 @@ export function AssetList({ assets }: { assets: AssetReadable[] }) {
 ### Full Server-Side Example
 
 ```typescript
-import { useState } from "react";
-
-import { DataTable } from "@/components/ui/data-table/data-table";
-import { useAssetsInventory } from "@/features/settings/assets-inventory/api/get-assets";
-
 export function AssetsTable() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -118,26 +113,7 @@ export function AssetsTable() {
   const { data, isLoading } = useAssetsInventory({
     params: { page, limit: pageSize, search, ordering, filters },
   });
-
   const pageCount = data ? Math.ceil(data.count / pageSize) : 0;
-
-  function handlePaginationChange(pagination: { pageIndex: number; pageSize: number }) {
-    setPage(pagination.pageIndex + 1); // API is 1-indexed
-    setPageSize(pagination.pageSize);
-  }
-
-  function handleSortingChange(sorting: SortingState) {
-    if (sorting.length > 0) {
-      const { id, desc } = sorting[0];
-      setOrdering(desc ? `-${id}` : id);
-    } else {
-      setOrdering(undefined);
-    }
-  }
-
-  function handleFilterChange(key: string, values: (number | string)[] | string | undefined) {
-    setFilters((prev) => ({ ...prev, [key]: values }));
-  }
 
   return (
     <DataTable
@@ -146,13 +122,12 @@ export function AssetsTable() {
       data={data?.results ?? []}
       isLoading={isLoading}
       pageCount={pageCount}
-      searchPlaceholder="Search..."
       serverSide
       tableName="assets-inventory"
-      onFilterChange={handleFilterChange}
-      onPaginationChange={handlePaginationChange}
+      onFilterChange={(key, values) => setFilters((prev) => ({ ...prev, [key]: values }))}
+      onPaginationChange={({ pageIndex, pageSize }) => { setPage(pageIndex + 1); setPageSize(pageSize); }}
       onSearchChange={setSearch}
-      onSortingChange={handleSortingChange}
+      onSortingChange={(s) => setOrdering(s[0] ? (s[0].desc ? `-${s[0].id}` : s[0].id) : undefined)}
     />
   );
 }
