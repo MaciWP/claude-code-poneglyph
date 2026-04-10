@@ -162,15 +162,16 @@ Items #3, #7, #12 in `django-review-lessons` cover query optimization errors fou
 4. `annotate()` > Python-level aggregation (always)
 5. `.only()`/`.defer()` for large text/blob fields you do not need
 6. Every list queryset MUST have `order_by` -- pagination requires deterministic ordering
+7. **CRITICAL -- GenericForeignKey silent ignore**: `select_related('parent')` on a `GenericForeignKey` does NOTHING (Django silently ignores it because the target table is not known at query time). Use `prefetch_related('parent')` with a `GenericPrefetch`, or fetch `parent_type`/`parent_id` and resolve in Python. Inlined here because reviewers may not open `references/binora-hierarchy-patterns.md` for tasks that do not explicitly mention Binora or GenericFK.
 
 ## Deep references (Read on demand)
 
-When working on a Binora-specific project, additional context is available:
+When working on a Binora-specific project, additional context is available. The `Triggers` column lists concrete code/task keywords that should make you Read the reference even if the task phrasing is generic.
 
-| When | Read file |
-|---|---|
-| Binora hierarchy queries with GenericFK | `.claude/skills/django-query-optimizer/references/binora-hierarchy-patterns.md` |
-| Binora Rack MTI and model patterns | `.claude/skills/django-query-optimizer/references/binora-model-patterns.md` |
-| Known deviations (user.py, etc.) | `.claude/skills/django-query-optimizer/references/binora-deviations.md` |
+| When | Triggers (keywords in code/task) | Read file |
+|---|---|---|
+| Binora hierarchy queries with GenericFK | `GenericForeignKey`, `parent_type`, `parent_id`, `ContentType`, hierarchy traversal | `.claude/skills/django-query-optimizer/references/binora-hierarchy-patterns.md` |
+| Binora Rack MTI and model patterns | `Rack`, multi-table inheritance, `InheritanceManager`, `asset_ptr` | `.claude/skills/django-query-optimizer/references/binora-model-patterns.md` |
+| Known deviations (user.py, etc.) | empty `select_related()`, unaudited legacy, `user.py` | `.claude/skills/django-query-optimizer/references/binora-deviations.md` |
 
 **Last Updated**: 2026-04-10

@@ -128,6 +128,19 @@ The `SKILL.md` entry ends with a `Deep references (Read on demand)` table mappin
 
 Concrete example: `.claude/skills/django-api/` ships a lean `SKILL.md` plus ~5 references for binora-specific patterns (frontend_permissions integration, drf-spectacular schema extensions, etc.). The base skill loads in every Django delegation; the references only load when the task matches.
 
+### Limitations — lazy pointer-following
+
+Empirically tested on 2026-04-10 with `django-query-optimizer` plus its `references/binora-hierarchy-patterns.md` and `references/binora-deviations.md`: subagents **do** follow the `Deep references` pointer table, but **lazily and need-driven**, not eagerly. They Read only what the task phrasing seems to justify.
+
+The risk is **implicit relevance**. If the user prompt does not surface the domain keywords that match the pointer table's `When` column, the subagent may skip a reference that contains critical information. Concrete case: a reviewer given Django code using `GenericForeignKey` and a generic prompt of the form "check N+1" may stay with the main `SKILL.md` and never open `references/binora-hierarchy-patterns.md`, thereby missing that `select_related('parent')` on a `GenericForeignKey` is silently a no-op in Django — a serious footgun.
+
+Two mitigations apply to skills using this sub-pattern:
+
+| Mitigation | How |
+|---|---|
+| **Inline high-impact gotchas** | Surface critical footguns directly in the main `SKILL.md` body so they are always loaded, independent of whether any reference is opened. Reserve this for items where silent failure has outsized cost. |
+| **Keyword triggers in the pointer table** | Add a `Triggers` column with explicit code/task keywords alongside the `When` description. Gives the subagent concrete semantic hooks to detect relevance even when the task phrasing is generic. |
+
 ## 9. Implementation reference
 
 Canonical files in this repo:
