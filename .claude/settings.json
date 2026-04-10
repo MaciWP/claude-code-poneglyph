@@ -3,7 +3,7 @@
   "env": {
     "BASH_DEFAULT_TIMEOUT_MS": "300000",
     "ENABLE_LSP_TOOL": "1",
-    "PATH": "/c/Users/Maci/.bun/bin:${HOME}/.bun/bin:/opt/homebrew/bin:/usr/local/bin:/c/Program Files/nodejs:./node_modules/.bin:${PATH}",
+    "PATH": "/c/Users/Maci/.bun/bin:${HOME}/.bun/bin:/opt/homebrew/bin:/usr/local/bin:/bin:/usr/bin:/usr/sbin:/sbin:/c/Program Files/nodejs:./node_modules/.bin:${PATH}",
     "CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS": "50000",
     "CLAUDE_LEAD_MODE": "true",
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
@@ -43,16 +43,6 @@
       }
     ],
     "PostToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "if": "Edit(*.ts)|Edit(*.tsx)|Edit(*.js)|Edit(*.jsx)|Edit(*.py)|Edit(*.go)|Edit(*.rs)|Write(*.ts)|Write(*.tsx)|Write(*.js)|Write(*.jsx)|Write(*.py)|Write(*.go)|Write(*.rs)",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bun $HOME/.claude/hooks/format-code.ts"
-          }
-        ]
-      },
       {
         "matcher": "Edit|Write",
         "if": "Edit(*.ts)|Edit(*.tsx)|Edit(*.js)|Edit(*.jsx)|Edit(*.py)|Write(*.ts)|Write(*.tsx)|Write(*.js)|Write(*.jsx)|Write(*.py)",
