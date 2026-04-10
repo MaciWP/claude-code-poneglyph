@@ -173,6 +173,15 @@ if (filter.status) { conditions.push(`status = $${idx++}`); params.push(filter.s
 const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
 ```
 
+## Content Map
+
+Supporting files loaded on demand based on task context. Consult the Contents column to decide which to Read for your current task.
+
+| Topic | File | Contents |
+|---|---|---|
+| OWASP Top 10 quick reference | `${CLAUDE_SKILL_DIR}/references/owasp-quick-ref.md` | Detailed per-vulnerability descriptions (A01-A10) with Problem / Detection / BEFORE-vulnerable / AFTER-secure pseudocode pairs. Read when you need the full vulnerability explanation with code examples — e.g., fixing an identified A03 injection or A01 access control issue, or generating a remediation plan with concrete before/after snippets. |
+| Pre-deploy security checklist | `${CLAUDE_SKILL_DIR}/checklists/pre-deploy.md` | Full 38-item checklist across 6 categories (Auth 8, Authz 6, Input Validation 7, Data Protection 6, Headers/Config 6, Logging 5) — each item is a boolean gate. Read when doing a pre-deployment audit, or when the `## Review Checklist` summary in this SKILL.md is not granular enough and you need concrete pass/fail items to tick. |
+
 ## Emergency: Secret Committed to Git
 
 1. **Rotate the secret immediately** — assume compromised

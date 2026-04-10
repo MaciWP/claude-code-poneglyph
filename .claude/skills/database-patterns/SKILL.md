@@ -240,6 +240,16 @@ SELECT * FROM posts WHERE id > <last_seen_id> ORDER BY id LIMIT 100;
 
 For the full checklist, see `checklists/schema-review.md`.
 
+## Content Map
+
+Supporting files loaded on demand based on task context. Consult the Contents column to decide which to Read for your current task.
+
+| Topic | File | Contents |
+|---|---|---|
+| Index strategy | `${CLAUDE_SKILL_DIR}/references/index-strategy.md` | Index types (simple, composite, partial, covering/INCLUDE) with SQL examples, the "when to index" decision table, composite column ordering rules (most selective first), and EXPLAIN-plan analysis guidance. Read when designing new indexes, diagnosing Seq Scan in EXPLAIN output, or deciding whether to add a composite vs partial index. |
+| Migration safety | `${CLAUDE_SKILL_DIR}/references/migration-safety.md` | Folder/naming conventions, mandatory UP/DOWN rollback pattern, FK ordering rules (parent before child on create, child before parent on drop), and guidance on dangerous operations (DROP COLUMN on populated tables, ALTER TYPE, etc.). Read before writing any schema migration or when a rollback fails in prod with FK violations. |
+| Schema review checklist | `${CLAUDE_SKILL_DIR}/checklists/schema-review.md` | 10-item gate list covering normalization, indexes, transactions, N+1, migration UP/DOWN, EXPLAIN usage, pooling, isolation level, parameterized queries, and FK ON DELETE behavior. Read when performing a schema/PR review and you need a concrete pass/fail checklist to tick. |
+
 ## Gotchas
 
 | Gotcha | Why | Workaround |

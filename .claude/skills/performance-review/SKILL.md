@@ -216,6 +216,15 @@ Use your runtime's native APIs when available for best performance:
 |--------|-------|--------|-------|
 | `scripts/find-n-plus-one.ts` | file/dir path | JSON `{ findings, total }` | `bun .claude/skills/performance-review/scripts/find-n-plus-one.ts <path>` |
 
+## Content Map
+
+Supporting files loaded on demand based on task context. Consult the Contents column to decide which to Read for your current task.
+
+| Topic | File | Contents |
+|---|---|---|
+| N+1 and sequential-op patterns | `${CLAUDE_SKILL_DIR}/references/n-plus-one-patterns.md` | Detailed N+1 query problem (Problem/Impact/Detection/BEFORE-slow/AFTER-fast with JOIN and batch-loading variants), plus synchronous blocking, unbatched operations, and sequential-await-in-loop anti-patterns. Read when a query-in-loop or sequential-await pattern is suspected and you need concrete fix pseudocode with JOIN vs IN-batch trade-offs. |
+| Memory leak and serialization patterns | `${CLAUDE_SKILL_DIR}/references/memory-leak-patterns.md` | Detection and fix patterns for unbounded cache growth, event listener leaks, closure-captured references, and large-object serialization CPU spikes. Read when memory grows over time, OOM crashes are reported, or GC pauses degrade p99 latency — provides LRU/TTL cache patterns and listener cleanup templates. |
+
 ---
 
 **Version**: 2.0

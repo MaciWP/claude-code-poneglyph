@@ -138,6 +138,15 @@ For full aggregation integration details, see `references/structured-format.md`.
 
 13 items: structured logger, JSON/pretty output, env-configurable level, request IDs, appropriate levels, no sensitive data, stack traces, performance timing, child loggers, correlation forwarding, consistent naming, log rotation.
 
+## Content Map
+
+Supporting files loaded on demand based on task context. Consult the Contents column to decide which to Read for your current task.
+
+| Topic | File | Contents |
+|---|---|---|
+| Log levels guide | `${CLAUDE_SKILL_DIR}/references/log-levels-guide.md` | Detailed per-level reference (DEBUG/INFO/WARN/ERROR/FATAL) with production defaults and concrete examples per level, plus a decision-tree table ("Is this a normal event? / Could this become a problem?") for selecting the right level. Read when unsure whether an event is INFO vs WARN, or when auditing a module with inconsistent levels. |
+| Structured format & correlation | `${CLAUDE_SKILL_DIR}/references/structured-format.md` | Unstructured-vs-structured comparison, logger interface patterns, JSON output format for production, pretty-print for development, correlation ID / request ID middleware, `logger.child()` request-scoped context, cross-service trace propagation, and error/performance logging patterns. Read when wiring up a new logger, adding correlation IDs, or integrating with a log aggregator. |
+
 ## Gotchas
 
 | Gotcha | Why | Workaround |
