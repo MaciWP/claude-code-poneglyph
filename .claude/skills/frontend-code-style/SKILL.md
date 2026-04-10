@@ -3,6 +3,18 @@ name: frontend-code-style
 description: |
   Consolidated code style standards for React/TypeScript frontends: naming, imports, formatting, function design, and component structure. Quick reference for all project conventions.
   Use when writing or reviewing any frontend code.
+activation:
+  keywords:
+    - frontend style
+    - react style
+    - typescript style
+    - naming convention
+    - type imports
+    - path alias
+    - kebab-case
+    - pascalcase
+    - frontend formatting
+    - tsx style
 allowed-tools: [Read, Grep, Glob]
 context: fork
 version: "1.0.0"

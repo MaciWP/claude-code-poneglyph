@@ -5,6 +5,17 @@ description: |
   backend implementation with contract specifications.
   Use when writing new endpoints, reviewing contract changes, verifying
   query parameters, or checking backend-contract alignment.
+activation:
+  keywords:
+    - openapi
+    - openapi.yaml
+    - api contract
+    - contract-first
+    - spec
+    - schema
+    - swagger
+    - endpoint contract
+    - contract alignment
 allowed-tools: [Read, Grep, Glob]
 context: fork
 version: "2.0.0"

@@ -5,6 +5,18 @@ description: |
   transaction management, and service layer best practices.
   Use when implementing features, reviewing architecture, refactoring business logic,
   or designing new services in Django/DRF projects.
+activation:
+  keywords:
+    - django architecture
+    - service layer
+    - views services models
+    - 3-layer
+    - business logic
+    - dependency injection
+    - transaction
+    - atomic
+    - django service
+    - refactor views
 allowed-tools: [Read, Grep, Glob]
 context: fork
 version: "2.0.0"

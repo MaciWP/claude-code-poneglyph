@@ -5,6 +5,18 @@ description: |
   permissions, routing, and request/response handling.
   Use when implementing endpoints, reviewing API code, creating serializers,
   or designing ViewSet patterns in Django/DRF projects.
+activation:
+  keywords:
+    - viewset
+    - drf
+    - django rest framework
+    - serializer
+    - api endpoint
+    - permission_classes
+    - perform_create
+    - get_serializer_class
+    - drf router
+    - rest endpoint
 allowed-tools: [Read, Grep, Glob]
 context: fork
 version: "2.0.0"

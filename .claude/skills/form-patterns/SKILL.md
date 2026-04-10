@@ -4,6 +4,18 @@ description: |
   Form implementation patterns for binora-frontend: React Hook Form v7 + Zod validation,
   form-field components, submission with React Query mutations, and error display.
   Use when creating forms, adding validation, or reviewing form implementations.
+activation:
+  keywords:
+    - react hook form
+    - zod
+    - form validation
+    - shadcn form
+    - useform
+    - zodresolver
+    - formfield
+    - form submission
+    - schema validation
+    - rhf
 allowed-tools: [Read, Grep, Glob]
 context: fork
 version: "1.0.0"

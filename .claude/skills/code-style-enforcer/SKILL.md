@@ -4,6 +4,18 @@ description: |
   Python/Django code style enforcement -- YOLO philosophy (minimal comments), type hints,
   imports organization, naming conventions, and Black/isort formatting.
   Use when writing or reviewing Python code in this project.
+activation:
+  keywords:
+    - python style
+    - black
+    - isort
+    - type hints
+    - imports organization
+    - naming conventions
+    - yolo
+    - django style
+    - pep8
+    - code style
 allowed-tools: [Read, Grep, Glob]
 context: fork
 version: "2.0.0"

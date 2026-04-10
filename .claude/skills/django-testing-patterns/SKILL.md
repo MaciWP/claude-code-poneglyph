@@ -4,6 +4,18 @@ description: |
   pytest-django testing best practices -- AAA pattern, fixture philosophy, mocker.Mock usage,
   test naming conventions, and coverage targets for Django/DRF applications.
   Use when writing or reviewing tests in this Django project.
+activation:
+  keywords:
+    - pytest
+    - pytest-django
+    - fixture
+    - conftest
+    - mocker
+    - test_
+    - aaa pattern
+    - django test
+    - unit test
+    - api client
 allowed-tools: [Read, Grep, Glob]
 context: fork
 version: "2.0.0"

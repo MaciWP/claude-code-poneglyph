@@ -4,6 +4,18 @@ description: |
   Testing patterns for binora-frontend: Vitest + Testing Library + MSW setup, test utilities,
   component/hook/API testing, form testing, and DataTable testing.
   Use when writing tests, reviewing test coverage, or setting up test infrastructure.
+activation:
+  keywords:
+    - vitest
+    - testing library
+    - msw
+    - react test
+    - renderwithproviders
+    - component test
+    - hook test
+    - frontend test
+    - mock service worker
+    - react testing library
 allowed-tools: [Read, Grep, Glob]
 context: fork
 version: "1.0.0"

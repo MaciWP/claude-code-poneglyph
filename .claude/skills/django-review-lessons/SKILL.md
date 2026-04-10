@@ -4,6 +4,17 @@ description: |
   Personal code review lessons learned from past PRs — errors that must never be repeated.
   Covers architecture, style, testing, models, serializers, and contract patterns.
   Use when reviewing code, before PRs, during quality audits, or pre-commit checks.
+activation:
+  keywords:
+    - django review
+    - review lessons
+    - past pr
+    - review mistakes
+    - common errors
+    - pre-commit review
+    - quality audit
+    - django checklist
+    - pr checklist
 allowed-tools: [Read, Grep, Glob]
 context: fork
 version: "2.0.0"

@@ -4,6 +4,18 @@ description: |
   React Query v5 patterns for binora-frontend: standard API hook pattern (getFoo + queryOptions + useFoo),
   query key factories, mutations with cache invalidation, pagination, and API deduplication rules.
   Use when creating API hooks, implementing data fetching, or reviewing query patterns.
+activation:
+  keywords:
+    - react query
+    - tanstack query
+    - usequery
+    - usemutation
+    - queryoptions
+    - query key
+    - cache invalidation
+    - api hook
+    - react query v5
+    - data fetching hook
 allowed-tools: [Read, Grep, Glob]
 context: fork
 version: "1.0.0"

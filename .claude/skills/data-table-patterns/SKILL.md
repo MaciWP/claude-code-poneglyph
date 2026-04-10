@@ -4,6 +4,18 @@ description: |
   DataTable component patterns for binora-frontend: shared DataTable from data-table.tsx,
   column definitions, server-side pagination, sorting, filtering, row selection, and column ordering.
   Use when implementing tables, adding pagination, or extending DataTable features.
+activation:
+  keywords:
+    - data table
+    - datatable
+    - pagination
+    - sorting
+    - filtering
+    - row selection
+    - column definition
+    - shadcn table
+    - tanstack table
+    - faceted filter
 allowed-tools: [Read, Grep, Glob]
 context: fork
 version: "1.0.0"
