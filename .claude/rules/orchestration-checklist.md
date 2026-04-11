@@ -44,9 +44,23 @@ Factors: Files, Domains, Dependencies, Security, Integrations (see `complexity-r
 | `Agent(subagent_type="reviewer")` | Validate changes |
 | `Skill()` | Load domain context |
 
-**PROHIBITED to use directly**: Read, Edit, Write, Bash, Glob, Grep.
-**Exceptions**: CLAUDE.md, memory/, .claude/, conftest.py, plan files.
-**Parallelize**: Independent agents in the SAME message.
+**Delegation triggers (delegate WHEN any fires — see lead-orchestrator.md "Delegation Triggers")**:
+- Trigger A — Parallelization: 2+ independent subtasks with no data dependency
+  - Sub-clause A.1: simple work + parallelizable → prefer haiku/sonnet batch over inline opus
+- Trigger B — Context preservation: would read >10 files, >5 grep/glob, or process >15K tokens inline
+
+**Direct-action whitelist (NO trigger fires → may execute directly)**:
+- `git status`, `git log`, `git diff`, `git show` — verify state after delegated tasks
+- `git mv` of a single file (pure rename, no content change)
+- Read CLAUDE.md, memory/, .claude/, plan files for orientation
+- Answer user questions that need zero file writes
+- Reading ≤3 files inline when no trigger fires (e.g., confirming a single anchor before drafting a delegation prompt)
+
+Anything else — even "quick" 1-line edits or single-variable renames — goes through a builder. Ceremony cost is the price of context cleanliness for non-trivial work.
+
+**Parallelize**: When Trigger A fires, send all independent Agents in the SAME message. Self-check: "any second independent Task here?" Document dependency inline if not.
+
+> All delegations must include the [QUALITY STANCE] block (see lead-orchestrator.md delegation template). The Regla de Oro is non-negotiable.
 
 ## Step 5: Validate
 

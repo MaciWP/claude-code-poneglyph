@@ -57,6 +57,27 @@ graph TD
     EA --> B2
 ```
 
+## Delegation Triggers (POSITIVE — actively look for these)
+
+The Lead's job is to find reasons to delegate, not reasons to avoid it. Two quantified triggers, sourced from Anthropic Claude Code docs:
+
+| Trigger | Threshold (objective) | Source |
+|---|---|---|
+| **A. Parallelization** | 2+ subtasks with NO data dependency between them | Anthropic: "three or more independent pieces of work" |
+| **B. Context preservation** | Task would require reading >10 files, >5 grep/glob queries, or processing >15K tokens of content inline | Anthropic: "exploring ten or more files" |
+
+When ANY trigger fires → delegate. When BOTH fire → batch in parallel (one message, multiple Agent calls).
+
+**Sub-clause A.1 — Cost arbitrage**: When parallelizing simple work (complexity <30), prefer agents on haiku/sonnet over inline opus. The Lead runs on opus (~5x sonnet, ~25x haiku); inline opus for simple parallelizable work is the worst $/task ratio. See `complexity-routing.md` for model tiers.
+
+**Coordination cost veto** (Stanford 2025): if 2+ "parallel" subtasks share >40% of context, coordination overhead exceeds parallelism gain — use 1 agent instead. **Cheap-model relaxation**: if parallel agents are haiku/sonnet, veto relaxes to >70% (cheap tokens absorb the coordination tax).
+
+**No hard cap on batch size** — but watch for **artificial parallelization**: splitting work that doesn't truly need separation just to hit a parallelism number. If forcing a split would degrade the result (incoherent outputs, lost integration context, fragmented reasoning), use fewer agents. The Regla de Oro decides — quality over parallelism count. (Osmani field data observes diminishing returns beyond 4 agents — informational, not a rule.)
+
+**Self-check before EVERY delegation message**: "Is there any other independent Task I could batch into this same message?" If no, state the reason inline ("solo delegation — waiting on scout before builder"). Solo-delegation without stated dependency is anti-pattern.
+
+> Every delegation serves the Regla de Oro (CLAUDE.md). Quality is the lodestar — these triggers exist because cleaner Lead context produces better orchestration decisions.
+
 ## Allowed Tools
 
 | Tool | Usage |
@@ -84,6 +105,10 @@ When delegating to any agent, the Lead MUST build the prompt with TWO pre-inject
 ```
 [ACCUMULATED MEMORY - {agent}]
 {content of MEMORY.md, last 3K tokens}
+
+[QUALITY STANCE]
+Output must be: certain, sourced, simple, style-consistent, gap-free.
+Ask if doubt > 30%. Verify before asserting.
 
 [RELEVANT SKILLS FOR THIS TASK]
 Before starting, your first actions must be to Read these skill files for context.
@@ -327,7 +352,7 @@ The Lead does NOT control the model directly (Claude Code manages it), but CAN:
 
 ## Delegation Parallelization (MANDATORY)
 
-The Lead MUST maximize parallelism. Multiple Tasks in a single message = parallel execution.
+The Lead MUST maximize parallelism when Trigger A from "Delegation Triggers" fires. Multiple Tasks in a single message = parallel execution. See `lead-parallelism-gate.ts` (Phase 2 hook) for runtime enforcement.
 
 ### When to Parallelize
 
@@ -362,6 +387,9 @@ Task(reviewer, "review auth module", run_in_background=true) + Task(reviewer, "r
 | scout → wait → builder (no dependency) | scout + builder in parallel |
 | builder A → wait → builder B (different files) | 2 builders in parallel |
 | reviewer M1 → wait → reviewer M2 | 2 reviewers in background |
+| Solo delegation message without stated dependency reason | batch with 2nd Task or state "waiting on X" |
+| Inline reading >10 files instead of delegating to scout | delegate to scout, reserve Lead context |
+| Lead (opus) doing simple parallel work inline that haiku/sonnet could batch | delegate batch of cheap-model agents (sub-clause A.1) |
 
 ### When to use `run_in_background=true`
 

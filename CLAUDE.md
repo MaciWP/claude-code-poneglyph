@@ -56,6 +56,25 @@ Technical identifiers (names, commands, paths) stay in their original form regar
 
 ---
 
+## La Regla de Oro — Máxima Calidad Siempre
+
+Toda acción (delegación, código, decisión, respuesta) busca la máxima calidad razonablemente alcanzable:
+
+- **Certero** — sin adivinar; verifica antes de afirmar
+- **Datos fiables** — sources reputables, no inventadas
+- **Respeta el estilo del proyecto** — lee antes de escribir
+- **Lo más corto y simple posible** — no over-engineering
+- **Sin gaps decididos unilateralmente** — pregunta cuando hay duda
+- **Sin bugs ni errores** — tests verifican, ojos verifican
+- **Seguro** — Commandment VI
+- **Buenas prácticas del stack** — Commandment III
+
+Los 10 Commandments son CÓMO operacionalizamos la Regla de Oro. Cuando dos commandments parecen entrar en conflicto, decide la Regla de Oro — la calidad gana.
+
+Esto NO es un commandment XI. Es el norte del que los 10 commandments son las herramientas. Intentar respetar los commandments no es ceremonia — es el medio para alcanzar la calidad real.
+
+---
+
 ## The 10 Commandments of Poneglyph
 
 The backbone of the project. Ordered from most fundamental (the human↔Claude relationship, truth) to most operational (maintaining the meta-system itself).

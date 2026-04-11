@@ -27,6 +27,8 @@ import {
   detectStatus,
   countToolCalls,
   countFilesChanged,
+  calculateParallelismRatio,
+  calculateCheapModelRatio,
 } from "./lib/trace-metrics";
 
 export type { ContentBlock, TranscriptMessage } from "./lib/trace-extract";
@@ -46,6 +48,8 @@ export {
   detectStatus,
   countToolCalls,
   countFilesChanged,
+  calculateParallelismRatio,
+  calculateCheapModelRatio,
 } from "./lib/trace-metrics";
 
 export interface TraceEntry {
@@ -63,6 +67,8 @@ export interface TraceEntry {
   status: string;
   toolCalls: number | null;
   filesChanged: number | null;
+  parallelismRatio: number | null;
+  cheapModelRatio: number | null;
   rawInput?: Record<string, unknown>;
 }
 
@@ -81,6 +87,8 @@ export interface ResolvedTraceEntry {
   status: string;
   toolCalls: number;
   filesChanged: number;
+  parallelismRatio: number | null;
+  cheapModelRatio: number | null;
   rawInput?: Record<string, unknown>;
 }
 
@@ -157,6 +165,8 @@ function buildTraceWithTranscript(
     status: detectStatus(transcript, input.last_assistant_message ?? ""),
     toolCalls: countToolCalls(transcript),
     filesChanged: countFilesChanged(transcript),
+    parallelismRatio: calculateParallelismRatio(transcript),
+    cheapModelRatio: calculateCheapModelRatio(transcript),
     rawInput: buildRawInput(input),
   };
 }
@@ -177,6 +187,8 @@ function buildTraceMinimal(input: StopHookInput): TraceEntry {
     status: input.stop_hook_event ?? "unknown",
     toolCalls: null,
     filesChanged: null,
+    parallelismRatio: null,
+    cheapModelRatio: null,
     rawInput: buildRawInput(input),
   };
 }

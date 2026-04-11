@@ -8,6 +8,8 @@ import {
   detectStatus,
   countToolCalls,
   countFilesChanged,
+  calculateParallelismRatio,
+  calculateCheapModelRatio,
   MODEL_PRICING,
 } from "./trace-metrics";
 import { getContentLength } from "./trace-extract";
@@ -380,10 +382,101 @@ describe("normalizeEntry via aggregateTraces", () => {
       status: v1Entry.status,
       toolCalls: 0,
       filesChanged: 0,
+      parallelismRatio: null,
+      cheapModelRatio: null,
     };
 
     const agg = aggregateTraces([normalized]);
     expect(agg.totalSessions).toBe(1);
     expect(agg.byModel.unknown.count).toBe(1);
+  });
+});
+
+function agentBlock(name = "Task"): ContentBlock {
+  return { type: "tool_use", name, input: { subagent_type: "builder" } };
+}
+
+function assistantMsg(...blocks: ContentBlock[]): TranscriptMessage {
+  return { role: "assistant", content: blocks };
+}
+
+describe("calculateParallelismRatio", () => {
+  test("returns null for empty transcript (no agents)", () => {
+    expect(calculateParallelismRatio([])).toBeNull();
+  });
+
+  test("returns null when total agents < 3 (2 agents)", () => {
+    const t: TranscriptMessage[] = [
+      assistantMsg(agentBlock()),
+      assistantMsg(agentBlock()),
+    ];
+    expect(calculateParallelismRatio(t)).toBeNull();
+  });
+
+  test("returns 0.0 when all 3 agents are solo (no batching)", () => {
+    const t: TranscriptMessage[] = [
+      assistantMsg(agentBlock()),
+      assistantMsg(agentBlock()),
+      assistantMsg(agentBlock()),
+    ];
+    expect(calculateParallelismRatio(t)).toBe(0);
+  });
+
+  test("returns 1.0 when 1 batched message contains all 3 agents", () => {
+    const t: TranscriptMessage[] = [
+      assistantMsg(agentBlock(), agentBlock(), agentBlock()),
+    ];
+    expect(calculateParallelismRatio(t)).toBe(1);
+  });
+
+  test("returns correct decimal for mixed solo and batched", () => {
+    // 1 solo message (1 agent) + 1 batched message (2 agents) = 3 total, 2 batched
+    const t: TranscriptMessage[] = [
+      assistantMsg(agentBlock()),
+      assistantMsg(agentBlock(), agentBlock()),
+    ];
+    const ratio = calculateParallelismRatio(t);
+    expect(ratio).toBeCloseTo(2 / 3, 5);
+  });
+
+  test("ignores non-Agent tool_use blocks", () => {
+    const readBlock: ContentBlock = {
+      type: "tool_use",
+      name: "Read",
+      input: {},
+    };
+    const t: TranscriptMessage[] = [
+      assistantMsg(readBlock, agentBlock()),
+      assistantMsg(agentBlock()),
+      assistantMsg(agentBlock()),
+    ];
+    // 3 agent calls total, all solo → ratio = 0
+    expect(calculateParallelismRatio(t)).toBe(0);
+  });
+
+  test("ignores non-assistant messages", () => {
+    const t: TranscriptMessage[] = [
+      { role: "user", content: [agentBlock()] },
+      assistantMsg(agentBlock()),
+      assistantMsg(agentBlock()),
+      assistantMsg(agentBlock()),
+    ];
+    // Only 3 assistant Agent calls, all solo
+    expect(calculateParallelismRatio(t)).toBe(0);
+  });
+});
+
+describe("calculateCheapModelRatio", () => {
+  test("always returns null (per-Agent model not captured in transcript)", () => {
+    const t: TranscriptMessage[] = [
+      assistantMsg(agentBlock()),
+      assistantMsg(agentBlock()),
+      assistantMsg(agentBlock()),
+    ];
+    expect(calculateCheapModelRatio(t)).toBeNull();
+  });
+
+  test("returns null for empty transcript", () => {
+    expect(calculateCheapModelRatio([])).toBeNull();
   });
 });

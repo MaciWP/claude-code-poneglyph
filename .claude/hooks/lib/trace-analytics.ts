@@ -39,6 +39,8 @@ const RESOLVED_DEFAULTS: ResolvedTraceEntry = {
   status: "unknown",
   toolCalls: 0,
   filesChanged: 0,
+  parallelismRatio: null,
+  cheapModelRatio: null,
 };
 
 function normalizeEntry(entry: Partial<TraceEntry>): ResolvedTraceEntry {
@@ -58,6 +60,8 @@ function normalizeEntry(entry: Partial<TraceEntry>): ResolvedTraceEntry {
     status: entry.status ?? "unknown",
     toolCalls: entry.toolCalls ?? 0,
     filesChanged: entry.filesChanged ?? 0,
+    parallelismRatio: entry.parallelismRatio ?? null,
+    cheapModelRatio: entry.cheapModelRatio ?? null,
     rawInput: entry.rawInput,
   };
 }

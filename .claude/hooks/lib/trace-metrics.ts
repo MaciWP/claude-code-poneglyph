@@ -101,3 +101,48 @@ export function countFilesChanged(transcript: TranscriptMessage[]): number {
   }
   return files.size;
 }
+
+const MIN_AGENTS_FOR_RATIO = 3;
+const AGENT_TOOL_NAMES: Record<string, boolean> = { Task: true, Agent: true };
+
+/**
+ * Computes the fraction of Agent calls that arrived in batched messages (2+ Agents per message).
+ * Returns null when total Agent calls < MIN_AGENTS_FOR_RATIO (too few to be meaningful).
+ */
+export function calculateParallelismRatio(
+  transcript: TranscriptMessage[],
+): number | null {
+  let totalAgents = 0;
+  let batchedAgents = 0;
+
+  for (const msg of transcript) {
+    if (msg.role !== "assistant") continue;
+    const blocks = Array.isArray(msg.content) ? msg.content : [];
+    const agentBlocks = blocks.filter(
+      (b) => b.type === "tool_use" && AGENT_TOOL_NAMES[b.name || ""],
+    );
+    const count = agentBlocks.length;
+    totalAgents += count;
+    if (count >= 2) batchedAgents += count;
+  }
+
+  if (totalAgents < MIN_AGENTS_FOR_RATIO) return null;
+  return batchedAgents / totalAgents;
+}
+
+/**
+ * Computes the fraction of Agent calls that used cheap models (haiku or sonnet).
+ * Returns null when no per-Agent model information is available in the transcript.
+ *
+ * NOTE: Current trace schema does not capture the model per individual Agent tool_use call.
+ * The `detectModel` function scans entire-transcript text for model mentions, which is
+ * session-level, not per-call. Until per-Agent model capture is added to the trace schema,
+ * this function always returns null.
+ */
+export function calculateCheapModelRatio(
+  _transcript: TranscriptMessage[],
+): number | null {
+  // Gap: per-Agent model info is not currently captured in traces.
+  // See E2 in enchanted-tinkering-acorn.md — Option C chosen.
+  return null;
+}
