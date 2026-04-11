@@ -30,6 +30,11 @@ import {
   calculateParallelismRatio,
   calculateCheapModelRatio,
 } from "./lib/trace-metrics";
+import {
+  readRawTranscriptFromPath,
+  normalizeTranscriptEntry,
+  extractAuthoritativeMetadata,
+} from "./lib/trace-persisted";
 
 export type { ContentBlock, TranscriptMessage } from "./lib/trace-extract";
 
@@ -115,21 +120,6 @@ async function consumeStdin(): Promise<string> {
   });
 }
 
-async function readTranscriptFromPath(
-  transcriptPath: string,
-): Promise<TranscriptMessage[]> {
-  try {
-    const file = Bun.file(transcriptPath);
-    if (!(await file.exists())) return [];
-    const content = await file.text();
-    const parsed = JSON.parse(content);
-    if (Array.isArray(parsed)) return parsed as TranscriptMessage[];
-    return [];
-  } catch {
-    return [];
-  }
-}
-
 function buildRawInput(input: StopHookInput): Record<string, unknown> {
   const raw: Record<string, unknown> = {};
   for (const key of Object.keys(input)) {
@@ -171,6 +161,48 @@ function buildTraceWithTranscript(
   };
 }
 
+export function buildTraceFromPersisted(
+  input: StopHookInput,
+  rawEntries: unknown[],
+): TraceEntry {
+  const transcript = rawEntries
+    .map(normalizeTranscriptEntry)
+    .filter((m): m is TranscriptMessage => m !== null);
+
+  if (transcript.length === 0) return buildTraceMinimal(input);
+
+  const auth = extractAuthoritativeMetadata(rawEntries);
+  const estimated = estimateTokens(transcript);
+
+  const inputTokens = auth.inputTokens ?? estimated.inputTokens;
+  const outputTokens = auth.outputTokens ?? estimated.outputTokens;
+  const tokens = inputTokens + outputTokens;
+  const model = auth.model ?? detectModel(transcript);
+
+  const { agents, skills } = extractAgentsAndSkills(transcript);
+  const prompt = extractFirstUserPrompt(transcript);
+
+  return {
+    ts: new Date().toISOString(),
+    sessionId: input.session_id ?? null,
+    prompt: prompt === "unknown" ? null : prompt,
+    agents: agents.length > 0 ? agents : null,
+    skills: skills.length > 0 ? skills : null,
+    tokens,
+    inputTokens,
+    outputTokens,
+    costUsd: calculateCost(inputTokens, outputTokens, model),
+    durationMs: auth.durationMs ?? calculateDuration(tokens),
+    model,
+    status: detectStatus(transcript, input.last_assistant_message ?? ""),
+    toolCalls: countToolCalls(transcript),
+    filesChanged: countFilesChanged(transcript),
+    parallelismRatio: calculateParallelismRatio(transcript),
+    cheapModelRatio: calculateCheapModelRatio(transcript),
+    rawInput: buildRawInput(input),
+  };
+}
+
 function buildTraceMinimal(input: StopHookInput): TraceEntry {
   return {
     ts: new Date().toISOString(),
@@ -193,16 +225,6 @@ function buildTraceMinimal(input: StopHookInput): TraceEntry {
   };
 }
 
-function buildTrace(
-  input: StopHookInput,
-  transcript: TranscriptMessage[],
-): TraceEntry {
-  if (transcript.length === 0) {
-    return buildTraceMinimal(input);
-  }
-  return buildTraceWithTranscript(input, transcript);
-}
-
 async function writeTrace(trace: TraceEntry): Promise<void> {
   const tracesDir = join(homedir(), ".claude", "traces");
   mkdirSync(tracesDir, { recursive: true });
@@ -213,6 +235,18 @@ async function writeTrace(trace: TraceEntry): Promise<void> {
   const file = Bun.file(filePath);
   const existing = (await file.exists()) ? await file.text() : "";
   await Bun.write(filePath, existing + JSON.stringify(trace) + "\n");
+}
+
+async function resolveTrace(input: StopHookInput): Promise<TraceEntry> {
+  if (typeof input.transcript_path === "string") {
+    const rawEntries = await readRawTranscriptFromPath(input.transcript_path);
+    if (rawEntries.length > 0) return buildTraceFromPersisted(input, rawEntries);
+    return buildTraceMinimal(input);
+  }
+  if (input.transcript && input.transcript.length > 0) {
+    return buildTraceWithTranscript(input, input.transcript);
+  }
+  return buildTraceMinimal(input);
 }
 
 async function main(): Promise<void> {
@@ -226,11 +260,8 @@ async function main(): Promise<void> {
     if (input.stop_hook_active === true) {
       process.exit(0);
     }
-    let transcript = input.transcript || [];
-    if (transcript.length === 0 && typeof input.transcript_path === "string") {
-      transcript = await readTranscriptFromPath(input.transcript_path);
-    }
-    const trace = buildTrace(input, transcript);
+
+    const trace = await resolveTrace(input);
     await writeTrace(trace);
   } catch {
     // Never block - trace logging is best-effort
@@ -239,4 +270,6 @@ async function main(): Promise<void> {
   process.exit(0);
 }
 
-main();
+if (import.meta.main) {
+  main();
+}
