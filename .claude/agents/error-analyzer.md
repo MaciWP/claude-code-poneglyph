@@ -327,14 +327,14 @@ The Lead invokes error-analyzer when:
 | Diagnosis: RE-PLAN | Lead invokes planner |
 | Diagnosis: ESCALATE | Lead asks the user |
 
-## Expertise Persistence
+## Memory Persistence
 
 At the end of your task, include this section in your response:
 
-### Expertise Insights
+### Memory Insights
 - [1-5 concrete and reusable insights discovered during this task]
 
 **What to include**: recurring error patterns in the codebase, typical root causes in the project, fixes that work, anti-patterns that generate similar errors.
 **What NOT to include**: specific task details, temporary paths, local variable names, ephemeral information.
 
-> This section is automatically extracted by the SubagentStop hook and persisted in your expertise file for future sessions.
+> This section is automatically extracted by the SubagentStop hook and persisted in your memory file for future sessions.

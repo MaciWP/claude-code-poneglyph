@@ -21,7 +21,7 @@ export type {
   SpawnRecord,
   SpawnScoreRecord,
   SpawnSuccessPattern,
-  ExpertiseBucket,
+  MemoryBucket,
 } from "./pattern-learning-spawn";
 
 export interface CountEntry {

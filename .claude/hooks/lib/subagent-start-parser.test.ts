@@ -1,33 +1,33 @@
 import { describe, test, expect } from "bun:test";
 import {
-  extractExpertiseBytes,
+  extractMemoryBytes,
   extractSkillsInjected,
   extractEffort,
   promptHash,
   parseSpawnContext,
 } from "./subagent-start-parser";
 
-describe("extractExpertiseBytes", () => {
-  test("counts bytes between EXPERTISE marker and [TASK]", () => {
+describe("extractMemoryBytes", () => {
+  test("counts bytes between MEMORY marker and [TASK]", () => {
     const body = "\nhello world\n";
-    const prompt = `[ACCUMULATED EXPERTISE - builder]${body}[TASK]\ndo the thing`;
-    expect(extractExpertiseBytes(prompt)).toBe(Buffer.byteLength(body, "utf8"));
+    const prompt = `[ACCUMULATED MEMORY - builder]${body}[TASK]\ndo the thing`;
+    expect(extractMemoryBytes(prompt)).toBe(Buffer.byteLength(body, "utf8"));
   });
 
-  test("stops at [EXPERTISE OUTPUT] if it comes before [TASK]", () => {
+  test("also accepts legacy EXPERTISE marker for backward compat", () => {
     const body = "\nfoo\n";
-    const prompt = `[ACCUMULATED EXPERTISE]${body}[EXPERTISE OUTPUT]\n[TASK]\n`;
-    expect(extractExpertiseBytes(prompt)).toBe(Buffer.byteLength(body, "utf8"));
+    const prompt = `[ACCUMULATED EXPERTISE]${body}[TASK]\n`;
+    expect(extractMemoryBytes(prompt)).toBe(Buffer.byteLength(body, "utf8"));
   });
 
   test("returns 0 when marker absent", () => {
-    expect(extractExpertiseBytes("just a task, no expertise")).toBe(0);
+    expect(extractMemoryBytes("just a task, no memory")).toBe(0);
   });
 
   test("returns full tail length when no terminating marker", () => {
     const tail = " stuff after";
-    const prompt = `[ACCUMULATED EXPERTISE]${tail}`;
-    expect(extractExpertiseBytes(prompt)).toBe(Buffer.byteLength(tail, "utf8"));
+    const prompt = `[ACCUMULATED MEMORY]${tail}`;
+    expect(extractMemoryBytes(prompt)).toBe(Buffer.byteLength(tail, "utf8"));
   });
 });
 
@@ -100,9 +100,9 @@ describe("promptHash", () => {
 
 describe("parseSpawnContext", () => {
   test("combines all fields", () => {
-    const prompt = `[ACCUMULATED EXPERTISE]\nabcde\n[TASK]\nLoaded skills: a, b\n[effort: low]\n`;
+    const prompt = `[ACCUMULATED MEMORY]\nabcde\n[TASK]\nLoaded skills: a, b\n[effort: low]\n`;
     const ctx = parseSpawnContext(prompt);
-    expect(ctx.expertiseBytes).toBe(7); // "\nabcde\n"
+    expect(ctx.memoryBytes).toBe(7); // "\nabcde\n"
     expect(ctx.skillsInjected).toEqual(["a", "b"]);
     expect(ctx.effort).toBe("low");
     expect(ctx.promptHash).toHaveLength(16);

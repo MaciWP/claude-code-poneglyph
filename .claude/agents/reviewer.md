@@ -588,14 +588,14 @@ When the result is NEEDS_CHANGES, include a tensions section:
 
 This gives the builder context for WHY changes are requested, not just WHAT to change. It facilitates resolution by making explicit the trade-off between the implemented position and the recommended one.
 
-## Expertise Persistence
+## Memory Persistence
 
 When you finish your task, include this section in your response:
 
-### Expertise Insights
+### Memory Insights
 - [1-5 concrete and reusable insights discovered during this task]
 
 **What to include**: code patterns that generate recurring issues, codebase-specific security gotchas, quality criteria the team prioritizes, common mistakes builders make.
 **What NOT to include**: specific task details, temporary paths, local variable names, ephemeral information.
 
-> This section is automatically extracted by the SubagentStop hook and persisted in your expertise file for future sessions.
+> This section is automatically extracted by the SubagentStop hook and persisted in your memory file for future sessions.

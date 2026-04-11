@@ -6,7 +6,7 @@
  * (agentType, skillCombo, expertiseBucket).
  */
 
-export type ExpertiseBucket = "none" | "small" | "medium" | "large";
+export type MemoryBucket = "none" | "small" | "medium" | "large";
 
 export interface SpawnRecord {
   sessionId: string;
@@ -25,22 +25,24 @@ export interface SpawnScoreRecord {
 export interface SpawnSuccessPattern {
   agentType: string;
   skillCombo: string[];
-  expertiseBucket: ExpertiseBucket;
+  expertiseBucket: MemoryBucket;
   successRate: number;
   sampleSize: number;
 }
 
-export function toExpertiseBucket(bytes: number): ExpertiseBucket {
+export function toMemoryBucket(bytes: number): MemoryBucket {
   if (bytes <= 0) return "none";
   if (bytes <= 1000) return "small";
   if (bytes <= 5000) return "medium";
   return "large";
 }
 
+export const toExpertiseBucket = toMemoryBucket;
+
 function comboKey(
   agentType: string,
   skills: string[],
-  bucket: ExpertiseBucket,
+  bucket: MemoryBucket,
 ): string {
   const sortedSkills = skills.slice().sort().join("|");
   return `${agentType}::${sortedSkills}::${bucket}`;
@@ -49,7 +51,7 @@ function comboKey(
 interface Bucket {
   agentType: string;
   skillCombo: string[];
-  expertiseBucket: ExpertiseBucket;
+  expertiseBucket: MemoryBucket;
   total: number;
   successes: number;
 }
@@ -68,7 +70,7 @@ function getOrCreateBucket(
   map: Map<string, Bucket>,
   key: string,
   spawn: SpawnRecord,
-  bucket: ExpertiseBucket,
+  bucket: MemoryBucket,
 ): Bucket {
   const existing = map.get(key);
   if (existing) return existing;
@@ -94,7 +96,7 @@ export function mineSpawnSuccessPatterns(
   for (const spawn of spawns) {
     const score = scoreIndex.get(`${spawn.sessionId}::${spawn.agentType}`);
     if (!score) continue;
-    const bucket = toExpertiseBucket(spawn.expertiseBytes);
+    const bucket = toMemoryBucket(spawn.expertiseBytes);
     const key = comboKey(spawn.agentType, spawn.skillsInjected, bucket);
     const entry = getOrCreateBucket(buckets, key, spawn, bucket);
     entry.total++;

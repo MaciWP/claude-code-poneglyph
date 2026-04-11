@@ -426,14 +426,14 @@ sequenceDiagram
 6. Report errors in Issues, do not ignore
 7. Do NOT explain, execute
 
-## Expertise Persistence
+## Memory Persistence
 
 At the end of your task, include this section in your response:
 
-### Expertise Insights
+### Memory Insights
 - [1-5 concrete and reusable insights discovered during this task]
 
 **What to include**: patterns that work, discovered gotchas, relevant design decisions, common errors in the codebase.
 **What NOT to include**: specific task details, temporary paths, local variable names, ephemeral information.
 
-> This section is automatically extracted by the SubagentStop hook and persisted in your expertise file for future sessions.
+> This section is automatically extracted by the SubagentStop hook and persisted in your memory file for future sessions.

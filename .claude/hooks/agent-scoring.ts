@@ -26,8 +26,8 @@ const KNOWN_AGENTS = [
   "scout",
   "error-analyzer",
   "architect",
-  // command-loader is included for scoring but won't produce Expertise Insights
-  // (no Expertise Persistence section in its agent definition — intentionally excluded as mechanical agent)
+  // command-loader is included for scoring but won't produce Memory Insights
+  // (no Memory Persistence section in its agent definition — intentionally excluded as mechanical agent)
   "command-loader",
 ];
 
@@ -200,10 +200,10 @@ async function run(): Promise<void> {
 
     if (insights) {
       persistMemory(agentType, input.session_id || "unknown", insights);
-      log(`Persisted expertise for ${agentType}`);
+      log(`Persisted memory for ${agentType}`);
     }
   } catch (err) {
-    log(`Expertise extraction failed: ${fmtErr(err)}`);
+    log(`Memory extraction failed: ${fmtErr(err)}`);
   }
 }
 

@@ -117,3 +117,134 @@
 - `agent-scores.jsonl` uses hashed agent IDs (e.g. `a70e1fcf87cd94726`), not human-readable names, so charts must aggregate by `taskType` instead of agent name to be interpretable.
 - `patterns.jsonl` exists as a single-newline file (1 byte) — treat "empty after parse" and "missing file" identically in dashboard consumers.
 - Using `rawInput.cwd` to derive a project name is the only reliable cross-session signal when structured trace fields are null — yields a useful "activity by project" breakdown even from otherwise-empty traces.
+
+## Accumulated Expertise (migrated from EXPERTISE.md)
+
+## 2026-04-09 — Session e5ff0515
+- When migrating commands to skills, the body content maps 1:1 — no transformation needed, just wrap in v2 frontmatter above it.
+- The `allowed-tools` frontmatter field from commands has no direct skill equivalent; it belongs in `for_agents` or can be mentioned in the body prose if needed.
+- Skills in `.claude/skills/` require a `SKILL.md` filename (not the skill name), inside a directory named after the skill — this is the canonical structure.
+- `rm` on Windows via bash in Claude Code works without quoting issues for paths with backslashes as long as the shell is bash (not cmd).
+- After a skill migration, verifying with both Glob on `commands/` (to confirm deletion) and Glob on `skills/` (to confirm creation) in a single parallel call is the fastest sanity check pattern.
+
+## 2026-04-09 — Session e5ff0515
+- The docs contained implementation code (TypeScript) and aspirational features (cache strategy, Levenshtein fuzzy match as actual code). Extracted only the tactical patterns — threshold tables, keyword triggers, pipeline stages — discarding the code scaffolding that is not actionable in a skill context.
+- The confidence formula (file +30, function +25, past success +25, clear requirements +20) is a useful mental model even without code implementation — worth keeping as a prose line rather than a code block.
+- "Verify threshold" in the docs was called "Proceed Threshold" — renamed to "Verify threshold" in the table header to match the task spec, which is more intuitive (you verify before proceeding, not proceed without verifying).
+- Skill markdown sections should separate what triggers a rule from how to act — the "ask even if confident" clause was extracted as a separate paragraph to keep the threshold table clean and scannable.
+
+## 2026-04-09 — Session e5ff0515
+- The `check-staleness` hook tracks reads at the file-path level and rejects edits even when the file was read in the same session via a parallel batch — a second explicit `Read` call with the same path satisfies it because the hook re-checks on the exact path key.
+- Pipe characters inside table cells in GitHub-flavored Markdown require escaping (`\|`) to avoid breaking the table column boundaries — relevant when embedding regex alternation patterns like `password|passwd|pwd` inside a table.
+- Skill files store only the `---` frontmatter block at the top; the `**Version**` footer line at the bottom is part of the body, not frontmatter — safe to anchor edits on it without touching YAML.
+- The `scripts/` section in a skill acts as a discoverable entry point for automation; new detection patterns that have a companion script should be cross-referenced there rather than described inline.
+
+## 2026-04-09 — Session e5ff0515
+- The `safe-refactoring.md` doc contains implementation-level code (TypeScript functions, examples) that is already subsumed by the skill's reference files — only the classification table and confirmation rules represent genuinely new policy-level content worth absorbing.
+- When absorbing docs into skills, the right filter is: does this add a decision rule the agent needs at invocation time, or is it reference detail already covered by on-demand files? Policy tables pass; code examples usually don't.
+- Frontmatter MUST NOT be touched when modifying skill body — the `name`, `activation.keywords`, and `for_agents` fields drive auto-matching at orchestration time.
+- The footer separator (`---`) before version metadata is load-bearing for readability conventions across all skill files in this repo — new sections should go above it, not after it.
+
+## 2026-04-09 — Session e5ff0515
+1. Source docs (`test-generation.md`, `README.md`) had overlapping content — the mutation testing concept appeared in both. Distill once into the skill rather than duplicating.
+2. The existing skill's last real section was the reviewer checklist; inserting after its final list item is the cleanest anchor for `old_string` uniqueness without touching frontmatter.
+3. Edge-case auto-detection keyword table (valid/isValid, numbers, strings, arrays, dates, optional) comes directly from `test-generation.md`'s "Detect from keywords" pattern — reusable signal for any future test-generation tooling.
+4. The three new sections (Mutation Testing, Edge-Case Auto-Detection, Always-Generate Error Cases) map 1:1 to the three generation strategies in the source docs: quality gate, edge cases, error cases — clean conceptual separation.
+5. Skill files use the existing body without frontmatter modification; always anchor `old_string` to a unique last line of the preceding section to avoid ambiguity on re-edits.
+
+## 2026-04-09 — Session e5ff0515
+- `settings.local.json` is validated by Claude Code on save — removing a block with Edit leaves trailing commas that fail JSON schema validation; use Write for block-level deletions in JSON config files
+- When the entire `hooks` section contains only dead entries, the cleanest approach is to remove the whole `hooks` key rather than leaving an empty object (which could also confuse validators)
+- Glob confirms file existence before deletion — never assume files listed in task descriptions still exist in the same location
+
+## 2026-04-09 — Session e5ff0515
+- `stop_hook_active` is a boolean field in Stop/SubagentStop stdin JSON that signals recursive invocation -- must be checked early to prevent infinite loops
+- When a hook's `run()` function has `.finally(() => process.exit(0))`, prefer `return` over `process.exit(0)` in the guard to keep flow clean
+- `validate-file-contains.ts` had a `consumeStdin` that discarded data (`on("data", () => {})`) -- this prevented broken pipe errors but made it impossible to read stdin fields; switching to collecting chunks fixes both concerns
+- `session-digest.ts` never consumed stdin at all -- adding `consumeStdin()` also prevents potential broken pipe issues beyond just the `stop_hook_active` guard
+
+## 2026-04-09 — Session e5ff0515
+- `"async": true` in Claude Code hook entries causes the hook to run fire-and-forget — Claude Code does not wait for the process to finish, so observability hooks (trace, digest, scoring) no longer add latency to the session boundary.
+- Blocking hooks (`validate-tests-pass.ts`, `validate-file-contains.ts`) must NOT have `"async": true` because their exit codes (0 = pass, 2 = block) are only meaningful when Claude waits for the result.
+- The `timeout` field remains meaningful even with `"async": true` — it still caps the process lifetime, just doesn't gate Claude's response.
+
+## 2026-04-09 — Session e5ff0515
+- The `status` field in traces has two sources: `detectStatus()` returns `"completed"/"error"/"timeout"/"unknown"`, but `buildTraceMinimal()` uses raw `stop_hook_event` values like `"stop"` -- any success-check logic must account for BOTH paths.
+- The `ERROR_STATUSES` set `["error", "failed", "timeout", "interrupted"]` is defined identically in `session-digest-resolve.ts` and now in `agent-scorer-calc.ts` -- consider extracting to a shared constant in `agent-scorer-types.ts` or a common constants file to avoid drift.
+- Inverting error checks (`!ERROR_STATUSES.has(status)`) is safer than allowlisting success values because new non-error statuses (like `"stop"`) automatically count as success without code changes.
+- Memory-inject noise: filtering `successRate === 0 && sampleSize < 5` prevents injecting meaningless "0% success" context that could mislead the Lead's routing decisions.
+
+## 2026-04-09 — Session e5ff0515
+- `lesson-extractor.ts` had no dedicated test file — the function is covered indirectly only through integration. Future changes should add a unit test file for `findExplicitLesson` since regex edge cases are easy to break silently.
+- The old `CORRECTION_PATTERNS` used `gi` flags on regex literals stored in an array — each `.exec()` call on a `g`-flagged regex advances `lastIndex`, so the explicit `pattern.lastIndex = 0` reset before each `exec` was necessary and correct. When replacing with non-`g` patterns, the reset is no longer needed.
+- The explicit `/learn` marker approach aligns naturally with the existing `/learn` command workflow (`lessons-recorder.ts`) — the session-digest hook now acts as a secondary capture for users who type `/learn` in the chat rather than as a slash command.
+- `MINING_THRESHOLD` in `session-digest.ts` gates on `countTraceFiles()` which counts daily trace files (one per day), so 50 = 50 days. 10 = ~2 weeks is a much more practical default for a personal tool used daily.
+
+## 2026-04-09 — Session e5ff0515
+- `loadPatterns` name collision between `pattern-learning` (workflow patterns) and `error-patterns` (error patterns) requires aliased import (`loadPatterns as loadErrorPatterns`)
+- `getBestFix()` in `error-patterns.ts` uses aggregated fix stats (grouping by description) and returns the description with the highest success rate, or null if no successful fixes exist
+- `ErrorPattern.successRate` is precomputed on the pattern itself (overall), but `getBestFix()` computes per-fix-description rates internally - the two can differ, so use `p.successRate` for display and `getBestFix()` for selecting which fix to recommend
+- `memory-inject.ts` follows a strict best-effort pattern: every enrichment section is wrapped in try/catch to prevent any single data source failure from blocking the entire hook
+- The `occurrences` field on `ErrorPattern` tracks how often the error was seen (recorded via `recordError()`), making it the right sort key for "most common" patterns
+
+## 2026-04-09 — Session e5ff0515
+- Path rule files (`.claude/rules/paths/*.md`) previously used YAML frontmatter (`globs:`, `priority:`) to declare which file paths they applied to — but Claude Code does not parse frontmatter in `.md` rule files; the fields were inert. Removing them eliminates confusion without changing behavior.
+- When updating counts in CLAUDE.md, the same number appears in three distinct places: the WHY table prose, the mermaid diagram node label, and the structure comment — all three must be updated atomically.
+- The CLAUDE.md is a symlink target (`~/.claude/CLAUDE.md` → this file); edits here propagate globally to all projects immediately.
+
+## 2026-04-09 — Session e5ff0515
+- The staleness check hook requires a `Read` call on the exact file path (Windows-style path) within the same session before any `Edit` — re-reading a few lines is sufficient to satisfy it, it does not require reading the full file again.
+- When two commands in a table are being merged (dead one replaced by live one), removing the dead row entirely is cleaner than updating it — avoids duplicate entries with different descriptions.
+- Mermaid node labels (`IS[/implement-spec]`) and participant aliases (`participant IS as /implement-spec`) are separate occurrences from prose references and need independent grep hits to catch all of them.
+- `grep -rn` on Windows paths must use forward-slash `/d/PYTHON/...` Unix-style form in bash, not backslash or quoted Windows paths, to avoid shell quoting errors.
+- When a grep returns zero output (no matches), bash exits with code 1 but produces no stdout — treat empty output as confirmation of zero matches, not as an error.
+
+## 2026-04-10 — Session e5ff0515
+- The meta-create-* skills follow a strict structural pattern: frontmatter (v2 canonical order) -> one-line description heading -> When to Use -> Workflow (5 steps: Parse, Determine type/scope, Gather details, Generate, Confirm) -> System Reference -> Templates -> Arguments with Validation -> Examples (2-3 complete) -> Directory Structure -> Frontmatter Reference -> Related. Deviating from this order makes the skill feel inconsistent with its siblings.
+- The `paths:` frontmatter field in rules is the ONLY officially supported field. Other frontmatter fields (priority, globs, weight) are not part of Claude Code's rule spec and will be silently ignored. This is a critical gotcha for anyone creating path-scoped rules.
+- Path-scoped rules only trigger on READ operations, not Write/Edit. This means if a rule needs to apply during file creation, it must be always-on instead. This is a non-obvious behavior that should always be documented in rule creation guides.
+- Meta-create-agent has 559 lines, meta-create-skill has 897 lines. The new meta-create-rule at 501 lines fits within the expected range. Rules are simpler than agents/skills (only 2 scopes vs 4-5 types), so the lower line count is proportional.
+
+## 2026-04-10 — Session e5ff0515
+- Meta-skill files in Poneglyph follow a strict v2 canonical frontmatter order: `name`, `description`, `type`, `disable-model-invocation`, `argument-hint`, `effort`, `activation.keywords`, `for_agents`, `version`. The field order matters for consistency across the three meta-skills.
+- Hook stdin shapes vary by event type -- tool events get `tool_name`/`tool_input`, Stop events get `transcript`/`stop_hook_active`, session events get minimal data. Documenting the exact shape per event prevents callers from guessing.
+- The `stop_hook_active` guard is the single most critical gotcha for hook creation -- without it, a Stop hook that exits 2 creates an infinite loop that hangs Claude Code. This must be prominently featured in any hook creation workflow.
+- Exit code 2 only blocks on PreToolUse and PermissionRequest events. On other events it is treated as a non-blocking error. This distinction is not obvious from the docs and causes confusion.
+- The three meta-skills (agent, skill, hook) share the same structural pattern: frontmatter -> When to Use -> Workflow (5-6 steps) -> Templates -> Arguments -> Examples -> Frontmatter Reference -> Related. This pattern should be followed for any future meta-skill.
+
+## 2026-04-10 — Session e5ff0515
+1. When inserting a new section between two existing sections, the most reliable `old_string` anchor is the heading of the section immediately after the insertion point (e.g., `## Workflow\n\n### Step 1`) — this is unique enough and avoids ambiguity caused by repeated section names deeper in the file.
+
+2. Removing a single list item from markdown is cleanest when the `old_string` includes the line above or below as context, preventing accidental double-newline artifacts that would appear as blank list separators.
+
+3. Verifying edits with a targeted `Grep` on the surrounding section headings (rather than re-reading entire files) is faster and confirms structure without re-loading hundreds of lines of unchanged template content.
+
+## 2026-04-10 — Session e5ff0515
+- Meta-skill files in this project follow a strict section order: frontmatter -> # Title -> ## When to Use -> ## Official Documentation -> ## Workflow (Steps 1-N) -> ## Reference -> ## Templates -> ## Arguments -> ## Examples -> ## Related. Deviating from this causes inconsistency across the meta-create-* family.
+- The v2 canonical frontmatter field order is: name, description, type, disable-model-invocation, argument-hint, effort, activation (with keywords sub-list), for_agents, version. All existing meta-create skills follow this exact order.
+- Existing meta-create skills range from 450-558 lines. The 350-500 target is a guideline; matching peer file sizes (meta-create-agent at 558) is more consistent than artificially cutting content.
+- `for_agents: [extension-architect]` is the standard value for all meta-create skills -- they are meant to be invoked by the extension-architect meta-agent, not by individual agents.
+
+## 2026-04-10 — Session e5ff0515
+- SPEC reference lines in skill files follow a consistent pattern (`**Spec**: SPEC-NNN`) at the bottom metadata block alongside `**Version**` — always check that block when searching for spec references.
+- When removing a line from a metadata block where the surrounding lines are unique (like `**Version**` + `**Spec**` + `**For**`), include adjacent lines in `old_string` to guarantee uniqueness and avoid ambiguous matches.
+- Batching all three parallel Reads then all three parallel Edits cuts round-trips from 6 sequential calls to 2 batched messages — apply this pattern whenever edits are independent.
+
+## 2026-04-10 — Session e5ff0515
+- **`Bun.write()` is async and not guaranteed to flush to disk before child processes start on Windows.** When a test's `beforeAll` writes a fixture file with `Bun.write()` and subsequent tests spawn subprocesses that read that file, the child process may see the file as missing. Always use `writeFileSync` from Node's `fs` module for test fixture setup — sync I/O is the only safe guarantee across process boundaries.
+- **`beforeAll` with async ops that produce side effects for subprocesses is a hidden coupling.** The async nature of `Bun.write` is fine for same-process reads (Bun buffers the result), but a spawned subprocess has its own filesystem view and depends on the OS-level flush. This is a Windows-specific timing hazard that doesn't reproduce on Linux/macOS with the same frequency.
+- **When fixing async fixture setup, also drop the `async` keyword from `beforeAll`.** If there are no remaining `await` expressions, keeping `async` is misleading and can mask future regressions where someone adds an `await` back unnecessarily.
+
+## 2026-04-10 — Session e5ff0515
+1. Meta-skill pattern consistency: all meta-create-* skills follow identical frontmatter structure (name, description with "Use proactively when:" + "Keywords -", type: encoded-preference, disable-model-invocation: true, argument-hint, effort: medium, activation.keywords, for_agents: [extension-architect], version: "1.0"). Deviating from this breaks auto-matching.
+2. Plugin vs other config types: plugins are uniquely complex because they are the only config type that bundles ALL other types (skills, agents, hooks, MCP, LSP) into a single distributable unit. This means the meta-skill must reference patterns from all other meta-create-* skills.
+3. The `.claude-plugin/` directory vs root layout is the single most common mistake in plugin creation -- components placed inside `.claude-plugin/` instead of at plugin root are invisible to Claude Code auto-discovery.
+4. Plugin hooks use `hooks/hooks.json` (a standalone file) whereas global hooks use `settings.json`. This distinction is critical and must be called out prominently in any plugin documentation.
+5. The `${CLAUDE_PLUGIN_ROOT}` vs `${CLAUDE_PLUGIN_DATA}` distinction maps to bundled-assets vs persistent-state -- confusing them causes data loss on plugin updates since `CLAUDE_PLUGIN_ROOT` changes with each version.
+
+## 2026-04-10 — Session e5ff0515
+1. Meta-skill frontmatter v2 canonical field order is: `name`, `description`, `type`, `disable-model-invocation`, `argument-hint`, `effort`, `activation`, `for_agents`, `version` -- this exact order must be preserved across all meta-skills for consistency.
+2. Skills organized by config type (numbered sections) rather than workflow steps work well as quick-reference material -- the pattern is distinct from workflow-oriented meta-skills like `meta-create-agent`.
+3. Gotchas sections formatted as tables (Gotcha | Detail) are more scannable than numbered lists -- this matches the formatting rule preference for tables over lists >3 items.
+4. The 400-550 line target for comprehensive reference skills balances completeness with token cost when loaded as context -- each section should have What/Template/Gotchas at minimum.
+5. Permission rule syntax (`Tool(specifier)`) with glob patterns is the same format used in both `settings.json` and hook `if` fields -- documenting it once in a central reference avoids duplication across meta-skills.

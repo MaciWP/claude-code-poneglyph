@@ -36,7 +36,7 @@ export function extractMemoryInsights(transcript: TranscriptMessage[]): string |
   const lastAssistant = assistantMessages[assistantMessages.length - 1];
   const text = getTextFromContent(lastAssistant.content);
 
-  const match = text.match(/#{2,3}\s+Expertise Insights\s*\n([\s\S]*?)(?=\n#{1,3}\s|\n*$)/);
+  const match = text.match(/#{2,3}\s+Memory Insights\s*\n([\s\S]*?)(?=\n#{1,3}\s|\n*$)/);
   if (!match) return null;
 
   const body = match[1].trim();

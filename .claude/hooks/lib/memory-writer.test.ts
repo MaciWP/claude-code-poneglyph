@@ -35,7 +35,7 @@ describe("extractMemoryInsights", () => {
       {
         role: "assistant",
         content:
-          "Done work.\n\n### Expertise Insights\n- insight one\n- insight two\n",
+          "Done work.\n\n### Memory Insights\n- insight one\n- insight two\n",
       },
     ]);
     const result = extractMemoryInsights(transcript);
@@ -49,7 +49,7 @@ describe("extractMemoryInsights", () => {
       { role: "user", content: "task" },
       {
         role: "assistant",
-        content: "Done.\n\n## Expertise Insights\n- only insight\n",
+        content: "Done.\n\n## Memory Insights\n- only insight\n",
       },
     ]);
     const result = extractMemoryInsights(transcript);
@@ -69,7 +69,7 @@ describe("extractMemoryInsights", () => {
   });
 
   test("returns null when only user messages", () => {
-    const transcript = makeTranscript([{ role: "user", content: "### Expertise Insights\n- hacked" }]);
+    const transcript = makeTranscript([{ role: "user", content: "### Memory Insights\n- hacked" }]);
     expect(extractMemoryInsights(transcript)).toBeNull();
   });
 
@@ -77,7 +77,7 @@ describe("extractMemoryInsights", () => {
     const transcript = makeTranscript([
       {
         role: "assistant",
-        content: "First.\n\n### Expertise Insights\n- old insight\n",
+        content: "First.\n\n### Memory Insights\n- old insight\n",
       },
       { role: "user", content: "continue" },
       { role: "assistant", content: "Second message with no insights." },
@@ -91,7 +91,7 @@ describe("extractMemoryInsights", () => {
       {
         role: "assistant",
         content: [
-          { type: "text", text: "Result.\n\n### Expertise Insights\n- block insight\n" },
+          { type: "text", text: "Result.\n\n### Memory Insights\n- block insight\n" },
         ],
       },
     ];
@@ -105,7 +105,7 @@ describe("extractMemoryInsights", () => {
       {
         role: "assistant",
         content:
-          "Done.\n\n### Expertise Insights\n- [1-5 insights concretos y reutilizables]\n",
+          "Done.\n\n### Memory Insights\n- [1-5 insights concretos y reutilizables]\n",
       },
     ]);
     expect(extractMemoryInsights(transcript)).toBeNull();
@@ -117,7 +117,7 @@ describe("extractMemoryInsights", () => {
       {
         role: "assistant",
         content:
-          "Done.\n\n### Expertise Insights\n- real insight\n\n**What to include**: patterns\n**What NOT to include**: ephemeral data\n",
+          "Done.\n\n### Memory Insights\n- real insight\n\n**What to include**: patterns\n**What NOT to include**: ephemeral data\n",
       },
     ]);
     expect(extractMemoryInsights(transcript)).toBeNull();
@@ -129,7 +129,7 @@ describe("extractMemoryInsights", () => {
       {
         role: "assistant",
         content:
-          "Done.\n\n### Expertise Insights\n- insight\n\n**Que incluir**: patrones\n**Que NO incluir**: detalles\n",
+          "Done.\n\n### Memory Insights\n- insight\n\n**Que incluir**: patrones\n**Que NO incluir**: detalles\n",
       },
     ]);
     expect(extractMemoryInsights(transcript)).toBeNull();
@@ -141,7 +141,7 @@ describe("extractMemoryInsights", () => {
       {
         role: "assistant",
         content:
-          "Done.\n\n### Expertise Insights\n- Bun mock.module is global and persistent across test files\n- Always use spyOn instead of mock.module when possible\n",
+          "Done.\n\n### Memory Insights\n- Bun mock.module is global and persistent across test files\n- Always use spyOn instead of mock.module when possible\n",
       },
     ]);
     const result = extractMemoryInsights(transcript);

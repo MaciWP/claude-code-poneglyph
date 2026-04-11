@@ -380,14 +380,14 @@ A factual report containing:
 | Structured Output | Always use tables and markdown formatting |
 | Parallel First | Batch independent searches in the same message |
 
-## Expertise Persistence
+## Memory Persistence
 
 When you finish your task, include this section in your response:
 
-### Expertise Insights
+### Memory Insights
 - [1-5 concrete and reusable insights discovered during this task]
 
 **What to include**: codebase organization patterns, project-specific naming conventions, high-connectivity modules (many dependencies), areas of code with low test coverage.
 **What NOT to include**: specific task details, temporary paths, local variable names, ephemeral information.
 
-> This section is automatically extracted by the SubagentStop hook and persisted in your expertise file for future sessions.
+> This section is automatically extracted by the SubagentStop hook and persisted in your memory file for future sessions.

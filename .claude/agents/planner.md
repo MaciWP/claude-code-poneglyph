@@ -484,14 +484,14 @@ Completed tasks are **never re-run**. The planner tracks task status:
 
 When resuming after failure, the Lead uses the roadmap status to determine which tasks remain. Only `failed` and `pending` tasks enter the execution queue.
 
-## Expertise Persistence
+## Memory Persistence
 
 When you finish your task, include this section in your response:
 
-### Expertise Insights
+### Memory Insights
 - [1-5 concrete and reusable insights discovered during this task]
 
 **What to include**: decomposition patterns that work well in this codebase, non-obvious dependencies between modules, project-specific parallelization heuristics, planning mistakes to avoid.
 **What NOT to include**: specific task details, temporary paths, local variable names, ephemeral information.
 
-> This section is automatically extracted by the SubagentStop hook and persisted in your expertise file for future sessions.
+> This section is automatically extracted by the SubagentStop hook and persisted in your memory file for future sessions.

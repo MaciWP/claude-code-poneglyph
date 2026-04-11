@@ -108,7 +108,7 @@ When finished, include "### Memory Insights" with 1-5 reusable insights discover
 | `Skill()` by the Lead | Still valid — loads domain context into the Lead's OWN session, but does NOT propagate to delegated subagents |
 | Empty blocks | Omit the header entirely rather than leaving an empty section |
 
-> **Note**: The reminder in the delegation prompt is NECESSARY. The instruction in the agent's system prompt (section "Expertise Persistence") is at line 400+ and agents do not follow it consistently. The explicit reminder in the delegation prompt guarantees that insights are produced.
+> **Note**: The reminder in the delegation prompt is NECESSARY. The instruction in the agent's system prompt (section "Memory Persistence") is at line 400+ and agents do not follow it consistently. The explicit reminder in the delegation prompt guarantees that insights are produced.
 
 > Memory is read-only context. The agent uses it to inform decisions but does NOT repeat it in its output.
 > Memory is updated automatically via the SubagentStop hook — the Lead does not need to manage it.

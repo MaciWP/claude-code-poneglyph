@@ -326,14 +326,14 @@ This agent should load these skills for enhanced capabilities:
 | `builder` | Receives plans and implements them |
 | `reviewer` | Validates implementations match plans |
 
-## Expertise Persistence
+## Memory Persistence
 
 When you finish your task, include this section in your response:
 
-### Expertise Insights
+### Memory Insights
 - [1-5 concrete and reusable insights discovered during this task]
 
 **What to include**: architectural decisions made and their rationale, trade-offs evaluated, architectural patterns that fit well in this project, codebase constraints that affect design decisions.
 **What NOT to include**: specific task details, temporary paths, local variable names, ephemeral information.
 
-> This section is automatically extracted by the SubagentStop hook and persisted in your expertise file for future sessions.
+> This section is automatically extracted by the SubagentStop hook and persisted in your memory file for future sessions.

@@ -13,7 +13,7 @@ const MEMORY_MARKER = "[ACCUMULATED MEMORY";
 const LEGACY_EXPERTISE_MARKER = "[ACCUMULATED EXPERTISE";
 const TASK_MARKER = "[TASK]";
 const MEMORY_OUTPUT_MARKER = "[MEMORY OUTPUT]";
-const LEGACY_EXPERTISE_OUTPUT_MARKER = "[EXPERTISE OUTPUT]";
+const LEGACY_MEMORY_OUTPUT_MARKER = "[EXPERTISE OUTPUT]";
 const SKILLS_LINE_REGEX =
   /^(?:Loaded skills|Skills loaded|Skills):\s*([^\n]+)/im;
 const EFFORT_REGEX = /\[effort:\s*(high|medium|low)\]/i;
@@ -40,17 +40,13 @@ export function extractMemoryBytes(prompt: string): number {
   const rest = prompt.slice(contentStart);
   const taskIdx = rest.indexOf(TASK_MARKER);
   const memOutIdx = rest.indexOf(MEMORY_OUTPUT_MARKER);
-  const expOutIdx = rest.indexOf(LEGACY_EXPERTISE_OUTPUT_MARKER);
+  const expOutIdx = rest.indexOf(LEGACY_MEMORY_OUTPUT_MARKER);
   const candidates = [taskIdx, memOutIdx, expOutIdx].filter((i) => i >= 0);
   const endOffset =
     candidates.length > 0 ? Math.min(...candidates) : rest.length;
   const content = rest.slice(0, endOffset);
   return Buffer.byteLength(content, "utf8");
 }
-
-// Backward-compat alias: external telemetry consumers still refer to
-// "expertise bytes". Kept as a named export for one release cycle.
-export const extractExpertiseBytes = extractMemoryBytes;
 
 function splitCsv(line: string): string[] {
   return line
@@ -96,9 +92,6 @@ export function promptHash(prompt: string): string {
 }
 
 export interface SpawnContext {
-  // Backward-compat field name. Consumers (pattern-learning-spawn) still read
-  // `expertiseBytes`; kept until the rename is propagated through telemetry.
-  expertiseBytes: number;
   memoryBytes: number;
   skillsInjected: string[];
   effort: "high" | "medium" | "low" | null;
@@ -109,10 +102,8 @@ export function parseSpawnContext(
   prompt: string,
   knownSkills: readonly string[] = [],
 ): SpawnContext {
-  const bytes = extractMemoryBytes(prompt);
   return {
-    expertiseBytes: bytes,
-    memoryBytes: bytes,
+    memoryBytes: extractMemoryBytes(prompt),
     skillsInjected: extractSkillsInjected(prompt, knownSkills),
     effort: extractEffort(prompt),
     promptHash: promptHash(prompt),
