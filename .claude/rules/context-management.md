@@ -71,6 +71,7 @@ Ground-truth rules for how skill and context content reach subagents. Verified v
 | Baseline skills pre-declared per agent role (e.g., reviewer always gets `code-quality` + `anti-hallucination`) | **YES** | Arrive at spawn regardless of task. |
 | Content pasted verbatim by the Lead into the delegation prompt (including `MEMORY.md` injection) | **YES** | Behaves like any other prompt content. |
 | Subagent `Read`s `.claude/skills/<name>/SKILL.md` when instructed by the Lead in the delegation prompt (**Arch H**) | **YES** | **Validated via Test 7 on 2026-04-10** — subagent cites skill content verbatim in its work. This is the recommended task-specific loading mechanism. |
+| Project skills Read via Arch H (`./.claude/skills/<name>/SKILL.md`) | **YES** | Same mechanism as global skills — the subagent Reads the file when the Lead includes Read instructions in the delegation prompt. Project's `skill-matching.md` rule provides the discovery layer. |
 
 ### What does NOT reach a subagent
 
@@ -84,6 +85,8 @@ Ground-truth rules for how skill and context content reach subagents. Verified v
 - **Rules + CLAUDE.md are the real context carriers.** Invest in them. A well-written project rule reaches every subagent automatically.
 - **Prefer Lead-directed `Read`s (Arch H) over frontmatter `skills:` pre-injection** for task-specific skill loading. Arch H is flexible (choose skills per task), avoids the all-or-nothing pre-load problem, and works with every default agent because `Read` is always in the allowlist.
 - **Frontmatter `skills:` is still useful** as a baseline for agents whose role always needs the same skills (e.g., reviewer's `code-quality`). For anything variable per task, use Arch H.
+- **Project skills are a valid on-demand knowledge layer.** Use them for project-specific knowledge that doesn't need to be always-loaded. They work identically to global skills via Arch H Read — the subagent doesn't distinguish between global and project skills at Read time.
+- **Rule of thumb at project level: constraint = rule, knowledge = skill.** If the content is guidance that's useful when relevant but doesn't need to be in every prompt, make it a skill. If violation would block merge, make it a rule.
 - **Path-scoped loader quirk**: in `.claude/rules/paths/*.md`, globs starting with `**` require at least one leading path segment to match. A raw `apps/...` pattern will NOT match `apps/foo.py`; use `src/apps/...`, `backend/apps/...`, or prefix with `**/` explicitly.
 
 ### Content Map pattern (canonical for skills with subdirectories)
@@ -111,6 +114,8 @@ This pattern aligns with Anthropic's official guidance:
 > — [code.claude.com/docs/en/skills](https://code.claude.com/docs/en/skills)
 
 **Subagent behavior** (auto-loaded via this rule): when you Read a main SKILL.md that has a Content Map, consult the Contents column to judge which supporting files apply to your current task. Read the relevant ones. Do NOT read all blindly (defeats on-demand). Do NOT skip them when the Contents description matches your task even if task phrasing didn't explicitly mention the domain — semantic match is a valid trigger.
+
+The Content Map pattern applies to project skills as well. A project skill at `./.claude/skills/naming-standards/SKILL.md` can have `references/` with project-specific examples, following the same 3-column canonical format.
 
 The canonical template for this pattern lives in `.claude/skills/meta-create-skill/SKILL.md` (the split produced in Phase P7.8a). Reference it when creating new skills with subdirectories.
 

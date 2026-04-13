@@ -2,7 +2,7 @@
 
 ## Selection Matrix
 
-The "Suggested skills to Read (for delegation)" column lists `.claude/skills/<name>/SKILL.md` paths the Lead should include in the delegation prompt's `[RELEVANT SKILLS FOR THIS TASK]` block (Arch H). Max 3 per delegation. Pick the ones whose paths actually match the task context; skip the column if none apply.
+The "Suggested skills to Read (for delegation)" column lists `.claude/skills/<name>/SKILL.md` paths the Lead should include in the delegation prompt's `[RELEVANT SKILLS FOR THIS TASK]` block (Arch H). Max 3 per delegation. Pick the ones whose paths actually match the task context; skip the column if none apply. **Project skills** (`./.claude/skills/`) are also valid — check the project's `skill-matching.md` if it exists.
 
 | Signal | Agent | Skill/Mode | Suggested skills to Read (for delegation) | Fallback |
 |--------|-------|------------|-------------------------------------------|----------|

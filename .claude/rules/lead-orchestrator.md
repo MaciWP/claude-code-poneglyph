@@ -22,7 +22,7 @@ The main session acts as a **pure orchestrator**. It does not execute code direc
 | Plan complex tasks | `Task(subagent_type="planner", prompt="...")` |
 | Explore codebase | `Task(subagent_type="scout", prompt="...")` |
 | Analyze errors | `Task(subagent_type="error-analyzer", prompt="...")` |
-| Load relevant skills | `Skill(skill="...")` (only global skills available) |
+| Load relevant skills | `Skill(skill="...")` (Lead's own context — global skills) OR embed `Read` instructions for global/project skills in delegation prompt (Arch H) |
 | Clarify requirements | `AskUserQuestion(questions=[...])` |
 | Trigger spec workflow | If complexity >= 30 and no spec exists: follow spec-driven rule (auto-loaded at `.claude/rules/spec-driven.md`) |
 
@@ -113,8 +113,8 @@ Ask if doubt > 30%. Verify before asserting.
 [RELEVANT SKILLS FOR THIS TASK]
 Before starting, your first actions must be to Read these skill files for context.
 After loading them, proceed with the task.
-- Read .claude/skills/<skill-1>/SKILL.md
-- Read .claude/skills/<skill-2>/SKILL.md
+- Read .claude/skills/<global-skill>/SKILL.md       ← from global (generic pattern)
+- Read .claude/skills/<project-skill>/SKILL.md       ← from project (domain knowledge)
 - Read .claude/skills/<skill-3>/SKILL.md
 
 After loading each skill file, check if its main SKILL.md has a "Content Map", "Reference Files", or "Documentation" section (a canonical 3-column `Topic | File | Contents` table). If present, consult the Contents column to judge which supporting files are semantically relevant to your current task and Read them selectively. A semantic match in the Contents description is a valid trigger even when task phrasing doesn't explicitly mention the domain. Do NOT read all references blindly (defeats on-demand loading), but DO read those where the Contents row describes your task situation.
@@ -132,6 +132,13 @@ When finished, include "### Memory Insights" with 1-5 reusable insights discover
 | Source of truth | Hook-emitted suggestions > manual keyword match > omit |
 | `Skill()` by the Lead | Still valid — loads domain context into the Lead's OWN session, but does NOT propagate to delegated subagents |
 | Empty blocks | Omit the header entirely rather than leaving an empty section |
+
+### Skill discovery (global + project)
+
+When preparing a delegation:
+1. Check if `memory-inject.ts` emitted `## Path-Based Skills (for delegation)` — these are global skill suggestions based on paths in the prompt
+2. Check the project's `skill-matching.md` rule (auto-loaded at spawn) for project-specific skill mappings
+3. Combine both into the `[RELEVANT SKILLS]` block. Max 3 skills total (1-2 global + 1-2 project is a good balance).
 
 > **Note**: The reminder in the delegation prompt is NECESSARY. The instruction in the agent's system prompt (section "Memory Persistence") is at line 400+ and agents do not follow it consistently. The explicit reminder in the delegation prompt guarantees that insights are produced.
 
