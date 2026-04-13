@@ -112,7 +112,7 @@ Orchestration system that powers Claude Code with specialized agents, skills, ho
 |---------|----------|
 | No orchestration | 6 core agents + 1 meta agent (`extension-architect`) with complexity-based routing |
 | No automatic validation | 21 hooks (pre/post/stop/subagent/permission) |
-| No domain knowledge | 23 skills auto-matched by keywords, including 7 meta-skills for scaffolding |
+| No domain knowledge | 23 global skills auto-matched by keywords + project skills on-demand via Arch H |
 | No persistent memory | Semantic memory system + per-agent `MEMORY.md` |
 
 ## HOW
@@ -134,7 +134,8 @@ graph LR
 ├── agents/          # 6 core (architect, builder, error-analyzer, planner, reviewer, scout)
 │   └── meta/        # 1 meta agent (extension-architect)
 ├── agent-memory/    # Per-agent MEMORY.md accumulated across sessions
-├── skills/          # 23 skills with auto-matching (7 meta-skills for scaffolding)
+├── skills/          # 23+ global skills (generic patterns — Django, React, OWASP...)
+│                    # Projects add their own under ./.claude/skills/ for domain knowledge
 ├── hooks/           # 21 hooks (pre/post/stop/subagent/permission)
 ├── rules/           # 14 orchestration rules (12 global + 2 path-scoped)
 └── commands/        # 9 slash commands
@@ -187,7 +188,7 @@ graph TD
     EA --> B
 ```
 
-**Arch H — Lead-Directed Skill Reads**: before delegating, the Lead picks up to 3 relevant skills (via `memory-inject.ts` path-based hints or manual keyword matching against `.claude/rules/paths/*.md`) and embeds `Read .claude/skills/<name>/SKILL.md` instructions in the delegation prompt's `[RELEVANT SKILLS FOR THIS TASK]` block. The subagent then Reads those files as its first actions. Default subagents cannot invoke `Skill()` — this is the canonical way to give them task-specific skill context.
+**Arch H — Lead-Directed Skill Reads**: before delegating, the Lead picks up to 3 relevant skills (via `memory-inject.ts` path-based hints, manual keyword matching against `.claude/rules/paths/*.md`, or the project's `skill-matching.md` rule for project skills) and embeds `Read .claude/skills/<name>/SKILL.md` instructions in the delegation prompt's `[RELEVANT SKILLS FOR THIS TASK]` block. The subagent then Reads those files as its first actions. Default subagents cannot invoke `Skill()` — this is the canonical way to give them task-specific skill context. Both global and project skills use this same Read mechanism.
 
 Score<70 is a **signal of doubt**, not a hard stop. If the prompt is ambiguous or the resulting plan needs validation, ask (`AskUserQuestion`) or refine with the `prompt-engineer` skill. If the prompt is pragmatically clear despite a low score, proceed and flag uncertainty.
 
@@ -225,8 +226,17 @@ Builder verifies automatically via the `validate-tests-pass.ts` Stop hook. The L
 | **Agent** | The `Agent` tool used by the Lead to spawn a specialized subagent in a fresh context |
 | **Subagent** | A spawned instance of a specialized agent (builder, reviewer, planner, etc.) |
 | **Teammate** | A teammate spawned in team mode — an independent Claude Code process per domain. Only when `executionMode=team` |
-| **Skill** | Loadable domain context / pattern library. Full `SKILL.md` body is loaded either via `Skill()` in the Lead (for the Lead's own context), OR via a subagent `Read .claude/skills/<name>/SKILL.md` instruction that the Lead places in the delegation prompt (Arch H — the canonical way to propagate skills to subagents) |
+| **Skill** | Loadable domain context / pattern library. **Global skills** (`~/.claude/skills/`) carry cross-project patterns; **project skills** (`./.claude/skills/`) carry project-specific knowledge and examples. Full `SKILL.md` body loads on-demand via Arch H (subagent Read instruction), not always at startup — only the description auto-loads. Both global and project skills use the same Read mechanism; the subagent does not distinguish between them |
 | **Rule** | Behavioral policy in `.claude/rules/*.md`. Loaded implicitly or path-scoped via frontmatter |
 | **Hook** | TypeScript script (run via `bun`) triggered by Claude Code events (pre/post tool, stop, subagent, permission, etc.) configured in `settings.json` |
 | **Command** | Slash command in `.claude/commands/*.md` |
 | **Meta agent / meta skill** | Agent or skill whose purpose is to create, manage or evolve the Poneglyph system itself |
+
+### When to use rules vs skills (at project level)
+
+| Content type | Mechanism | Why |
+|---|---|---|
+| **Constraint** — violation blocks merge, must ALWAYS be visible | **Rule** (always-on) | e.g., "features cannot import from other features" |
+| **Knowledge/guidance** — useful when relevant, not every prompt | **Skill** (on-demand) | e.g., "naming conventions", "function design patterns" |
+
+Guideline: if asking "does the agent need this in EVERY prompt?", and the answer is no → skill, not rule. Project skills load via the same Arch H Read mechanism as global skills.
