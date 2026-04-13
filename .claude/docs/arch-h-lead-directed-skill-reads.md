@@ -45,6 +45,7 @@ This turns `Read` into a skill-loading primitive. No new tool, no new agent, no 
 
 1. User submits a prompt that mentions file paths.
 2. The `memory-inject.ts` `UserPromptSubmit` hook matches those paths against `.claude/rules/paths/*.md` globs, extracts the relevant skill names, and emits a `## Path-Based Skills (for delegation)` section containing full `Read` instructions inside `hookSpecificOutput.additionalContext`.
+2b. If the project has a `skill-matching.md` rule (auto-loaded), the Lead also sees project-specific skill mappings in its context. These map domain keywords → `./.claude/skills/<name>/SKILL.md` Read paths for project-level skills that carry domain-specific knowledge.
 3. The Lead receives the suggestions in its own context alongside the user prompt.
 4. The Lead picks the appropriate subagent and builds the delegation prompt using the template below. Empty blocks are omitted entirely rather than left as empty headers.
 5. The subagent's first tool calls are the `Read`s. Skill content enters its working context.
@@ -102,6 +103,15 @@ Test P5 is the load-bearing evidence: skills loaded via Arch H measurably expand
 | Tool required | Frontmatter processor | `Skill` (Lead has it) | `Read` (always in allowlist) |
 | Works for | Agents with frontmatter | Only the Lead | Any default subagent |
 
+### Global vs project skills comparison
+
+| Aspect | Global skills | Project skills | Frontmatter |
+|---|---|---|---|
+| Scope | Cross-project | Single project | Per-agent |
+| Discovery | Path rules + auto-match | skill-matching.md rule | Hardcoded |
+| Duplication | None | None (lives in the project) | Per-project agents |
+| Domain knowledge | Generic patterns | Project-specific | Fixed per agent |
+
 Arch H's only real cost is the Read latency. Everything else is a win.
 
 ## 7. When to use
@@ -109,6 +119,7 @@ Arch H's only real cost is the Read latency. Everything else is a win.
 - **Use Arch H** for task-specific skill content, multi-project orchestration, and whenever you want pooled cross-project expertise on global default agents.
 - **Don't bother** for trivial tasks where even a single Read is net overhead (complexity < 15, single-file typo fixes, etc.).
 - **Don't use** when the subagent doesn't have `Read` in its tools allowlist (rare — essentially custom agents with an intentionally restricted toolset).
+- **Use project skills** (`./.claude/skills/`) for project-specific knowledge (naming conventions, architecture decisions, testing patterns specific to the project). They load on-demand via the same Arch H Read mechanism as global skills.
 - **Frontmatter is still correct** for baseline skills that a role always needs regardless of task (e.g., reviewer's permanent `code-quality` + `anti-hallucination`). Use frontmatter for the floor, Arch H for the task-specific ceiling.
 
 ## 8. The "entry + references" sub-pattern

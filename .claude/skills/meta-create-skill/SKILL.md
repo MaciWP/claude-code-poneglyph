@@ -31,6 +31,16 @@ Activate this skill when:
 - Request for an automated workflow
 - Deep investigation scaffolding
 
+### Where to create: Global vs Project
+
+| Create at global (`~/.claude/skills/`) when | Create at project (`./.claude/skills/`) when |
+|---|---|
+| The pattern applies to ANY project using that stack | The knowledge is specific to THIS project |
+| Examples are generic (from docs, well-known projects) | Examples come from the project's own code/PRs |
+| e.g., `django-api`, `react-best-practices` | e.g., `naming-standards`, `project-architecture` |
+
+Project skills follow the exact same format as global skills (same frontmatter, same Content Map pattern, same `${CLAUDE_SKILL_DIR}/` paths). The only difference is where they live on disk. The project's `skill-matching.md` rule is the discovery layer — it maps project keywords to project skill Read paths so the Lead can find them at delegation time.
+
 ## Official Documentation
 
 Before generating, fetch the latest skill format:
