@@ -45,7 +45,6 @@
     "PostToolUse": [
       {
         "matcher": "Edit|Write",
-        "if": "Edit(*.ts)|Edit(*.tsx)|Edit(*.js)|Edit(*.jsx)|Edit(*.py)|Write(*.ts)|Write(*.tsx)|Write(*.js)|Write(*.jsx)|Write(*.py)",
         "hooks": [
           {
             "type": "command",
@@ -87,6 +86,16 @@
           {
             "type": "command",
             "command": "bun run $HOME/.claude/hooks/validators/context/record-read.ts"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun $HOME/.claude/hooks/validate-plan-paths.ts",
+            "timeout": 5000
           }
         ]
       },
@@ -264,7 +273,7 @@
     "typescript-lsp@claude-plugins-official": false,
     "frontend-design@claude-plugins-official": true
   },
-  "language": "es",
+  "language": "spanish",
   "sandbox": {
     "enabled": false
   },
