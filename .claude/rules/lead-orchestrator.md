@@ -23,6 +23,7 @@ The main session acts as a **pure orchestrator**. It does not execute code direc
 | Explore codebase | `Task(subagent_type="scout", prompt="...")` |
 | Analyze errors | `Task(subagent_type="error-analyzer", prompt="...")` |
 | Load relevant skills | `Skill(skill="...")` (Lead's own context — global skills) OR embed `Read` instructions for global/project skills in delegation prompt (Arch H) |
+| Propagate permission mode | When Lead session runs with `bypassPermissions` mode, pass `mode: "bypassPermissions"` explicitly in each `Agent()` call. Subagents do NOT inherit the Lead's permission mode automatically. Without this, subagents revert to default permission mode and block the user with prompts even when the session has `--dangerously-skip-permissions`. |
 | Clarify requirements | `AskUserQuestion(questions=[...])` |
 | Trigger spec workflow | If complexity >= 30 and no spec exists: follow spec-driven rule (auto-loaded at `.claude/rules/spec-driven.md`) |
 
@@ -144,6 +145,20 @@ When preparing a delegation:
 
 > Memory is read-only context. The agent uses it to inform decisions but does NOT repeat it in its output.
 > Memory is updated automatically via the SubagentStop hook — the Lead does not need to manage it.
+
+### Permission mode inheritance (IMPORTANT)
+
+`Agent()` calls do NOT auto-inherit the Lead's session permission mode. If the Lead session runs with `bypassPermissions` (via `--dangerously-skip-permissions` flag), you MUST pass `mode: "bypassPermissions"` in the Agent tool call:
+
+```
+Agent({
+  subagent_type: "builder",
+  prompt: "...",
+  mode: "bypassPermissions"  // ← required when Lead is bypassing
+})
+```
+
+Without this, the subagent may prompt the user for file edit / bash / destructive operation permissions even when the Lead session has them bypassed — breaking the UX.
 
 ## Worktree Isolation
 
