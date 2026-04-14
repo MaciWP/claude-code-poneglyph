@@ -217,4 +217,85 @@ describe("lead-parallelism-gate", () => {
     expect(result.exitCode).toBe(0);
     expect(result.stderr).toBe("");
   });
+
+  test("3 sequential Explore delegations across turns emits cross-turn warning", async () => {
+    const transcript: object[] = [
+      { role: "user", content: "Explore the project structure" },
+      {
+        role: "assistant",
+        content: [
+          { type: "text", text: "Launching first exploration." },
+          { type: "tool_use", name: "Agent", input: { subagent_type: "Explore", prompt: "p1" } },
+        ],
+      },
+      { role: "user", content: "now the hooks folder" },
+      {
+        role: "assistant",
+        content: [
+          { type: "text", text: "Next exploration." },
+          { type: "tool_use", name: "Agent", input: { subagent_type: "Explore", prompt: "p2" } },
+        ],
+      },
+      { role: "user", content: "and now skills" },
+    ];
+    const result = await runHook(
+      { tool_name: "Agent", tool_input: { subagent_type: "Explore", prompt: "p3" }, session_id: "cross1" },
+      transcript,
+    );
+    expect(result.exitCode).toBe(0);
+    expect(result.stderr).toContain("lead-parallelism-gate");
+    expect(result.stderr).toContain("sequential");
+    expect(result.stderr).toContain("Explore");
+  });
+
+  test("2 Agents batched in same assistant message produces NO cross-turn warning", async () => {
+    const transcript: object[] = [
+      { role: "user", content: "Explore everything" },
+      {
+        role: "assistant",
+        content: [
+          { type: "text", text: "Batching both." },
+          { type: "tool_use", name: "Agent", input: { subagent_type: "Explore", prompt: "a" } },
+          { type: "tool_use", name: "Agent", input: { subagent_type: "Explore", prompt: "b" } },
+        ],
+      },
+      { role: "user", content: "continue with one more" },
+    ];
+    const result = await runHook(
+      { tool_name: "Agent", tool_input: { subagent_type: "Explore", prompt: "c" }, session_id: "cross2" },
+      transcript,
+    );
+    expect(result.exitCode).toBe(0);
+    // No multi-task keywords in user msg AND prior batch was parallel → no warning
+    expect(result.stderr).toBe("");
+  });
+
+  test("Sequential Agents with different subagent_types produce NO cross-turn warning", async () => {
+    const transcript: object[] = [
+      { role: "user", content: "Build the feature" },
+      {
+        role: "assistant",
+        content: [
+          { type: "text", text: "Scouting first." },
+          { type: "tool_use", name: "Agent", input: { subagent_type: "scout", prompt: "p1" } },
+        ],
+      },
+      { role: "user", content: "continue" },
+      {
+        role: "assistant",
+        content: [
+          { type: "text", text: "Now building." },
+          { type: "tool_use", name: "Agent", input: { subagent_type: "builder", prompt: "p2" } },
+        ],
+      },
+      { role: "user", content: "now review" },
+    ];
+    const result = await runHook(
+      { tool_name: "Agent", tool_input: { subagent_type: "reviewer", prompt: "p3" }, session_id: "cross3" },
+      transcript,
+    );
+    expect(result.exitCode).toBe(0);
+    // scout → builder → reviewer is a legitimate sequential pipeline, no warning.
+    expect(result.stderr).toBe("");
+  });
 });

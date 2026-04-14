@@ -15,9 +15,17 @@ interface HookInput {
   transcript_path?: string;
 }
 
+interface ContentBlock {
+  type: string;
+  text?: string;
+  name?: string;
+  input?: { subagent_type?: string; [key: string]: unknown };
+  [key: string]: unknown;
+}
+
 interface TranscriptEntry {
   role: string;
-  content: string | Array<{ type: string; text?: string; [key: string]: unknown }>;
+  content: string | Array<ContentBlock>;
 }
 
 interface SkipLogEntry {
@@ -45,14 +53,49 @@ function readStdin(): Promise<string> {
   });
 }
 
-function extractText(
-  content: string | Array<{ type: string; text?: string; [key: string]: unknown }>,
-): string {
+function extractText(content: string | Array<ContentBlock>): string {
   if (typeof content === "string") return content;
   return content
     .filter((b) => b.type === "text" && typeof b.text === "string")
     .map((b) => b.text as string)
     .join(" ");
+}
+
+/**
+ * Extract Agent tool_use blocks from a single assistant message.
+ * Returns the list of subagent_type values for each Agent call in the message.
+ */
+function extractAgentCalls(content: string | Array<ContentBlock>): string[] {
+  if (typeof content === "string") return [];
+  const agents: string[] = [];
+  for (const block of content) {
+    if (block.type === "tool_use" && block.name === "Agent") {
+      const subtype = block.input?.subagent_type;
+      agents.push(typeof subtype === "string" ? subtype : "unknown");
+    }
+  }
+  return agents;
+}
+
+/**
+ * Walk the transcript from the end, collecting Agent calls from the most recent
+ * assistant messages (up to `maxMessages` assistant messages).
+ * Each element is the list of Agent subagent_types called in ONE assistant message.
+ */
+function collectRecentAgentBatches(
+  transcript: TranscriptEntry[],
+  maxMessages: number,
+): string[][] {
+  const batches: string[][] = [];
+  for (let i = transcript.length - 1; i >= 0 && batches.length < maxMessages; i--) {
+    if (transcript[i].role !== "assistant") continue;
+    const calls = extractAgentCalls(transcript[i].content);
+    if (calls.length > 0) {
+      batches.push(calls);
+    }
+  }
+  // Reverse so oldest comes first — not strictly needed but easier to reason about.
+  return batches.reverse();
 }
 
 function readTranscript(transcriptPath: string): TranscriptEntry[] {
@@ -118,6 +161,28 @@ async function main(): Promise<void> {
     const transcript = readTranscript(transcriptPath);
     if (transcript.length === 0) {
       process.exit(0);
+    }
+
+    // Cross-turn check: detect sequential Agent delegations across multiple
+    // assistant messages that could have been batched.
+    const currentAgentType = input.tool_input?.subagent_type ?? "unknown";
+    const recentBatches = collectRecentAgentBatches(transcript, 5);
+
+    // Only flag when every recent assistant message had a SINGLE Agent call
+    // (i.e. none of them batched). If any message had ≥2, the Lead already
+    // parallelized, so don't warn.
+    const allSolo = recentBatches.length >= 2 && recentBatches.every((b) => b.length === 1);
+    const recentTypes = recentBatches.map((b) => b[0]);
+    // Count how many of the recent solo calls share the current subagent_type.
+    const sameTypeCount = recentTypes.filter((t) => t === currentAgentType).length;
+
+    // Threshold: ≥2 prior solo calls of the same type (plus current = 3 total).
+    if (allSolo && sameTypeCount >= 2) {
+      console.error(
+        `[lead-parallelism-gate] Detected ${sameTypeCount + 1} sequential \`${currentAgentType}\` delegations across recent turns.\n` +
+          `  Consider batching independent delegations in a single message: Agent(...) + Agent(...) + Agent(...)\n` +
+          `  If there's a real output-to-input dependency, ignore this warning.`,
+      );
     }
 
     const userMessage = findLastUserMessage(transcript);
