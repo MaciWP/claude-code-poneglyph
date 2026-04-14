@@ -1,10 +1,7 @@
-import { describe, test, expect, beforeAll, afterAll } from "bun:test";
+import { describe, test, expect } from "bun:test";
 import { join } from "node:path";
-import { mkdirSync, writeFileSync, rmSync } from "node:fs";
 
 const HOOK_PATH = join(import.meta.dir, "..", "post-compact.ts");
-const SPEC_DIR = join(import.meta.dir, "..", "..", "..", ".specs");
-const SPEC_FILE = join(SPEC_DIR, "active-spec.txt");
 
 interface HookProc {
   exited: Promise<number>;
@@ -70,39 +67,6 @@ describe("post-compact hook", () => {
 
     expect(stdout).not.toContain("CLAUDE_LEAD_MODE=true");
     expect(stdout).toContain("Lead Orchestrator");
-  });
-
-  test("exits 0 when active-spec.txt does not exist", async () => {
-    const proc = runHook({ CLAUDE_LEAD_MODE: "true" });
-    const exitCode = await proc.exited;
-    const stdout = await new Response(proc.stdout).text();
-
-    expect(exitCode).toBe(0);
-    expect(stdout).not.toContain("Active Spec");
-  });
-
-  describe("with active-spec.txt present", () => {
-    beforeAll(() => {
-      mkdirSync(SPEC_DIR, { recursive: true });
-      writeFileSync(SPEC_FILE, "SPEC-019");
-    });
-
-    afterAll(() => {
-      try {
-        rmSync(SPEC_FILE);
-      } catch {
-        // ignore cleanup errors
-      }
-    });
-
-    test("includes active spec content when file exists", async () => {
-      const proc = runHook({ CLAUDE_LEAD_MODE: "true" });
-      await proc.exited;
-      const stdout = await new Response(proc.stdout).text();
-
-      expect(stdout).toContain("Active Spec");
-      expect(stdout).toContain("SPEC-019");
-    });
   });
 
   test("output stays compact (under ~2000 chars as proxy for 500 tokens)", async () => {

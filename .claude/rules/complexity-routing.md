@@ -109,23 +109,6 @@ ALL gates must be met to activate `team` mode:
 - Domains: 2 (Google OAuth, GitHub OAuth) but they share auth middleware ❌
 - **→ subagents** (domains are not independent)
 
-## Spec-Driven Development Trigger
-
-| Score | Spec Required | Action |
-|-------|---------------|--------|
-| **< 30** | No | Builder direct, no spec |
-| **30-60** | Recommended | If uncertain, invoke `/spec-gen` before builder |
-| **> 60** | Mandatory | ALWAYS invoke `/spec-gen` before planner/builder |
-
-### Process with Spec
-
-1. Calculate complexity
-2. If score >= 30: check if a spec exists in `.specs/` for this feature
-3. If it does not exist: invoke `/spec-gen` to create spec (status: draft)
-4. Wait for spec to reach status `approved`
-5. Invoke `/generate-from-spec SPEC-NNN` to delegate to builder with BDD
-6. After implementation: update INDEX.md to `implemented`
-
 ## Worktree Decision
 
 Independent of the complexity score, evaluate the need for worktree:

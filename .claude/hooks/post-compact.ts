@@ -1,7 +1,5 @@
 #!/usr/bin/env bun
 
-const ACTIVE_SPEC_PATH = ".specs/active-spec.txt";
-
 const LEAD_REMINDER = [
   "## Lead Orchestrator Mode (re-injected after compaction)",
   "This session operates as Lead Orchestrator.",
@@ -17,18 +15,6 @@ const ANTI_HALLUCINATION = [
   "4. Ask if confidence < 70%",
 ].join("\n");
 
-async function readActiveSpec(): Promise<string | null> {
-  try {
-    const file = Bun.file(ACTIVE_SPEC_PATH);
-    if (!(await file.exists())) return null;
-    const content = (await file.text()).trim();
-    if (content.length === 0) return null;
-    return `## Active Spec\n${content}`;
-  } catch {
-    return null;
-  }
-}
-
 function getSessionMode(): string | null {
   const mode = Bun.env.CLAUDE_LEAD_MODE;
   if (mode === "true") {
@@ -42,12 +28,6 @@ async function main(): Promise<void> {
     const sections: string[] = [];
 
     sections.push(LEAD_REMINDER);
-
-    const specSection = await readActiveSpec();
-    if (specSection) {
-      sections.push(specSection);
-    }
-
     sections.push(ANTI_HALLUCINATION);
 
     const modeSection = getSessionMode();

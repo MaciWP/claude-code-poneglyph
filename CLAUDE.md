@@ -211,7 +211,6 @@ The full orchestration protocol, error-recovery policy, delegation templates and
 @.claude/rules/agent-selection.md
 @.claude/rules/context-management.md
 @.claude/rules/error-recovery.md
-@.claude/rules/spec-driven.md
 
 ### Post-implementation verification (MANDATORY)
 

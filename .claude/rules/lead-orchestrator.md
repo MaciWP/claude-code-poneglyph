@@ -25,38 +25,10 @@ The main session acts as a **pure orchestrator**. It does not execute code direc
 | Load relevant skills | `Skill(skill="...")` (Lead's own context — global skills) OR embed `Read` instructions for global/project skills in delegation prompt (Arch H) |
 | Propagate permission mode | When Lead session runs with `bypassPermissions` mode, pass `mode: "bypassPermissions"` explicitly in each `Agent()` call. Subagents do NOT inherit the Lead's permission mode automatically. Without this, subagents revert to default permission mode and block the user with prompts even when the session has `--dangerously-skip-permissions`. |
 | Clarify requirements | `AskUserQuestion(questions=[...])` |
-| Trigger spec workflow | If complexity >= 30 and no spec exists: follow spec-driven rule (auto-loaded at `.claude/rules/spec-driven.md`) |
 
 ## Workflow
 
-```mermaid
-graph TD
-    U[User] --> S[Score Prompt]
-    S -->|< 70| AUQ[AskUserQuestion to clarify]
-    AUQ --> S
-    S -->|>= 70| C[Calculate Complexity]
-    C -->|< 30| B[builder direct]
-    C -->|30-60| SP1{Spec exists?}
-    C -->|> 60| SP2[spec-driven rule MANDATORY]
-    SP1 -->|Yes| P1[planner optional]
-    SP1 -->|No| SG1[spec-driven rule recommended]
-    SG1 --> P1
-    SP2 --> P2[planner mandatory]
-    P1 & P2 --> MD{execution_mode?}
-    MD -->|subagents| IS[generate-from-spec / builders]
-    MD -->|team| TM[Spawn teammates per domain]
-    IS --> B2[builder]
-    TM --> TV[Teammates complete + Lead verifies]
-    TV --> R2[reviewer over full changeset]
-    B2 --> R[reviewer + SpecComplianceCheck]
-    R -->|APPROVED| IX[INDEX.md → implemented]
-    R2 -->|APPROVED| IX
-    IX --> D[Done]
-    R -->|NEEDS_CHANGES| B2
-    R2 -->|NEEDS_CHANGES| TM
-    B2 -->|Error| EA[error-analyzer]
-    EA --> B2
-```
+> Full end-to-end flow: score prompt → calc complexity → pick skills → delegate → reviewer checkpoint. See `complexity-routing.md` and `orchestration-checklist.md` for the decision tables.
 
 ## Delegation Triggers (POSITIVE — actively look for these)
 
@@ -69,11 +41,11 @@ The Lead's job is to find reasons to delegate, not reasons to avoid it. Two quan
 
 When ANY trigger fires → delegate. When BOTH fire → batch in parallel (one message, multiple Agent calls).
 
-**Sub-clause A.1 — Cost arbitrage**: When parallelizing simple work (complexity <30), prefer agents on haiku/sonnet over inline opus. The Lead runs on opus (~5x sonnet, ~25x haiku); inline opus for simple parallelizable work is the worst $/task ratio. See `complexity-routing.md` for model tiers.
-
-**Coordination cost veto** (Stanford 2025): if 2+ "parallel" subtasks share >40% of context, coordination overhead exceeds parallelism gain — use 1 agent instead. **Cheap-model relaxation**: if parallel agents are haiku/sonnet, veto relaxes to >70% (cheap tokens absorb the coordination tax).
-
-**No hard cap on batch size** — but watch for **artificial parallelization**: splitting work that doesn't truly need separation just to hit a parallelism number. If forcing a split would degrade the result (incoherent outputs, lost integration context, fragmented reasoning), use fewer agents. The Regla de Oro decides — quality over parallelism count. (Osmani field data observes diminishing returns beyond 4 agents — informational, not a rule.)
+| Guardrail | Rule | Source |
+|---|---|---|
+| **Sub-clause A.1 — Cost arbitrage** | Simple parallelizable work (complexity <30) → prefer haiku/sonnet agent batch over inline opus. Lead runs on opus (~5x sonnet, ~25x haiku); inline opus on cheap work is the worst $/task ratio. | See `complexity-routing.md §Model Routing` |
+| **Coordination cost veto** | If 2+ "parallel" subtasks share >40% of context, coordination overhead exceeds parallelism gain — use 1 agent. **Cheap-model relaxation**: haiku/sonnet parallelism relaxes the veto to >70% (cheap tokens absorb the coordination tax). | Stanford 2025 |
+| **No hard cap, avoid artificial parallelization** | No fixed batch-size cap, but splitting work that doesn't truly need separation (just to hit a number) degrades output — incoherent results, lost integration context, fragmented reasoning. Regla de Oro decides: quality over count. | Osmani field data (diminishing returns >4 agents — informational) |
 
 **Self-check before EVERY delegation message**: "Is there any other independent Task I could batch into this same message?" If no, state the reason inline ("solo delegation — waiting on scout before builder"). Solo-delegation without stated dependency is anti-pattern.
 
@@ -203,63 +175,11 @@ Activate `isolation: "worktree"` in the Agent tool to isolate parallel work.
 
 ## Team Agent Execution (Experimental)
 
-When the planner recommends `executionMode: team`, the Lead spawns independent teammates per domain. See `team-routing.md` for the full protocol.
-
-### Prerequisites
-
-| Requirement | Verification |
-|-----------|-------------|
-| Env var active | `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` in settings.json |
-| Planner recommends team | `executionMode: team` in roadmap output |
-| If env var absent | Silent fallback to subagents, log warning |
-
-### Teammate Prompt Template
-
-Each teammate receives:
-
-| Field | Content |
-|-------|-----------|
-| **Domain** | "Your domain is [X]. You only touch files in [paths]." |
-| **Tasks** | Roadmap subtasks assigned to this domain |
-| **Interfaces** | Contracts to expose/consume with other domains |
-| **Constraint** | "DO NOT modify files outside your domain" |
-| **Coordination** | "Use task list to coordinate with other teammates" |
-
-### Monitoring
-
-- Lead reviews task list for teammate progress
-- Do not intervene unless a teammate is stuck (no progress in task list)
-- After all teammates complete: Lead runs reviewer over the full changeset
-
-### Fallback
-
-| Condition | Action |
-|-----------|--------|
-| Teammate fails 2x | Extract domain tasks → run as builder subagent |
-| Multiple teammates fail | Abort team mode → full fallback to subagents |
-| File conflict between teammates | Lead arbitrates via reviewer, losing domain re-executes |
+> Prerequisites, teammate prompt template, fallback and coordination protocol: see `team-routing.md`. Invoked only when planner emits `executionMode: team` — see `complexity-routing.md §Mode Selection Table` for the decision criteria and `§4-Gate Criteria (Team Mode Only)` for the gates.
 
 ## Tiered Execution Mode
 
-Intermediate execution mode between subagents and team. Uses architect as intermediary to design interfaces before parallel builders start.
-
-### When to Use
-
-| Criterion | Threshold |
-|----------|-----------|
-| Complexity | 45-60 |
-| Domains | 2-3 with shared interfaces |
-| Independence | Domains are NOT independent (share types/APIs/contracts) |
-| Planner output | `executionMode: "tiered"` |
-
-### Difference vs Other Modes
-
-| Aspect | subagents | tiered | team |
-|---------|-----------|--------|------|
-| When | Default | 2-3 domains with interfaces | 3+ independent domains |
-| Intermediary | None | architect (mandatory) | None (peer-to-peer) |
-| Cost | 1x | ~2x | 3-7x |
-| Contracts | Implicit in roadmap | Explicit by architect | Negotiated between teammates |
+> Decision criteria, mode comparison and 5-step workflow: see `complexity-routing.md §Tiered Mode`. Invoked when planner emits `executionMode: tiered`. The architect step is mandatory before builder parallelization — it produces the interface contracts each builder consumes.
 
 ### Tiered Workflow
 
@@ -270,18 +190,6 @@ graph TD
     A --> B2[Builder 2: domain B with contract]
     B1 & B2 --> R[Reviewer: validates cross-domain integration]
 ```
-
-1. Planner generates roadmap with `executionMode: "tiered"`
-2. Lead delegates to **architect**: "Design the interface contracts between domains X and Y"
-3. Architect returns: shared types, API signatures, data contracts
-4. Lead delegates to **builders in parallel**: each receives its domain + architect's contracts
-5. Lead delegates to **reviewer**: validates that cross-domain integration meets the contracts
-
-### When NOT to Use
-
-- Complexity < 45 → subagents (architect overhead not worth it)
-- Independent domains without interfaces → subagents or team
-- Complexity > 60 with 3+ independent domains → team mode
 
 ## Continuous Validation Pipeline
 
@@ -296,21 +204,6 @@ Continuous validation during implementation. The Lead supervises quality checkpo
 | Post-implementation | Builder completes task | reviewer | NEEDS_CHANGES → re-delegate |
 | Pre-merge | Worktree ready to merge | reviewer | Block merge if fails |
 | Post-merge | After successful merge | reviewer (background) | Rollback if tests fail |
-
-### Validation Feedback Loop
-
-```mermaid
-graph TD
-    B[Builder implements] --> V1{Checkpoint?}
-    V1 -->|Mid| R1[Reviewer background]
-    R1 -->|Feedback| B
-    V1 -->|Post| R2[Reviewer formal]
-    R2 -->|APPROVED| M[Merge/Done]
-    R2 -->|NEEDS_CHANGES| FB[Feedback to builder]
-    FB --> B
-    R2 -->|BLOCKED| P[Re-plan]
-    P --> B
-```
 
 ### Validation by Change Type
 
@@ -357,20 +250,7 @@ The Lead does NOT control the model directly (Claude Code manages it), but CAN:
 
 ## Delegation by Task Type
 
-| Task Type | Agent(s) |
-|---------------|-----------|
-| Write code | builder |
-| Refactor code | builder + code-quality skill |
-| Review code | reviewer |
-| Security audit | reviewer + security-review skill |
-| Plan implementation | planner |
-| Explore codebase | scout / Explore |
-| Analyze error | error-analyzer |
-| Design architecture | architect |
-| Resolve merge conflicts | builder |
-| Document bugs | builder + diagnostic-patterns |
-| Sync docs | builder |
-| Multi-domain parallel implementation | teammates (team mode) or parallel builders (subagents) |
+> Signal → agent matrix (write/refactor/review/security/plan/explore/error/architect/merge/docs): see `agent-selection.md §Selection Matrix`.
 
 ## Delegation Parallelization (MANDATORY)
 
