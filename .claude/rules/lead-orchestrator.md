@@ -175,7 +175,7 @@ Activate `isolation: "worktree"` in the Agent tool to isolate parallel work.
 
 ## Team Agent Execution (Experimental)
 
-> Prerequisites, teammate prompt template, fallback and coordination protocol: see `team-routing.md`. Invoked only when planner emits `executionMode: team` — see `complexity-routing.md §Mode Selection Table` for the decision criteria and `§4-Gate Criteria (Team Mode Only)` for the gates.
+> Prerequisites, teammate prompt template, fallback and coordination protocol: see `complexity-routing.md §Team Mode Execution`. Invoked only when planner emits `executionMode: team` — see `complexity-routing.md §Mode Selection Table` for the decision criteria and `§4-Gate Criteria (Team Mode Only)` for the gates.
 
 ## Tiered Execution Mode
 
