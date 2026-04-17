@@ -33,6 +33,4 @@ Files of the Poneglyph orchestration system. Maintain consistency across agents,
 | `paths` | YAML list of globs — skill applies only to these paths |
 | `context` | `fork` = isolated context |
 
-### Error Recovery — SendMessage
-
-Prefer `SendMessage({to: agentId})` to continue a failed agent instead of re-spawning. Preserves context and saves tokens.
+> Error recovery + SendMessage pattern: see `error-recovery.md §SendMessage Recovery`.

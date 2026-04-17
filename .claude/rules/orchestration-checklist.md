@@ -27,6 +27,8 @@ Factors: Files, Domains, Dependencies, Security, Integrations (see `complexity-r
 
 ## Step 3: Prepare Context (Arch H: Lead-Directed Skill Reads)
 
+> Full delegation prompt template with `[ACCUMULATED MEMORY]` / `[QUALITY STANCE]` / `[RELEVANT SKILLS FOR THIS TASK]` blocks: see `lead-orchestrator.md §Memory + Skill Injection When Delegating (Arch H: Lead-Directed Skill Reads)`.
+
 1. Check if `memory-inject.ts` emitted a `## Path-Based Skills (for delegation)` section based on paths in the user prompt
 2. If yes → copy those `Read .claude/skills/<name>/SKILL.md` suggestions verbatim into the delegation prompt's `[RELEVANT SKILLS FOR THIS TASK]` block
 3. If no → match keywords manually against `.claude/rules/paths/*.md` or the skills inventory, pick max 3 skills
