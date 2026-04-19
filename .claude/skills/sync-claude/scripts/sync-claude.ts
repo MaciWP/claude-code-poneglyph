@@ -19,6 +19,7 @@ const LINK_FOLDERS = [
   "docs",
   "hooks",
   "workflows",
+  "orchestrator",
   "knowledge",
 ];
 
