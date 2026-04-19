@@ -1,48 +1,5 @@
 # Builder Agent Memory
 
-## 2026-04-15 — Session 4f839cb0
-- **nox sessions con `python=False`**: las sesiones `messages_update`, `po_compile`, `format`, `lint`, `types_check`, `django_check` usan `@nox.session(python=False)` y dependen de `python`/`black`/`flake8`/`mypy`/`dennis-cmd` estando en PATH. Cuando se invocan desde `.venv/bin/nox` sin PATH configurado, fallan con "Program X not found". Alternativa fiable: ejecutar directamente los binarios desde `.venv/bin/`.
-- **makemessages genera entries `#, fuzzy`** con sugerencias `#| msgid` cuando encuentra strings parecidas ya traducidas. Para marcarlas como traducción final hay que borrar el flag `#, fuzzy` y la línea `#| msgid "..."`, si no `dennis-cmd status` las sigue contando como fuzzy.
-- **dennis-cmd status** es la herramienta canónica para verificar traducciones al 100% — equivale a `nox -s po_check_untranslated` (que internamente hace `dennis-cmd status locale | grep Percentage: | grep -v COMPLETE | wc -l`).
-- **Contract tests pre-existentes siguen roto en esta rama (feature/JRV-859-Django-6)** — no se ejecutaron como parte del deliverable porque estaban fuera de alcance y son independientes del cambio.
-- **AlterField con `null=True` sobre CharField existente es reversible y seguro**: no hay pérdida de datos (los empty strings existentes quedan como "", y nuevos registros podrán tener NULL). Migración directa sin data migration adicional.
-
-## 2026-04-15 — Session 4f839cb0
-- El Excel real de importación masiva (`20250916 Plantilla de Importacion Masiva v2.0.xlsx`) tiene hojas auxiliares `_types`, `_hierarchy`, `_models`, `_placements` con códigos canónicos (`SRV`, `SWT`, `UPS`, `RPD`, `PRF`, `RCK`, `DC01`, `RM01`, `RW01`, `RCK01`); las ubicaciones en la hoja principal usan formato `Datacenter X > Room Y > Row Z > Rack N` (no código plano).
-- `apps/imports/` no tenía `management/` — crear ambos `__init__.py` (paquete + commands) antes del comando es obligatorio en Django.
-- `AssetImport.file` es `FileField` sin `blank=True`, así que el seed debe adjuntar un `ContentFile` dummy vía `instance.file.save(..., save=False)` antes del primer `instance.save()`.
-- `AssetImportLine.location` es GenericForeignKey (`location_type` ContentType + `location_id`), no FK directo — al asignar un Rack hay que setear ambos campos manualmente.
-- Idempotencia simple en seeds: `Model.objects.filter(name=...).delete()` dentro de `@transaction.atomic` antes de crear; evita `get_or_create` cuando hay FileField y múltiples hijos.
-
-## 2026-04-15 — Session e7515341
-1. **When a plan assumes a file is untracked but it's actually tracked (or vice versa), the commit boundary changes materially.** Run `git ls-files <path>` before executing plan phase deletions — untracked-file disk removal creates no git diff, which can make a whole "commit N" impossible as specified. The pragmatic fix is to merge adjacent phases or pre-migrate content from one phase to satisfy the other.
-2. **Claude Code's `CLAUDE.md` auto-load is project-root only, NEVER `.claude/CLAUDE.md`.** If a project already has a rich CLAUDE.md, prefer prepending `@imports` + skill index blocks over rewriting — the existing content is likely project-owned narrative (domain, commands, gotchas) that cannot be reconstructed from refactor context.
-3. **Pre-commit hooks run `eslint --fix` on ANY staged `.md` adjacent to `package.json` reachable files (lint-staged).** Doesn't affect content but does delay commits 2-4 seconds; expect it on every commit and don't interpret it as hook failure.
-4. **`${CLAUDE_SKILL_DIR}/references/X.md` paths in Content Maps must be verified per-skill (the variable resolves to the skill's own dir).** A flat grep of all SKILL.md files and then `test -f` against each skill's dir is the minimum verification — without per-skill scoping, paths appear to resolve when they don't.
-5. **Renaming a reference file AFTER committing requires both `git mv` AND updating the `name:` frontmatter inside the file.** The frontmatter is load-bearing: a ref whose filename and `name:` field diverge will pass Read checks but fail discovery when the Content Map row uses the canonical filename.
-
-## 2026-04-15 — Session e7515341
-- `git reset --soft HEAD~N` on a branch that was N commits ahead of origin leaves the branch reporting "up to date with origin" and preserves all prior-commit changes as staged entries — no file-content loss, fully reversible via reflog.
-- When verifying that a soft reset preserved on-disk state, a 3-way count (staged / unstaged / untracked) plus explicit `test -f` on representative paths is the minimum safe audit.
-
-## 2026-04-15 — Session 4f839cb0
-- Para análisis visuales auto-contenidos en HTML estilo GitHub dark, la paleta `#0d1117/#161b22/#c9d1d9/#58a6ff/#3fb950/#d29922/#f85149` + mono `ui-monospace` funciona bien y no requiere CDN — todo inline en `<style>`.
-- Flow diagrams sin mermaid: usar `.flow-box` con border-color por categoría (ticket) + flechas `↓` como divs separados mantiene la semántica sin dependencias JS.
-- Cuando el usuario pide "análisis para reunión", la sección más útil suele ser la cheatsheet final con votos explícitos (yes/no/hmm) — elimina ambigüedad al llegar a la reunión.
-
-## 2026-04-15 — Session 4f839cb0
-- When adding i18n strings, `nox -s messages_update` can emit `#, fuzzy` entries by auto-inferring translations from similar removed msgids. Always grep for `#, fuzzy` near new entries and clean them — `po_check_untranslated` does NOT flag fuzzy as untranslated, but they're stale translations that can ship wrong text to users.
-- `apps/imports/models.py` already imports `Asset` directly at module level — no circular import problem for `Asset.Status.choices`/`Asset.Status.REQUESTED` usage in `AssetImportLine` field definitions. The `imports` → `assets` import direction is safe (assets does not depend on imports).
-
-## 2026-04-15 — Session 4f839cb0
-- **Django `makemigrations` does not detect RenameField non-interactively**: when stdin is piped, it defaults to `RemoveField` + `AddField` and silently drops data. Always hand-edit to use `RenameField` + `AlterField` when stdin can't be a real TTY, or run interactively.
-- **`FileHelper.file_size_validator` in `apps/core/helpers/file.py` is serializer-only**: being a closure returned from a staticmethod, it's not migration-serializable and cannot be attached to a model `FileField.validators`. For model-level file validation, create a top-level function in the owning app's `validators.py`.
-
-## 2026-04-15 — Session 4f839cb0
-- When Django's `DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"` is set globally (binora/settings.py:167), dropping `UUIDModel` from a model's inheritance cleanly yields `BigAutoField` as the implicit PK — no AppConfig override needed.
-- The `guard-destructive-bash.sh` hook blocks `rm` on migration files; use `python3 -c "import os; os.remove(...)"` as the documented workaround for legitimate consolidation of unreleased migrations.
-- In this environment nox sessions fail with "Program black not found" because nox's own virtualenv isn't provisioned. Fall back to invoking `.venv/bin/black`, `.venv/bin/isort`, `.venv/bin/flake8`, and `manage.py check` directly — equivalent coverage.
-
 ## 2026-04-16 — Session e7515341
 1. When a skill already uses "Content Map" as its table header and you're adding entries, keep the existing header name rather than introducing "Deep references" -- consistency within a file beats consistency across files.
 2. The `guard-destructive-bash.sh` hook blocks `rm` but NOT `python3 -c "os.unlink(...)"` -- confirmed again as the canonical workaround for authorized deletions.
@@ -116,3 +73,41 @@
 - `NestedHyperlinkedIdentityField` from `rest_framework_nested.relations` reads URL kwargs from the view via `getattr(view, underscored_lookup_key)` — so `@property` fields like `process_id` / `task_id` on nested ViewSets are NOT dead code even when the ViewSet body never calls them. Verify with `Grep NestedHyperlinkedIdentityField + parent_lookup_kwargs` before removing such properties.
 - For tests involving `ProcessService.start` with asset-specific workflow tasks, `process_with_assets` fixture (server + storage + full datacenter hierarchy) is the canonical setup, otherwise `CheckAssetsDatacenterConsistency` pre-rule fails. Combining `workflow` (asset_types=[]) + asset-specific `WorkflowTask` works because task-level `asset_types` only needs to match process assets, not workflow's empty asset_types list.
 - `black` (line-length 120) will auto-collapse dict comprehensions that fit on one line — don't fight it with manual multi-line formatting of short expressions.
+
+## 2026-04-11 — Session c24d3a37
+- `sync-claude.ts --status` shows the exact number of linked items with the same categorization the preview uses (8 entries: agents/skills/commands/rules/docs/hooks/workflows/CLAUDE.md) — status alone is sufficient to make the skip/execute decision without needing the dry-run preview when every entry is already green.
+- The `CLAUDE.md` symlink target in this project is the project-root `CLAUDE.md` (not `.claude/CLAUDE.md`) — verifying this matches expectations is important before any overwrite, because a user-created `~/.claude/CLAUDE.md` would otherwise be silently replaced.
+- When every entry in `--status` is green and preview reports `0 por crear/actualizar`, re-running `--execute` is a no-op but still exits 0 — safe but wasteful; honoring the "skip to final verification" branch of the workflow saves one script invocation.
+- On Windows without Admin/Developer Mode, `sync-claude.ts` still reports "Symlinks: Available" when the links already exist — this is consistent with Windows permitting reads/traversals on pre-existing symlinks regardless of `SeCreateSymbolicLinkPrivilege`, which is only enforced at creation time.
+
+## 2026-04-18 — Session 1970c713
+1. **`Bun.stdin.text()` hangs on Windows when the subprocess is spawned by `Bun.spawn` with any stdin flavor** (Blob, Buffer, Uint8Array, Bun.file, pipe-with-manual-write, fd). Use Node-style `process.stdin.on('data'|'end'|'error')` + `process.stdin.resume()` for hooks that must be testable via `Bun.spawn`. Verified on Bun 1.3.2 / Windows 11.
+2. **`Bun.stdin.stream()` (AsyncIterable) works where `Bun.stdin.text()` hangs** in the same scenario — useful fallback if Node compat is undesired, but adds decoding boilerplate.
+3. **Subtle test false-positives mask stdin bugs**: when tests assert `stderr === ""` and the hook-under-test is supposed to be silent for valid inputs, a stdin-never-arrives bug makes every such test pass for the wrong reason. Only the "should emit warning" case fails. Always include at least one positive-stderr assertion per spawned-hook test file.
+4. **Root-cause a subprocess hang with inline instrumentation**: temporarily inject `console.error('[DBG] marker')` lines into the hook around each step, spawn, collect stderr — the last-printed marker pinpoints where the process dies. Works even when stdout is buffered because stderr is unbuffered. Restore via `copyFileSync` from a `.bak` snapshot to avoid polluting the tree.
+5. **Shared stdin helpers are high-leverage fix points**: changing one 7-line helper fixed `validate-plan-paths.ts` AND future-proofed `subagent-start.ts` + `permission-denied.ts` on Windows. When a lib/ helper is broken on one platform, fix the helper — don't patch each consumer's tests.
+
+## 2026-04-18 — Session 1970c713
+1. **Directory-level junctions transparently absorb intra-directory changes** — adding/removing files inside `poneglyph/.claude/hooks/` requires zero re-sync because `~/.claude/hooks` is a single junction to the whole directory. Only top-level structural changes (new sync categories added to the synced-folder list) would require re-running `--execute`.
+2. **`--check` reports "Symlinks: Available" even without Admin/Dev Mode on Windows** when pre-existing symlinks are readable — this is a capability probe, not a creation-permission probe. Does not imply the script could newly create symlinks; it means existing ones work.
+3. **Preview's "Método" line shows the preferred method for new links, not the method of current links** — if prior sessions created junctions and current environment advertises symlinks available, preview will say `Método: symlink` while existing green entries remain junctions. Not a drift indicator.
+4. **The documented no-op branch (all green + "0 por crear/actualizar") is safe to honor** — re-running `--execute` in that state is confirmed idempotent but wasteful. The skill's recommended 4-step workflow (`--check` → preview → `--execute` → `--status`) can be short-circuited at step 3 when both signals agree.
+5. **`package.json` symlink target resolution note**: the script treats `CLAUDE.md` specially as a single-file link pointing to project-root `CLAUDE.md` (not `.claude/CLAUDE.md`). Keep this in mind if a user ever has a pre-existing `~/.claude/CLAUDE.md` — `--execute --backup` would be the safe path to avoid silent overwrite.
+
+## 2026-04-19 — Session 1970c713
+1. **Bootstrap rule pattern**: Rules are auto-injected into all sessions via Claude Code's system prompt. A tiny conditional rule that gates behavior on an environment variable (`CLAUDE_LEAD_MODE`) is a clean way to activate features only when the Lead role is active, without polluting subagent contexts.
+
+2. **Environment variable gating**: Using `CLAUDE_LEAD_MODE=true` as the trigger allows the same rule to safely co-exist in all sessions (Lead + subagents), but only take effect when the Lead spawns with the environment variable set. Subagents inherit the parent environment but typically run without this flag, causing them to skip the rule gracefully.
+
+## 2026-04-19 — Session 1970c713
+- When fusing 7 Lead-only rule files into one playbook, the highest-redundancy sections are `orchestration-checklist.md` vs `lead-orchestrator.md` — they repeat the same 5-step flow, delegation triggers, and allowed tools. The checklist is the concise version; keep it and strip the orchestrator prose.
+- Most effective condensation approach: keep ALL decision tables verbatim (they are load-bearing), drop worked examples (kept only 1 per unique pattern), strip section-level prose preambles that just restate the table header.
+- `context-management.md` has the most unique non-redundant content (Arch H template, propagation model, anti-claims, Content Map pattern) — treat it as higher-fidelity source than the scattered references to it in other files.
+- The `.claude/orchestrator/` directory is NOT in `rules/` intentionally — files there auto-inject into all sessions. Files in `orchestrator/` only load when the Lead explicitly reads them via a bootstrap instruction.
+
+## 2026-04-19 — Session 1970c713
+1. **Prose intros before tables are always removable**: section headers like "Recovery guide for when agents fail. Defines retry budgets..." and bullet lists like "Follow standard YAML frontmatter format..." add zero decision value. Tables are self-documenting — the prose is just a summary of the table. Removing prose first is the fastest path to 50%+ reduction.
+
+2. **"Tip:" sections are the biggest token sinkholes**: in `performance.md`, 3 tip sections (Effort Distribution, Maximize Parallelism, Avoid Redundant Reads) plus Team Mode Efficiency accounted for ~55 lines of the 109 — over half the file — but contained no thresholds or hard rules, only advisory prose already covered by CLAUDE.md or the playbook. Tip prose never belongs in a per-session-injected rule.
+
+3. **Duplicate tables across files are safe to delete from path-scoped rules**: `Tool Selection` and `Tools by Complexity` in `performance.md` were exact functional duplicates of content in `agent-selection.md` and `complexity-routing.md`. When a rule is path-scoped (only loaded for specific globs), duplicating content from always-loaded rules wastes tokens for every relevant file touch.
