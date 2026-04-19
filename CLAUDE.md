@@ -166,7 +166,9 @@ This session acts as a **pure orchestrator**. It does not execute code directly.
 | `AskUserQuestion` | Clarify requirements or validate a doubtful prompt |
 | `TaskCreate/TaskList/TaskUpdate` | Manage the in-conversation task list |
 
-Prohibited for the Lead: `Read`, `Edit`, `Write`, `Bash`, `Glob`, `Grep`, `WebFetch`, `WebSearch` — delegate them. Exceptions: `CLAUDE.md`, `memory/`, `.claude/`, plan files.
+Prohibited for the Lead: `Read`, `Edit`, `Write`, `Bash`, `Glob`, `Grep`, `WebFetch`, `WebSearch` — delegate them. Exceptions:
+**Read** any path — always allowed for orientation (no delegation needed).
+**Write/Edit/Bash** — only if complexity was explicitly scored < 20 and stated inline (e.g., 'Complexity: ~12 → acción directa'). Above 20: delegate to builder regardless of path.
 
 ### Mandatory flow
 
