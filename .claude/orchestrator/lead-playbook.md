@@ -275,65 +275,179 @@ Domain-specific skills (Django, React, OpenAPI, etc.) live as **project skills**
 
 ## §5 Skill Matching + Keywords
 
-### Keywords → Skills
+Before delegating to builder/reviewer, detect keywords and load relevant skills.
 
-| Keywords in Prompt | Skill |
-|---|---|
+### Keywords → Skills Table
+
+| Keywords in Prompt | Skill to Load |
+|--------------------|----------------|
 | auth, jwt, password, security, token, session | `security-review` |
 | database, sql, drizzle, migration, query, orm, transaction | `database-patterns` |
 | test, mock, tdd, coverage, unit, integration, fixture | `testing-strategy` |
 | typescript, async, promise, generic, interface | `typescript-patterns` |
 | refactor, extract, SOLID, clean, simplify | `code-quality` |
 | log, logging, trace, debug, observability | `logging-strategy` |
-| error, retry, circuit, fallback, recovery, rollback | `diagnostic-patterns` |
+| error, retry, circuit, fallback, recovery | `diagnostic-patterns` |
 | bun, runtime, elysia, spawn, shell | `bun-best-practices` |
-| diagnose, investigate, stacktrace, 5 whys, root cause | `diagnostic-patterns` |
-| performance, memory, optimization, bottleneck, slow, n+1 | `performance-review` |
-| definition, references, hover, symbols, lsp | `lsp-operations` |
-| validate, verify, hallucination, confidence, claim | `anti-hallucination` |
+| diagnose, investigate, trace, stacktrace, 5 whys, root cause | `diagnostic-patterns` |
+| performance, memory, optimization, bottleneck, slow, profiling, n+1 | `performance-review` |
+| definition, references, hover, symbols, implementation, calls, lsp | `lsp-operations` |
+| code quality, code smells, SOLID, complexity, duplication, clean code | `code-quality` |
+| validate, verify, check, exists, hallucination, confidence, claim | `anti-hallucination` |
+| recovery, rollback, compensation, saga, checkpoint, dead letter queue | `diagnostic-patterns` |
+| careful, strict, production, critical, pre-release, hotfix, zero-tolerance | `careful-mode` |
+| freeze, readonly, read-only, no-edit, lock, investigation mode | `freeze-mode` |
+| decide, decision, choose, evaluate, compare, trade-off, pros-cons | `decide` |
+| traces, cost, usage, tokens, spending, session analytics | `traces` |
+| prompt, improve prompt, refine prompt, clarify, ambiguous, vague, requirements | `prompt-engineer` |
+| CLAUDE.md, settings.json, permissions, output style, env vars, quick config | `meta-quick-config` |
+| sync claude, symlink config, share globally, setup environment | `sync-claude` |
+
+### Matching Process
+
+1. **Extract keywords** from the user's prompt (lowercase, basic stemming)
+2. **Match** against table (partial match is valid)
+3. **Load skills** matched (maximum 3 by relevance)
+4. **Pass context** of skills to the delegated agent
 
 ### Task Type Detection
 
+Detect task type by verbs in the prompt to suggest additional skills.
+
 | Task Type | Trigger Verbs | Preferred Skills |
-|---|---|---|
+|---------------|----------------|-------------------|
 | Creation | create, implement, add, new | `typescript-patterns`, `code-quality` |
 | Debugging | debug, investigate, fix, repair | `diagnostic-patterns`, `logging-strategy` |
 | Refactoring | refactor, extract, simplify, clean | `code-quality`, `typescript-patterns` |
-| Testing | test, coverage, TDD | `testing-strategy`, `bun-best-practices` |
+| Testing | test, try, coverage, TDD | `testing-strategy`, `bun-best-practices` |
 | Review | review, audit, validate, verify | `code-quality`, `security-review` |
 | Optimization | optimize, performance, speed up | `performance-review`, `database-patterns` |
 | Security | secure, auth, protect, hardening | `security-review`, `anti-hallucination` |
 | Documentation | document, explain, describe | `code-quality` |
+| Decision | decide, choose, compare, evaluate | `decide`, `prompt-engineer` |
 
-### Synergy Pairs (both get +1 priority)
+### Skill Composition
 
-| Skill A | Skill B |
-|---|---|
-| `testing-strategy` | `bun-best-practices` |
-| `typescript-patterns` | `code-quality` |
-| `security-review` | `anti-hallucination` |
-| `diagnostic-patterns` | `logging-strategy` |
-| `performance-review` | `database-patterns` |
-| `code-quality` | `anti-hallucination` |
-| `testing-strategy` | `code-quality` |
+#### Synergy Rules
 
-### Priority Scoring
+Skill pairs that reinforce each other (boost +1 priority when both apply):
+
+| Skill A | Skill B | Synergy |
+|---------|---------|----------|
+| `testing-strategy` | `bun-best-practices` | Bun test patterns |
+| `typescript-patterns` | `code-quality` | Type-safe refactoring |
+| `security-review` | `anti-hallucination` | Validated security |
+| `diagnostic-patterns` | `logging-strategy` | Error investigation & observability |
+| `performance-review` | `database-patterns` | Query optimization |
+| `code-quality` | `anti-hallucination` | Clean validated code |
+| `testing-strategy` | `code-quality` | Quality assurance |
+| `careful-mode` | `security-review` | Strict validation for critical security work |
+| `freeze-mode` | `diagnostic-patterns` | Read-only investigation + error diagnosis |
+| `decide` | `prompt-engineer` | Well-framed decision brief → better perspectives |
+| `prompt-engineer` | `anti-hallucination` | Clear prompts reduce hallucination risk |
+
+#### Conflict Rules
+
+Skill pairs that should NOT be loaded together (the one with the lower score is discarded):
+
+| Skill A | Skill B | Reason |
+|---------|---------|-------|
+| (none currently) | — | — |
+
+#### Priority Scoring
 
 ```
 score = +2 per keyword match
        + 2 per path rule match
        + 1 per task-type match
        + 1 per synergy partner in set
+       - 3 if in conflict with higher-scored skill
 ```
 
-If >3 matches: prioritize by keyword frequency → primary domain → discard generic if specific exists.
+### Example
 
-### Skills Without Keywords (loaded by other mechanisms)
+Prompt: "Implement login with JWT and password validation"
+
+Keywords detected: `login`, `jwt`, `password`, `validation`
+
+Skills matched:
+1. `security-review` (jwt, password)
+
+Instruction to builder:
+
+```
+Load skills: security-review
+Context: Login requires JWT security and credential validation
+```
+
+### Prioritization
+
+If there are more than 3 matches:
+1. Prioritize by keyword frequency
+2. Prioritize skills of the main domain
+3. Discard generic skills if specific ones exist
+
+### Integration with Agents
+
+See `context-management.md` for skill limits per agent and composition rules.
+
+### Skills Without Keywords
+
+The following skills are NOT in the keywords table — they are loaded by other mechanisms:
 
 | Skill | Loading Mechanism |
-|---|---|
-| `meta-create-agent` | Only via `/meta-create-agent` command |
-| `meta-create-skill` | Only via `/meta-create-skill` command |
+|-------|-------------------|
+| `meta-create-agent` | Only via command `/meta-create-agent` |
+| `meta-create-skill` | Only via command `/meta-create-skill` |
+| `meta-create-hook` | Only via command `/meta-create-hook` |
+| `meta-create-mcp` | Only via command `/meta-create-mcp` |
+| `meta-create-plugin` | Only via command `/meta-create-plugin` |
+| `meta-create-rule` | Only via command `/meta-create-rule` |
+
+### Agent Skill Enrichment
+
+When the Lead delegates to an agent, it MUST:
+
+1. Check the agent's skills (frontmatter `skills:`)
+2. If the task requires additional skills, mention them in the Task prompt
+3. The agent has automatic access to its frontmatter skills
+
+| Method | When | Example |
+|--------|--------|---------|
+| Frontmatter `skills:` | Always auto-loaded | builder has typescript-patterns |
+| Mention in prompt | Skill is not in frontmatter but is relevant | "Apply patterns from database-patterns" |
+| Lead loads Skill() | Complex context the agent needs | `Skill("security-review")` before Task |
+
+#### Modularity Principle
+
+Any agent can benefit from any skill. Frontmatter skills are the **default**, but the Lead can enrich via prompt. This allows:
+- A reviewer using testing-strategy to validate tests
+- A builder using security-review for code with auth
+- A scout using lsp-operations for semantic navigation
+
+### Path-Based Rule Integration
+
+The path rules in `.claude/rules/paths/*.md` provide skills based on file location.
+
+#### Combined Flow
+
+1. Extract keywords from prompt → match keywords table
+2. Extract file paths from prompt → match path rules
+3. Detect task type by verbs → suggest additional skills
+4. Merge all skills, deduplicate, apply synergy/conflict
+5. Truncate to agent limit
+
+#### Path Rules as a Second Signal
+
+Path rules act as a **second signal** complementary to keywords:
+
+| Signal | Source | Example |
+|-------|--------|---------|
+| Keyword | Prompt text | "implement login" → `security-review` |
+| Path | Mentioned file | `src/auth/login.ts` → `security-review` |
+| Task type | Prompt verb | "refactor" → `code-quality` |
+
+When keyword + path coincide on the same skill, that skill receives **double confirmation** (+2 priority score per signal).
 
 ---
 
