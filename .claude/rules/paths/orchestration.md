@@ -8,14 +8,7 @@ priority: 15
 
 ## Orchestration Context
 
-Files of the Poneglyph orchestration system. Maintain consistency across agents, skills, and rules.
-
-- Follow standard YAML frontmatter format
-- Keep keywords updated for auto-matching
-- Document dependencies between components
-- Verify that changes do not break the orchestration graph
-
-### Agent Frontmatter — recent key fields
+### Agent Frontmatter — key fields
 
 | Field | Note |
 |-------|------|
@@ -25,7 +18,7 @@ Files of the Poneglyph orchestration system. Maintain consistency across agents,
 | `isolation` | `worktree` for isolated git worktree |
 | `initialPrompt` | Auto-submit on agent start |
 
-### Skill Frontmatter — recent key fields
+### Skill Frontmatter — key fields
 
 | Field | Note |
 |-------|------|

@@ -6,17 +6,7 @@ priority: 15
 
 ## Hooks Context
 
-Validation scripts executed by Claude Code at specific points in the workflow. Runtime and language depend on the project.
-
-- Always exit 0 for best-effort hooks (Stop hooks)
-- Use EXIT_CODES from validators/config (if it exists)
-- Read stdin with readStdin() from config (if it exists)
-- Handle errors gracefully — never block Claude Code
-- Test with the project's test runner
-
-### Gotcha: Shebangs on Windows / Reduced PATH
-
-Claude Code executes hooks with a reduced PATH. **NEVER use `#!/usr/bin/env bash`** — `env` is not found.
+### Shebang Gotcha (Windows / Reduced PATH)
 
 | Shebang | Works | Alternative |
 |---------|-------|-------------|
@@ -24,7 +14,7 @@ Claude Code executes hooks with a reduced PATH. **NEVER use `#!/usr/bin/env bash
 | `#!/usr/bin/env bun` | YES | Poneglyph includes bun in PATH via settings.json |
 | `#!/bin/bash` | YES | Absolute path, does not depend on env |
 
-**Prefer `.ts` with bun** over `.sh` for hooks. If `.sh` is needed, use `#!/bin/bash`.
+**Prefer `.ts` with bun** over `.sh`. If `.sh` is needed, use `#!/bin/bash`.
 
 ### Available Hook Events
 
@@ -41,7 +31,6 @@ Claude Code executes hooks with a reduced PATH. **NEVER use `#!/usr/bin/env bash
 
 ### `if` field for conditional filtering
 
-In addition to `matcher`, `if` filters with permission rule syntax to avoid spawning a process unnecessarily:
 ```json
 {"matcher": "Edit|Write", "if": "Edit(*.ts)|Write(*.ts)"}
 ```

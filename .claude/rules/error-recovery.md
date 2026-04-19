@@ -1,7 +1,5 @@
 # Error Recovery
 
-Recovery guide for when agents fail. Defines retry budgets, escalation, and stuck detection.
-
 ## Retry Budget
 
 | Error Type | Max Retries | Backoff | Then |
@@ -16,26 +14,21 @@ Recovery guide for when agents fail. Defines retry budgets, escalation, and stuc
 | Teammate stuck (no progress) | 0 | - | Extract domain → run as builder subagent |
 | Teammate file conflict | 0 | - | Lead resolves boundaries, re-assign |
 
-> Team mode specific recovery: see `complexity-routing.md §Team Mode Execution §Fallback to Subagents`.
+> Team mode recovery: see `complexity-routing.md §Team Mode Execution §Fallback to Subagents`.
 
 ## SendMessage Recovery (Preferred)
 
-Since v2.1.77, use `SendMessage({to: agentId})` to continue a failed agent instead of spawning a new one. This preserves all agent context (files read, edits made) and saves ~2K-5K tokens of re-setup.
-
-### When to use SendMessage vs Re-spawn
+Use `SendMessage({to: agentId})` to continue a failed agent — preserves context, saves ~2K-5K tokens vs re-spawn.
 
 | Situation | Method | Reason |
 |-----------|--------|--------|
-| Builder failed test | SendMessage | Builder already has code context, only needs the error |
-| Builder failed due to stale edit | SendMessage | Re-read the file and retry in the same context |
-| Error-analyzer diagnosed a fix | SendMessage to original builder | Avoids re-exploring the codebase |
+| Builder failed test | SendMessage | Builder already has code context |
+| Builder failed due to stale edit | SendMessage | Re-read and retry in same context |
+| Error-analyzer diagnosed a fix | SendMessage to original builder | Avoids re-exploring codebase |
 | Builder failed 2+ times | Re-spawn with full diagnosis | Original context may be contaminated |
-| Error in a different agent than the original | Re-spawn new agent | SendMessage does not cross agents |
-
-### SendMessage Recovery Example
+| Error in a different agent | Re-spawn new agent | SendMessage does not cross agents |
 
 ```
-// Builder failed on test
 SendMessage({
   to: "builder-a3f8c2",
   message: "Test failed: TypeError at auth.ts:23. Diagnosis: null check missing on user object. Fix: add guard clause before user.id access. Do NOT remove existing tests."
@@ -46,7 +39,7 @@ SendMessage({
 
 ## Recovery Prompt Template
 
-When retrying (with re-spawn), ALWAYS include in the builder prompt:
+When re-spawning, ALWAYS include:
 
 | Field | Content |
 |-------|---------|
@@ -54,16 +47,6 @@ When retrying (with re-spawn), ALWAYS include in the builder prompt:
 | **Diagnosis** | error-analyzer output (if available) |
 | **Do NOT repeat** | Specific action that caused the failure |
 | **Changed constraints** | New limits or additional context |
-
-## Pattern-Based Recovery (capability, opt-in)
-
-`api-error-recorder.ts` and `permission-denied.ts` hooks record normalized error patterns to `~/.claude/error-patterns.jsonl` via `lib/error-patterns.ts`. The Lead or error-analyzer may consult this file to short-circuit retries on known patterns.
-
-| Match quality | Action |
-|---|---|
-| Exact/regex match, success rate >70% | Apply known fix directly, skip error-analyzer |
-| Match, success rate ≤70% | error-analyzer + include fix history in prompt |
-| No match | Standard error-analyzer + new pattern recorded on outcome |
 
 ## Stuck Detection
 
