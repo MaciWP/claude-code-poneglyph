@@ -1,26 +1,5 @@
 # Builder Agent Memory
 
-## 2026-04-16 — Session e7515341
-- When refactoring tracked-file additions into untracked rules, a single `skill-discovery.md` rule in `.claude/rules/` is the cleanest consolidation point — it auto-loads, survives branch switches, and replaces both CLAUDE.md skill index additions and per-SKILL.md Content Map modifications.
-
-## 2026-04-16 — Session a09162a8
-- The JRV-112 feature (Workflow/WorkflowTask document attachments) was already fully implemented on the `dev` branch before this task was delegated. When the plan describes steps that match existing code exactly, verify before editing.
-- `AttachableModel` is already mixed into both `Workflow` and `WorkflowTask` in `apps/processes/models/workflow.py`.
-- The `nox -s format` session depends on `black` being available as a system command (not just in `.venv`). Use `.venv/bin/python -m black` as fallback.
-- `NestedDefaultRouterSanitized` supports 3-level nesting (workflow -> tasks -> documents) by nesting one router into another (`wt_docs_router` nests into `workflow_tasks_router`).
-
-## 2026-04-16 — Session a09162a8
-- `GenericRelation` fields in Django 5.2 have `attname` attribute but `concrete=False` -- any field introspection filter that relies only on `hasattr(f, "attname")` without checking `f.concrete` will incorrectly include them.
-- `WorkflowStage` is NOT `AttachableModel` -- only `Workflow` and `WorkflowTask` (and their Process-side counterparts `Process` and `Task`) have attachments. Do not prefetch `attachments` on stages.
-- `AttachableModel.all_files` returns a QuerySet of `Document` objects; `attach_document(document)` creates a new `Attachment` linking the same `Document` -- no S3 duplication.
-- The `CloneMixin.clone()` serialization/deserialization approach does not handle `GenericRelation` (attachments) because the serializer only processes concrete fields and M2M. The `_post_clone` hook is the correct place to copy GenericFK-based relations.
-
-## 2026-04-16 — Session a09162a8
-- `replicatefrommain` command test at `apps/core/tests/replicatefrommain_tests.py` mocks `_replicate_models` and counts calls; adding new replication groups requires updating `call_count` and patching any new methods called from `handle()`
-- `Attachment` model uses BigAutoField PK (inherited from AuditModel), making it unsafe for dumpdata/loaddata across instances due to PK collision; manual delete+recreate is the safe pattern
-- `Document` model uses UUIDModel, making it safe for standard dumpdata/loaddata replication
-- The `_replicate_models` pattern wraps each group in try/except for independent error handling per replication group
-
 ## 2026-04-16 — Session a09162a8
 - `NestedHyperlinkedIdentityField` from `rest_framework_nested` resolves `parent_lookup_kwargs` values by trying: (1) attribute on the serialized object, (2) attribute on `context["view"]`, (3) falls back to `super().get_url()`. When the object doesn't have the attribute, the viewset MUST expose it as a property (e.g., `workflow_id` from `self.kwargs`).
 - For doubly-nested routes (e.g., `workflows/{wf_id}/tasks/{task_id}/documents/`), the serializer's `parent_lookup_kwargs` must include ALL ancestor IDs, not just the immediate parent.
@@ -107,3 +86,20 @@
 
 ## 2026-04-19 — Session 1970c713
 1. **Untracked files deletion via bash**: When a file is untracked in git (not yet added to the index), `git status` shows it as `??` untracked. Direct filesystem deletion with `rm` bypasses git entirely and removes the file immediately without git status changes, since git never tracked it. No need to use `git rm` for untracked files—`rm` alone is sufficient and cleaner.
+
+## 2026-04-19 — Session 1970c713
+1. **Lead direct-action threshold design**: Complexity < 20 is the cut-off for autonomous Lead execution (Write/Edit/Bash). This threshold calibrates the cost of inline action vs delegation overhead — trivial refactors (renaming, single-line fixes, local formatting) fall within the score, while anything requiring judgment or multi-file coordination delegates. The complexity score itself must be explicit in the response to prevent silent violations.
+
+## 2026-04-19 — Session 1970c713
+1. **Lead rules precedence**: The project-root `CLAUDE.md` is the primary orchestration index for the Lead role. Rule files in `.claude/rules/` provide detailed operational protocols, but `CLAUDE.md` is where high-level Lead decision gates (complexity thresholds, tool restrictions, exceptions) live. This dual-layer design ensures both entry-level clarity and deep operational detail.
+
+## 2026-04-19 — Session (memory-inject Lead injection)
+1. **`additionalContext` injection pattern in UserPromptSubmit hooks**: Prepend content to `enrichedContext` before the `console.log(JSON.stringify(...))` call. The output JSON schema is `{ hookSpecificOutput: { hookEventName, additionalContext, sessionTitle? } }`. Making `emitOutput` async and awaiting it everywhere is required when the injection itself is async (e.g., `Bun.file().exists()` + `.text()`).
+2. **`CLAUDE_LEAD_MODE` detection**: `process.env.CLAUDE_LEAD_MODE !== "true"` is the canonical guard — returns `""` for unset, `"false"`, or any non-`"true"` value. Inject nothing and continue (best-effort). Switching `Bun.stdin.text()` to `readHookStdin()` (from `./lib/hook-stdin`) is required for spawn-based tests to work on Windows (Bun.stdin.text() hangs when stdin is fed via `new Blob()` in Bun.spawn).
+3. **`USERPROFILE` env override for Windows homedir test isolation**: On Windows, `homedir()` reads from `USERPROFILE`. Overriding it in the spawned env (`{ USERPROFILE: join(homedir(), "__nonexistent__") }`) makes `homedir()` return a fake path inside the temp space, allowing tests to verify "missing playbook" behavior without polluting the real `~/.claude/` directory. `HOME` override does NOT work on Windows for this purpose.
+4. **`~/.claude/orchestrator/` is NOT currently symlinked**: The orchestrator directory exists only in the repo at `.claude/orchestrator/`. Tests that verify "file found" must create it temporarily at `homedir()/.claude/orchestrator/lead-playbook.md` with cleanup guards in `beforeAll`/`afterAll`.
+
+## 2026-04-19 — Session 1970c713
+1. **`additionalContext` injection pattern**: Make `emitOutput` async, await `injectLeadOrchestrationContext()` inside it, then prepend to `enrichedContext` before the `console.log(JSON.stringify(...))` output — this preserves the JSON schema and all existing injection sections.
+2. **`readHookStdin` is required for spawn-based tests on Windows**: `Bun.stdin.text()` hangs when stdin is fed via `new Blob()` in `Bun.spawn`. Migrating to `readHookStdin` (the Node-style event-based reader in `./lib/hook-stdin`) unblocks spawn tests and fixes a latent Windows hang bug simultaneously.
+3. **`USERPROFILE` env override isolates `homedir()` on Windows**: Setting `USERPROFILE` in the spawned subprocess env makes `homedir()` return a fake path — allows testing "missing playbook" scenarios without touching real `~/.claude/`. `HOME` does not work for this on Windows.
