@@ -1,8 +1,5 @@
 # Builder Agent Memory
 
-## 2026-04-16 — Session e7515341
-- When refactoring tracked-file additions into untracked rules, a single `skill-discovery.md` rule in `.claude/rules/` is the cleanest consolidation point — it auto-loads, survives branch switches, and replaces both CLAUDE.md skill index additions and per-SKILL.md Content Map modifications.
-
 ## 2026-04-16 — Session a09162a8
 - The JRV-112 feature (Workflow/WorkflowTask document attachments) was already fully implemented on the `dev` branch before this task was delegated. When the plan describes steps that match existing code exactly, verify before editing.
 - `AttachableModel` is already mixed into both `Workflow` and `WorkflowTask` in `apps/processes/models/workflow.py`.
@@ -107,3 +104,13 @@
 
 ## 2026-04-19 — Session 1970c713
 1. **Untracked files deletion via bash**: When a file is untracked in git (not yet added to the index), `git status` shows it as `??` untracked. Direct filesystem deletion with `rm` bypasses git entirely and removes the file immediately without git status changes, since git never tracked it. No need to use `git rm` for untracked files—`rm` alone is sufficient and cleaner.
+
+## 2026-04-19 — Session 1970c713
+1. **Exit 2 is the PreToolUse blocking contract**: Claude Code interprets exit 2 from a PreToolUse hook as "block this tool call and surface the error to the model". Exit 0 is always allow, exit 1 is an error Claude Code itself may swallow. For enforcement hooks, exit 2 is the only meaningful signal.
+
+2. **Whitelist via regex array is the cleanest pattern for path-based Lead enforcement**: a flat array of regexes tested with `.some()` handles cross-platform path separators (forward/back), relative paths (`^\.claude[/\\]`), absolute paths (`/[/\\]\.claude[/\\]/`), and platform-specific home dirs (`C:\Users\X\.claude\`) in one readable block without a pile of string operations.
+
+3. **`Bun.stdin.text()` must never be used in hooks spawned via `Bun.spawn`**: it hangs on Windows (verified, tracked in memory). Always use `readHookStdin()` from `./lib/hook-stdin` — this is the established project-wide fix for this exact problem. Any new hook that reads stdin must import from that lib.
+
+## 2026-04-19 — Session 1970c713
+1. **Bash command whitelisting in PreToolUse hooks** — use separate logic for Bash that checks `tool_input.command` string directly rather than extracting a path. Git commands can be safely whitelisted by checking if the trimmed command starts with `"git "` (space prevents false matches).
