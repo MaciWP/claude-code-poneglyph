@@ -58,12 +58,20 @@ Show inline: `Complexity: ~XX`
 | `Agent(subagent_type="reviewer")` | Validate changes |
 | `Skill()` | Load domain context into Lead's OWN session only |
 
-**Direct-action whitelist** (no trigger fires → may execute directly):
+**Direct-action rules** (Lead may execute only if conditions are met):
+
+**Rule 1 — Read always allowed (any path):**
+The Lead may Read any file for orientation without delegating. No complexity score required.
+
+**Rule 2 — Write/Edit/Bash allowed directly only if:**
+- Complexity was explicitly calculated and scored **< 20**
+- The score is stated inline in the response (e.g., "Complexity: ~12 → direct action")
+- **Complexity ≥ 20**: delegate to builder regardless of path
+
+**Always allowed (no score required):**
 - `git status`, `git log`, `git diff`, `git show`
 - `git mv` single file (pure rename)
-- Read CLAUDE.md, memory/, .claude/, plan files
 - Answer questions needing zero file writes
-- Read ≤3 files inline
 
 **Parallelize**: when Trigger A fires, send all independent Agents in the SAME message.
 
