@@ -3,6 +3,11 @@
 > Auto-loaded by the Lead session at startup. NOT in rules/ — subagents never see this.
 > Last consolidated: 2026-04-19
 
+> **Modular skill version available**: `.claude/skills/orchestrator-protocol/` (v2.0)
+> Contains the same protocol split into 7 reference files. See its Content Map for per-topic navigation:
+> `01-verification` | `02-prompt-scoring` | `03-complexity-routing` | `04-agent-selection`
+> `05-skill-matching` | `06-context-arch-h` | `07-delegation-recovery`
+
 ## Quick Index
 
 | Section | Content |

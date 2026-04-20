@@ -1,22 +1,5 @@
 # Builder Agent Memory
 
-## 2026-04-17 — Session a09162a8
-- `Attachment` has a `UniqueConstraint` on `(document, content_type, object_id)` (`unique_document_attachment`). `bulk_create(..., ignore_conflicts=True)` is the right idempotent replacement for `get_or_create` loops against this model.
-- `test_binora` DB on this dev machine is fragile: the first run after environment reset can fail with `auth_permission ↔ django_content_type` FK violations; re-running with `--reuse-db` converges. Not a code bug, just machine state. When verifying changes, retry once before concluding a test is broken.
-- `ContentType` QuerySets can be safely reused as subqueries in a `.delete()` call and then re-iterated for a dict-comprehension; the second iteration re-runs the query, but that query itself is not mutated by the delete (deleting Attachment rows doesn't remove the CT rows).
-- Project style: `from apps.library.models import Attachment` is commonly placed inline inside helper methods that also use `ContentType` — this pattern is preserved in `_replicate_attachments` and reused in the new `_bulk_attach_documents` helper. `AttachableModel` and `Document` at file level are safe imports from `apps.library.models` into `apps.processes` (no circular import; other modules in `apps.processes` already import from `apps.library.models`).
-
-## 2026-04-17 — Session a09162a8
-- `NestedHyperlinkedIdentityField` from `rest_framework_nested.relations` reads URL kwargs from the view via `getattr(view, underscored_lookup_key)` — so `@property` fields like `process_id` / `task_id` on nested ViewSets are NOT dead code even when the ViewSet body never calls them. Verify with `Grep NestedHyperlinkedIdentityField + parent_lookup_kwargs` before removing such properties.
-- For tests involving `ProcessService.start` with asset-specific workflow tasks, `process_with_assets` fixture (server + storage + full datacenter hierarchy) is the canonical setup, otherwise `CheckAssetsDatacenterConsistency` pre-rule fails. Combining `workflow` (asset_types=[]) + asset-specific `WorkflowTask` works because task-level `asset_types` only needs to match process assets, not workflow's empty asset_types list.
-- `black` (line-length 120) will auto-collapse dict comprehensions that fit on one line — don't fight it with manual multi-line formatting of short expressions.
-
-## 2026-04-11 — Session c24d3a37
-- `sync-claude.ts --status` shows the exact number of linked items with the same categorization the preview uses (8 entries: agents/skills/commands/rules/docs/hooks/workflows/CLAUDE.md) — status alone is sufficient to make the skip/execute decision without needing the dry-run preview when every entry is already green.
-- The `CLAUDE.md` symlink target in this project is the project-root `CLAUDE.md` (not `.claude/CLAUDE.md`) — verifying this matches expectations is important before any overwrite, because a user-created `~/.claude/CLAUDE.md` would otherwise be silently replaced.
-- When every entry in `--status` is green and preview reports `0 por crear/actualizar`, re-running `--execute` is a no-op but still exits 0 — safe but wasteful; honoring the "skip to final verification" branch of the workflow saves one script invocation.
-- On Windows without Admin/Developer Mode, `sync-claude.ts` still reports "Symlinks: Available" when the links already exist — this is consistent with Windows permitting reads/traversals on pre-existing symlinks regardless of `SeCreateSymbolicLinkPrivilege`, which is only enforced at creation time.
-
 ## 2026-04-18 — Session 1970c713
 1. **`Bun.stdin.text()` hangs on Windows when the subprocess is spawned by `Bun.spawn` with any stdin flavor** (Blob, Buffer, Uint8Array, Bun.file, pipe-with-manual-write, fd). Use Node-style `process.stdin.on('data'|'end'|'error')` + `process.stdin.resume()` for hooks that must be testable via `Bun.spawn`. Verified on Bun 1.3.2 / Windows 11.
 2. **`Bun.stdin.stream()` (AsyncIterable) works where `Bun.stdin.text()` hangs** in the same scenario — useful fallback if Node compat is undesired, but adds decoding boilerplate.
@@ -105,3 +88,29 @@
 1. **Skill condensation from a playbook: tables are load-bearing, prose is not.** When converting a 718-line playbook into a ~420-line skill, the safest cuts (in order of impact) are: (a) "when NOT to apply" bullet lists — tables handle these cases implicitly; (b) worked examples with code blocks; (c) synergy rules tables; (d) redundant routing tables that repeat data already covered by a nearby table. Decision tables and numeric thresholds must always be kept verbatim.
 2. **`check-staleness` hook tracks reads per session.** The hook blocks Edit/Write on files not read in the current session. After a hook error forces a re-read, use Write (not Edit) to avoid a second staleness trigger on the same file.
 3. **Target line counts for skill files are soft, not hard.** The 300-420 range is a quality target (dense enough to be useful, small enough to not bloat context), not an enforced constraint. Prefer keeping a complete decision table over hitting an exact line count.
+
+## 2026-04-20 — Session 8d519d32
+1. **The complexity validator scores the entire file as a flat sum** — there is no per-function threshold. Every `if`, `else`, `for`, `while`, `case`, `catch`, `&&`, `||`, and `?` (not followed by `:`) anywhere in the file contributes, including inside string literals and CSS blocks. Plan the total before writing.
+
+2. **`??` costs 2 complexity points, not 1** — the regex `/\?(?!:)/g` matches each `?` character individually, so `??` hits twice. `||` costs 1. For nullable fallbacks where the fallback is a truthy string, `||` is strictly cheaper than `??`.
+
+3. **Dead `?? fallback` after `.find()` on an exhaustive sorted table** — if the last tier covers all remaining cases (e.g., `[0, fn]` for tokens), `.find()` always returns a result. The `?? tiers[last]` fallback is unreachable and can be replaced with a type assertion `as T`, saving 2 points per removal.
+
+4. **Removing `else` by converting to early `continue`** — `if (!x) { doA(); continue; } doB();` is equivalent to `if (!x) { doA(); } else { doB(); }` inside a loop, saves 1 complexity point (the `else` keyword), and reads as a guard clause pattern.
+
+5. **Count before writing when near the threshold** — run the exact validator logic in Bun (`bun -e "content.match(pattern).length"`) before each Write attempt to avoid repeated hook blocks. The shell `grep -oP` can miscount `&&` if the shell interprets them.
+
+## 2026-04-20 — Session 1970c713
+1. **Skill frontmatter `description` field is mandatory** — YAML `description:` must be present in frontmatter; multi-line format uses YAML literal block scalar (`|`) for proper wrapping. The description should include "Use when:" and "Keywords -" sections on the same block.
+
+## 2026-04-20 — Session (orchestrator-protocol modular restructure)
+1. **Git is the authoritative source for deleted rule content** — `git show <commit>:.claude/rules/<file>.md` recovers deleted files verbatim. Always use this over reconstructing from memory or secondary references when a rule was recently deleted.
+2. **Content Map `Contents` column drives selective loading** — phrase each cell as "Read when…" not "Contains…". The subagent's load decision is based on semantic match between the Contents description and the current task. Weak cells lead to either over-loading (all references) or under-loading (none). Rich, task-triggering prose is load-bearing.
+3. **`${CLAUDE_SKILL_DIR}/` is the only correct prefix for Content Map paths** — never use relative (`./references/`) or absolute paths. The variable resolves to the skill's own directory at runtime and is portable across machines.
+
+## 2026-04-20 — Session 1970c713
+1. **Git is the authoritative source for deleted rule content** — `git show <commit>:.claude/rules/<file>.md` recovers files verbatim. Always use this over reconstructing from secondary references when a rule was recently deleted.
+
+2. **Content Map `Contents` column drives selective loading** — phrase each cell as "Read when…" not "Contains…". The subagent's load decision is a semantic match between the Contents description and the current task. Weak cells cause over-loading (all references) or under-loading (none).
+
+3. **`${CLAUDE_SKILL_DIR}/` is the only correct prefix for Content Map paths** — never relative (`./references/`) or absolute paths. The variable resolves to the skill's own directory at runtime and is portable across machines.
