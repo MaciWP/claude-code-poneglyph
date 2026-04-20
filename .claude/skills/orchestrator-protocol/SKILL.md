@@ -6,9 +6,8 @@ description: |
 
   Invoke ONCE per session at the start of the first real task.
   Keywords - orchestrate, delegate, complexity, routing, agent, skill, checklist
-type: encoded-preference
+type: knowledge-base
 effort: low
-disable-model-invocation: true
 ---
 
 # Lead Orchestration Protocol
