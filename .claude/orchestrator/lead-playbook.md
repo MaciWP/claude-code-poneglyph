@@ -313,7 +313,7 @@ Before delegating to builder/reviewer, detect keywords and load relevant skills.
 | decide, decision, choose, evaluate, compare, trade-off, pros-cons | `decide` |
 | traces, cost, usage, tokens, spending, session analytics | `traces` |
 | prompt, improve prompt, refine prompt, clarify, ambiguous, vague, requirements | `prompt-engineer` |
-| CLAUDE.md, settings.json, permissions, output style, env vars, quick config | `meta-quick-config` |
+| CLAUDE.md, settings.json, permissions, output style, env vars, quick config | `meta-settings-cookbook` |
 | sync claude, symlink config, share globally, setup environment | `sync-claude` |
 
 ### Matching Process

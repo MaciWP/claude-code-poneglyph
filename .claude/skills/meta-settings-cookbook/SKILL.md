@@ -1,5 +1,5 @@
 ---
-name: meta-quick-config
+name: meta-settings-cookbook
 description: |
   Quick-reference templates for small Claude Code configurations: CLAUDE.md, settings.json, output styles, env vars, permissions.
   Use proactively when: setting up project config, creating CLAUDE.md, configuring settings, adding permissions, creating output styles.

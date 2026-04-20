@@ -27,7 +27,7 @@ description: Keywords→skills table, task type detection, priority scoring, syn
 | decide, decision, choose, evaluate, trade-off | `decide` |
 | traces, cost, usage, tokens, spending | `traces` |
 | prompt, improve prompt, refine, ambiguous, vague | `prompt-engineer` |
-| CLAUDE.md, settings.json, permissions, env vars | `meta-quick-config` |
+| CLAUDE.md, settings.json, permissions, env vars | `meta-settings-cookbook` |
 | sync claude, symlink config, share globally | `sync-claude` |
 
 ## Task Type Detection
