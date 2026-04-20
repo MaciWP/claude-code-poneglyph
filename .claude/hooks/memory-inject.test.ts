@@ -1,6 +1,6 @@
-import { describe, test, expect, beforeAll, afterAll, beforeEach, afterEach } from "bun:test";
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync, existsSync } from "node:fs";
-import { homedir, tmpdir } from "node:os";
+import { describe, test, expect, beforeEach, afterEach } from "bun:test";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { buildSessionTitle, isFirstTurn } from "./memory-inject";
 
@@ -102,67 +102,3 @@ describe("isFirstTurn", () => {
   });
 });
 
-describe("memory-inject — Lead orchestration injection (spawn)", () => {
-  const orchestratorDir = join(homedir(), ".claude", "orchestrator");
-  const playbookPath = join(orchestratorDir, "lead-playbook.md");
-  let playbookCreatedByTest = false;
-  let orchestratorDirCreatedByTest = false;
-
-  const promptPayload = {
-    hook_event_name: "UserPromptSubmit",
-    prompt: "implement the authentication service",
-    session_id: "test-lead-session",
-    transcript_path: "",
-    cwd: import.meta.dir,
-  };
-
-  beforeAll(() => {
-    if (!existsSync(orchestratorDir)) {
-      mkdirSync(orchestratorDir, { recursive: true });
-      orchestratorDirCreatedByTest = true;
-    }
-    if (!existsSync(playbookPath)) {
-      writeFileSync(playbookPath, "# Lead Playbook\n\nOrchestration protocol content.\n");
-      playbookCreatedByTest = true;
-    }
-  });
-
-  afterAll(() => {
-    if (playbookCreatedByTest && existsSync(playbookPath)) {
-      rmSync(playbookPath);
-    }
-    if (orchestratorDirCreatedByTest && existsSync(orchestratorDir)) {
-      try {
-        rmSync(orchestratorDir, { recursive: true, force: true });
-      } catch {
-        // best effort
-      }
-    }
-  });
-
-  test("CLAUDE_LEAD_MODE=true injects LEAD MODE section into additionalContext", async () => {
-    const result = await runHook(promptPayload, { CLAUDE_LEAD_MODE: "true" });
-    expect(result.exitCode).toBe(0);
-    expect(result.stdout).toContain("LEAD MODE");
-    expect(result.stdout).toContain("Orchestration Protocol");
-    const parsed = JSON.parse(result.stdout);
-    expect(parsed.hookSpecificOutput.additionalContext).toContain("LEAD MODE — Orchestration Protocol");
-  });
-
-  test("CLAUDE_LEAD_MODE unset does NOT inject LEAD MODE section", async () => {
-    const result = await runHook(promptPayload, { CLAUDE_LEAD_MODE: "" });
-    expect(result.exitCode).toBe(0);
-    if (result.stdout.trim().length > 0) {
-      const parsed = JSON.parse(result.stdout);
-      expect(parsed.hookSpecificOutput.additionalContext ?? "").not.toContain("LEAD MODE");
-    }
-  });
-
-  test("CLAUDE_LEAD_MODE=true with missing playbook exits 0 without crash", async () => {
-    const result = await runHook(
-      { ...promptPayload, prompt: "implement something important" },
-      { CLAUDE_LEAD_MODE: "true", USERPROFILE: join(homedir(), "__nonexistent_for_test__") },
-    );
-    expect(result.exitCode).toBe(0);
-  });
-});

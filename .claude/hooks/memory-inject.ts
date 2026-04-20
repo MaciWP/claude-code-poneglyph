@@ -1,8 +1,6 @@
 #!/usr/bin/env bun
 
 import { existsSync, readFileSync } from "node:fs";
-import { homedir } from "node:os";
-import { join } from "node:path";
 import { loadPatterns } from "./lib/pattern-learning";
 import { loadScores } from "./lib/agent-scorer";
 import { loadRecentLessons } from "./lib/lessons-recorder";
@@ -143,24 +141,6 @@ function extractPathSkills(prompt: string): SkillReadPath[] {
   }
 }
 
-async function injectLeadOrchestrationContext(): Promise<string> {
-  if (process.env.CLAUDE_LEAD_MODE !== "true") return "";
-  try {
-    const playbookPath = join(
-      homedir(),
-      ".claude",
-      "orchestrator",
-      "lead-playbook.md"
-    );
-    const file = Bun.file(playbookPath);
-    if (!(await file.exists())) return "";
-    const content = await file.text();
-    return `\n\n## [LEAD MODE — Orchestration Protocol]\n\n${content}\n`;
-  } catch {
-    return "";
-  }
-}
-
 async function emitOutput(
   context: string,
   prompt: string,
@@ -183,11 +163,6 @@ async function emitOutput(
     }
   } catch {
     // best-effort — never break memory-inject
-  }
-
-  const leadContext = await injectLeadOrchestrationContext();
-  if (leadContext) {
-    enrichedContext = leadContext + enrichedContext;
   }
 
   const hasContext = enrichedContext && enrichedContext.trim().length > 0;

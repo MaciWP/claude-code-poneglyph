@@ -1,40 +1,5 @@
 # Builder Agent Memory
 
-## 2026-04-16 — Session a09162a8
-- `NestedHyperlinkedIdentityField` from `rest_framework_nested` resolves `parent_lookup_kwargs` values by trying: (1) attribute on the serialized object, (2) attribute on `context["view"]`, (3) falls back to `super().get_url()`. When the object doesn't have the attribute, the viewset MUST expose it as a property (e.g., `workflow_id` from `self.kwargs`).
-- For doubly-nested routes (e.g., `workflows/{wf_id}/tasks/{task_id}/documents/`), the serializer's `parent_lookup_kwargs` must include ALL ancestor IDs, not just the immediate parent.
-- The `workflow` fixture in root `conftest.py` creates a published workflow with `process_type_mac`. The `workflow_task` and `workflow_stage` fixtures are in `apps/processes/tests/conftest.py`.
-- `AttachableModel.all_files` returns all documents (including images) attached via GenericRelation -- use this for verifying copy-on-start and clone behavior.
-- `Workflow.clone()` returns a list of all saved objects (Workflow, WorkflowStage, WorkflowTask); the `_post_clone` hook copies attachments from originals to clones using the `uuids_mapping` inverse.
-
-## 2026-04-16 — Session a09162a8
-- `NestedDefaultRouterSanitized` nested routers are auto-discovered by `NestedDefaultRouter.flatten_routers()` in `binora/urls.py` — no need to manually import nested routers in URL config.
-- `CanAccessProcessNestedResource` requires the ViewSet to implement `get_process()` returning a Process with `select_related("datacenter")` — reusable for any resource nested under `/processes/{process_id}/`.
-- Task model inherits `AttachableModel`, providing `attach_document()`, `documents`, `all_files`, and `attachments` — same as Process and WorkflowTask.
-- `IsMainInstanceOrReadOnly` was workflow-specific permission (tenant read-only enforcement) — can be safely removed when all workflow CRUD endpoints are eliminated.
-- 3-level nested routing pattern: anchor ViewSet (e.g., `TaskViewSet` with retrieve-only) → nested router → document ViewSet. The anchor is required even if minimal.
-
-## 2026-04-17 — Session a09162a8
-- The `test_document` conftest fixture (conftest.py:659) creates a Document without `created_from`, so `is_created_from_library=True` and `can_be_deleted_on_unlink()` returns False. Existing `test_delete_document_ok` tests that assert 204 remain valid after this change — no pre-existing tests needed to be updated.
-- Binora convention for document destroy in nested ViewSets: detach first via `self.get_<parent>().detach_document(instance)`, then call `instance.can_be_deleted_on_unlink()` to decide between 200 (with `DocumentURLSerializer`) and 204 response. `AssetDocumentsViewSet` (`apps/assets/views/documents.py:80-87`) is the canonical reference.
-- `mocker.patch("apps.library.models.Document.can_be_deleted_on_unlink", return_value=<bool>)` is the clean way to test both branches of the destroy logic without needing to construct multi-attachment scenarios — pattern already used in `apps/assets/tests/views_documents_tests.py:36-55`.
-- `extend_schema_view(destroy=extend_schema(responses={200: DocumentURLSerializer, 204: None}, ...))` is how to document dual-response destroy endpoints in OpenAPI (drf-spectacular).
-- Virtualenv at `.venv/` in this repo — `nox` is only available after `source .venv/bin/activate`; hooks/scripts need to activate it explicitly since the Bash tool resets cwd and shell state between calls.
-
-## 2026-04-17 — Session a09162a8
-- The `binora-contract` submodule uses a two-step workflow: edit `contract/<domain>.yaml` + register path in `contract/openapi-index.yaml`, then `npm run lint && npm run bundle`. The bundle step also regenerates `mock/openapi.yaml` via `mock/process-contract.sh`.
-- The `DocumentURLSerializer` (Python, `apps/library/serializers.py:41`) produces `{"document": <uri>}` which maps exactly to the `DocumentLink` schema in `contract/library.yaml` — reuse `DocumentLink` for any endpoint that returns this serializer, don't redefine.
-- The dual `200`/`204` DELETE pattern for document attachments is idiomatic in Binora: `200` with `DocumentLink` body when the document can be fully deleted on unlink, `204` when only detached. Mirror the `/assets/{id}/documents/{document_id}/` DELETE block for new document-bearing resources.
-- Contract tests (`nox -s test_contract`) have a documented pre-existing failure cascade from the `assets_on_both_dcs` fixture (`Asset ID already exists` — Rack-as-Asset ID sequence collision). Isolate tests with `-k` to verify specific endpoints when the full suite is red.
-- When a domain file references a schema/response from another file, use the relative `$ref` pattern (e.g., `$ref: './library.yaml#/components/schemas/DocumentLink'`). Redocly bundle inlines these correctly into the top-level `#/components/schemas/DocumentLink` in `openapi.yaml`.
-
-## 2026-04-17 — Session a09162a8
-- Integration tests for multi-DB methods (`using("main")`) should mock only the queryset boundary (`.using(...)` return value) rather than the whole method — this exercises real logic paths while isolating from DB config.
-- `pytest-django` with `transactional_db` (autouse in this repo) causes teardown flakiness: duplicate-key errors on `auth_permission` / `django_content_type` / published-name constraints can surface even for tests that don't touch those tables. Workaround: `docker exec <db> psql -c "pg_terminate_backend..."` + `pytest --create-db`. Always pre-terminate stuck sessions before running tests when prior runs crashed.
-- The `.claude/hooks/guard-destructive-bash.sh` blocks all `rm`, `git rm`, `DROP DATABASE` commands. When file deletion is required, report it as a user action rather than attempting bypass.
-- `reset.py::discover_fixtures()` auto-globs `apps/*/fixtures/*.json` — orphan fixtures there are still loaded during `reset`, making "unused" detection require both grep **and** semantic review of fixture naming vs. intent.
-- When adding a new `admin.ModelAdmin` registration for a model that was previously only an inline, also set `show_change_link=True` on the existing inline for discoverability — otherwise admins still can't navigate to it from the parent.
-
 ## 2026-04-17 — Session a09162a8
 - `Attachment` has a `UniqueConstraint` on `(document, content_type, object_id)` (`unique_document_attachment`). `bulk_create(..., ignore_conflicts=True)` is the right idempotent replacement for `get_or_create` loops against this model.
 - `test_binora` DB on this dev machine is fragile: the first run after environment reset can fail with `auth_permission ↔ django_content_type` FK violations; re-running with `--reuse-db` converges. Not a code bug, just machine state. When verifying changes, retry once before concluding a test is broken.
@@ -103,3 +68,40 @@
 1. **`additionalContext` injection pattern**: Make `emitOutput` async, await `injectLeadOrchestrationContext()` inside it, then prepend to `enrichedContext` before the `console.log(JSON.stringify(...))` output — this preserves the JSON schema and all existing injection sections.
 2. **`readHookStdin` is required for spawn-based tests on Windows**: `Bun.stdin.text()` hangs when stdin is fed via `new Blob()` in `Bun.spawn`. Migrating to `readHookStdin` (the Node-style event-based reader in `./lib/hook-stdin`) unblocks spawn tests and fixes a latent Windows hang bug simultaneously.
 3. **`USERPROFILE` env override isolates `homedir()` on Windows**: Setting `USERPROFILE` in the spawned subprocess env makes `homedir()` return a fake path — allows testing "missing playbook" scenarios without touching real `~/.claude/`. `HOME` does not work for this on Windows.
+
+## 2026-04-19 — Session 1970c713
+1. **Deterministic Lead context delivery via hooks**: Using the `memory-inject.ts` hook to read lead-playbook.md when `CLAUDE_LEAD_MODE=true` is more robust than text bootstrap in system prompts — changes to the playbook propagate immediately without re-deployment of Claude Code.
+
+2. **Orchestrator directory structure pattern**: Placing orchestrator/ outside of rules/ (which are always-injected) but inside the sync structure allows Lead-specific content to be discoverable to the Lead without leaking into subagent contexts.
+
+3. **Windows stdin compatibility**: Migrating hook stdin readers from `Bun.stdin.text()` to `readHookStdin()` (the Node-style event-based reader) fixes hangs in spawn-based tests on Windows — a subtle but load-bearing pattern for hook testing on Windows environments.
+
+4. **Sync-claude extension pattern**: Adding new directories to `LINK_FOLDERS` in sync-claude.ts is the canonical way to extend the global ~/.claude/ structure — no manual registry entries or conditional logic needed, just add to the array and re-run --execute.
+
+5. **Lead playbook as living document**: The 718-line condensed playbook in orchestrator/ serves as the single source of truth for Lead orchestration decisions — smaller and more navigable than the 7-file orchestration system it consolidates, while preserving all decision tables and workflows.
+
+## 2026-04-20 — Session 1970c713
+- State B net value: subagent token savings (−25K/spawn) are real and permanent; Lead protocol delivery is broken by Claude Code's ~2KB `additionalContext` truncation limit — a system constraint, not a code bug.
+- `CLAUDE.md` is not subject to `additionalContext` truncation — it enters the system prompt directly. Delivering Lead protocol via `CLAUDE.md` `@` references is more reliable than `memory-inject.ts` injection for large content.
+- Bootstrap text instructions in rules (like `bootstrap-lead.md`) are as ignorable as the content they reference — if the Lead ignores the 7 original rule files, it will also ignore a text instruction to Read a playbook file.
+- Compliance with orchestration protocol (complexity scoring, Arch H, delegation) did not improve between State A and State B — the bottleneck is not content availability but behavioral enforcement, which requires a different lever entirely.
+- When evaluating a rework cost/benefit: separate structural changes (which persist) from delivery mechanism changes (which may fail). Keep the former, fix or drop the latter.
+
+## 2026-04-20 — Session 1970c713
+- El template `memo.html` usa exclusivamente placeholders HTML en comentarios — la estrategia de fill es reemplazar cada `<!-- PLACEHOLDER -->` con contenido real, preservando toda la estructura CSS/JS intacta. No hay lógica de templating, solo sustitución textual.
+- El bloque `.card-insight` no existe en el template original pero se puede añadir inline con CSS local cuando se necesita destacar un Key Insight dentro de una perspective card — el template está diseñado para ser extendido así.
+- `start <path>` en bash de Windows abre el archivo en el browser predeterminado sin necesidad de flags adicionales — funciona incluso con rutas absolutas con espacios si se pasan entre comillas.
+- El límite de `additionalContext` en Claude Code (~2KB) es una constraint del sistema que afecta cualquier hook que intente inyectar contenido largo — diseñar hooks de inyección con presupuesto explícito de tokens es un patrón defensivo necesario.
+
+## 2026-04-20 — Session 1970c713
+1. **Surgical hook simplification pattern**: Removing a hook feature (Lead orchestration injection) requires three passes: (1) delete unused imports (`homedir`, `join`), (2) delete the feature function (`injectLeadOrchestrationContext`), (3) delete its invocation. Tests reduce proportionally — verified with before-count mismatch. The 479-test final count is correct (was 482 before removal of 3 tests).
+
+## 2026-04-20 — Session (orchestrator-protocol skill creation)
+1. **Skill condensation from a playbook: tables are load-bearing, prose is not.** When converting a 718-line playbook into a ~420-line skill, the safest cuts (in order of impact) are: (a) "when NOT to apply" bullet lists — tables handle these cases implicitly; (b) worked examples with code blocks; (c) synergy rules tables; (d) redundant routing tables that repeat data already covered by a nearby table. Decision tables and numeric thresholds must always be kept verbatim.
+2. **`check-staleness` hook tracks reads per session, not per tool invocation.** The hook blocks Edit/Write on files not read in the current session. Reading a file at the top of a session covers ALL subsequent edits — but after a hook error forces a re-read, use Write (not Edit) to avoid a second staleness trigger on the same file.
+3. **Target line counts for skill files are soft, not hard.** The 300-420 range is a quality target (dense enough to be useful, small enough to not bloat context), not an enforced constraint. Prefer keeping a complete decision table over hitting an exact line count — a 430-line file that has all routing matrices is better than a 410-line file with a missing table.
+
+## 2026-04-20 — Session 1970c713
+1. **Skill condensation from a playbook: tables are load-bearing, prose is not.** When converting a 718-line playbook into a ~420-line skill, the safest cuts (in order of impact) are: (a) "when NOT to apply" bullet lists — tables handle these cases implicitly; (b) worked examples with code blocks; (c) synergy rules tables; (d) redundant routing tables that repeat data already covered by a nearby table. Decision tables and numeric thresholds must always be kept verbatim.
+2. **`check-staleness` hook tracks reads per session.** The hook blocks Edit/Write on files not read in the current session. After a hook error forces a re-read, use Write (not Edit) to avoid a second staleness trigger on the same file.
+3. **Target line counts for skill files are soft, not hard.** The 300-420 range is a quality target (dense enough to be useful, small enough to not bloat context), not an enforced constraint. Prefer keeping a complete decision table over hitting an exact line count.

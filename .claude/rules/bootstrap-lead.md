@@ -1,19 +1,24 @@
 ---
-description: Bootstrap Lead session — load orchestration playbook on session start
+description: Lead session activation — when and how to load the orchestrator skill
 ---
-
 # Lead Orchestration Bootstrap
 
-**Applies only to the Lead session** (main Claude Code thread, not subagents).
+**Applies only to the Lead session** (`CLAUDE_LEAD_MODE=true` in your environment).
+Subagents: skip this rule entirely — `Skill()` is not available in your toolset.
 
-If `CLAUDE_LEAD_MODE` is set to `true` in your environment:
+## When to invoke
 
-Your **FIRST action** in every session must be to Read the full orchestration playbook:
+Invoke `Skill("orchestrator-protocol")` **exactly ONCE per session**:
+- Trigger: First user request that requires code, investigation, or decision (not trivial Q&A)
+- Re-trigger: After context compaction if orchestration protocol is no longer in memory
+- Skip: If session is only casual conversation or you can confirm protocol is already loaded
 
+## How to invoke
+
+As your FIRST action for the first non-trivial task of the session:
 ```
-Read .claude/orchestrator/lead-playbook.md
+Skill("orchestrator-protocol")
 ```
 
-This file contains the complete protocol: complexity routing, delegation, Arch H, prompt scoring, agent selection, skill matching, context management, error recovery, and the orchestration checklist.
-
-**Subagents**: `CLAUDE_LEAD_MODE` is NOT set in your environment. Skip this rule entirely.
+This loads the complete protocol — complexity routing, delegation triggers, Arch H template,
+agent selection, and error recovery — into your active context.
