@@ -192,3 +192,17 @@ When ANY trigger fires → delegate. When BOTH fire → batch in parallel (one m
 |-----------|------|
 | **Cost arbitrage (A.1)** | Complexity <30 + parallelizable → prefer haiku/sonnet agent batch over inline opus |
 | **Coordination cost veto** | 2+ "parallel" tasks share >40% of context → use 1 agent |
+
+## Hook Reliability (Issue #6305)
+
+PreToolUse and PostToolUse hooks may silently fail to fire (known Claude Code bug, open issue #6305). Design validation accordingly:
+
+| Hook type | Reliability | Use for |
+|---|---|---|
+| `Stop` | ✅ Reliable | Primary quality gate — tests, security validation |
+| `UserPromptSubmit` | ✅ Reliable | Memory injection, routing hints |
+| `SubagentStop` | ✅ Reliable | Agent scoring, memory insights |
+| `PreToolUse` | ⚠️ Unreliable | Best-effort only — never sole gate for critical checks |
+| `PostToolUse` | ⚠️ Unreliable | Best-effort only — never sole gate for critical checks |
+
+**Implication**: `secrets-validator.ts` and `injection-validator.ts` (PostToolUse) are best-effort. The `validate-tests-pass.ts` (Stop) is the authoritative gate. Never rely solely on PostToolUse for security enforcement.

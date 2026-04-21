@@ -16,22 +16,21 @@ import { updateScores } from "./lib/agent-scorer";
 import type { ResolvedTraceEntry } from "./lib/agent-scorer-types";
 import { extractMemoryInsights, persistMemory } from "./lib/memory-writer";
 import type { TranscriptMessage } from "./lib/memory-writer";
+import { readHookStdin } from "./lib/hook-stdin";
 
 const TAG = "[agent-scoring]";
 
-const KNOWN_AGENTS = [
+export const KNOWN_AGENTS = [
   "builder",
   "reviewer",
   "planner",
   "scout",
   "error-analyzer",
   "architect",
-  // command-loader is included for scoring but won't produce Memory Insights
-  // (no Memory Persistence section in its agent definition — intentionally excluded as mechanical agent)
   "command-loader",
 ];
 
-const ERROR_KEYWORDS = [
+export const ERROR_KEYWORDS = [
   "error",
   "failed",
   "exception",
@@ -41,7 +40,7 @@ const ERROR_KEYWORDS = [
   "timeout",
 ];
 
-interface SubagentStopInput {
+export interface SubagentStopInput {
   session_id?: string;
   agent_id?: string;
   agent_type?: string;
@@ -52,7 +51,7 @@ interface SubagentStopInput {
   [key: string]: unknown;
 }
 
-interface TranscriptLine {
+export interface TranscriptLine {
   role?: string;
   content?: unknown;
   timestamp?: string;
@@ -67,18 +66,7 @@ function fmtErr(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
 }
 
-async function consumeStdin(): Promise<string> {
-  return new Promise((resolve) => {
-    const chunks: string[] = [];
-    process.stdin.setEncoding("utf8");
-    process.stdin.on("data", (chunk: string) => { chunks.push(chunk); });
-    process.stdin.on("end", () => resolve(chunks.join("")));
-    process.stdin.on("error", () => resolve(""));
-    process.stdin.resume();
-  });
-}
-
-function parseJsonLine(line: string): TranscriptLine | null {
+export function parseJsonLine(line: string): TranscriptLine | null {
   try {
     return JSON.parse(line) as TranscriptLine;
   } catch {
@@ -86,31 +74,37 @@ function parseJsonLine(line: string): TranscriptLine | null {
   }
 }
 
-function parseTranscript(transcriptPath: string): TranscriptLine[] {
+export function parseTranscript(transcriptPath: string): TranscriptLine[] {
   const content = readFileSync(transcriptPath, "utf-8");
   const parsed = content.split("\n").map(parseJsonLine);
   return parsed.filter((l): l is TranscriptLine => l !== null);
 }
 
-function extractAgentType(agentId: string): string {
+export function extractAgentType(agentId: string): string {
   const lower = agentId.toLowerCase();
   const match = KNOWN_AGENTS.find((name) => lower.includes(name));
   return match !== undefined ? match : agentId;
 }
 
-function countContentBlocks(lines: TranscriptLine[]): number {
+function contentBlockCount(line: TranscriptLine): number {
+  if (Array.isArray(line.content)) return line.content.length;
+  if (line.content != null) return 1;
+  return 0;
+}
+
+export function countContentBlocks(lines: TranscriptLine[]): number {
   let count = 0;
   for (const line of lines) {
-    count += Array.isArray(line.content) ? line.content.length : (line.content != null ? 1 : 0);
+    count += contentBlockCount(line);
   }
   return count;
 }
 
-function isToolUseBlock(block: unknown): boolean {
+export function isToolUseBlock(block: unknown): boolean {
   return typeof block === "object" && block !== null && (block as { type?: string }).type === "tool_use";
 }
 
-function countToolCallsInTranscript(lines: TranscriptLine[]): number {
+export function countToolCallsInTranscript(lines: TranscriptLine[]): number {
   let count = 0;
   for (const line of lines) {
     if (!Array.isArray(line.content)) continue;
@@ -119,37 +113,38 @@ function countToolCallsInTranscript(lines: TranscriptLine[]): number {
   return count;
 }
 
-function parseTimestamp(line: TranscriptLine): number {
+export function parseTimestamp(line: TranscriptLine): number {
   if (typeof line.timestamp !== "string") return NaN;
   return Date.parse(line.timestamp);
 }
 
-function extractDurationMs(lines: TranscriptLine[]): number {
+export function extractDurationMs(lines: TranscriptLine[]): number {
   const timestamps = lines.map(parseTimestamp).filter((t) => !Number.isNaN(t));
   if (timestamps.length < 2) return 0;
   return Math.max(...timestamps) - Math.min(...timestamps);
 }
 
-function hasErrorContent(contentStr: string): boolean {
+export function hasErrorContent(contentStr: string): boolean {
   return ERROR_KEYWORDS.some((kw) => contentStr.includes(kw));
 }
 
-function detectAgentStatus(lines: TranscriptLine[]): string {
+export function detectAgentStatus(lines: TranscriptLine[]): string {
   if (lines.length === 0) return "unknown";
   const last = lines[lines.length - 1];
-  const contentStr = JSON.stringify(last.content || "").toLowerCase();
+  const contentStr = JSON.stringify(last.content != null ? last.content : "").toLowerCase();
   return hasErrorContent(contentStr) ? "error" : "success";
 }
 
-function buildResolvedEntry(
+export function buildResolvedEntry(
   input: SubagentStopInput,
   lines: TranscriptLine[],
   agentType: string,
 ): ResolvedTraceEntry {
+  const { session_id: sessionId = "unknown" } = input;
   const tokenCount = countContentBlocks(lines);
   return {
     ts: new Date().toISOString(),
-    sessionId: input.session_id || "unknown",
+    sessionId,
     prompt: "unknown",
     agents: [agentType],
     skills: [],
@@ -165,17 +160,19 @@ function buildResolvedEntry(
   };
 }
 
+function extractRunInputs(input: SubagentStopInput): { agentId: string; transcriptPath: string; agentType: string } {
+  const { agent_id: agentId = "", agent_transcript_path: transcriptPath = "", agent_type: agentType = "" } = input;
+  return { agentId, transcriptPath, agentType };
+}
+
 async function run(): Promise<void> {
-  const raw = await consumeStdin();
+  const raw = await readHookStdin();
   if (!raw.trim()) return;
 
   const input: SubagentStopInput = JSON.parse(raw);
-  if (input.stop_hook_active === true) {
-    return;
-  }
+  if (input.stop_hook_active === true) return;
 
-  const agentId = input.agent_id || "";
-  const transcriptPath = input.agent_transcript_path || "";
+  const { agentId, transcriptPath, agentType: rawAgentType } = extractRunInputs(input);
 
   if (!transcriptPath) {
     log(`No agent_transcript_path for agent ${agentId}, skipping`);
@@ -183,7 +180,7 @@ async function run(): Promise<void> {
   }
 
   const lines = parseTranscript(transcriptPath);
-  const agentType = input.agent_type || extractAgentType(agentId);
+  const agentType = rawAgentType !== "" ? rawAgentType : extractAgentType(agentId);
   const entry = buildResolvedEntry(input, lines, agentType);
 
   updateScores([entry]);
@@ -193,13 +190,12 @@ async function run(): Promise<void> {
     let insights = extractMemoryInsights(lines as TranscriptMessage[]);
 
     if (!insights && typeof input.last_assistant_message === "string") {
-      insights = extractMemoryInsights([
-        { role: "assistant", content: input.last_assistant_message },
-      ]);
+      insights = extractMemoryInsights([{ role: "assistant", content: input.last_assistant_message }]);
     }
 
     if (insights) {
-      persistMemory(agentType, input.session_id || "unknown", insights);
+      const { session_id: sessionId = "unknown" } = input;
+      persistMemory(agentType, sessionId, insights);
       log(`Persisted memory for ${agentType}`);
     }
   } catch (err) {
@@ -207,4 +203,6 @@ async function run(): Promise<void> {
   }
 }
 
-run().catch((err) => log(`Failed: ${fmtErr(err)}`)).finally(() => process.exit(0));
+if (import.meta.main) {
+  run().catch((err) => log(`Failed: ${fmtErr(err)}`)).finally(() => process.exit(0));
+}

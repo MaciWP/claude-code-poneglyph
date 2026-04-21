@@ -50,7 +50,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun run $HOME/.claude/hooks/validators/code-quality/complexity-validator.ts"
+            "command": "bun $HOME/.claude/hooks/validators/code-validator.ts"
           }
         ]
       },
@@ -59,25 +59,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun run $HOME/.claude/hooks/validators/security/secrets-validator.ts"
-          }
-        ]
-      },
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bun run $HOME/.claude/hooks/validators/security/injection-validator.ts"
-          }
-        ]
-      },
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bun run $HOME/.claude/hooks/validators/format/json-validator.ts",
+            "command": "bun $HOME/.claude/hooks/validators/format/json-validator.ts",
             "timeout": 5000
           }
         ]
@@ -87,17 +69,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun run $HOME/.claude/hooks/validators/context/record-read.ts"
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bun $HOME/.claude/hooks/validate-plan-paths.ts",
-            "timeout": 5000
+            "command": "bun $HOME/.claude/hooks/validators/context/record-read.ts"
           }
         ]
       },
@@ -106,7 +78,16 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun run $HOME/.claude/hooks/validators/context/update-after-write.ts"
+            "command": "bun $HOME/.claude/hooks/validators/context/update-after-write.ts"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun $HOME/.claude/hooks/format-code.ts"
           }
         ]
       },
@@ -115,7 +96,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun run $HOME/.claude/hooks/context-virtualizer.ts",
+            "command": "bun $HOME/.claude/hooks/context-virtualizer.ts",
             "timeout": 5000
           }
         ]
@@ -127,7 +108,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun run $HOME/.claude/hooks/validators/stop/validate-tests-pass.ts"
+            "command": "bun $HOME/.claude/hooks/validators/stop/validate-tests-pass.ts"
           }
         ]
       },
@@ -136,7 +117,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun run $HOME/.claude/hooks/trace-logger.ts",
+            "command": "bun $HOME/.claude/hooks/trace-logger.ts",
             "timeout": 5000,
             "async": true
           }
@@ -147,7 +128,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun run $HOME/.claude/hooks/session-digest.ts",
+            "command": "bun $HOME/.claude/hooks/session-digest.ts",
             "timeout": 10000,
             "async": true
           }
@@ -158,7 +139,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun run $HOME/.claude/hooks/validators/stop/validate-file-contains.ts"
+            "command": "bun $HOME/.claude/hooks/validators/stop/validate-file-contains.ts"
+          }
+        ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun $HOME/.claude/hooks/security-gate.ts",
+            "async": true
           }
         ]
       }
@@ -179,7 +170,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun run $HOME/.claude/hooks/validators/context/check-staleness.ts",
+            "command": "bun $HOME/.claude/hooks/validators/context/check-staleness.ts",
             "timeout": 5000
           }
         ]
@@ -195,13 +186,35 @@
         ]
       }
     ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun $HOME/.claude/hooks/pre-compact.ts",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
     "PostCompact": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "bun run $HOME/.claude/hooks/post-compact.ts",
+            "command": "bun $HOME/.claude/hooks/post-compact.ts",
             "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "InstructionsLoaded": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun $HOME/.claude/hooks/instructions-loaded.ts",
+            "async": true
           }
         ]
       }
@@ -211,7 +224,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun run $HOME/.claude/hooks/agent-scoring.ts",
+            "command": "bun $HOME/.claude/hooks/agent-scoring.ts",
             "timeout": 10000,
             "async": true
           }
@@ -223,7 +236,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun run $HOME/.claude/hooks/subagent-start.ts",
+            "command": "bun $HOME/.claude/hooks/subagent-start.ts",
             "timeout": 5000,
             "async": true
           }
@@ -235,7 +248,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun run $HOME/.claude/hooks/permission-denied.ts",
+            "command": "bun $HOME/.claude/hooks/error-recorder.ts",
             "timeout": 5000,
             "async": true
           }
@@ -247,7 +260,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun run $HOME/.claude/hooks/api-error-recorder.ts",
+            "command": "bun $HOME/.claude/hooks/error-recorder.ts",
             "timeout": 5000,
             "async": true
           }
@@ -259,7 +272,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun run $HOME/.claude/hooks/auto-approve.ts",
+            "command": "bun $HOME/.claude/hooks/auto-approve.ts",
             "timeout": 3000
           }
         ]

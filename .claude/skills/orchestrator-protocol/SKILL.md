@@ -56,6 +56,8 @@ Show inline: `Complexity: ~XX`
 | 30-60 | planner optional |
 | >60 | planner MANDATORY |
 
+> **Effort signal**: if complexity > 60, suggest the user runs `/effort xhigh` before proceeding — `effort` is static in agent frontmatter and cannot be set per-invocation (CC issue #25591).
+
 ### Step 3: Prepare Context (Arch H)
 
 1. Check if `memory-inject.ts` emitted `## Path-Based Skills (for delegation)` — copy verbatim into delegation prompt
@@ -114,6 +116,8 @@ Show inline: `Complexity: ~XX`. Direct action only if complexity < 20 AND stated
 | >60 | planner MANDATORY | subagents, tiered, or team |
 
 Default is ALWAYS subagents. Tiered (~2x cost) only for 2-3 domains with shared interfaces at 45-60. Team (3-7x cost) only when all 4 gates pass. See Content Map for full routing tables.
+
+> **Effort limitation**: `effort` in agent frontmatter is static. Compensate by providing richer context in delegation prompts for high-complexity tasks. For complexity >60, suggest `/effort xhigh` to the user.
 
 ---
 

@@ -14,6 +14,7 @@ import { mkdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
+import { readHookStdin } from "./lib/hook-stdin";
 import type { TranscriptMessage } from "./lib/trace-extract";
 import {
   extractFirstUserPrompt,
@@ -105,19 +106,6 @@ export interface StopHookInput {
   stop_hook_event?: string;
   stop_hook_active?: boolean;
   [key: string]: unknown;
-}
-
-async function consumeStdin(): Promise<string> {
-  return new Promise((resolve) => {
-    const chunks: string[] = [];
-    process.stdin.setEncoding("utf8");
-    process.stdin.on("data", (chunk: string) => {
-      chunks.push(chunk);
-    });
-    process.stdin.on("end", () => resolve(chunks.join("")));
-    process.stdin.on("error", () => resolve(""));
-    process.stdin.resume();
-  });
 }
 
 function buildRawInput(input: StopHookInput): Record<string, unknown> {
@@ -251,7 +239,7 @@ async function resolveTrace(input: StopHookInput): Promise<TraceEntry> {
 
 async function main(): Promise<void> {
   try {
-    const raw = await consumeStdin();
+    const raw = await readHookStdin();
     if (!raw.trim()) {
       process.exit(0);
     }

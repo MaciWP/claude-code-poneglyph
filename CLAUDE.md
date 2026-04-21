@@ -111,8 +111,8 @@ Orchestration system that powers Claude Code with specialized agents, skills, ho
 | Problem | Solution |
 |---------|----------|
 | No orchestration | 6 core agents + 1 meta agent (`extension-architect`) with complexity-based routing |
-| No automatic validation | 21 hooks (pre/post/stop/subagent/permission) |
-| No domain knowledge | 23 global skills auto-matched by keywords + project skills on-demand via Arch H |
+| No automatic validation | 24 hooks (pre/post/stop/subagent/permission) |
+| No domain knowledge | 25 global skills auto-matched by keywords + project skills on-demand via Arch H |
 | No persistent memory | Semantic memory system + per-agent `MEMORY.md` |
 
 ## HOW
@@ -122,9 +122,9 @@ graph LR
     User --> CC[Claude Code]
     CC --> Orch[Lead Orchestrator]
     Orch --> Agents[6 core + 1 meta]
-    Orch --> Skills[23 Skills]
-    Orch --> Hooks[21 Hooks]
-    Orch --> Rules[14 Rules]
+    Orch --> Skills[25 Skills]
+    Orch --> Hooks[23 Hooks]
+    Orch --> Rules[6 Rules]
 ```
 
 ## Structure
@@ -134,11 +134,11 @@ graph LR
 ├── agents/          # 6 core (architect, builder, error-analyzer, planner, reviewer, scout)
 │   └── meta/        # 1 meta agent (extension-architect)
 ├── agent-memory/    # Per-agent MEMORY.md accumulated across sessions
-├── skills/          # 23+ global skills (generic patterns — Django, React, OWASP...)
+├── skills/          # 25+ global skills (generic patterns — Django, React, OWASP...)
 │                    # Projects add their own under ./.claude/skills/ for domain knowledge
-├── hooks/           # 21 hooks (pre/post/stop/subagent/permission)
-├── rules/           # 14 orchestration rules (12 global + 2 path-scoped)
-└── commands/        # 9 slash commands
+├── hooks/           # 23 hooks (pre/post/stop/subagent/permission)
+├── rules/           # 6 orchestration rules (4 global + 2 path-scoped)
+└── commands/        # 7 slash commands
 ```
 
 ## Anti-Hallucination (baseline for every action)
@@ -204,15 +204,18 @@ Score<70 is a **signal of doubt**, not a hard stop. If the prompt is ambiguous o
 
 ### Key rules (canonical references)
 
-The full orchestration protocol, error-recovery policy, delegation templates and expertise-injection workflow live in the rules — they are the source of truth, this file is the index:
+The full orchestration protocol lives in the `orchestrator-protocol` skill, loaded via `Skill('orchestrator-protocol')` at session start. Its reference files map 1:1 to the old rules:
 
-@.claude/rules/lead-orchestrator.md
-@.claude/rules/orchestration-checklist.md
-@.claude/rules/prompt-scoring.md
-@.claude/rules/complexity-routing.md
-@.claude/rules/agent-selection.md
-@.claude/rules/context-management.md
-@.claude/rules/error-recovery.md
+| Old rule | Current location |
+|---|---|
+| `lead-orchestrator.md` | `.claude/skills/orchestrator-protocol/SKILL.md` |
+| `orchestration-checklist.md` | `.claude/skills/orchestrator-protocol/references/01-verification.md` |
+| `prompt-scoring.md` | `.claude/skills/orchestrator-protocol/references/02-prompt-scoring.md` |
+| `complexity-routing.md` | `.claude/skills/orchestrator-protocol/references/03-complexity-routing.md` |
+| `agent-selection.md` | `.claude/skills/orchestrator-protocol/references/04-agent-selection.md` |
+| `context-management.md` | `.claude/skills/orchestrator-protocol/references/06-context-arch-h.md` |
+
+Error recovery policy (still a rule): `@.claude/rules/error-recovery.md`
 
 ### Post-implementation verification (MANDATORY)
 

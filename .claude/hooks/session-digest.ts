@@ -1,5 +1,6 @@
 #!/usr/bin/env bun
 
+import { readHookStdin } from "./lib/hook-stdin";
 import { recordError } from "./lib/error-patterns";
 import { updateScores } from "./lib/agent-scorer";
 import { minePatterns } from "./lib/pattern-learning";
@@ -93,21 +94,8 @@ async function runContextCheckpoint(
   }
 }
 
-async function consumeStdin(): Promise<string> {
-  return new Promise((resolve) => {
-    const chunks: string[] = [];
-    process.stdin.setEncoding("utf8");
-    process.stdin.on("data", (chunk: string) => {
-      chunks.push(chunk);
-    });
-    process.stdin.on("end", () => resolve(chunks.join("")));
-    process.stdin.on("error", () => resolve(""));
-    process.stdin.resume();
-  });
-}
-
 async function main(): Promise<void> {
-  const stdinRaw = await consumeStdin();
+  const stdinRaw = await readHookStdin();
   try {
     const parsed = JSON.parse(stdinRaw) as Record<string, unknown>;
     if (parsed.stop_hook_active === true) {

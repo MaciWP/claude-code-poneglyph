@@ -1,10 +1,11 @@
 #!/usr/bin/env bun
 
+import { readHookStdin } from "../../lib/hook-stdin";
 import { ContextRegistry } from "./registry";
 
 async function main(): Promise<void> {
   try {
-    const raw = await readStdin();
+    const raw = await readHookStdin();
     const input = JSON.parse(raw);
 
     if (input.tool_name !== "Edit") {
@@ -29,17 +30,6 @@ async function main(): Promise<void> {
   }
 
   process.exit(0);
-}
-
-function readStdin(): Promise<string> {
-  return new Promise((resolve) => {
-    const chunks: string[] = [];
-    process.stdin.setEncoding("utf8");
-    process.stdin.on("data", (chunk: string) => chunks.push(chunk));
-    process.stdin.on("end", () => resolve(chunks.join("")));
-    process.stdin.on("error", () => resolve(""));
-    process.stdin.resume();
-  });
 }
 
 main();
