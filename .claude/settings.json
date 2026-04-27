@@ -303,7 +303,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "bun $HOME/.claude/hooks/statusline.ts",
+    "command": "bunx ccstatusline@latest",
     "padding": 0
   },
   "enabledPlugins": {
@@ -330,5 +330,11 @@
   },
   "skipDangerousModePermissionPrompt": true,
   "skipAutoPermissionPrompt": true,
-  "autoCompactEnabled": false
+  "autoCompactEnabled": false,
+  "worktree": {
+    "symlinkDirectories": [
+      "node_modules",
+      ".venv"
+    ]
+  }
 }
