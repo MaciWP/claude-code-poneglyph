@@ -303,7 +303,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "bunx ccstatusline@latest",
+    "command": "$HOME/.bun/bin/ccstatusline",
     "padding": 0,
     "refreshInterval": 10
   },
