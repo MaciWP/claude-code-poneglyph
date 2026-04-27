@@ -16,8 +16,10 @@ activation:
     - permissions
     - env vars
     - project setup
+    - statusline
+    - ccstatusline
 for_agents: [extension-architect]
-version: "1.1"
+version: "1.2"
 ---
 
 # Quick Config
@@ -44,6 +46,7 @@ Quick-reference templates for Claude Code configurations.
 | `${CLAUDE_SKILL_DIR}/references/04-env-vars.md` | Where to set, useful env vars table, gotchas |
 | `${CLAUDE_SKILL_DIR}/references/05-permissions.md` | Syntax, evaluation order, templates, common patterns |
 | `${CLAUDE_SKILL_DIR}/references/06-gitignore.md` | Template gitignore, what to commit vs gitignore |
+| `${CLAUDE_SKILL_DIR}/references/07-statusline.md` | ccstatusline setup, widget types verificados, layout 4 líneas |
 
 ## Arguments
 

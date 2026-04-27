@@ -60,6 +60,7 @@ Arrays **merge + deduplicate** across scopes (not replace).
 | `language` | string | Claude's response language |
 | `attribution` | object | Git commit/PR attribution |
 | `worktree` | object | `symlinkDirectories`, `sparsePaths` |
+| `statusLine` | object | Custom status bar: `type`, `command`, `padding`, `refreshInterval` |
 | `sandbox` | object | Sandboxing configuration |
 | `autoMode` | object | Auto mode classifier customization |
 | `claudeMdExcludes` | array | Globs for CLAUDE.md files to skip |
