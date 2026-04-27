@@ -2,11 +2,10 @@
 /**
  * Lead Enforcement Hook (PreToolUse)
  *
- * WARN-ONLY: never blocks (always exit 0).
- * Emits a warning to stderr when the main session uses direct tools
- * instead of delegating to subagents. It is just a reminder, not a blocker.
- *
- * The actual orchestration rules are in rules/lead-orchestrator.md.
+ * Blocks Edit/Write in LEAD_MODE — these must be delegated to builder.
+ * Read/Glob/Grep are always allowed (orientation tools per CLAUDE.md).
+ * Bash is warn-only (too broad to block; many legitimate read-only uses).
+ * FREEZE_MODE independently blocks Edit/Write regardless of LEAD_MODE.
  */
 
 async function main(): Promise<void> {
@@ -26,10 +25,18 @@ async function main(): Promise<void> {
   if (process.env.CLAUDE_LEAD_MODE !== "true") {
     process.exit(0);
   }
-  const directTools = ["Read", "Edit", "Write", "Bash", "Glob", "Grep"];
 
-  if (directTools.includes(tool)) {
-    console.error(`⚠️ Lead: ${tool} used directly. Consider delegating.`);
+  if (["Edit", "Write"].includes(tool)) {
+    console.error(
+      `🚫 Lead mode: Edit/Write must be delegated to builder. For complexity <20 direct actions, set CLAUDE_LEAD_MODE=false temporarily.`,
+    );
+    process.exit(2);
+  }
+
+  if (tool === "Bash") {
+    console.error(
+      `⚠️ Lead mode: Bash used directly. Only allowed for read-only operations or complexity <20 (state inline: "Complexity: ~X → direct action").`,
+    );
   }
 
   process.exit(0);
