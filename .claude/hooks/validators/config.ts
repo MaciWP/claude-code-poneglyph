@@ -21,6 +21,10 @@ export interface HookInput {
     command?: string;
   };
   tool_output: string;
+  /** Tool execution time in ms. Available since Claude Code v2.1.119. */
+  duration_ms?: number;
+  session_id?: string;
+  hook_event_name?: string;
 }
 
 // =============================================================================

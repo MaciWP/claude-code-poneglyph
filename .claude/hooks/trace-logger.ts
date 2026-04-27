@@ -15,6 +15,8 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 
 import { readHookStdin } from "./lib/hook-stdin";
+import { readToolTimings, summarizeTimings } from "./lib/tool-timing";
+import type { ToolTimingSummary } from "./lib/tool-timing";
 import type { TranscriptMessage } from "./lib/trace-extract";
 import {
   extractFirstUserPrompt,
@@ -58,6 +60,8 @@ export {
   calculateCheapModelRatio,
 } from "./lib/trace-metrics";
 
+export type { ToolTimingSummary } from "./lib/tool-timing";
+
 export interface TraceEntry {
   ts: string;
   sessionId: string | null;
@@ -75,6 +79,8 @@ export interface TraceEntry {
   filesChanged: number | null;
   parallelismRatio: number | null;
   cheapModelRatio: number | null;
+  /** Per-tool execution timing stats, populated from PostToolUse duration_ms (v2.1.119+). */
+  toolTimings?: ToolTimingSummary | null;
   rawInput?: Record<string, unknown>;
 }
 
@@ -95,6 +101,7 @@ export interface ResolvedTraceEntry {
   filesChanged: number;
   parallelismRatio: number | null;
   cheapModelRatio: number | null;
+  toolTimings?: ToolTimingSummary | null;
   rawInput?: Record<string, unknown>;
 }
 
@@ -127,6 +134,7 @@ function buildTraceWithTranscript(
   const { inputTokens, outputTokens } = estimateTokens(transcript);
   const tokens = inputTokens + outputTokens;
   const model = detectModel(transcript);
+  const timings = input.session_id ? readToolTimings(input.session_id) : [];
 
   return {
     ts: new Date().toISOString(),
@@ -145,6 +153,7 @@ function buildTraceWithTranscript(
     filesChanged: countFilesChanged(transcript),
     parallelismRatio: calculateParallelismRatio(transcript),
     cheapModelRatio: calculateCheapModelRatio(transcript),
+    toolTimings: summarizeTimings(timings),
     rawInput: buildRawInput(input),
   };
 }
@@ -170,6 +179,8 @@ export function buildTraceFromPersisted(
   const { agents, skills } = extractAgentsAndSkills(transcript);
   const prompt = extractFirstUserPrompt(transcript);
 
+  const timings = input.session_id ? readToolTimings(input.session_id) : [];
+
   return {
     ts: new Date().toISOString(),
     sessionId: input.session_id ?? null,
@@ -187,11 +198,13 @@ export function buildTraceFromPersisted(
     filesChanged: countFilesChanged(transcript),
     parallelismRatio: calculateParallelismRatio(transcript),
     cheapModelRatio: calculateCheapModelRatio(transcript),
+    toolTimings: summarizeTimings(timings),
     rawInput: buildRawInput(input),
   };
 }
 
 function buildTraceMinimal(input: StopHookInput): TraceEntry {
+  const timings = input.session_id ? readToolTimings(input.session_id) : [];
   return {
     ts: new Date().toISOString(),
     sessionId: input.session_id ?? null,
@@ -209,6 +222,7 @@ function buildTraceMinimal(input: StopHookInput): TraceEntry {
     filesChanged: null,
     parallelismRatio: null,
     cheapModelRatio: null,
+    toolTimings: summarizeTimings(timings),
     rawInput: buildRawInput(input),
   };
 }
