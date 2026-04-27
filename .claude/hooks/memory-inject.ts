@@ -20,6 +20,9 @@ import {
 import { hydrateFromKnowledge } from "./lib/context-store/bridge";
 import { search } from "./lib/context-store/searcher";
 import { readHookStdin } from "./lib/hook-stdin";
+import { computeProjectHash } from "./lib/memory-hash.js";
+import { readdirSync, existsSync as fsExistsSync, readFileSync as fsReadFileSync } from "node:fs";
+import { join } from "node:path";
 
 interface HookInput {
   hook_event_name: string;
@@ -178,7 +181,29 @@ async function emitOutput(
   console.log(JSON.stringify(output));
 }
 
-async function buildEnrichmentContext(): Promise<string> {
+async function detectStaleMemories(baseDir: string, cwd: string): Promise<string[]> {
+  const stale: string[] = [];
+  try {
+    const currentHash = await computeProjectHash(cwd);
+    const entries = readdirSync(baseDir, { withFileTypes: true }).filter((e) => e.isDirectory());
+    for (const entry of entries) {
+      const memPath = join(baseDir, entry.name, "MEMORY.md");
+      if (!fsExistsSync(memPath)) continue;
+      const memContent = fsReadFileSync(memPath, "utf-8");
+      const match = memContent.match(/<!--\s*hash_at_write:\s*([a-f0-9]+)\s*-->/);
+      if (!match) continue;
+      const storedHash = match[1];
+      if (storedHash !== currentHash) {
+        stale.push(`${entry.name}/MEMORY.md`);
+      }
+    }
+  } catch {
+    // best-effort
+  }
+  return stale;
+}
+
+async function buildEnrichmentContext(cwd?: string): Promise<string> {
   try {
     const [patterns, scores, lessons] = await Promise.all([
       loadPatterns(),
@@ -251,6 +276,21 @@ async function buildEnrichmentContext(): Promise<string> {
       // best-effort — never break memory-inject for error patterns
     }
 
+    if (cwd) {
+      try {
+        const baseDir = process.env.CLAUDE_MEMORY_DIR ?? join(import.meta.dir, "..", "agent-memory");
+        const staleMemories = await detectStaleMemories(baseDir, cwd);
+        if (staleMemories.length > 0) {
+          const staleList = staleMemories.map((m) => `- ${m}`).join("\n");
+          lines.push(
+            `\n[STALE MEMORY WARNING]\nThe following memories may be outdated (project artifacts changed since write):\n${staleList}\nVerify before using this data.\n[END STALE MEMORY WARNING]`,
+          );
+        }
+      } catch {
+        // best-effort — never break memory-inject
+      }
+    }
+
     return lines.length > 0 ? lines.join("\n") : "";
   } catch {
     return "";
@@ -260,9 +300,10 @@ async function buildEnrichmentContext(): Promise<string> {
 async function emitRoutingSuggestionsFallback(
   prompt: string,
   sessionTitle?: string,
+  cwd?: string,
 ): Promise<void> {
   try {
-    const context = await buildEnrichmentContext();
+    const context = await buildEnrichmentContext(cwd);
     await emitOutput(context, prompt, sessionTitle);
   } catch {
     try {
@@ -283,7 +324,7 @@ async function main(): Promise<void> {
     process.exit(0);
   }
 
-  const { prompt, session_id, transcript_path } = input;
+  const { prompt, session_id, transcript_path, cwd } = input;
 
   if (!prompt || prompt.trim().length < 5) {
     process.exit(0);
@@ -313,20 +354,20 @@ async function main(): Promise<void> {
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      await emitRoutingSuggestionsFallback(prompt, sessionTitle);
+      await emitRoutingSuggestionsFallback(prompt, sessionTitle, cwd);
       process.exit(0);
     }
 
     const result = (await response.json()) as InjectionResponse;
 
     if (!result.context || result.context.trim().length === 0) {
-      await emitRoutingSuggestionsFallback(prompt, sessionTitle);
+      await emitRoutingSuggestionsFallback(prompt, sessionTitle, cwd);
       process.exit(0);
     }
 
     await emitOutput(result.context, prompt, sessionTitle);
   } catch {
-    await emitRoutingSuggestionsFallback(prompt, sessionTitle);
+    await emitRoutingSuggestionsFallback(prompt, sessionTitle, cwd);
     process.exit(0);
   }
 }

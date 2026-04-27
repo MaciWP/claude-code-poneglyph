@@ -74,4 +74,7 @@ export const AGENT_TASK_TYPES: Record<string, TaskType> = {
   architect: "planning",
   "command-loader": "exploration",
   "extension-architect": "implementation",
+  "general-purpose": "exploration",
+  "Explore": "exploration",
+  "Plan": "planning",
 };

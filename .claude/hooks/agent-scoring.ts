@@ -26,8 +26,12 @@ export const KNOWN_AGENTS = [
   "planner",
   "scout",
   "error-analyzer",
+  "extension-architect",
   "architect",
   "command-loader",
+  "general-purpose",
+  "Explore",
+  "Plan",
 ];
 
 export const ERROR_KEYWORDS = [
@@ -80,10 +84,12 @@ export function parseTranscript(transcriptPath: string): TranscriptLine[] {
   return parsed.filter((l): l is TranscriptLine => l !== null);
 }
 
-export function extractAgentType(agentId: string): string {
+export function extractAgentType(agentId: string): string | null {
   const lower = agentId.toLowerCase();
-  const match = KNOWN_AGENTS.find((name) => lower.includes(name));
-  return match !== undefined ? match : agentId;
+  // Sort by length descending so "extension-architect" wins over "architect"
+  const sorted = [...KNOWN_AGENTS].sort((a, b) => b.length - a.length);
+  const match = sorted.find((name) => lower.includes(name.toLowerCase()));
+  return match !== undefined ? match : null;
 }
 
 function contentBlockCount(line: TranscriptLine): number {
@@ -181,6 +187,10 @@ async function run(): Promise<void> {
 
   const lines = parseTranscript(transcriptPath);
   const agentType = rawAgentType !== "" ? rawAgentType : extractAgentType(agentId);
+  if (!agentType) {
+    log(`[agent-scoring] skipped unknown agentType: ${agentId}`);
+    return;
+  }
   const entry = buildResolvedEntry(input, lines, agentType);
 
   updateScores([entry]);

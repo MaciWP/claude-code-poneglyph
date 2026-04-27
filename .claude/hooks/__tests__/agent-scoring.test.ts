@@ -54,14 +54,31 @@ describe("extractAgentType", () => {
     expect(extractAgentType("Scout-123")).toBe("scout");
   });
 
-  test("returns raw id for unknown agent", () => {
-    expect(extractAgentType("unknown-agent-999")).toBe("unknown-agent-999");
+  test("returns null for unknown agent", () => {
+    expect(extractAgentType("unknown-agent-999")).toBeNull();
+    expect(extractAgentType("a201ef89281874bef")).toBeNull();
   });
 
   test("all KNOWN_AGENTS are extractable", () => {
     for (const agent of KNOWN_AGENTS) {
       expect(extractAgentType(`${agent}-abc`)).toBe(agent);
     }
+  });
+
+  test("extracts extension-architect from agent id", () => {
+    expect(extractAgentType("extension-architect-abc")).toBe("extension-architect");
+  });
+
+  test("extracts general-purpose from agent id", () => {
+    expect(extractAgentType("general-purpose-session")).toBe("general-purpose");
+  });
+
+  test("extracts Explore from agent id", () => {
+    expect(extractAgentType("Explore-xyz")).toBe("Explore");
+  });
+
+  test("extracts Plan from agent id", () => {
+    expect(extractAgentType("Plan-abc123")).toBe("Plan");
   });
 });
 
