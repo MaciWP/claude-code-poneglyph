@@ -4,6 +4,8 @@ globs:
 priority: 15
 ---
 
+<!-- Last verified: 2026-04-25 -->
+
 ## Hooks Context
 
 ### Shebang Gotcha (Windows / Reduced PATH)

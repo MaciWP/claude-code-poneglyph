@@ -6,6 +6,8 @@ globs:
 priority: 15
 ---
 
+<!-- Last verified: 2026-04-25 -->
+
 ## Orchestration Context
 
 ### Agent Frontmatter — key fields

@@ -8,6 +8,7 @@ description: |
   Invoke ONCE per session at the start of the first real task.
   Keywords - orchestrate, delegate, complexity, routing, agent, skill, checklist
 type: knowledge-base
+disable-model-invocation: true
 version: "2.0"
 effort: low
 ---

@@ -1,6 +1,9 @@
 ---
 description: Lead session activation — when and how to load the orchestrator skill
 ---
+
+<!-- Last verified: 2026-04-25 -->
+
 # Lead Orchestration Bootstrap
 
 **Applies only to the Lead session** (`CLAUDE_LEAD_MODE=true` in your environment).

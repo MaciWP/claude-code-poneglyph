@@ -1,3 +1,5 @@
+<!-- Last verified: 2026-04-25 -->
+
 # Error Recovery
 
 ## Retry Budget
