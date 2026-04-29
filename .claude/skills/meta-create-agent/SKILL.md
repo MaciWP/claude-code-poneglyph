@@ -123,7 +123,7 @@ Ask the user:
 
 1. **`description` MUST include the 3-line format** (`purpose` / `Use proactively when:` / `Keywords -`) — without it, Claude Code does NOT register the agent as a valid `subagent_type`.
 2. **`name` is NOT a frontmatter field** — agents are identified by filename.
-3. **`model` is NOT a frontmatter field** — model routing is dynamic, determined by the Lead per-invocation based on agent category and task complexity.
+3. **`model` is an optional frontmatter field** — omit it for most agents (the Lead selects dynamically). Add `model: opus` only for strategic/high-effort agents that invariably need it (e.g. architect, planner, builder, reviewer, error-analyzer).
 4. **`disallowedTools` is camelCase** (e.g., `Task`, `NotebookEdit`) — NOT snake_case.
 5. **`tools` uses plain names only** — no scoped syntax like `Task(scout)`.
 6. **`maxTurns` is dangerous** — when reached, no result is returned and work is lost. Only set in CI/production pipelines where hard stops are required; for interactive use, leave it unset.

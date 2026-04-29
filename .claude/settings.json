@@ -84,16 +84,6 @@
             "command": "bun $HOME/.claude/hooks/validators/context/update-after-write.ts"
           }
         ]
-      },
-      {
-        "matcher": "Read|Grep|Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bun $HOME/.claude/hooks/context-virtualizer.ts",
-            "timeout": 5000
-          }
-        ]
       }
     ],
     "Stop": [

@@ -62,10 +62,10 @@ Generate subagents from standardized templates.
 
 | Type | Directory | Tools | Permission |
 |------|-----------|-------|------------|
-| reader | `readers/` | Read, Grep, Glob | plan |
-| builder | `builders/` | Read, Write, Edit, Bash, Grep, Glob | acceptEdits |
-| executor | `executors/` | Bash, Read | default |
-| researcher | `researchers/` | Read, Grep, Glob, WebSearch, WebFetch | plan |
+| reader | `.claude/agents/` | Read, Grep, Glob | plan |
+| builder | `.claude/agents/` | Read, Write, Edit, Bash, Grep, Glob | acceptEdits |
+| executor | `.claude/agents/` | Bash, Read | default |
+| researcher | `.claude/agents/` | Read, Grep, Glob, WebSearch, WebFetch | plan |
 
 **Example**:
 ```
@@ -183,42 +183,17 @@ Located at `.claude/skills/meta-create-skill/templates/`
 ### Directory Structure
 
 ```
-.claude/
-├── agents/
-│   ├── readers/           # Read-only analysis agents
-│   │   ├── code-reviewer.md
-│   │   └── security-auditor.md
-│   ├── builders/          # Implementation agents
-│   │   ├── api-implementer.md
-│   │   └── feature-developer.md
-│   ├── executors/         # Command execution agents
-│   │   ├── test-runner.md
-│   │   └── build-runner.md
-│   ├── researchers/       # Investigation agents
-│   │   └── library-researcher.md
-│   └── meta/              # Extension management agents
-│       └── extension-architect.md
-├── skills/
-│   ├── meta-create-agent/
-│   │   ├── SKILL.md
-│   │   └── templates/
-│   │       ├── reader.md
-│   │       ├── builder.md
-│   │       ├── executor.md
-│   │       └── researcher.md
-│   ├── meta-create-skill/
-│   │   ├── SKILL.md
-│   │   └── templates/
-│   │       ├── reference.md
-│   │       ├── workflow.md
-│   │       └── research.md
-│   └── {skill-name}/
-│       └── SKILL.md
-├── hooks/
-│   └── validate-bash.py   # Example hook script
-├── rules/
-│   └── *.md               # Project-specific rules
-└── settings.json          # Hooks configuration
+.claude/agents/
+├── architect.md
+├── builder.md
+├── error-analyzer.md
+├── planner.md
+├── reviewer.md
+├── scout.md
+└── meta/
+    └── extension-architect.md
+
+New agents go directly in .claude/agents/ (no subdirectory categorization).
 ```
 
 ### Naming Conventions
@@ -257,7 +232,7 @@ skills:
 ---
 ```
 
-**Location**: `.claude/agents/readers/security-reviewer.md`
+**Location**: `.claude/agents/security-reviewer.md`
 
 ### Example 2: Create an API Conventions Skill
 

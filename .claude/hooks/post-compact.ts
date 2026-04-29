@@ -4,7 +4,7 @@ const LEAD_REMINDER = [
   "## Lead Orchestrator Mode (re-injected after compaction)",
   "This session operates as Lead Orchestrator.",
   "NEVER use Read/Edit/Write/Bash/Glob/Grep directly. Delegate to agents (builder, reviewer, planner, scout, error-analyzer).",
-  "Use Task() to delegate, Skill() for context, AskUserQuestion() to clarify.",
+  "Use Agent() to delegate, Skill() for context, AskUserQuestion() to clarify.",
 ].join("\n");
 
 const ANTI_HALLUCINATION = [
