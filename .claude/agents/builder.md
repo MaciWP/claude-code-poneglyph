@@ -1,5 +1,6 @@
 ---
 name: builder
+model: opus
 description: |
   Implementation and refactoring agent. Writes clean, functional code in any language.
   Use proactively when: implementing features, creating files, modifying code, writing tests, fixing bugs, refactoring, extracting functions, simplifying code, restructuring, resolving merge conflicts, updating docs.

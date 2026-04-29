@@ -1,5 +1,6 @@
 ---
 name: architect
+model: opus
 description: |
   Design and planning agent that creates detailed implementation plans for complex features.
   Use proactively when: designing features, planning implementations, architecture decisions, complex refactoring.

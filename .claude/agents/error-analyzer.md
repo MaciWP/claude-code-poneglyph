@@ -1,5 +1,6 @@
 ---
 name: error-analyzer
+model: opus
 description: |
   Base error analysis agent that diagnoses failures and recommends recovery strategies.
   Use when: error analysis, debugging failures, root cause analysis, error diagnosis, recovery recommendation.

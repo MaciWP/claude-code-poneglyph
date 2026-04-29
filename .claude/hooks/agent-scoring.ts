@@ -92,6 +92,17 @@ export function extractAgentType(agentId: string): string | null {
   return match !== undefined ? match : null;
 }
 
+export function normalizeAgentType(rawAgentType: string, agentId: string): string | null {
+  if (rawAgentType.trim() !== "" && KNOWN_AGENTS.includes(rawAgentType.trim())) {
+    return rawAgentType.trim();
+  }
+  if (rawAgentType.trim() !== "") {
+    const fromRaw = extractAgentType(rawAgentType);
+    if (fromRaw) return fromRaw;
+  }
+  return extractAgentType(agentId);
+}
+
 function contentBlockCount(line: TranscriptLine): number {
   if (Array.isArray(line.content)) return line.content.length;
   if (line.content != null) return 1;
@@ -186,9 +197,9 @@ async function run(): Promise<void> {
   }
 
   const lines = parseTranscript(transcriptPath);
-  const agentType = rawAgentType !== "" ? rawAgentType : extractAgentType(agentId);
+  const agentType = normalizeAgentType(rawAgentType, agentId);
   if (!agentType) {
-    log(`[agent-scoring] skipped unknown agentType: ${agentId}`);
+    log(`[agent-scoring] skipped unknown agentType: rawAgentType=${rawAgentType} agentId=${agentId}`);
     return;
   }
   const entry = buildResolvedEntry(input, lines, agentType);

@@ -1,5 +1,6 @@
 ---
 name: reviewer
+model: opus
 description: |
   Code review agent that validates implementations for quality, security, correctness, coverage, and performance.
   Use proactively when: reviewing code, validating changes, checking quality, pre-commit review, code audit, security audit, vulnerability scan, test coverage analysis, performance review, code smell detection.

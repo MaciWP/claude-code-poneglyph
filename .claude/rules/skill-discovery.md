@@ -62,7 +62,7 @@
 `directory-structure` · `examples-library` · `frontmatter-spec` · `skill-types` · `template-placeholders`
 
 ### orchestrator-protocol
-`01-verification` · `02-prompt-scoring` · `03-complexity-routing` · `04-agent-selection` · `05-skill-matching` · `06-context-arch-h` · `07-delegation-recovery`
+`01-verification` · `02-prompt-scoring` · `03-complexity-routing` · `04-agent-selection` · `05-skill-matching` · `06-context-arch-h` · `07-delegation-recovery` · `08-output-style`
 
 ### performance-review
 `memory-leak-patterns` · `n-plus-one-patterns`

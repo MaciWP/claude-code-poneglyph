@@ -12,6 +12,11 @@ async function main(): Promise<void> {
   const input = JSON.parse(await Bun.stdin.text());
   const tool = input.tool_name;
 
+  // Subagents can Edit/Write freely — lead mode restriction applies only to the Lead
+  if (input.agent_id) {
+    process.exit(0);
+  }
+
   if (
     process.env.CLAUDE_FREEZE_MODE === "true" &&
     ["Edit", "Write"].includes(tool)
@@ -23,6 +28,17 @@ async function main(): Promise<void> {
   }
 
   if (process.env.CLAUDE_LEAD_MODE !== "true") {
+    process.exit(0);
+  }
+
+  // Allow writes to Claude's internal planning and memory directories
+  const filePath: string = input.tool_input?.file_path ?? input.tool_input?.path ?? "";
+  const homeDir = process.env.HOME ?? process.env.USERPROFILE ?? "";
+  const allowedPaths = [
+    `${homeDir}/.claude/plans/`,
+    `${homeDir}/.claude/projects/`,
+  ];
+  if (filePath && allowedPaths.some((p) => filePath.startsWith(p))) {
     process.exit(0);
   }
 

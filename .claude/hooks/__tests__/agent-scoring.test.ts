@@ -2,6 +2,7 @@ import { describe, test, expect } from "bun:test";
 import {
   parseJsonLine,
   extractAgentType,
+  normalizeAgentType,
   countContentBlocks,
   countToolCallsInTranscript,
   extractDurationMs,
@@ -307,5 +308,27 @@ describe("buildResolvedEntry", () => {
     const entry = buildResolvedEntry(baseInput, [], "builder");
     expect(entry.costUsd).toBe(0);
     expect(entry.filesChanged).toBe(0);
+  });
+});
+
+describe("normalizeAgentType", () => {
+  test("rejects raw hex hash from rawAgentType", () => {
+    expect(normalizeAgentType("a895c5c088ff732db", "")).toBe(null);
+  });
+
+  test("accepts canonical name from rawAgentType", () => {
+    expect(normalizeAgentType("builder", "any-id")).toBe("builder");
+  });
+
+  test("extracts from prefixed agentId fallback when rawAgentType empty", () => {
+    expect(normalizeAgentType("", "builder-a3f8c2")).toBe("builder");
+  });
+
+  test("returns null when both inputs are pure hash", () => {
+    expect(normalizeAgentType("af5c7e7a3d8c6fb07", "a895c5c088ff732db")).toBe(null);
+  });
+
+  test("extracts canonical from prefixed rawAgentType", () => {
+    expect(normalizeAgentType("Explore-xyz123", "")).toBe("Explore");
   });
 });

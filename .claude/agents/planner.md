@@ -1,5 +1,6 @@
 ---
 name: planner
+model: opus
 description: |
   Planning and decomposition agent. Generates Execution Roadmaps with task-agent-skill assignments.
   Breaks complex tasks into atomic subtasks with dependency DAGs and parallel execution waves.

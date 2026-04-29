@@ -103,6 +103,8 @@ Show inline: `Complexity: ~XX`
 
 **NEVER report "completed" without confirmation that tests are passing.**
 
+**Reportar al usuario**: aplica reglas de `08-output-style.md`. Por defecto terse; expande en escape triggers.
+
 ---
 
 ## §2 Complexity Routing
@@ -146,3 +148,4 @@ Self-check before EVERY delegation: "Is there another independent Task I could b
 | Skill matching + keywords | `${CLAUDE_SKILL_DIR}/references/05-skill-matching.md` | Read when matching task keywords to skills for Arch H delegation. Contains Keywords→Skills table (19 entries), Task Type Detection, Priority Scoring formula, Synergy Rules, Conflict Rules, and baseline skills per agent. |
 | Context management + Arch H | `${CLAUDE_SKILL_DIR}/references/06-context-arch-h.md` | Read when preparing a delegation prompt or understanding what reaches subagents. Contains Architecture Levels diagram, Rules vs Skills decision table, Skill Loading Limits per agent, Propagation Model (what reaches/doesn't), full Arch H delegation template with ALL blocks, Skill Discovery steps, Content Map pattern description, Anti-claims, and orchestration consequences. |
 | Delegation rules + error recovery | `${CLAUDE_SKILL_DIR}/references/07-delegation-recovery.md` | Read when a delegation fails, an agent is stuck, or you need the NEVER/ALWAYS rules. Contains NEVER/ALWAYS tables, permission mode inheritance (bypassPermissions propagation), Continuous Validation Pipeline (checkpoints + validation by change type + feedback template), Retry Budget, SendMessage vs Re-spawn decision table, Stuck Detection thresholds, Worktree Cleanup on Failure, run_in_background guidance, and Parallelization when/when-not tables. |
+| Output style + escape rules | `${CLAUDE_SKILL_DIR}/references/08-output-style.md` | Read at session start to set Lead↔user communication baseline. Contains terse-first rules, escape triggers (security, irreversible, multi-step ambiguity), antes/después examples, when NOT to apply (planner outputs, MEMORY.md, docs). |
