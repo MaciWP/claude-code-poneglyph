@@ -345,7 +345,7 @@
       "$defaults",
       "Edit(.claude/settings.json)",
       "Write(.claude/settings.json)",
-      "Bash(rm * .claude*)",
+      "Bash(rm .claude)",
       "Bash(rm -rf .claude)"
     ]
   }

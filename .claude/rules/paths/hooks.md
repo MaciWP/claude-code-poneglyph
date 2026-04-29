@@ -23,7 +23,7 @@ priority: 15
 | Event | When | Usage in Poneglyph |
 |-------|------|--------------------|
 | PreToolUse | Before tool | lead-enforcement, check-staleness |
-| PostToolUse | After tool | format-code, validators, context |
+| PostToolUse | After tool | validators, context |
 | Stop | End of turn | trace-logger, validate-tests, session-digest |
 | SubagentStop | End of subagent | agent-scoring |
 | StopFailure | API error (rate limit, auth) | api-error-recorder |
