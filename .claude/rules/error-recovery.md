@@ -69,3 +69,17 @@ When blocked, ask: (1) missing context, (2) approach change, (3) task split.
 | Retry fails | Delete worktree + branch, escalate to user |
 | Merge conflict in worktree | Delegate to builder |
 | Builder fails on merge | Preserve worktree, escalate to user with diff |
+
+## Hook Reliability (Issue #6305)
+
+PreToolUse and PostToolUse hooks may silently fail to fire (known Claude Code bug, open issue #6305). Design validation accordingly:
+
+| Hook type | Reliability | Use for |
+|-----------|-------------|---------|
+| `Stop` | Reliable | Primary quality gate — tests, security validation |
+| `UserPromptSubmit` | Reliable | Memory injection, routing hints |
+| `SubagentStop` | Reliable | Agent scoring, memory insights |
+| `PreToolUse` | Unreliable | Best-effort only — never sole gate for critical checks |
+| `PostToolUse` | Unreliable | Best-effort only — never sole gate for critical checks |
+
+`validate-tests-pass.ts` (Stop) is the authoritative gate. Never rely solely on PostToolUse for security enforcement.

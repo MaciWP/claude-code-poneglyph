@@ -112,8 +112,8 @@ Orchestration system that powers Claude Code with specialized agents, skills, ho
 | Problem | Solution |
 |---------|----------|
 | No orchestration | 6 core agents + 1 meta agent (`extension-architect`) with complexity-based routing |
-| No automatic validation | 19 hooks (pre/post/stop/permission) |
-| No domain knowledge | 25 global skills auto-matched by keywords + project skills on-demand via Arch H |
+| No automatic validation | 16 hooks (pre/post/stop/compact/instructions/permission) |
+| No domain knowledge | 22 global skills auto-matched by keywords + project skills on-demand via Arch H |
 | No persistent memory | Semantic memory system + per-agent `MEMORY.md` |
 
 ## HOW
@@ -124,7 +124,7 @@ graph LR
     CC --> Orch[Lead Orchestrator]
     Orch --> Agents[6 core + 1 meta]
     Orch --> Skills[25 Skills]
-    Orch --> Hooks[19 Hooks]
+    Orch --> Hooks[16 Hooks]
     Orch --> Rules[6 Rules]
 ```
 
@@ -135,9 +135,9 @@ graph LR
 ├── agents/          # 6 core (architect, builder, error-analyzer, planner, reviewer, scout)
 │   └── meta/        # 1 meta agent (extension-architect)
 ├── agent-memory/    # Per-agent MEMORY.md accumulated across sessions
-├── skills/          # 25+ global skills (generic patterns — Django, React, OWASP...)
+├── skills/          # 22 global skills (generic patterns — Django, React, OWASP...)
 │                    # Projects add their own under ./.claude/skills/ for domain knowledge
-├── hooks/           # 19 hooks (pre/post/stop/permission)
+├── hooks/           # 16 hooks (pre/post/stop/compact/instructions/permission)
 ├── rules/           # 6 orchestration rules (4 global + 2 path-scoped)
 └── commands/        # 7 slash commands
 ```

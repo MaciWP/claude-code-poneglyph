@@ -7,6 +7,9 @@ import { readHookStdin } from "./lib/hook-stdin";
 const SECRET_PATTERN =
   /(?:API_KEY|SECRET|TOKEN|PASSWORD|PRIVATE_KEY)\s*[=:]\s*['"]?[A-Za-z0-9_\-\.]{16,}['"]?/gi;
 
+const SECRET_PATTERN_CI =
+  /(?:password|passwd|secret|api_key|apikey|access_token|accesstoken|private_key|privatekey)\s*[=:]\s*.{8,}/i;
+
 const TEXT_EXTENSIONS = new Set([
   ".ts", ".js", ".json", ".md", ".env", ".yaml", ".yml",
 ]);
@@ -18,16 +21,17 @@ function hasTextExtension(filePath: string): boolean {
 }
 
 async function getModifiedFiles(): Promise<string[]> {
-  const proc = Bun.spawn(["git", "diff", "--name-only", "HEAD"], {
-    stdout: "pipe",
-    stderr: "pipe",
-  });
-  const output = await new Response(proc.stdout).text();
-  await proc.exited;
-  return output
-    .split("\n")
-    .map((f) => f.trim())
-    .filter((f) => f.length > 0 && hasTextExtension(f));
+  const [stagedProc, untrackedProc] = [
+    Bun.spawn(["git", "diff", "--name-only", "HEAD"], { stdout: "pipe", stderr: "pipe" }),
+    Bun.spawn(["git", "ls-files", "--others", "--exclude-standard"], { stdout: "pipe", stderr: "pipe" }),
+  ];
+  const [stagedOut, untrackedOut] = await Promise.all([
+    new Response(stagedProc.stdout).text(),
+    new Response(untrackedProc.stdout).text(),
+  ]);
+  await Promise.all([stagedProc.exited, untrackedProc.exited]);
+  const all = new Set([...stagedOut.split("\n"), ...untrackedOut.split("\n")]);
+  return [...all].map((f) => f.trim()).filter((f) => f.length > 0 && hasTextExtension(f));
 }
 
 async function scanFile(filePath: string): Promise<void> {
@@ -37,7 +41,8 @@ async function scanFile(filePath: string): Promise<void> {
     const content = await file.text();
     const lines = content.split("\n");
     for (let i = 0; i < lines.length; i++) {
-      if (SECRET_PATTERN.test(lines[i])) {
+      const line = lines[i];
+      if (SECRET_PATTERN.test(line) || SECRET_PATTERN_CI.test(line)) {
         process.stderr.write(
           `[security-gate] WARNING: Potential secret at ${filePath}:${i + 1}\n`,
         );

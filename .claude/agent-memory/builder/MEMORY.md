@@ -1,5 +1,12 @@
 # Builder Agent Memory
 
+## 2026-04-29 — Session fix-batch-7-fixes
+- Los tests en `.claude/hooks/__tests__/` se llaman `auto-approve.test.ts` y `code-validator.test.ts` — `agent-scoring.test.ts` no existe. Verificar siempre con `ls` antes de asumir nombres de test files.
+- `bun test <absolute-path>` falla silenciosamente si el path no matchea el cwd bun pattern — bun test trabaja relativo a `--cwd`; usar paths de archivos específicos que existen, no paths de directorios inventados.
+- Al eliminar un hook de `settings.json`, el patrón `python3 json.load/dump` con list comprehension filtrando por `"command"` es el más seguro — un solo script atómico lee, filtra, escribe.
+- `SECRET_PATTERN` con `/gi` flag y regex stateful (lastIndex) necesita reset explícito con `lastIndex = 0` en cada iteración de línea — ya estaba en el código original; al añadir `SECRET_PATTERN_CI` sin estado no es necesario el reset.
+- Las skills `testing-strategy`, `typescript-patterns`, `bun-best-practices`, `api-design` NO existen como directorios en `.claude/skills/` — nunca referenciarlas en tablas de matching o catálogos.
+
 ## 2026-04-29 — Session simplify-pipeline
 - Para limpiar un pipeline completo (7 hooks + 30 libs), el orden seguro es: eliminar ficheros → modificar settings.json via `python3 + json.load/dump` (evita errores de sintaxis) → reescribir el hook simplificado → verificar build + tests. El script Python con `json.load/dump` es la forma más robusta de eliminar bloques de hooks de `settings.json` sin riesgo de JSON inválido.
 - `bun test <absolute-path-file>` funciona correctamente; `bun test <relative-dir>` sin `./` falla con "filter did not match". Para tests en `.claude/hooks/`, usar paths absolutos o `./` prefix.

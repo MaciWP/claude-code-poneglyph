@@ -152,6 +152,8 @@ Each teammate receives a prompt with:
 
 ## Effort Routing (Frontmatter — static)
 
+Effort scale: `low < medium < high < xhigh`
+
 | Agent | effort | Rationale |
 |-------|--------|-----------|
 | scout | `low` | Only reads files. No deep reasoning required. |
@@ -162,6 +164,16 @@ Each teammate receives a prompt with:
 | reviewer | ❌ inherit | Depends on review type. Inherits session default. |
 
 > `effort` in frontmatter is static — no `effort` parameter in the Agent tool call (open issue anthropics/claude-code#25591).
+
+### xhigh
+
+`xhigh` is available with Opus 4.7. On Opus 4.6 it behaves identically to `high`. Reserve for:
+
+| When | Condition |
+|------|-----------|
+| Complexity > 80 | Maximum reasoning budget for critical tasks |
+| Security audit | Auth/Crypto changes with high blast radius |
+| Architecture design | Cross-domain refactors with 6+ files affected |
 
 ## Calculation Examples
 

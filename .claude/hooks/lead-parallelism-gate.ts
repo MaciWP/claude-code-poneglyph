@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-import { existsSync, appendFileSync, mkdirSync } from "node:fs";
+import { existsSync, appendFileSync, mkdirSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, dirname } from "node:path";
 
@@ -101,7 +101,7 @@ function collectRecentAgentBatches(
 function readTranscript(transcriptPath: string): TranscriptEntry[] {
   try {
     if (!existsSync(transcriptPath)) return [];
-    const raw = require("node:fs").readFileSync(transcriptPath, "utf-8");
+    const raw = readFileSync(transcriptPath, "utf-8");
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed)) return parsed as TranscriptEntry[];
     return [];
