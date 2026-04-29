@@ -1,28 +1,8 @@
 #!/usr/bin/env bun
 
 import { existsSync, readFileSync } from "node:fs";
-import { loadPatterns } from "./lib/pattern-learning";
-import { loadScores } from "./lib/agent-scorer";
-import { loadRecentLessons } from "./lib/lessons-recorder";
-import {
-  loadPatterns as loadErrorPatterns,
-  getBestFix,
-} from "./lib/error-patterns";
-import {
-  getSkillReadPaths,
-  type SkillReadPath,
-} from "./lib/path-rule-loader";
-import {
-  createStore,
-  closeStore,
-  getSessionDbPath,
-} from "./lib/context-store/store";
-import { hydrateFromKnowledge } from "./lib/context-store/bridge";
-import { search } from "./lib/context-store/searcher";
 import { readHookStdin } from "./lib/hook-stdin";
-import { computeProjectHash } from "./lib/memory-hash.js";
-import { readdirSync, existsSync as fsExistsSync, readFileSync as fsReadFileSync } from "node:fs";
-import { join } from "node:path";
+import { getSkillReadPaths, type SkillReadPath } from "./lib/path-rule-loader";
 
 interface HookInput {
   hook_event_name: string;
@@ -63,33 +43,6 @@ export function isFirstTurn(transcriptPath: string | undefined): boolean {
   }
 }
 
-const WARM_START_LIMIT = 5;
-
-function recoverWarmStartContext(prompt: string): string {
-  try {
-    const dbPath = getSessionDbPath();
-    if (!existsSync(dbPath)) return "";
-
-    const db = createStore(dbPath);
-    try {
-      hydrateFromKnowledge(db, prompt, `session-${process.ppid}`, 20);
-
-      const result = search(db, prompt, WARM_START_LIMIT);
-      if (result.chunks.length === 0) return "";
-
-      const recoveredContext = result.chunks
-        .map((c) => `### ${c.source}\n${c.content}`)
-        .join("\n\n");
-
-      return `\n\n## Recovered Context (from session index)\n${recoveredContext}`;
-    } finally {
-      closeStore(db);
-    }
-  } catch {
-    return "";
-  }
-}
-
 const PATH_REGEX =
   /(?:[\w./\\-]+\.(?:ts|tsx|js|jsx|py|go|rs|java|rb|php|swift|kt|c|cpp|cs|md|json|yaml|yml|toml|cfg|ini))/g;
 
@@ -122,8 +75,7 @@ async function emitOutput(
   prompt: string,
   sessionTitle?: string,
 ): Promise<void> {
-  const warmStart = recoverWarmStartContext(prompt);
-  let enrichedContext = context + warmStart;
+  let enrichedContext = context;
 
   try {
     const pathSkills = extractPathSkills(prompt);
@@ -154,160 +106,22 @@ async function emitOutput(
   console.log(JSON.stringify(output));
 }
 
-async function detectStaleMemories(baseDir: string, cwd: string): Promise<string[]> {
-  const stale: string[] = [];
-  try {
-    const currentHash = await computeProjectHash(cwd);
-    const entries = readdirSync(baseDir, { withFileTypes: true }).filter((e) => e.isDirectory());
-    for (const entry of entries) {
-      const memPath = join(baseDir, entry.name, "MEMORY.md");
-      if (!fsExistsSync(memPath)) continue;
-      const memContent = fsReadFileSync(memPath, "utf-8");
-      const match = memContent.match(/<!--\s*hash_at_write:\s*([a-f0-9]+)\s*-->/);
-      if (!match) continue;
-      const storedHash = match[1];
-      if (storedHash !== currentHash) {
-        stale.push(`${entry.name}/MEMORY.md`);
-      }
-    }
-  } catch {
-    // best-effort
-  }
-  return stale;
-}
-
-async function buildEnrichmentContext(cwd?: string): Promise<string> {
-  try {
-    const [patterns, scores, lessons] = await Promise.all([
-      loadPatterns(),
-      Promise.resolve(loadScores()),
-      loadRecentLessons(10),
-    ]);
-    const lines: string[] = [];
-
-    if (patterns.length > 0) {
-      lines.push("## Learned Patterns");
-      for (const p of patterns) {
-        const taskType = p.pattern.taskType ?? p.type;
-        const agents =
-          p.pattern.agents?.join("→") ??
-          p.pattern.skills?.join("+") ??
-          "unknown";
-        const successPct = Math.round(p.outcome.successRate * 100);
-        lines.push(
-          `- Task type "${taskType}": ${agents}, ${successPct}% success (${p.sampleSize} samples)`,
-        );
-      }
-    }
-
-    const meaningful = scores.filter(
-      (s) => s.successRate > 0 || s.sampleSize >= 5,
-    );
-    if (meaningful.length > 0) {
-      lines.push("\n## Agent Success Rates");
-      for (const s of meaningful) {
-        const successPct = Math.round(s.successRate * 100);
-        lines.push(
-          `- ${s.agent}: ${successPct}% success (${s.sampleSize} tasks)`,
-        );
-      }
-    }
-
-    if (lessons.length > 0) {
-      lines.push("\n## Recent Lessons (self-improvement)");
-      for (const l of lessons) {
-        const date = l.timestamp.slice(0, 10);
-        lines.push(
-          `- [${date}] ${l.lesson}${l.skill ? ` (skill: ${l.skill})` : ""}`,
-        );
-      }
-    }
-
-    try {
-      const errorPatterns = loadErrorPatterns();
-      const useful = errorPatterns
-        .filter((p) => {
-          const fix = getBestFix(p);
-          if (!fix) return false;
-          const successfulFixes = p.fixes.filter((f) => f.succeeded).length;
-          return p.fixes.length > 0 && successfulFixes / p.fixes.length > 0.5;
-        })
-        .sort((a, b) => b.occurrences - a.occurrences)
-        .slice(0, 5);
-
-      if (useful.length > 0) {
-        lines.push("\n## Known Error Patterns");
-        for (const p of useful) {
-          const fix = getBestFix(p);
-          const successPct = Math.round(p.successRate * 100);
-          lines.push(
-            `- ${p.normalizedMessage}: fix → ${fix} (${successPct}% success, ${p.occurrences} hits)`,
-          );
-        }
-      }
-    } catch {
-      // best-effort — never break memory-inject for error patterns
-    }
-
-    if (cwd) {
-      try {
-        const baseDir = process.env.CLAUDE_MEMORY_DIR ?? join(import.meta.dir, "..", "agent-memory");
-        const staleMemories = await detectStaleMemories(baseDir, cwd);
-        if (staleMemories.length > 0) {
-          const staleList = staleMemories.map((m) => `- ${m}`).join("\n");
-          lines.push(
-            `\n[STALE MEMORY WARNING]\nThe following memories may be outdated (project artifacts changed since write):\n${staleList}\nVerify before using this data.\n[END STALE MEMORY WARNING]`,
-          );
-        }
-      } catch {
-        // best-effort — never break memory-inject
-      }
-    }
-
-    return lines.length > 0 ? lines.join("\n") : "";
-  } catch {
-    return "";
-  }
-}
-
-async function emitRoutingSuggestionsFallback(
-  prompt: string,
-  sessionTitle?: string,
-  cwd?: string,
-): Promise<void> {
-  try {
-    const context = await buildEnrichmentContext(cwd);
-    await emitOutput(context, prompt, sessionTitle);
-  } catch {
-    try {
-      await emitOutput("", prompt, sessionTitle);
-    } catch {
-      // best effort - never block Claude Code
-    }
-  }
-}
-
 async function main(): Promise<void> {
   let input: HookInput;
-
   try {
     const stdin = await readHookStdin();
     input = JSON.parse(stdin) as HookInput;
   } catch {
     process.exit(0);
   }
-
-  const { prompt, transcript_path, cwd } = input;
-
+  const { prompt, transcript_path } = input;
   if (!prompt || prompt.trim().length < 5) {
     process.exit(0);
   }
-
   const sessionTitle = isFirstTurn(transcript_path)
     ? buildSessionTitle(prompt)
     : undefined;
-
-  await emitRoutingSuggestionsFallback(prompt, sessionTitle, cwd);
+  await emitOutput("", prompt, sessionTitle);
 }
 
 if (import.meta.main) {
