@@ -4,7 +4,7 @@ globs:
 priority: 15
 ---
 
-<!-- Last verified: 2026-04-25 -->
+<!-- Last verified: 2026-04-29 -->
 
 ## Hooks Context
 
@@ -24,9 +24,9 @@ priority: 15
 |-------|------|--------------------|
 | PreToolUse | Before tool | lead-enforcement, check-staleness |
 | PostToolUse | After tool | validators, context |
-| Stop | End of turn | trace-logger, validate-tests, session-digest |
-| SubagentStop | End of subagent | agent-scoring |
-| StopFailure | API error (rate limit, auth) | api-error-recorder |
+| Stop | End of turn | validate-tests, security-gate |
+| SubagentStop | End of subagent | — |
+| StopFailure | API error (rate limit, auth) | — |
 | PermissionRequest | Claude requests permission | auto-approve |
 | PostCompact | After compaction | post-compact |
 | UserPromptSubmit | On prompt submit | memory-inject |

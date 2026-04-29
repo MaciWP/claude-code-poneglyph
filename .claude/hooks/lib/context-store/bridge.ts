@@ -60,7 +60,7 @@ export function persistToKnowledge(
       scope,
       ttl: 7,
       provenance: {
-        agent: "session-digest",
+        agent: "system",
         session: sessionId,
         confidence: 0.6,
         createdAt: new Date().toISOString(),
