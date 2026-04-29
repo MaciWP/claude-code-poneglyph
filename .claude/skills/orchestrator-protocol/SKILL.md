@@ -10,7 +10,7 @@ description: |
 type: knowledge-base
 disable-model-invocation: true
 version: "2.0"
-effort: low
+effort: high
 ---
 
 # Lead Orchestration Protocol
