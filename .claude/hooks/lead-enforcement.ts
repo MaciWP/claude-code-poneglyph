@@ -12,7 +12,9 @@ async function main(): Promise<void> {
   const input = JSON.parse(await Bun.stdin.text());
   const tool = input.tool_name;
 
-  // Subagents can Edit/Write freely — lead mode restriction applies only to the Lead
+  // Subagents can Edit/Write freely — lead mode restriction applies only to the Lead.
+  // agent_id is a non-empty string when caller is a subagent; absent or empty-string for the Lead.
+  // Both cases are falsy-safe: "" and undefined are both falsy in JS.
   if (input.agent_id) {
     process.exit(0);
   }

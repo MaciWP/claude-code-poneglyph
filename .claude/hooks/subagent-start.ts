@@ -51,7 +51,7 @@ async function main(): Promise<void> {
     const ctx = parseSpawnContext(prompt);
 
     const record = {
-      ts: Math.floor(Date.now() / 1000),
+      ts: new Date().toISOString(),
       sessionId,
       agentType,
       promptHash: ctx.promptHash,

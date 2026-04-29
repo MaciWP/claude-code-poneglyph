@@ -32,31 +32,6 @@ interface HookInput {
   cwd: string;
 }
 
-interface MemorySearchResult {
-  memory: {
-    id: string;
-    content: string;
-    type: string;
-    laneType?: string;
-    title?: string;
-    confidence: {
-      current: number;
-    };
-  };
-  similarity: number;
-  relevanceScore: number;
-}
-
-interface InjectionResponse {
-  memories: MemorySearchResult[];
-  context: string;
-  metadata: {
-    queryTimeMs: number;
-    memoriesConsidered: number;
-    memoriesInjected: number;
-  };
-}
-
 interface HookOutput {
   hookSpecificOutput: {
     hookEventName: string;
@@ -88,8 +63,6 @@ export function isFirstTurn(transcriptPath: string | undefined): boolean {
   }
 }
 
-const API_URL = process.env.MEMORY_API_URL || "http://localhost:8080";
-const TIMEOUT_MS = 4000;
 const WARM_START_LIMIT = 5;
 
 function recoverWarmStartContext(prompt: string): string {
@@ -324,7 +297,7 @@ async function main(): Promise<void> {
     process.exit(0);
   }
 
-  const { prompt, session_id, transcript_path, cwd } = input;
+  const { prompt, transcript_path, cwd } = input;
 
   if (!prompt || prompt.trim().length < 5) {
     process.exit(0);
@@ -334,42 +307,7 @@ async function main(): Promise<void> {
     ? buildSessionTitle(prompt)
     : undefined;
 
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
-
-    const response = await fetch(`${API_URL}/api/memory/inject`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        query: prompt,
-        sessionId: session_id,
-        maxMemories: 5,
-      }),
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      await emitRoutingSuggestionsFallback(prompt, sessionTitle, cwd);
-      process.exit(0);
-    }
-
-    const result = (await response.json()) as InjectionResponse;
-
-    if (!result.context || result.context.trim().length === 0) {
-      await emitRoutingSuggestionsFallback(prompt, sessionTitle, cwd);
-      process.exit(0);
-    }
-
-    await emitOutput(result.context, prompt, sessionTitle);
-  } catch {
-    await emitRoutingSuggestionsFallback(prompt, sessionTitle, cwd);
-    process.exit(0);
-  }
+  await emitRoutingSuggestionsFallback(prompt, sessionTitle, cwd);
 }
 
 if (import.meta.main) {
