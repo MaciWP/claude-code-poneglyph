@@ -28,7 +28,9 @@
       "TaskList",
       "TaskGet",
       "LSP",
-      "NotebookEdit"
+      "NotebookEdit",
+      "Agent",
+      "SendMessage"
     ],
     "deny": [],
     "defaultMode": "auto"
