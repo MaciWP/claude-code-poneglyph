@@ -11,6 +11,7 @@
 | `code-quality` | SOLID, DRY, code smells, refactoring, deuda técnica |
 | `database-patterns` | Diseño de schema, índices, migraciones, queries |
 | `decide` | Decisiones estratégicas con perspectivas multi-agente |
+| `decision-stress-test` | Stress-test multi-perspectiva (8 perspectivas + cross-debate + 5 técnicas) calibrado por stakes para decisiones técnicas pre-commitment |
 | `diagnostic-patterns` | Incidentes, error spikes, circuit breakers, retries |
 | `freeze-mode` | Modo read-only — impide todas las modificaciones de archivos |
 | `logging-strategy` | Observabilidad, log levels, structured logging |
@@ -36,6 +37,9 @@
 
 ### database-patterns
 `index-strategy` · `migration-safety`
+
+### decision-stress-test
+`01-perspectives` · `02-techniques` · `03-stakes-calibration` · `04-anti-patterns` · `05-output-template` · `06-cross-debate`
 
 ### diagnostic-patterns
 `5-whys-analysis` · `diagnostic-service` · `error-classification` · `error-diagnosis` · `pattern-checkpoint` · `pattern-dlq` · `pattern-graceful-degradation` · `pattern-manual-rollback` · `pattern-saga` · `retry-patterns` · `stack-trace-analysis`

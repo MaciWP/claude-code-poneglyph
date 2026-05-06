@@ -35,7 +35,6 @@
     "deny": [],
     "defaultMode": "auto"
   },
-  "model": "sonnet",
   "hooks": {
     "UserPromptSubmit": [
       {
@@ -50,7 +49,6 @@
     "PostToolUse": [
       {
         "matcher": "Edit|Write",
-        "if": "Edit(*.ts)|Edit(*.tsx)|Edit(*.js)|Edit(*.jsx)|Edit(*.mjs)|Edit(*.py)|Edit(*.go)|Edit(*.rs)|Edit(*.java)|Edit(*.c)|Edit(*.cpp)|Edit(*.rb)|Write(*.ts)|Write(*.tsx)|Write(*.js)|Write(*.jsx)|Write(*.mjs)|Write(*.py)|Write(*.go)|Write(*.rs)|Write(*.java)|Write(*.c)|Write(*.cpp)|Write(*.rb)",
         "hooks": [
           {
             "type": "command",
@@ -60,7 +58,6 @@
       },
       {
         "matcher": "Edit|Write",
-        "if": "Edit(*.json)|Write(*.json)",
         "hooks": [
           {
             "type": "command",
@@ -221,7 +218,7 @@
     ]
   },
   "skipDangerousModePermissionPrompt": true,
-  "autoCompactEnabled": false,
+  "autoCompactEnabled": true,
   "skipAutoPermissionPrompt": true,
   "autoMode": {
     "soft_deny": [
