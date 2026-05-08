@@ -13,6 +13,7 @@
 | `decide` | Decisiones estratégicas con perspectivas multi-agente |
 | `decision-stress-test` | Stress-test multi-perspectiva (8 perspectivas + cross-debate + 5 técnicas) calibrado por stakes para decisiones técnicas pre-commitment |
 | `diagnostic-patterns` | Incidentes, error spikes, circuit breakers, retries |
+| `explain-changes` | Explicación educativa de cambios de código (file/commit/branch/pendientes) con verificación contra docs oficiales |
 | `freeze-mode` | Modo read-only — impide todas las modificaciones de archivos |
 | `logging-strategy` | Observabilidad, log levels, structured logging |
 | `lsp-operations` | Navegación semántica: definiciones, referencias, call hierarchy |
@@ -43,6 +44,9 @@
 
 ### diagnostic-patterns
 `5-whys-analysis` · `diagnostic-service` · `error-classification` · `error-diagnosis` · `pattern-checkpoint` · `pattern-dlq` · `pattern-graceful-degradation` · `pattern-manual-rollback` · `pattern-saga` · `retry-patterns` · `stack-trace-analysis`
+
+### explain-changes
+`input-resolution` · `investigation-checklist` · `output-template` · `verification-rules` · `interaction-patterns`
 
 ### logging-strategy
 `log-levels-guide` · `structured-format`
