@@ -40,6 +40,8 @@ Planning and decomposition agent that generates **Execution Roadmaps** with task
 - Modify files
 - Delegate to other agents (no Task tool)
 
+**Bootstrap**: Read `.claude/skills/planner-protocol/SKILL.md` as first action to load the adaptive protocol. The agent applies the same level triage (Quick/Standard/Full).
+
 ## Assignable Agents
 
 | Agent | Role | Category |
@@ -265,6 +267,42 @@ Implement [WHAT] in [WHERE]. Affects N files, risk [LEVEL].
   ]
 }
 ```
+
+### Execution Script (literal para el Lead) — MANDATORY
+
+This is the **third artifact** of every roadmap output. It translates each wave from the JSON above into literal, copy-pasteable `Agent(...)` invocations for the Lead. The Markdown table and JSON describe the plan; the Execution Script tells the Lead **exactly how to dispatch it**.
+
+> **Rule for the Lead**: Las waves PARALLEL deben ser ejecutadas por el Lead como un único assistant message con todas las `Agent(...)` calls dentro del mismo `<function_calls>` block. Las waves SEQ esperan a que termine la wave anterior antes de iniciarse. Las waves CHECKPOINT bloquean hasta que el reviewer devuelve `APPROVED`.
+
+#### Format (exact syntax)
+
+```
+## Execution Script (literal para el Lead)
+
+### Wave PARALLEL-1 — ejecutar en UN único mensaje:
+  Agent(subagent_type="builder", description="T1.1", prompt="...")
+  Agent(subagent_type="builder", description="T1.2", prompt="...")
+  Agent(subagent_type="scout",   description="T1.3", prompt="...")
+
+### Wave SEQ-2 — esperar PARALLEL-1, luego:
+  Agent(subagent_type="builder", description="T2.1", prompt="...")  // depende de T1.1
+
+### Wave CHECKPOINT-3 — esperar SEQ-2, luego (bloqueante hasta APPROVED):
+  Agent(subagent_type="reviewer", description="T3.1", prompt="...")
+```
+
+#### Construction rules
+
+| Rule | Detail |
+|------|--------|
+| One line per task | One `Agent(...)` call per task in the wave, indented 2 spaces |
+| `subagent_type` | Match the `agent` field from the JSON task (builder / reviewer / scout / error-analyzer / architect) |
+| `description` | Use the task `id` (T1.1, T2.1...) — short, identifies the task in traces |
+| `prompt` | Complete prompt with files, action, skills to Read, acceptance criteria. May be summarized as `"..."` if the full prompt is too long, but in real output emit the full prompt |
+| `// comment` | After SEQ tasks, add `// depende de TX.Y` to make the dependency explicit |
+| Wave header | `### Wave {ID} — ejecutar en UN único mensaje:` (PARALLEL) / `### Wave {ID} — esperar {PREV}, luego:` (SEQ) / `### Wave {ID} — esperar {PREV}, luego (bloqueante hasta APPROVED):` (CHECKPOINT) |
+
+The Execution Script is the **single source of truth for dispatch**. If the JSON and the script disagree, the script wins (the Lead reads it last and acts on it).
 
 ### Team Mode Output Extension
 

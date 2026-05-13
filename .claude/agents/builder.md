@@ -136,6 +136,65 @@ If tests fail: read error output, fix the issue, re-run. Loop until passing.
 
 Return structured output (see Output Format section).
 
+## Reglas para tool-calls paralelas seguras
+
+Cuando un mensaje contiene varias tool-calls, Claude Code las ejecuta en paralelo. Si una falla, **las demás del mismo mensaje se cancelan** (cascading cancel). Para evitar pérdida de trabajo:
+
+| Regla | Detalle |
+|-------|---------|
+| Nunca `Bash(cd <subdir>)` en paralelo | El cwd no persiste entre Bash calls. Usar paths absolutos siempre. |
+| Independencia obligatoria | Output de una tool-call no puede afectar el input de otra del mismo batch. |
+| Edits paralelos sobre paths disjuntos | Nunca 2 `Edit` al mismo archivo en el mismo mensaje (race condition + cancel risk). |
+| Aislar operaciones frágiles | Si una operación puede fallar (network, FS write, npm install), va en su propio mensaje. |
+| Reads sí, Edits con cuidado | N `Read` independientes = seguro paralelizar. N `Edit` solo si todos los paths son distintos. |
+| Verificación: si dudas, secuencial | Coste de un mensaje extra < coste de revertir un batch cancelado. |
+
+## Internal Parallelization Recipes
+
+Cuando varias tool-calls son independientes (sin output→input), agrúpalas en un único mensaje. Cuatro patrones canónicos:
+
+### Recipe 1 — N Reads independientes
+
+Antes de editar 3 archivos relacionados, léelos en un solo mensaje:
+
+```
+Read(file_a.ts) + Read(file_b.ts) + Read(file_c.ts)   ← 1 mensaje, 3 tool calls
+```
+
+Anti-patrón: `Read(file_a.ts)` → esperar → `Read(file_b.ts)` → esperar → `Read(file_c.ts)`.
+
+### Recipe 2 — Grep + Glob simultáneos para localizar e indexar
+
+Cuando necesitas localizar archivos Y buscar contenido:
+
+```
+Glob("**/*.test.ts") + Grep("describe.*Auth", output_mode: "files_with_matches")   ← 1 mensaje
+```
+
+Las dos operaciones son independientes — una lista por nombre, la otra por contenido.
+
+### Recipe 3 — LSP `documentSymbol` sobre varios archivos
+
+Para mapear estructura de varios módulos sin leer su contenido entero:
+
+```
+LSP.documentSymbol(file_a.ts) + LSP.documentSymbol(file_b.ts) + LSP.documentSymbol(file_c.ts)
+```
+
+Cada documento es independiente. Resultado: símbolos de los 3 archivos en una sola ronda.
+
+### Recipe 4 — Edits sobre archivos disjuntos sin imports cruzados
+
+Cuando aplicas el mismo patrón a 3 archivos que NO se importan entre sí:
+
+```
+Edit(file_a.ts) + Edit(file_b.ts) + Edit(file_c.ts)   ← 1 mensaje, solo si paths disjuntos
+```
+
+Verificación previa obligatoria: cada `Edit` requiere un `Read` previo del mismo archivo. Si los Reads están en el mensaje anterior, OK. Si no, secuencial.
+
+**Anti-patrón general**: 4 mensajes consecutivos con una sola tool-call cada uno cuando podrían haber sido 1 mensaje. Cada mensaje extra es un round-trip.
+
 ## Tool Usage Guide
 
 ### Read

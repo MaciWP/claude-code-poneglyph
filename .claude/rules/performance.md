@@ -37,6 +37,21 @@ Use Grep as fallback when: LSP unavailable, literal text search, non-code files.
 
 **Anti-pattern**: Reading files one by one or running agents sequentially → BATCH in one message.
 
+### Cascading Cancel — riesgo del batching
+
+Cuando un mensaje contiene N tool-calls paralelas y **una falla**, las demás del mismo mensaje se cancelan. Para evitar pérdida de trabajo:
+
+| Regla | Razón |
+|-------|-------|
+| Operaciones frágiles aisladas | Network (`WebFetch`, `git fetch`), FS write o `npm install` → mensaje propio. Su fallo no debe arrastrar Reads/Greps locales. |
+| Edits paralelos solo sobre paths disjuntos | Nunca 2 `Edit` al mismo archivo en el mismo mensaje. |
+| Sin `Bash(cd <subdir>)` paralelo | `cwd` no persiste entre Bash calls. Usar siempre paths absolutos. |
+| Si dudas, secuencial | Coste de un mensaje extra < coste de revertir un batch cancelado. |
+
+**Ejemplo seguro**: `Read(a.ts) + Read(b.ts) + Grep("foo") + Glob("**/*.test.ts")` en un mensaje — todas read-only, independientes, sobre paths distintos.
+
+**Ejemplo arriesgado**: `Edit(file.ts) + WebFetch(url) + Bash("git push")` en un mensaje — si `WebFetch` falla, el `Edit` se cancela y `git push` no se ejecuta. Mejor: 3 mensajes secuenciales.
+
 ## Anti-Patterns
 
 | Don't do | Do instead |

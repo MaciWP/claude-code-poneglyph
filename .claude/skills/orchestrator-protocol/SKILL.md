@@ -5,10 +5,10 @@ description: |
   complexity routing, agent selection, delegation rules, and error recovery.
 
   Use proactively when: starting a new session as Lead orchestrator.
-  Invoke ONCE per session at the start of the first real task.
+  Invoke at session start; re-invoke after compaction or when protocol guidance is needed.
   Keywords - orchestrate, delegate, complexity, routing, agent, skill, checklist
 type: knowledge-base
-disable-model-invocation: true
+disable-model-invocation: false
 version: "2.0"
 effort: high
 ---
@@ -45,6 +45,13 @@ Execute steps 1-5 IN ORDER before responding to any user prompt. No exceptions.
 | Clear (score ≥70, or pragmatically clear) | Continue to Step 2 |
 
 For architectural/comparison decisions → `Skill('decide')` before proceeding.
+
+**Delegation triggers** (apply after triage):
+
+- **Trigger A — Delegar implementación**: ≥3 archivos a modificar OR cambio architectural → `builder`/`planner`. 1-2 archivos + complejidad <20 → Lead directo.
+- **Trigger B — Delegar exploración (matriz 2×2)**: ver `references/04-agent-selection.md` §Exploration Decision Matrix. BAJO+BAJA → Read directo. ALTO o ALTA → `scout` (Sonnet) o `Explore` (Haiku) según ejes.
+
+Triggers son independientes — pueden disparar uno, otro o ambos.
 
 ### Step 2: Complexity
 
@@ -91,6 +98,14 @@ Show inline: `Complexity: ~XX`
 - Answer questions needing zero file writes
 
 **Parallelize**: when Trigger A fires, send all independent Agents in the SAME message.
+
+**Wave PARALLEL pattern**:
+
+```
+Wave PARALLEL = Agent(builder, T1) + Agent(builder, T2) + Agent(scout, T3) en MISMO assistant message.
+Condiciones: (a) sin dependencias output→input, (b) archivos disjuntos, (c) sin shared state.
+NO paralelizar: (a) builder usa salida de planner, (b) Edit en mismo archivo, (c) checkpoint review tras escritura.
+```
 
 ### Step 5: Validate
 

@@ -26,6 +26,7 @@
 | `meta-settings-cookbook` | Patrones y recetas para settings.json |
 | `orchestrator-protocol` | Lead: complexity routing, delegación, error recovery |
 | `performance-review` | Bottlenecks, memory, latencia, N+1 queries |
+| `planner-protocol` | Protocolo adaptativo de planificación (Quick/Standard/Full): Discovery, Research, Gap Analysis, Classification, Roadmap, Validation |
 | `prompt-engineer` | Mejorar prompts vagos o ambiguos |
 | `security-review` | OWASP, vulnerabilidades, secrets, auditoría |
 | `sync-claude` | Sincronizar .claude/ a ~/.claude/ via symlinks |
@@ -71,6 +72,9 @@
 
 ### orchestrator-protocol
 `01-verification` · `02-prompt-scoring` · `03-complexity-routing` · `04-agent-selection` · `05-skill-matching` · `06-context-arch-h` · `07-delegation-recovery` · `08-output-style`
+
+### planner-protocol
+`01-discovery` · `02-research` · `03-gap-analysis` · `04-classification-waves` · `05-workflow-phases` · `06-output-format` · `07-team-mode` · `08-quality-gates`
 
 ### performance-review
 `memory-leak-patterns` · `n-plus-one-patterns`

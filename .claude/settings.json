@@ -104,6 +104,16 @@
             "async": true
           }
         ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun $HOME/.claude/hooks/parallelism-metrics.ts",
+            "async": true
+          }
+        ]
       }
     ],
     "PreToolUse": [
@@ -228,5 +238,6 @@
       "Bash(rm .claude)",
       "Bash(rm -rf .claude)"
     ]
-  }
+  },
+  "advisorModel": "opus"
 }

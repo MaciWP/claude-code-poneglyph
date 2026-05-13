@@ -149,6 +149,14 @@ When blocked, ask: (1) missing context, (2) approach change, (3) task split.
 
 ## Parallelization
 
+### Wave PARALLEL Pattern
+
+```
+Wave PARALLEL = Agent(builder, T1) + Agent(builder, T2) + Agent(scout, T3) en MISMO assistant message.
+Condiciones: (a) sin dependencias output→input, (b) archivos disjuntos, (c) sin shared state.
+NO paralelizar: (a) builder usa salida de planner, (b) Edit en mismo archivo, (c) checkpoint review tras escritura.
+```
+
 ### When to Parallelize vs Sequential
 
 | Parallel (same message) | Sequential (wait for result) |

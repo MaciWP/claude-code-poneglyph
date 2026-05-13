@@ -203,7 +203,14 @@ async function main(): Promise<void> {
       const matchedKeywords = Array.from(new Set(keywordMatches.map((k) => k.toLowerCase())));
 
       console.error(
-        `⚠️  Parallelism gate: user prompt contains multi-task keywords (${matchedKeywords.join(", ")}) but only 1 Agent call detected. Either batch a 2nd Task or state the dependency reason inline (e.g. "solo delegation — esperando scout output").`,
+        `[Parallelism gate] ⚠️  Oportunidad de paralelización perdida.\n` +
+          `  User prompt contains multi-task keywords (${matchedKeywords.join(", ")}) but only 1 Agent call detected.\n` +
+          `\n` +
+          `  Sugerencia: ejecuta en UN único mensaje:\n` +
+          `    Agent(subagent_type="${agentType}", description="<task A>", prompt="...")\n` +
+          `    Agent(subagent_type="${agentType}", description="<task B>", prompt="...")\n` +
+          `\n` +
+          `  Si hay dependencia real output→input, decláralo inline (ej. "solo delegation — esperando scout output") y este warning se omite.`,
       );
 
       logSkip({

@@ -147,6 +147,46 @@ Check for performance issues:
 
 Produce structured review with verdict.
 
+## Reglas para tool-calls paralelas seguras
+
+Cuando un mensaje contiene varias tool-calls, Claude Code las ejecuta en paralelo. Si una falla, **las demás del mismo mensaje se cancelan** (cascading cancel). Para evitar pérdida de trabajo:
+
+| Regla | Detalle |
+|-------|---------|
+| Nunca `Bash(cd <subdir>)` en paralelo | El cwd no persiste entre Bash calls. Usar paths absolutos siempre. |
+| Independencia obligatoria | Output de una tool-call no puede afectar el input de otra del mismo batch. |
+| Tests + lint + typecheck en paralelo, OK | Bash de comandos de validación son independientes y producen output a stdout — seguro batchear. |
+| Aislar operaciones frágiles | Comandos que tocan red/FS-state (git fetch, npm install) van en su propio mensaje. |
+| Reads/Greps/Globs paralelos siempre | Operaciones read-only sobre paths distintos — el caso ideal para batch. |
+| Verificación: si dudas, secuencial | Coste de un mensaje extra < coste de perder un batch de validaciones cancelado. |
+
+## Internal Parallelization Recipes
+
+Cuando exploras un cambio multi-archivo, agrupa lecturas y búsquedas en un único mensaje.
+
+### Recipe canónico para reviewer
+
+Tarea: revisar 3 archivos modificados, encontrar sus tests, y rastrear callers:
+
+```
+Read(file_a.ts) + Read(file_b.ts) + Read(file_c.ts)
++ Grep("file_a|file_b|file_c", glob: "*.test.*")
++ LSP.findReferences(symbolModificado)
+                                                       ← 1 mensaje, 5 tool calls
+```
+
+Todas son read-only e independientes. Resultado: contexto completo en 1 round-trip.
+
+**Anti-patrón**: 5 mensajes secuenciales. Multiplica latency por 5 y aumenta el riesgo de perder hilo al revisar.
+
+### Otros patrones útiles para reviewer
+
+| Patrón | Tool calls en 1 mensaje |
+|--------|-------------------------|
+| Validation batch | `Bash(<test-cmd>)` + `Bash(<typecheck-cmd>)` + `Bash(<lint-cmd>)` — todos validación, output independiente |
+| Audit security multi-file | `Grep("password\|secret\|token")` + `Grep("env\\.|process\\.env")` + `Glob(".env*")` |
+| Caller analysis | `LSP.findReferences(fnA)` + `LSP.findReferences(fnB)` + `LSP.findReferences(fnC)` |
+
 ## Tools Usage
 
 | Tool | Purpose | Examples |

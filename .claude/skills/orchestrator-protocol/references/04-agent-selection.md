@@ -6,6 +6,39 @@ description: Signal→agent selection matrix, multi-agent patterns, anti-pattern
 
 # Agent Selection
 
+## Exploration Decision Matrix (Volumen × Complejidad)
+
+Antes de cualquier delegación, decide CÓMO explorar el codebase. La elección depende de **volumen** (cuántos archivos) y **complejidad** (qué tan difícil es entender lo que ves):
+
+| | Complejidad BAJA (lectura directa, sin semántica) | Complejidad ALTA (relaciones, LSP, arquitectura) |
+|---|---|---|
+| **Volumen BAJO** (1-2 archivos) | `Read` directo del Lead — sin delegación | `scout` (Sonnet) — análisis semántico ligero |
+| **Volumen ALTO** (≥3 archivos) | `Explore` (Haiku) — bulk read barato | `scout` (Sonnet) — exploración + LSP + síntesis |
+
+### Reglas derivadas
+
+| Regla | Razón |
+|-------|-------|
+| Lead nunca lee >2 archivos inline | Para >2 archivos delega (Trigger B context preservation). |
+| Volumen BAJO + Complejidad BAJA = Read directo | Coste de delegación > coste del Read directo. |
+| Complejidad ALTA siempre va a scout | Aunque sea 1 archivo, si requiere LSP/análisis, scout (Sonnet) es la elección correcta. |
+| Volumen ALTO + Complejidad BAJA = Haiku | Si es bulk read sin razonamiento profundo, modelo barato. |
+| Eje paralelo: "dificultad del cambio" | Si tras explorar hay que implementar cambio difícil, planificar con `planner` (independiente del eje exploración). |
+
+### Eje paralelo — Dificultad del cambio
+
+La matriz arriba decide **exploración**. La dificultad del **cambio que sigue** es un eje independiente:
+
+| Cambio | Acción tras exploración |
+|--------|-------------------------|
+| Trivial (1 línea, rename) | builder directo |
+| Estándar (1 archivo, patrón claro) | builder con skills cargadas |
+| Multi-archivo / arquitectural | planner → N builders |
+
+Una tarea puede ser **Volumen ALTO exploración + cambio trivial** (mucho que leer, poco que cambiar) o **Volumen BAJO + cambio complejo** (poco que leer, mucho que pensar). Decide cada eje por separado.
+
+---
+
 ## Selection Matrix
 
 The "Suggested skills to Read (for delegation)" column lists `.claude/skills/<name>/SKILL.md` paths the Lead should include in the delegation prompt's `[RELEVANT SKILLS FOR THIS TASK]` block (Arch H). Max 3 per delegation. Pick the ones whose paths actually match the task context; skip the column if none apply. **Domain-specific skills (Django, React, OpenAPI, etc.) now live as project skills** under each repo's `./.claude/skills/` — check the project's `skill-matching.md` rule to discover them. The global skills listed below are cross-project patterns only.
