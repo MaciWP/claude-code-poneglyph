@@ -1,6 +1,6 @@
 # StatusLine — ccstatusline (v2.2.10)
 
-## Instalación y configuración
+## Installation and configuration
 
 ```bash
 bun install -g ccstatusline@latest
@@ -16,52 +16,52 @@ bun install -g ccstatusline@latest
 }
 ```
 
-Config de widgets: `~/.config/ccstatusline/settings.json`
+Widget config: `~/.config/ccstatusline/settings.json`
 
 ---
 
-## ⚠️ Nombres correctos del registro (el README los llama diferente)
+## ⚠️ Correct registry names (the README calls them differently)
 
-| Nombre correcto | Alias erróneo en docs | Qué hace |
+| Correct name | Incorrect alias in docs | What it does |
 |---|---|---|
-| `reset-timer` | ~~block-reset-timer~~ | Tiempo restante del bloque de 5h |
-| `git-review` | ~~git-pr~~ | Estado del PR actual con link clickable |
+| `reset-timer` | ~~block-reset-timer~~ | Time remaining in the 5h block |
+| `git-review` | ~~git-pr~~ | Current PR status with clickable link |
 
 ---
 
-## Widgets por categoría
+## Widgets by category
 
-**Modelo y sesión**
-- `model` — nombre del modelo activo
-- `thinking-effort` — nivel de esfuerzo (low/medium/high/default)
-- `session-cost` — coste acumulado en USD
+**Model and session**
+- `model` — name of the active model
+- `thinking-effort` — effort level (low/medium/high/default)
+- `session-cost` — accumulated cost in USD
 
 **Git**
-- `git-branch` — rama actual
-- `git-review` — estado del PR (requiere `gh` CLI autenticado)
-- `git-changes` — `(+N,-M)` cambios en staging
-- `git-insertions` / `git-deletions` — por separado (leen staging real, no `cost.total_lines_*`)
+- `git-branch` — current branch
+- `git-review` — PR status (requires authenticated `gh` CLI)
+- `git-changes` — `(+N,-M)` changes in staging
+- `git-insertions` / `git-deletions` — separately (read real staging, not `cost.total_lines_*`)
 
-**Contexto**
-- `context-percentage` — % del context window usado
-- `context-bar` — barra visual `▓▓▓░░░░░░░` (necesita `context_window_size` en el JSON de entrada)
-- `context-length` — tokens usados en números
+**Context**
+- `context-percentage` — % of the context window used
+- `context-bar` — visual bar `▓▓▓░░░░░░░` (requires `context_window_size` in the input JSON)
+- `context-length` — used tokens as a number
 
-**Rutas**
-- `current-working-dir` — directorio actual
-  - `metadata.segments: "1"` — solo el último segmento (debe ser **string**, no número)
-  - `metadata.abbreviateHome: "true"` — abreviar con `~`
-  - `rawMode: true` — quitar prefijo "cwd: "
+**Paths**
+- `current-working-dir` — current directory
+  - `metadata.segments: "1"` — only the last segment (must be a **string**, not a number)
+  - `metadata.abbreviateHome: "true"` — abbreviate with `~`
+  - `rawMode: true` — remove "cwd: " prefix
 
-**Timers y cuotas** (requieren Anthropic usage API — no funcionan en test sin sesión real)
-- `session-usage` — % del límite de sesión usado
-- `weekly-usage` — % del límite semanal usado
-- `reset-timer` — tiempo restante hasta reset del bloque de 5h
-- `weekly-reset-timer` — tiempo restante hasta reset semanal
+**Timers and quotas** (require Anthropic usage API — do not work in test without a real session)
+- `session-usage` — % of the session limit used
+- `weekly-usage` — % of the weekly limit used
+- `reset-timer` — time remaining until the 5h block resets
+- `weekly-reset-timer` — time remaining until weekly reset
 
 ---
 
-## Layout recomendado (4 líneas, alineación izquierda/derecha)
+## Recommended layout (4 lines, left/right alignment)
 
 ```json
 {
@@ -107,11 +107,11 @@ Config de widgets: `~/.config/ccstatusline/settings.json`
 
 ---
 
-## Notas críticas
+## Critical notes
 
-- `flex-separator` empuja el contenido posterior hacia la derecha de la línea
-- `context-bar` requiere `context_window.context_window_size` en el JSON de Claude Code
-- `git-changes` muestra cambios del staging area git — no los `cost.total_lines_added` de la sesión
-- `block-timer` ≠ `reset-timer`: el primero muestra tiempo transcurrido, el segundo tiempo restante
-- Instalar globalmente con bun evita el ruido "Resolving dependencies" en cada refresh (cada 10s)
-- El binary global resuelve en `$HOME/.bun/bin/ccstatusline` — usar ruta absoluta en `settings.json`
+- `flex-separator` pushes subsequent content to the right of the line
+- `context-bar` requires `context_window.context_window_size` in Claude Code's input JSON
+- `git-changes` shows changes from the git staging area — not the session's `cost.total_lines_added`
+- `block-timer` ≠ `reset-timer`: the first shows elapsed time, the second shows remaining time
+- Installing globally with bun avoids the "Resolving dependencies" noise on each refresh (every 10s)
+- The global binary resolves to `$HOME/.bun/bin/ccstatusline` — use absolute path in `settings.json`

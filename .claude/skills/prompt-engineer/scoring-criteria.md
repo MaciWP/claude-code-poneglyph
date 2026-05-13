@@ -1,41 +1,41 @@
 # Scoring Criteria
 
-Sistema de evaluación de 5 criterios para prompts.
+5-criteria evaluation system for prompts.
 
-## Los 5 Criterios
+## The 5 Criteria
 
-| Criterio | 20 pts | 10 pts | 0 pts |
+| Criterion | 20 pts | 10 pts | 0 pts |
 |----------|--------|--------|-------|
-| **Clarity** | Verbo acción + target específico | Verbo genérico | Vago/ambiguo |
-| **Context** | Paths + tech + versiones | Tech mencionada | Sin contexto |
-| **Structure** | Organizado, bullets/headers | Párrafos claros | Muro de texto |
-| **Success** | Métricas (<100ms, >90%) | "mejor", "más rápido" | Sin criterios |
-| **Actionable** | Sin preguntas abiertas | 1-2 clarificaciones | Muy vago |
+| **Clarity** | Action verb + specific target | Generic verb | Vague/ambiguous |
+| **Context** | Paths + tech + versions | Tech mentioned | No context |
+| **Structure** | Organized, bullets/headers | Clear paragraphs | Wall of text |
+| **Success** | Metrics (<100ms, >90%) | "better", "faster" | No criteria |
+| **Actionable** | No open questions | 1-2 clarifications | Very vague |
 
 ## Thresholds
 
-| Score | Acción |
+| Score | Action |
 |-------|--------|
-| 80-100 | Proceder directamente |
-| 70-79 | Proceder con precaución |
-| < 70 | Mejorar antes de continuar |
+| 80-100 | Proceed directly |
+| 70-79 | Proceed with caution |
+| < 70 | Improve before continuing |
 
-## Ejemplos de Scoring
+## Scoring Examples
 
-### Score Alto (85)
+### High Score (85)
 > "Añadir endpoint POST /api/users que valide email único, hashee password con bcrypt, y retorne 201"
 
-- Clarity: 20 (verbo + target específico)
-- Context: 15 (tech implícita)
-- Structure: 20 (organizado)
-- Success: 15 (status code definido)
-- Actionable: 15 (claro)
+- Clarity: 20 (verb + specific target)
+- Context: 15 (implicit tech)
+- Structure: 20 (organized)
+- Success: 15 (status code defined)
+- Actionable: 15 (clear)
 
-### Score Bajo (25)
+### Low Score (25)
 > "Mejorar el sistema de usuarios"
 
-- Clarity: 5 (vago)
-- Context: 0 (sin detalles)
+- Clarity: 5 (vague)
+- Context: 0 (no details)
 - Structure: 10 (simple)
-- Success: 5 (sin criterios)
-- Actionable: 5 (ambiguo)
+- Success: 5 (no criteria)
+- Actionable: 5 (ambiguous)

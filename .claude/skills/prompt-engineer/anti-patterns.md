@@ -1,40 +1,40 @@
 # Anti-Patterns
 
-Errores comunes en prompts y cómo evitarlos.
+Common prompt errors and how to avoid them.
 
-## Tabla de Anti-Patterns
+## Anti-Patterns Table
 
-| Anti-Pattern | Ejemplo Malo | Corrección |
+| Anti-Pattern | Bad Example | Correction |
 |--------------|--------------|------------|
-| **Vaguedad** | "Mejorar performance" | "Reducir tiempo de response de /api/users de 500ms a <100ms" |
-| **Sin Contexto** | "Arreglar el bug" | "Arreglar error en login.ts:45 donde password null causa crash" |
-| **Scope Infinito** | "Refactorizar todo" | "Extraer validación de OrderService a ValidationService" |
-| **Sin Criterio** | "Hacerlo mejor" | "Reducir complejidad ciclomática de 15 a <10" |
-| **Múltiples Tareas** | "Login y registro y perfil" | Separar en 3 prompts distintos |
+| **Vagueness** | "Mejorar performance" | "Reducir tiempo de response de /api/users de 500ms a <100ms" |
+| **No Context** | "Arreglar el bug" | "Arreglar error en login.ts:45 donde password null causa crash" |
+| **Infinite Scope** | "Refactorizar todo" | "Extraer validación de OrderService a ValidationService" |
+| **No Criteria** | "Hacerlo mejor" | "Reducir complejidad ciclomática de 15 a <10" |
+| **Multiple Tasks** | "Login y registro y perfil" | Split into 3 separate prompts |
 
-## Señales de Alerta
+## Warning Signals
 
-| Palabra | Problema | Alternativa |
+| Word | Problem | Alternative |
 |---------|----------|-------------|
-| "mejorar" | Vago | Especificar métrica |
-| "arreglar" | Sin contexto | Describir el bug |
-| "todo" | Scope infinito | Limitar a componente |
-| "rápido" | Sin criterio | Definir ms/ops |
-| "y...y...y" | Múltiples tareas | Dividir |
+| "mejorar" | Vague | Specify metric |
+| "arreglar" | No context | Describe the bug |
+| "todo" | Infinite scope | Limit to component |
+| "rápido" | No criteria | Define ms/ops |
+| "y...y...y" | Multiple tasks | Split |
 
-## Checklist Pre-Envío
+## Pre-Submit Checklist
 
-- [ ] ¿Tiene verbo de acción específico?
-- [ ] ¿Menciona archivos o componentes concretos?
-- [ ] ¿Define criterio de éxito medible?
-- [ ] ¿Es una sola tarea atómica?
-- [ ] ¿Puedo empezar sin preguntar más?
+- [ ] Does it have a specific action verb?
+- [ ] Does it mention concrete files or components?
+- [ ] Does it define a measurable success criterion?
+- [ ] Is it a single atomic task?
+- [ ] Can I start without asking more?
 
-## Errores Técnicos Comunes
+## Common Technical Errors
 
-| Error | Problema | Fix |
+| Error | Problem | Fix |
 |-------|----------|-----|
-| `claude-3-opus` | Modelo incorrecto | `claude-opus-4-5-20251101` |
-| `rm -rf` en Windows | Comando Unix | `Remove-Item -Recurse` |
-| `cat file.txt` | Comando Unix | `type file.txt` o Read tool |
-| Path con `/` | Separador Unix | Usar `\` en Windows |
+| `claude-3-opus` | Wrong model | `claude-opus-4-5-20251101` |
+| `rm -rf` on Windows | Unix command | `Remove-Item -Recurse` |
+| `cat file.txt` | Unix command | `type file.txt` or Read tool |
+| Path with `/` | Unix separator | Use `\` on Windows |

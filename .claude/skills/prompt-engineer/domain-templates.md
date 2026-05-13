@@ -1,6 +1,6 @@
 # Domain Templates
 
-Templates pre-construidos para tipos comunes de tareas.
+Pre-built templates for common task types.
 
 ## API Endpoint Template
 

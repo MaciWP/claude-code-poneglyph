@@ -1,43 +1,43 @@
 # Improvement Process
 
-Proceso paso a paso para mejorar prompts con score < 70.
+Step-by-step process to improve prompts with score < 70.
 
 ## Workflow
 
 ```mermaid
 graph TD
-    A[Recibir Prompt] --> B[Evaluar 5 Criterios]
+    A[Receive Prompt] --> B[Evaluate 5 Criteria]
     B --> C{Score >= 70?}
-    C -->|Sí| D[Proceder]
-    C -->|No| E[Identificar Criterios Bajos]
-    E --> F[Aplicar Correcciones]
-    F --> G[Re-evaluar]
+    C -->|Yes| D[Proceed]
+    C -->|No| E[Identify Low Criteria]
+    E --> F[Apply Corrections]
+    F --> G[Re-evaluate]
     G --> C
 ```
 
-## Técnicas de Mejora
+## Improvement Techniques
 
-| Técnica | Uso | Ejemplo |
+| Technique | Use | Example |
 |---------|-----|---------|
-| **XML Tags** | Estructurar secciones | `<context>...</context>` |
-| **Chain-of-Thought** | Razonamiento paso a paso | "Primero X, luego Y" |
-| **Few-Shot** | Ejemplos de input/output | "Ejemplo: dado X, retorna Y" |
-| **Constraints** | Limitar scope | "Solo archivos en src/" |
+| **XML Tags** | Structure sections | `<context>...</context>` |
+| **Chain-of-Thought** | Step-by-step reasoning | "First X, then Y" |
+| **Few-Shot** | Input/output examples | "Example: given X, return Y" |
+| **Constraints** | Limit scope | "Only files in src/" |
 
-## Pasos de Corrección
+## Correction Steps
 
-1. **Identificar** criterio más bajo
-2. **Preguntar** información faltante al usuario
-3. **Estructurar** con bullets o headers
-4. **Añadir** criterios de éxito medibles
-5. **Verificar** que es actionable sin más preguntas
+1. **Identify** lowest criterion
+2. **Ask** the user for missing information
+3. **Structure** with bullets or headers
+4. **Add** measurable success criteria
+5. **Verify** it is actionable without further questions
 
-## Preguntas Clave por Criterio
+## Key Questions by Criterion
 
-| Criterio | Preguntas |
+| Criterion | Questions |
 |----------|-----------|
-| Clarity | ¿Qué acción específica? ¿Sobre qué? |
-| Context | ¿Qué archivos? ¿Qué tecnología? |
-| Structure | ¿Puedo dividir en pasos? |
-| Success | ¿Cómo sé que está completo? |
-| Actionable | ¿Puedo empezar ya? |
+| Clarity | What specific action? On what? |
+| Context | Which files? Which technology? |
+| Structure | Can I split into steps? |
+| Success | How do I know it is complete? |
+| Actionable | Can I start now? |

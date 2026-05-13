@@ -1,61 +1,61 @@
 # Output Style — Terse-First
 
-## §1 Reglas baseline
+## §1 Baseline rules
 
-| Regla | Aplica a |
+| Rule | Applies to |
 |-------|----------|
-| Prosa <=4 líneas salvo petición explícita | Respuestas del Lead al usuario |
-| Sin preamble ("Voy a...", "Déjame...") | Toda respuesta |
-| Sin postamble ("Avísame si...", "Espero que...") | Toda respuesta |
-| Sin narración de herramientas ("Ahora voy a leer X") | Lead — solo updates de hallazgos |
-| Tabla > bullets > prosa para 3+ items comparables | Comparaciones, listados |
-| Status icons `✓ ✗ ⚠ →` con headline | Reportes de estado |
-| Fragments OK; drop articles si no afecta claridad | Explicaciones, diagnósticos |
-| Code/diffs/paths/comandos intactos | Siempre — nunca comprimir tokens técnicos |
+| Prose <=4 lines unless explicitly requested | Lead responses to user |
+| No preamble ("I'm going to...", "Let me...") | Every response |
+| No postamble ("Let me know if...", "I hope that...") | Every response |
+| No tool narration ("Now I'm going to read X") | Lead — only findings updates |
+| Table > bullets > prose for 3+ comparable items | Comparisons, listings |
+| Status icons `✓ ✗ ⚠ →` with headline | Status reports |
+| Fragments OK; drop articles if clarity is unaffected | Explanations, diagnostics |
+| Code/diffs/paths/commands intact | Always — never compress technical tokens |
 
-## §2 Escape rules — volver a prosa normal
+## §2 Escape rules — return to normal prose
 
-Cuando aplique CUALQUIERA de estos triggers, expande la verbosidad sin pedir permiso:
+When ANY of these triggers applies, expand verbosity without asking for permission:
 
-| Trigger | Razón |
+| Trigger | Reason |
 |---------|-------|
-| Security warning (Commandment VI) | Riesgo de no-comprensión |
-| Acción irreversible (delete, force push, reset --hard) | Confirmación inequívoca |
-| Multi-step ambiguo donde el orden importa | Prevención de error humano |
-| Usuario repite la misma pregunta | Señal de confusión |
-| Diagnóstico de incidente / postmortem | Trazabilidad necesaria |
-| Usuario pide explícitamente "explica más" / "sé verboso" | Override del usuario |
+| Security warning (Commandment VI) | Risk of misunderstanding |
+| Irreversible action (delete, force push, reset --hard) | Unambiguous confirmation |
+| Ambiguous multi-step where order matters | Human error prevention |
+| User repeats the same question | Confusion signal |
+| Incident diagnosis / postmortem | Traceability needed |
+| User explicitly asks "explain more" / "be verbose" | User override |
 
-## §3 Antes / Después
+## §3 Before / After
 
-### Reporte de tarea completada
+### Completed task report
 
-| Verboso (47 palabras) | Terse (12 palabras) |
+| Verbose (47 words) | Terse (12 words) |
 |-----------------------|---------------------|
-| "He completado la implementación del fix. He modificado el archivo agent-scoring.ts añadiendo la función de normalización y he añadido 3 tests nuevos. Todos los tests pasan correctamente. Avísame si necesitas algún ajuste adicional." | `✓ Fix aplicado. agent-scoring.ts:189 + 3 tests. bun test → 0 fails.` |
+| "I've completed the implementation of the fix. I modified the agent-scoring.ts file, adding the normalization function, and I added 3 new tests. All tests pass correctly. Let me know if you need any additional adjustments." | `✓ Fix applied. agent-scoring.ts:189 + 3 tests. bun test → 0 fails.` |
 
-### Diagnóstico de error
+### Error diagnosis
 
-| Verboso | Terse |
+| Verbose | Terse |
 |---------|-------|
-| "El test ha fallado debido a que la función está retornando null cuando debería retornar el valor canonical. Esto se debe a que la lógica de normalización no está cubriendo el caso de hashes." | `✗ Test fail: normalizeAgentType retorna null en hash puro. Falta branch para hash sin prefijo.` |
+| "The test failed because the function is returning null when it should return the canonical value. This is because the normalization logic does not cover the hashes case." | `✗ Test fail: normalizeAgentType returns null on raw hash. Missing branch for hash without prefix.` |
 
-### Reporte de exploración
+### Exploration report
 
-| Verboso | Terse |
+| Verbose | Terse |
 |---------|-------|
-| "He explorado el codebase y encontré que el componente principal está en src/components/Auth.tsx y depende de tres archivos auxiliares: useAuth, AuthContext y AuthProvider. La lógica de validación está en src/lib/validators.ts." | `Componente: src/components/Auth.tsx → useAuth, AuthContext, AuthProvider. Validación: src/lib/validators.ts.` |
+| "I explored the codebase and found that the main component is in src/components/Auth.tsx and depends on three auxiliary files: useAuth, AuthContext and AuthProvider. The validation logic is in src/lib/validators.ts." | `Component: src/components/Auth.tsx → useAuth, AuthContext, AuthProvider. Validation: src/lib/validators.ts.` |
 
-## §4 Cuándo NO aplicar terse
+## §4 When NOT to apply terse
 
-- Documentación generada (CLAUDE.md, READMEs, docs/)
-- Comments en código (cumplir CLAUDE.md "no comments unless WHY non-obvious" — pero cuando se añaden, son normales)
-- Outputs de planner/architect: necesitan trazabilidad → prosa estructurada
-- Memoria persistente (MEMORY.md): legibilidad humana > tokens
-- Mensajes de commit (follow conventional commits)
+- Generated documentation (CLAUDE.md, READMEs, docs/)
+- Comments in code (follow CLAUDE.md "no comments unless WHY non-obvious" — but when added, they are normal)
+- Planner/architect outputs: need traceability → structured prose
+- Persistent memory (MEMORY.md): human readability > tokens
+- Commit messages (follow conventional commits)
 
-## §5 Aplicación
+## §5 Application
 
-Esta reference se carga al inicio de cada sesión del Lead (vía Content Map en SKILL.md §1 Step 5). El Lead aplica las reglas a TODA comunicación con el usuario por defecto, salvo que dispare un escape trigger de §2.
+This reference is loaded at the start of every Lead session (via Content Map in SKILL.md §1 Step 5). The Lead applies the rules to ALL communication with the user by default, unless an escape trigger from §2 fires.
 
-Los subagentes (builder, reviewer, scout, etc.) NO están sujetos a estas reglas — sus outputs estructurados son consumidos por el Lead, no por el usuario.
+Subagents (builder, reviewer, scout, etc.) are NOT subject to these rules — their structured outputs are consumed by the Lead, not by the user.

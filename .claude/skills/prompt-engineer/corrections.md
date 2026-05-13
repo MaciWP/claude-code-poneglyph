@@ -1,59 +1,59 @@
 # Corrections
 
-Correcciones específicas para cada criterio de scoring.
+Specific corrections for each scoring criterion.
 
-## Por Criterio
+## By Criterion
 
 ### Clarity (0 → 20)
 
-| Si falta | Añadir |
+| If missing | Add |
 |----------|--------|
-| Verbo | "Crear", "Modificar", "Eliminar", "Refactorizar" |
-| Target | Archivo, función, endpoint específico |
-| Acción | Qué debe pasar exactamente |
+| Verb | "Create", "Modify", "Delete", "Refactor" |
+| Target | Specific file, function, endpoint |
+| Action | What should happen exactly |
 
 ### Context (0 → 20)
 
-| Si falta | Añadir |
+| If missing | Add |
 |----------|--------|
-| Ubicación | Path del archivo: `src/services/user.ts` |
-| Tecnología | "usando Elysia", "con Drizzle ORM" |
-| Dependencias | "requiere bcrypt para hashing" |
+| Location | File path: `src/services/user.ts` |
+| Technology | "using Elysia", "with Drizzle ORM" |
+| Dependencies | "requires bcrypt for hashing" |
 
 ### Structure (0 → 20)
 
-| Si falta | Añadir |
+| If missing | Add |
 |----------|--------|
-| Organización | Bullets para pasos |
-| Separación | Headers para secciones |
-| Claridad | Código inline para identificadores |
+| Organization | Bullets for steps |
+| Separation | Headers for sections |
+| Clarity | Inline code for identifiers |
 
 ### Success (0 → 20)
 
-| Si falta | Añadir |
+| If missing | Add |
 |----------|--------|
-| Métrica | "<100ms", ">90% coverage" |
-| Output | "retorna 201 con {id, email}" |
-| Verificación | "test X debe pasar" |
+| Metric | "<100ms", ">90% coverage" |
+| Output | "returns 201 with {id, email}" |
+| Verification | "test X must pass" |
 
 ### Actionable (0 → 20)
 
-| Si falta | Añadir |
+| If missing | Add |
 |----------|--------|
-| Decisiones | Tomar las decisiones técnicas |
-| Ambigüedad | Eliminar "quizás", "tal vez" |
-| Completitud | Toda info necesaria presente |
+| Decisions | Make the technical decisions |
+| Ambiguity | Remove "maybe", "perhaps" |
+| Completeness | All required info present |
 
 ## Quick Fix Table
 
-| Score Actual | Corrección Prioritaria |
+| Current Score | Priority Correction |
 |--------------|------------------------|
-| < 20 | Añadir verbo + target |
-| 20-40 | Añadir contexto técnico |
-| 40-60 | Estructurar con bullets |
-| 60-70 | Añadir criterio de éxito |
+| < 20 | Add verb + target |
+| 20-40 | Add technical context |
+| 40-60 | Structure with bullets |
+| 60-70 | Add success criterion |
 
-## Plantilla de Mejora Rápida
+## Quick Improvement Template
 
 ```markdown
 ## Prompt Original
