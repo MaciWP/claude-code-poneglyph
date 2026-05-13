@@ -210,7 +210,7 @@ Implement [WHAT] in [WHERE]. Affects N files, risk [LEVEL].
 **Suggested Skills**: security-review, code-quality
 **Parallel Efficiency Score**: 83%
 **Execution Mode**: subagents (default) | tiered (architect-first contracts) | team (experimental)
-**Team Justification**: [solo si mode=team: dominios, prueba de independencia, necesidades de comunicacion]
+**Team Justification**: [only if mode=team: domains, proof of independence, communication needs]
 
 ## Execution Roadmap
 
@@ -268,26 +268,26 @@ Implement [WHAT] in [WHERE]. Affects N files, risk [LEVEL].
 }
 ```
 
-### Execution Script (literal para el Lead) — MANDATORY
+### Execution Script (literal for the Lead) — MANDATORY
 
 This is the **third artifact** of every roadmap output. It translates each wave from the JSON above into literal, copy-pasteable `Agent(...)` invocations for the Lead. The Markdown table and JSON describe the plan; the Execution Script tells the Lead **exactly how to dispatch it**.
 
-> **Rule for the Lead**: Las waves PARALLEL deben ser ejecutadas por el Lead como un único assistant message con todas las `Agent(...)` calls dentro del mismo `<function_calls>` block. Las waves SEQ esperan a que termine la wave anterior antes de iniciarse. Las waves CHECKPOINT bloquean hasta que el reviewer devuelve `APPROVED`.
+> **Rule for the Lead**: PARALLEL waves must be executed by the Lead as a single assistant message with all `Agent(...)` calls inside the same `<function_calls>` block. SEQ waves wait for the previous wave to finish before starting. CHECKPOINT waves block until the reviewer returns `APPROVED`.
 
 #### Format (exact syntax)
 
 ```
-## Execution Script (literal para el Lead)
+## Execution Script (literal for the Lead)
 
-### Wave PARALLEL-1 — ejecutar en UN único mensaje:
+### Wave PARALLEL-1 — execute in ONE single message:
   Agent(subagent_type="builder", description="T1.1", prompt="...")
   Agent(subagent_type="builder", description="T1.2", prompt="...")
   Agent(subagent_type="scout",   description="T1.3", prompt="...")
 
-### Wave SEQ-2 — esperar PARALLEL-1, luego:
-  Agent(subagent_type="builder", description="T2.1", prompt="...")  // depende de T1.1
+### Wave SEQ-2 — wait for PARALLEL-1, then:
+  Agent(subagent_type="builder", description="T2.1", prompt="...")  // depends on T1.1
 
-### Wave CHECKPOINT-3 — esperar SEQ-2, luego (bloqueante hasta APPROVED):
+### Wave CHECKPOINT-3 — wait for SEQ-2, then (blocking until APPROVED):
   Agent(subagent_type="reviewer", description="T3.1", prompt="...")
 ```
 
@@ -299,8 +299,8 @@ This is the **third artifact** of every roadmap output. It translates each wave 
 | `subagent_type` | Match the `agent` field from the JSON task (builder / reviewer / scout / error-analyzer / architect) |
 | `description` | Use the task `id` (T1.1, T2.1...) — short, identifies the task in traces |
 | `prompt` | Complete prompt with files, action, skills to Read, acceptance criteria. May be summarized as `"..."` if the full prompt is too long, but in real output emit the full prompt |
-| `// comment` | After SEQ tasks, add `// depende de TX.Y` to make the dependency explicit |
-| Wave header | `### Wave {ID} — ejecutar en UN único mensaje:` (PARALLEL) / `### Wave {ID} — esperar {PREV}, luego:` (SEQ) / `### Wave {ID} — esperar {PREV}, luego (bloqueante hasta APPROVED):` (CHECKPOINT) |
+| `// comment` | After SEQ tasks, add `// depends on TX.Y` to make the dependency explicit |
+| Wave header | `### Wave {ID} — execute in ONE single message:` (PARALLEL) / `### Wave {ID} — wait for {PREV}, then:` (SEQ) / `### Wave {ID} — wait for {PREV}, then (blocking until APPROVED):` (CHECKPOINT) |
 
 The Execution Script is the **single source of truth for dispatch**. If the JSON and the script disagree, the script wins (the Lead reads it last and acts on it).
 

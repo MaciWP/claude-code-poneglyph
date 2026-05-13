@@ -31,33 +31,33 @@ agent selection, and error recovery — into your active context.
 
 After the protocol is loaded, every user request must be triaged against **two independent triggers** before the Lead acts:
 
-### Trigger A — Delegar implementación
+### Trigger A — Delegate implementation
 
-Aplica cuando el cambio implica escritura de código. El gate `lead-enforcement.ts` opera en modo **default-allow**: el Lead actúa libre salvo en señales reales de peligro.
+Applies when the change involves writing code. The `lead-enforcement.ts` gate operates in **default-allow** mode: the Lead acts freely except on real danger signals.
 
-| Condición | Acción |
+| Condition | Action |
 |-----------|--------|
-| ≥3 archivos a modificar | Delegar a `builder` (o `planner` si complexity >60) — el gate no lo fuerza, pero la métrica `/parallelism-insights` lo monitoriza |
-| Cambio architectural (cross-module, nueva interfaz, refactor mayor) | Delegar a `planner` → `builder` |
-| 1-2 archivos, cambio acotado | Lead actúa directamente — **sin declaración requerida** |
-| Path sensible (`.env`, `*.lock`, `package.json`, `.claude/settings.json`, `secrets/`, `credentials/`) | Declarar inline `sensitive: <razón ≥8 chars>` o delegar al builder |
-| Operación destructiva/irreversible (`rm -rf`, force push, db migration, schema change) | 🚫 Bloqueada absolutamente por el gate; delegar al builder con razón clara |
+| ≥3 files to modify | Delegate to `builder` (or `planner` if complexity >60) — the gate does not enforce it, but the `/parallelism-insights` metric monitors it |
+| Architectural change (cross-module, new interface, major refactor) | Delegate to `planner` → `builder` |
+| 1-2 files, bounded change | Lead acts directly — **no declaration required** |
+| Sensitive path (`.env`, `*.lock`, `package.json`, `.claude/settings.json`, `secrets/`, `credentials/`) | Declare inline `sensitive: <reason ≥8 chars>` or delegate to the builder |
+| Destructive/irreversible operation (`rm -rf`, force push, db migration, schema change) | 🚫 Absolutely blocked by the gate; delegate to the builder with a clear reason |
 
-**Cambio importante (allow-by-default)**: el Lead ya NO declara `Files: N + non-architectural` para cada Edit. Las únicas declaraciones obligatorias son `sensitive: <razón>` cuando se toca un path sensible. Para el resto, el Lead decide cuándo delegar guiado por Trigger A/B y las métricas de paralelización.
+**Important change (allow-by-default)**: the Lead NO longer declares `Files: N + non-architectural` for each Edit. The only mandatory declarations are `sensitive: <reason>` when a sensitive path is touched. For everything else, the Lead decides when to delegate, guided by Trigger A/B and the parallelization metrics.
 
-### Trigger B — Delegar exploración (matriz 2×2)
+### Trigger B — Delegate exploration (2×2 matrix)
 
-Aplica cuando hace falta entender el codebase antes de cambiar.
+Applies when you need to understand the codebase before changing it.
 
-| Volumen / Complejidad | Acción |
+| Volume / Complexity | Action |
 |-----------------------|--------|
-| BAJO + BAJA (1-2 archivos, lectura directa) | `Read` directo del Lead |
-| BAJO + ALTA (1-2 archivos, requiere LSP/semántica) | `scout` (Sonnet) |
-| ALTO + BAJA (≥3 archivos, bulk read sin razonamiento) | `Explore` (Haiku) si disponible, si no `scout` |
-| ALTO + ALTA (≥3 archivos, requiere síntesis) | `scout` (Sonnet) |
+| LOW + LOW (1-2 files, direct read) | Lead `Read` directly |
+| LOW + HIGH (1-2 files, requires LSP/semantics) | `scout` (Sonnet) |
+| HIGH + LOW (≥3 files, bulk read without reasoning) | `Explore` (Haiku) if available, otherwise `scout` |
+| HIGH + HIGH (≥3 files, requires synthesis) | `scout` (Sonnet) |
 
-Referencia completa: `${CLAUDE_SKILL_DIR}/references/04-agent-selection.md` §Exploration Decision Matrix.
+Full reference: `${CLAUDE_SKILL_DIR}/references/04-agent-selection.md` §Exploration Decision Matrix.
 
-### Combinación
+### Combination
 
-Los dos triggers son **independientes**. Una task puede disparar A (delegar implementación) sin disparar B (Lead ya tiene contexto), o disparar B (necesita exploración) sin disparar A (no hay cambio que implementar). Lo habitual es que ambos disparen — primero exploración, luego implementación.
+The two triggers are **independent**. A task can fire A (delegate implementation) without firing B (Lead already has context), or fire B (needs exploration) without firing A (no change to implement). Typically both fire — first exploration, then implementation.

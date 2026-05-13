@@ -1,38 +1,38 @@
 ## 2026-04-29 — Session fix-batch-7-fixes
-- Los tests en `.claude/hooks/__tests__/` se llaman `auto-approve.test.ts` y `code-validator.test.ts` — `agent-scoring.test.ts` no existe. Verificar siempre con `ls` antes de asumir nombres de test files.
-- `bun test <absolute-path>` falla silenciosamente si el path no matchea el cwd bun pattern — bun test trabaja relativo a `--cwd`; usar paths de archivos específicos que existen, no paths de directorios inventados.
-- Al eliminar un hook de `settings.json`, el patrón `python3 json.load/dump` con list comprehension filtrando por `"command"` es el más seguro — un solo script atómico lee, filtra, escribe.
-- `SECRET_PATTERN` con `/gi` flag y regex stateful (lastIndex) necesita reset explícito con `lastIndex = 0` en cada iteración de línea — ya estaba en el código original; al añadir `SECRET_PATTERN_CI` sin estado no es necesario el reset.
-- Las skills `testing-strategy`, `typescript-patterns`, `bun-best-practices`, `api-design` NO existen como directorios en `.claude/skills/` — nunca referenciarlas en tablas de matching o catálogos.
+- The tests in `.claude/hooks/__tests__/` are named `auto-approve.test.ts` and `code-validator.test.ts` — `agent-scoring.test.ts` does not exist. Always verify with `ls` before assuming test file names.
+- `bun test <absolute-path>` fails silently if the path does not match the cwd bun pattern — bun test works relative to `--cwd`; use specific file paths that exist, not invented directory paths.
+- When removing a hook from `settings.json`, the `python3 json.load/dump` pattern with a list comprehension filtering by `"command"` is the safest — a single atomic script reads, filters, writes.
+- `SECRET_PATTERN` with the `/gi` flag and stateful regex (lastIndex) needs explicit reset with `lastIndex = 0` on each line iteration — it was already in the original code; when adding `SECRET_PATTERN_CI` without state, the reset is not necessary.
+- The skills `testing-strategy`, `typescript-patterns`, `bun-best-practices`, `api-design` do NOT exist as directories in `.claude/skills/` — never reference them in matching tables or catalogs.
 
 
 ## 2026-04-29 — Session simplify-pipeline
-- Para limpiar un pipeline completo (7 hooks + 30 libs), el orden seguro es: eliminar ficheros → modificar settings.json via `python3 + json.load/dump` (evita errores de sintaxis) → reescribir el hook simplificado → verificar build + tests. El script Python con `json.load/dump` es la forma más robusta de eliminar bloques de hooks de `settings.json` sin riesgo de JSON inválido.
-- `bun test <absolute-path-file>` funciona correctamente; `bun test <relative-dir>` sin `./` falla con "filter did not match". Para tests en `.claude/hooks/`, usar paths absolutos o `./` prefix.
-- Cuando se simplifican hooks que importan libs eliminadas, `bun build <file> --target bun` confirma en segundos que no quedan imports colgantes — el output al stdout es el bundle compilado, no un error si el build es exitoso.
+- To clean up an entire pipeline (7 hooks + 30 libs), the safe order is: delete files → modify settings.json via `python3 + json.load/dump` (avoids syntax errors) → rewrite the simplified hook → verify build + tests. The Python script with `json.load/dump` is the most robust way to remove hook blocks from `settings.json` without risk of invalid JSON.
+- `bun test <absolute-path-file>` works correctly; `bun test <relative-dir>` without `./` fails with "filter did not match". For tests in `.claude/hooks/`, use absolute paths or the `./` prefix.
+- When simplifying hooks that import removed libs, `bun build <file> --target bun` confirms in seconds that no dangling imports remain — the stdout output is the compiled bundle, not an error if the build is successful.
 
 
 ## 2026-04-27 — Session 129e8f80
-- Para insertar código justo después de un bloque y antes del siguiente, el patrón Python con `old_block + new_block` evita el problema de `Edit` cuando old_string podría no ser único — incluir el bloque completo de ancla en `old_block` garantiza unicidad y posicionamiento exacto.
-- `bun test <path>` requiere `./` prefix cuando el path es relativo desde cwd — sin él, bun lo trata como filtro y no encuentra el archivo. Documentar para futuras sesiones de testing en este proyecto.
-- Patrón de normalización de inputs externos: validar contra whitelist (`KNOWN_AGENTS.includes`) antes de aceptar el valor crudo es la defensa primaria contra contaminación de stores; la fallback `extractAgentType` actúa como segunda capa cuando el valor está prefijado.
+- To insert code just after a block and before the next one, the Python pattern with `old_block + new_block` avoids the `Edit` problem when old_string might not be unique — including the complete anchor block in `old_block` guarantees uniqueness and exact positioning.
+- `bun test <path>` requires the `./` prefix when the path is relative from cwd — without it, bun treats it as a filter and does not find the file. Document for future testing sessions in this project.
+- External input normalization pattern: validating against a whitelist (`KNOWN_AGENTS.includes`) before accepting the raw value is the primary defense against store contamination; the `extractAgentType` fallback acts as a second layer when the value is prefixed.
 
 
 ## 2026-04-27 — Session 129e8f80
-- El patrón `[RESOLVED YYYY-MM-DD: razón]` como sufijo añadido a una nota existente dentro de una sesión datada preserva el contexto histórico (la nota original sigue siendo relevante como registro) sin reescribir secciones — útil para mantener `MEMORY.md` honesto sin perder trazabilidad.
+- The `[RESOLVED YYYY-MM-DD: reason]` pattern as a suffix added to an existing note inside a dated session preserves the historical context (the original note remains relevant as a record) without rewriting sections — useful for keeping `MEMORY.md` honest without losing traceability.
 
 
 ## 2026-04-27 — Session 129e8f80
-3. **El `Read` tool de Claude Code muestra el contenido con `cat -n` prefix; al hacer `string.replace` en Python sobre el texto sin numeración, los `\n` son los originales del archivo** — no hace falta procesar/strip los números de línea, solo aparecen en la presentación al modelo.
+3. **Claude Code's `Read` tool shows the content with the `cat -n` prefix; when doing `string.replace` in Python on the text without numbering, the `\n` are the original ones from the file** — there is no need to process/strip the line numbers, they only appear in the presentation to the model.
 
 
 ## 2026-04-27 — Session 129e8f80
-- `bun test <path>` sin prefijo `./` falla con "filter did not match any test files" aunque el path parezca válido — siempre usar `./` prefix para paths relativos en bun test.
+- `bun test <path>` without the `./` prefix fails with "filter did not match any test files" even though the path looks valid — always use the `./` prefix for relative paths in bun test.
 
 
 ## 2026-04-27 — Session edd4198f
-- Cuando se consolida lógica idéntica de varios ViewSets en un Mixin, el patrón correcto en Binora es: añadir el método abstracto en el mixin, moverle la lógica, y renombrar el método de delegación al nuevo nombre (`get_document_target` en lugar de `get_link_target`) en todos los ViewSets hijos.
-- Antes de eliminar un import en un archivo largo como `processes/views.py`, verificar con `grep -n` que no hay usos fuera del bloque que se va a borrar — especialmente si hay varios ViewSets en el mismo archivo.
+- When consolidating identical logic from several ViewSets into a Mixin, the correct pattern in Binora is: add the abstract method in the mixin, move the logic to it, and rename the delegation method to the new name (`get_document_target` instead of `get_link_target`) in all child ViewSets.
+- Before removing an import in a long file like `processes/views.py`, verify with `grep -n` that there are no usages outside the block to be deleted — especially if there are several ViewSets in the same file.
 
 
 ## 2026-04-27 — Session edd4198f
@@ -43,30 +43,30 @@
 
 
 ## 2026-04-27 — Session edd4198f
-- El prefix de management form de un inline en Django admin usa el `related_name` de la FK si está definido, no `<modelname>_set`. En este caso `WorkflowStage.workflow` tiene `related_name="stages"`, por lo que el prefix es `stages`, no `workflowstage_set`.
-- Para depurar un POST de admin que devuelve 200, lo más rápido es hacer un GET primero y extraer los `name="*-TOTAL_FORMS"` del HTML — esos son los prefixes reales de los management forms.
-- `test_document` fixture existe en el conftest raíz del proyecto (`conftest.py:663`) y depende de `uploading_pdf`.
+- The management form prefix of an inline in Django admin uses the FK's `related_name` if defined, not `<modelname>_set`. In this case `WorkflowStage.workflow` has `related_name="stages"`, so the prefix is `stages`, not `workflowstage_set`.
+- To debug an admin POST that returns 200, the fastest way is to do a GET first and extract the `name="*-TOTAL_FORMS"` from the HTML — those are the real prefixes of the management forms.
+- `test_document` fixture exists in the project's root conftest (`conftest.py:663`) and depends on `uploading_pdf`.
 
 
 ## 2026-04-28 — Session edd4198f
-- Los archivos de skills en `.claude/skills/` no tienen tests asociados — no ejecutar pytest para cambios exclusivamente en esos archivos.
-- Al actualizar contadores en SKILL.md, hay que actualizar 4 lugares distintos: la tabla `Item Counts`, el Total de esa tabla, la fila de `Documentation`, y la línea `Total Lessons` del footer.
+- The skill files in `.claude/skills/` have no associated tests — do not run pytest for changes exclusively in those files.
+- When updating counters in SKILL.md, four distinct places must be updated: the `Item Counts` table, that table's Total, the `Documentation` row, and the `Total Lessons` line in the footer.
 
 
 ## 2026-04-28 — Session edd4198f
-- Las ediciones a skill files de documentación (sin código Python) se hacen de forma más robusta con Python scripting que con bun/JS, especialmente cuando el contenido incluye backticks y caracteres especiales.
+- Edits to documentation skill files (without Python code) are made more robustly with Python scripting than with bun/JS, especially when the content includes backticks and special characters.
 
 
 ## 2026-04-28 — Session edd4198f
-- `WorkflowTaskAdmin` ahora es completamente readonly y oculto del menú admin (`get_model_perms → {}`), accesible únicamente via inline de `WorkflowStageAdmin` — mismo patrón que `WorkflowStageAdmin`.
+- `WorkflowTaskAdmin` is now completely readonly and hidden from the admin menu (`get_model_perms → {}`), accessible only via inline of `WorkflowStageAdmin` — same pattern as `WorkflowStageAdmin`.
 
 
 ## 2026-04-28 — Session edd4198f
-- `@action(url_path="/")` en un ViewSet nested crea una URL que colisiona con la ruta `list` — Django resuelve siempre al primer match (list), el action nunca se invoca directamente. Usar `SanitizeUrlsRouterMixin._add_patch_to_list_route` para inyectar el método HTTP en la ruta list es la solución correcta.
-- DRF prohíbe `@action` en métodos con nombres reservados de router (`partial_update`, `update`, `destroy`, etc.) — `ImproperlyConfigured` al hacer `reverse` de cualquier URL durante el startup.
-- Para que `dispatch` llame un método no-estándar, el método debe estar en `action_map[http_method]` del view instance — solo se consigue via la Route del router, no via `@action` en colisión.
-- `SanitizeUrlsRouterMixin.get_routes()` es el hook correcto en binora para añadir comportamiento condicional a rutas (ya lo usaban para sanitizar URLs con `//`).
-- El `action_map` que ve el view durante el request viene de la Route que Django resolvió, no del ViewSet completo — dos URLs idénticas con distinto action_map usan el primer match de Django.
+- `@action(url_path="/")` in a nested ViewSet creates a URL that collides with the `list` route — Django always resolves to the first match (list), and the action is never invoked directly. Using `SanitizeUrlsRouterMixin._add_patch_to_list_route` to inject the HTTP method into the list route is the correct solution.
+- DRF prohibits `@action` on methods with router-reserved names (`partial_update`, `update`, `destroy`, etc.) — `ImproperlyConfigured` when calling `reverse` on any URL during startup.
+- For `dispatch` to call a non-standard method, the method must be in `action_map[http_method]` of the view instance — only achieved via the router's Route, not via a colliding `@action`.
+- `SanitizeUrlsRouterMixin.get_routes()` is the correct hook in binora to add conditional behavior to routes (they already used it to sanitize URLs with `//`).
+- The `action_map` that the view sees during the request comes from the Route Django resolved, not from the full ViewSet — two identical URLs with different action_maps use Django's first match.
 
 
 ## 2026-04-29 — Session edd4198f
@@ -76,81 +76,81 @@
 
 
 ## 2026-04-29 — Session edd4198f
-- `DocumentURLSerializer` acepta `{"document": <Document instance>}` como input y serializa la URL via `NestedHyperlinkedIdentityField` — se necesita pasar `context={"request": request}` para generar la URL absoluta.
-- La sobreescritura de `destroy` en `AssetDocumentsViewSet` tiene precedencia sobre el `destroy` de `LinkDocumentMixin`; el mixin actúa como fallback para viewsets que no sobreescriben.
+- `DocumentURLSerializer` accepts `{"document": <Document instance>}` as input and serializes the URL via `NestedHyperlinkedIdentityField` — `context={"request": request}` must be passed to generate the absolute URL.
+- The `destroy` override in `AssetDocumentsViewSet` takes precedence over `LinkDocumentMixin`'s `destroy`; the mixin acts as a fallback for viewsets that do not override.
 
 
 ## 2026-04-29 — Session edd4198f
-- `LinkDocumentMixin.destroy` ahora es la implementación canónica para todos los endpoints: retorna 200 + `DocumentURLSerializer({"document": instance}, context={"request": request})` cuando `can_be_deleted`, 204 sin body en caso contrario. Ningún viewset necesita sobreescribir este método.
-- Cuando `DocumentURLSerializer` se usa en respuesta (no en input), requiere `context={"request": request}` para que `HyperlinkedRelatedField` pueda construir URLs absolutas.
-- Eliminar un serializer que se usaba en `@extend_schema_view(destroy=...)` en múltiples viewsets requiere actualizar también el contrato OpenAPI y los tests en un solo paso — son tres capas acopladas (schema, contract, tests).
+- `LinkDocumentMixin.destroy` is now the canonical implementation for all endpoints: it returns 200 + `DocumentURLSerializer({"document": instance}, context={"request": request})` when `can_be_deleted`, 204 with no body otherwise. No viewset needs to override this method.
+- When `DocumentURLSerializer` is used in the response (not as input), it requires `context={"request": request}` so that `HyperlinkedRelatedField` can build absolute URLs.
+- Removing a serializer that was used in `@extend_schema_view(destroy=...)` in multiple viewsets requires updating the OpenAPI contract and the tests in a single pass — they are three coupled layers (schema, contract, tests).
 
 
 ## 2026-04-29 — Session d1b35f74
-- El directorio `reports/` en `binora-backend` esta destinado a artefactos generados (review reports, etc.) y existe vacio en el working tree -- no hay que crearlo.
+- The `reports/` directory in `binora-backend` is intended for generated artifacts (review reports, etc.) and exists empty in the working tree — there is no need to create it.
 
 
 ## 2026-04-29 — Session edd4198f
-- `DetachResult.can_be_deleted` ha sido renombrado a `is_orphan_now` — cualquier test que mockee/lea este campo del dataclass necesita actualización (tests de viewset en `library/tests/viewset_tests.py` acceden a través de la respuesta HTTP, no al campo directamente, así que no se ven afectados).
-- En `ProcessAdmin`, `get_inlines()` devuelve inlines condicionalmente: sin `obj` → solo `self.inlines`; con `obj` → asset_inline + `[StageInline]` + `self.inlines`. Separar `StageInline` de `self.inlines` evita duplicados cuando se añaden inlines de assets dinámicamente.
-- `test_delete_task_document_unique_deletes_fully` vivía en `process_documents_tests.py` (tests de servicio/modelo), no en `process_documents_views_tests.py` (tests de vistas). Nombres de archivo importan para ubicar tests.
-- `can_be_deleted_on_unlink()` es método del modelo `Document` (no renombrado); `can_be_deleted` era el campo del dataclass `DetachResult` (renombrado a `is_orphan_now`). Son entidades distintas con nombres similares — hay que distinguirlos.
+- `DetachResult.can_be_deleted` has been renamed to `is_orphan_now` — any test that mocks/reads this dataclass field needs updating (viewset tests in `library/tests/viewset_tests.py` access through the HTTP response, not the field directly, so they are not affected).
+- In `ProcessAdmin`, `get_inlines()` returns inlines conditionally: without `obj` → only `self.inlines`; with `obj` → asset_inline + `[StageInline]` + `self.inlines`. Separating `StageInline` from `self.inlines` avoids duplicates when asset inlines are added dynamically.
+- `test_delete_task_document_unique_deletes_fully` lived in `process_documents_tests.py` (service/model tests), not in `process_documents_views_tests.py` (view tests). File names matter for locating tests.
+- `can_be_deleted_on_unlink()` is a method on the `Document` model (not renamed); `can_be_deleted` was the field on the `DetachResult` dataclass (renamed to `is_orphan_now`). They are distinct entities with similar names — they must be distinguished.
 
 
 ## 2026-04-29 — Session edd4198f
-- El fixture `access_profile_all_permissions` en `conftest.py` ejecuta `Permission.objects.all()` que requiere que todos los `ContentType` estén presentes — falla sin Docker/DB completa. Este patrón afecta a todos los tests que dependan de ese fixture (incluyendo `api_client_logged` via `api_user`).
-- Para PATCH en endpoints de documentos con `LinkDocumentMixin`, la URL es `-list` (no `-detail`), con `data={"document": reverse("document-detail", kwargs={"pk": doc.id})}` y `format="json"`.
-- `test_delete_document_ok` era exactamente un subconjunto de `test_delete_process_document_when_cannot_be_deleted_on_detach_detaches_only` — ambos verificaban 204 + no existencia en proceso, pero el segundo además verificaba que el Document sigue en DB.
+- The `access_profile_all_permissions` fixture in `conftest.py` runs `Permission.objects.all()` which requires all `ContentType` entries to be present — it fails without a full Docker/DB. This pattern affects all tests that depend on that fixture (including `api_client_logged` via `api_user`).
+- For PATCH on document endpoints with `LinkDocumentMixin`, the URL is `-list` (not `-detail`), with `data={"document": reverse("document-detail", kwargs={"pk": doc.id})}` and `format="json"`.
+- `test_delete_document_ok` was exactly a subset of `test_delete_process_document_when_cannot_be_deleted_on_detach_detaches_only` — both verified 204 + non-existence in the process, but the second also verified that the Document remains in the DB.
 
 
 ## 2026-04-29 — Session edd4198f
-- Los tests de `workflow_admin_tests.py` y `library/tests/viewset_tests.py` son sensibles al estado de la DB de test compartida. Cuando se ejecutan en combinación limitada fallan con `UniqueViolation` en `auth_permission`. Corren correctamente con `--create-db` o dentro de suites más grandes.
-- El fixture `workflow_document` en `apps/processes/tests/conftest.py` crea un `Document` y lo adjunta al `workflow` via `Attachment.objects.attach_document` — es el patrón correcto para tests de attachments en workflows.
-- `Workflow.objects.exclude(pk=original.pk).get()` funciona para obtener el workflow clonado porque `safedelete` mantiene visibles los objetos no borrados.
-- La inline import en tests (`from apps.X.models import Y` dentro de la función) debe evitarse cuando los symbols ya están importados a nivel de módulo — usar siempre imports a nivel de módulo.
+- The tests in `workflow_admin_tests.py` and `library/tests/viewset_tests.py` are sensitive to the state of the shared test DB. When run in limited combination they fail with `UniqueViolation` on `auth_permission`. They run correctly with `--create-db` or inside larger suites.
+- The `workflow_document` fixture in `apps/processes/tests/conftest.py` creates a `Document` and attaches it to the `workflow` via `Attachment.objects.attach_document` — it is the correct pattern for attachment tests in workflows.
+- `Workflow.objects.exclude(pk=original.pk).get()` works to obtain the cloned workflow because `safedelete` keeps non-deleted objects visible.
+- The inline import in tests (`from apps.X.models import Y` inside the function) should be avoided when the symbols are already imported at module level — always use module-level imports.
 
 
 ## 2026-04-29 — Session edd4198f
-- Los errores `duplicate key value violates unique constraint "auth_permission_pkey"` y `ForeignKeyViolation` en tests de processes son pre-existentes del entorno local sin Docker activo — no son regresiones de cambios en código.
+- The errors `duplicate key value violates unique constraint "auth_permission_pkey"` and `ForeignKeyViolation` in processes tests are pre-existing in the local environment without an active Docker — they are not regressions from code changes.
 
 
 ## 2026-04-29 — Session edd4198f
-- `can_be_deleted_on_unlink()` funciona sin mock en tests de integración: retorna `True` solo cuando `not has_attachments and not is_created_from_library`. Al desvincular del último attachment, el estado cambia automáticamente.
-- `generic_asset` fixture devuelve instancia no guardada — siempre llamar `.save()` antes de usarla en tests de API.
-- Upload de documentos en tests no requiere mock de S3: Django usa filesystem local. `uploading_pdf` de conftest raíz funciona directamente.
-- `task-documents-list/detail` necesita `stage_instance` como fixture intermedia (aunque no se pase como kwarg a la URL), porque `task_instance` depende de `stage_instance`.
+- `can_be_deleted_on_unlink()` works without mocking in integration tests: it returns `True` only when `not has_attachments and not is_created_from_library`. When unlinking from the last attachment, the state changes automatically.
+- `generic_asset` fixture returns an unsaved instance — always call `.save()` before using it in API tests.
+- Uploading documents in tests does not require S3 mocking: Django uses the local filesystem. `uploading_pdf` from the root conftest works directly.
+- `task-documents-list/detail` needs `stage_instance` as an intermediate fixture (even though it is not passed as a kwarg to the URL), because `task_instance` depends on `stage_instance`.
 
 
 ## 2026-04-29 — Session edd4198f
-- `process_documents_tests.py` no usa `pytestmark` ni importa `pytest` directamente — el acceso a DB lo gestiona el fixture `enable_db_access_for_all_tests` del `conftest.py` raíz, que es autouse.
+- `process_documents_tests.py` does not use `pytestmark` nor import `pytest` directly — DB access is handled by the `enable_db_access_for_all_tests` fixture from the root `conftest.py`, which is autouse.
 
 
 ## 2026-04-29 — Session 754ed491
-- El campo `if` en hooks PostToolUse de `settings.json` usa sintaxis `Edit(*.ext)|Write(*.ext)` — es un filtro de path glob sobre el archivo afectado, distinto del `matcher` que filtra el nombre del tool. Añadir `if` evita spawnar bun para cada Edit/Write cuando la extensión no aplica al validador.
-- `bun build <file> --target bun` es el equivalente a typecheck cuando no hay `package.json` con script `typecheck` — produce output compilado y falla con errores de tipo si los hay.
+- The `if` field in PostToolUse hooks of `settings.json` uses `Edit(*.ext)|Write(*.ext)` syntax — it is a path glob filter on the affected file, distinct from the `matcher` that filters by tool name. Adding `if` avoids spawning bun for each Edit/Write when the extension does not apply to the validator.
+- `bun build <file> --target bun` is the equivalent of typecheck when there is no `package.json` with a `typecheck` script — it produces compiled output and fails with type errors if any.
 
 
 ## 2026-04-29 — Session 754ed491
-- `"autoMode"` es una clave de nivel raíz en `settings.json`, no anidada en `permissions`. Su campo `soft_deny` acepta los mismos patrones glob que el campo `allow`/`deny` de `permissions` (e.g. `Edit(*.json)`, `Bash(cmd)`), más `$defaults` como comodín para heredar los defaults del sistema.
+- `"autoMode"` is a root-level key in `settings.json`, not nested under `permissions`. Its `soft_deny` field accepts the same glob patterns as `permissions`'s `allow`/`deny` (e.g. `Edit(*.json)`, `Bash(cmd)`), plus `$defaults` as a wildcard to inherit the system defaults.
 
 
 ## 2026-04-29 — Session 754ed491
-1. `input.agent_id` está presente en el input del hook cuando la herramienta es invocada por un subagente (disponible desde Claude Code v2.1.69) — es el campo correcto para distinguir Lead de subagente en hooks PreToolUse.
-2. La comprobación de `agent_id` debe ir ANTES del check de `FREEZE_MODE`, no después — si un subagente opera durante freeze mode del Lead, debe poder igualmente editar libremente (el freeze es una restricción del Lead, no del contexto global de ejecución).
+1. `input.agent_id` is present in the hook input when the tool is invoked by a subagent (available from Claude Code v2.1.69) — it is the correct field to distinguish Lead from subagent in PreToolUse hooks.
+2. The check on `agent_id` must go BEFORE the `FREEZE_MODE` check, not after — if a subagent operates during the Lead's freeze mode, it must still be able to edit freely (the freeze is a restriction on the Lead, not on the global execution context).
 
 
 ## 2026-04-29 — Session 754ed491
-- `model: opus` en frontmatter de agentes va en la segunda línea del bloque, inmediatamente después de `name:` — patrón consistente con planner, reviewer y builder para identificar qué agentes usan Opus.
+- `model: opus` in agent frontmatter goes on the second line of the block, immediately after `name:` — pattern consistent with planner, reviewer and builder to identify which agents use Opus.
 
 
 ## 2026-04-29 — Session 754ed491
-- Para limpiar un hook obsoleto son siempre tres pasos: `rm` el archivo, limpiar la referencia en `settings.json`, y actualizar la documentación de referencia (en este caso `rules/paths/hooks.md`).
+- To clean up an obsolete hook there are always three steps: `rm` the file, clean the reference in `settings.json`, and update the reference documentation (in this case `rules/paths/hooks.md`).
 
 
 ## 2026-04-29 — Session 754ed491
-- Eliminar código muerto de fetch HTTP en hooks es seguro cuando el fallback ya cubre todo el caso de uso — el patrón "try API, fallback local" colapsa limpiamente a "solo local" borrando el try/catch exterior y dejando el fallback como call directo.
-- `bun build <file> --target bun` sin `--outfile` hace typecheck implícito emitiendo a stdout — si no hay errores TypeScript el output es el bundle compilado, no un error; es la forma más rápida de validar tipos en hooks standalone sin `package.json`.
-- Al eliminar interfaces que solo tipaban respuestas de API externas, no hace falta actualizar ningún otro consumidor si el tipo solo aparecía en el cast `as InjectionResponse` dentro del bloque eliminado.
+- Removing dead HTTP fetch code from hooks is safe when the fallback already covers the entire use case — the "try API, fallback local" pattern collapses cleanly to "local only" by deleting the outer try/catch and leaving the fallback as a direct call.
+- `bun build <file> --target bun` without `--outfile` performs an implicit typecheck emitting to stdout — if there are no TypeScript errors the output is the compiled bundle, not an error; it is the fastest way to validate types in standalone hooks without `package.json`.
+- When removing interfaces that only typed responses from external APIs, no other consumer needs updating if the type only appeared in the `as InjectionResponse` cast inside the removed block.
 
 ## Canonical Pattern — lead-enforcement bypass
 

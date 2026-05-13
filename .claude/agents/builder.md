@@ -136,64 +136,64 @@ If tests fail: read error output, fix the issue, re-run. Loop until passing.
 
 Return structured output (see Output Format section).
 
-## Reglas para tool-calls paralelas seguras
+## Rules for Safe Parallel Tool Calls
 
-Cuando un mensaje contiene varias tool-calls, Claude Code las ejecuta en paralelo. Si una falla, **las demás del mismo mensaje se cancelan** (cascading cancel). Para evitar pérdida de trabajo:
+When a message contains several tool-calls, Claude Code executes them in parallel. If one fails, **the others in the same message are cancelled** (cascading cancel). To avoid losing work:
 
-| Regla | Detalle |
-|-------|---------|
-| Nunca `Bash(cd <subdir>)` en paralelo | El cwd no persiste entre Bash calls. Usar paths absolutos siempre. |
-| Independencia obligatoria | Output de una tool-call no puede afectar el input de otra del mismo batch. |
-| Edits paralelos sobre paths disjuntos | Nunca 2 `Edit` al mismo archivo en el mismo mensaje (race condition + cancel risk). |
-| Aislar operaciones frágiles | Si una operación puede fallar (network, FS write, npm install), va en su propio mensaje. |
-| Reads sí, Edits con cuidado | N `Read` independientes = seguro paralelizar. N `Edit` solo si todos los paths son distintos. |
-| Verificación: si dudas, secuencial | Coste de un mensaje extra < coste de revertir un batch cancelado. |
+| Rule | Detail |
+|------|--------|
+| Never `Bash(cd <subdir>)` in parallel | The cwd does not persist across Bash calls. Always use absolute paths. |
+| Mandatory independence | Output of one tool-call cannot affect the input of another in the same batch. |
+| Parallel Edits on disjoint paths | Never 2 `Edit` calls on the same file in the same message (race condition + cancel risk). |
+| Isolate fragile operations | If an operation can fail (network, FS write, npm install), it goes in its own message. |
+| Reads yes, Edits carefully | N independent `Read` calls = safe to parallelize. N `Edit` calls only if all paths are distinct. |
+| Verification: if in doubt, sequential | Cost of one extra message < cost of reverting a cancelled batch. |
 
 ## Internal Parallelization Recipes
 
-Cuando varias tool-calls son independientes (sin output→input), agrúpalas en un único mensaje. Cuatro patrones canónicos:
+When several tool-calls are independent (no output→input), group them into a single message. Four canonical patterns:
 
-### Recipe 1 — N Reads independientes
+### Recipe 1 — N independent Reads
 
-Antes de editar 3 archivos relacionados, léelos en un solo mensaje:
-
-```
-Read(file_a.ts) + Read(file_b.ts) + Read(file_c.ts)   ← 1 mensaje, 3 tool calls
-```
-
-Anti-patrón: `Read(file_a.ts)` → esperar → `Read(file_b.ts)` → esperar → `Read(file_c.ts)`.
-
-### Recipe 2 — Grep + Glob simultáneos para localizar e indexar
-
-Cuando necesitas localizar archivos Y buscar contenido:
+Before editing 3 related files, read them in a single message:
 
 ```
-Glob("**/*.test.ts") + Grep("describe.*Auth", output_mode: "files_with_matches")   ← 1 mensaje
+Read(file_a.ts) + Read(file_b.ts) + Read(file_c.ts)   ← 1 message, 3 tool calls
 ```
 
-Las dos operaciones son independientes — una lista por nombre, la otra por contenido.
+Anti-pattern: `Read(file_a.ts)` → wait → `Read(file_b.ts)` → wait → `Read(file_c.ts)`.
 
-### Recipe 3 — LSP `documentSymbol` sobre varios archivos
+### Recipe 2 — Simultaneous Grep + Glob to locate and index
 
-Para mapear estructura de varios módulos sin leer su contenido entero:
+When you need to locate files AND search content:
+
+```
+Glob("**/*.test.ts") + Grep("describe.*Auth", output_mode: "files_with_matches")   ← 1 message
+```
+
+The two operations are independent — one lists by name, the other by content.
+
+### Recipe 3 — LSP `documentSymbol` over multiple files
+
+To map the structure of several modules without reading their entire content:
 
 ```
 LSP.documentSymbol(file_a.ts) + LSP.documentSymbol(file_b.ts) + LSP.documentSymbol(file_c.ts)
 ```
 
-Cada documento es independiente. Resultado: símbolos de los 3 archivos en una sola ronda.
+Each document is independent. Result: symbols from the 3 files in a single round.
 
-### Recipe 4 — Edits sobre archivos disjuntos sin imports cruzados
+### Recipe 4 — Edits on disjoint files without cross-imports
 
-Cuando aplicas el mismo patrón a 3 archivos que NO se importan entre sí:
+When you apply the same pattern to 3 files that do NOT import each other:
 
 ```
-Edit(file_a.ts) + Edit(file_b.ts) + Edit(file_c.ts)   ← 1 mensaje, solo si paths disjuntos
+Edit(file_a.ts) + Edit(file_b.ts) + Edit(file_c.ts)   ← 1 message, only if disjoint paths
 ```
 
-Verificación previa obligatoria: cada `Edit` requiere un `Read` previo del mismo archivo. Si los Reads están en el mensaje anterior, OK. Si no, secuencial.
+Mandatory prior verification: each `Edit` requires a prior `Read` of the same file. If the Reads are in the previous message, OK. If not, sequential.
 
-**Anti-patrón general**: 4 mensajes consecutivos con una sola tool-call cada uno cuando podrían haber sido 1 mensaje. Cada mensaje extra es un round-trip.
+**General anti-pattern**: 4 consecutive messages with a single tool-call each when they could have been 1 message. Each extra message is a round-trip.
 
 ## Tool Usage Guide
 

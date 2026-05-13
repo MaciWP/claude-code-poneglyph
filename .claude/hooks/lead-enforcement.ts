@@ -5,7 +5,7 @@
  * Philosophy: ENABLEMENT > POLICING. The Lead acts freely by default;
  * the gate blocks only on explicit danger signals.
  *
- * Block rules (orden de evaluación):
+ * Block rules (evaluation order):
  *   1. Negative keywords (destructive remove, forced push, db migration,
  *      schema edit) → block unconditionally.
  *   2. Sensitive paths (.env, *.lock, package.json, .claude/settings.json,
@@ -174,8 +174,8 @@ function blockMessage(tool: string, reason: string, filePath: string): string {
     `[LEAD] ${tool} blocked. ${reason}.`,
     ``,
     sensitive
-      ? `Declara inline en tu mensaje (texto libre):\n  "sensitive: <razón ≥8 chars>"\nO delega al builder con contexto:\n  Agent(subagent_type="builder", description="<short>", prompt="<task>")`
-      : `Delega al builder:\n  Agent(subagent_type="builder", description="<short>", prompt="<task>")`,
+      ? `Declare inline in your message (free text):\n  "sensitive: <reason >=8 chars>"\nOr delegate to the builder with context:\n  Agent(subagent_type="builder", description="<short>", prompt="<task>")`
+      : `Delegate to the builder:\n  Agent(subagent_type="builder", description="<short>", prompt="<task>")`,
   ].join("\n");
 }
 

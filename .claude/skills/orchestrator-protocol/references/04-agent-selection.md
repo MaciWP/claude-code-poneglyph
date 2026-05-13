@@ -6,36 +6,36 @@ description: Signal→agent selection matrix, multi-agent patterns, anti-pattern
 
 # Agent Selection
 
-## Exploration Decision Matrix (Volumen × Complejidad)
+## Exploration Decision Matrix (Volume × Complexity)
 
-Antes de cualquier delegación, decide CÓMO explorar el codebase. La elección depende de **volumen** (cuántos archivos) y **complejidad** (qué tan difícil es entender lo que ves):
+Before any delegation, decide HOW to explore the codebase. The choice depends on **volume** (how many files) and **complexity** (how difficult it is to understand what you see):
 
-| | Complejidad BAJA (lectura directa, sin semántica) | Complejidad ALTA (relaciones, LSP, arquitectura) |
+| | LOW complexity (direct read, no semantics) | HIGH complexity (relationships, LSP, architecture) |
 |---|---|---|
-| **Volumen BAJO** (1-2 archivos) | `Read` directo del Lead — sin delegación | `scout` (Sonnet) — análisis semántico ligero |
-| **Volumen ALTO** (≥3 archivos) | `Explore` (Haiku) — bulk read barato | `scout` (Sonnet) — exploración + LSP + síntesis |
+| **LOW volume** (1-2 files) | Lead `Read` directly — no delegation | `scout` (Sonnet) — light semantic analysis |
+| **HIGH volume** (≥3 files) | `Explore` (Haiku) — cheap bulk read | `scout` (Sonnet) — exploration + LSP + synthesis |
 
-### Reglas derivadas
+### Derived rules
 
-| Regla | Razón |
+| Rule | Reason |
 |-------|-------|
-| Lead nunca lee >2 archivos inline | Para >2 archivos delega (Trigger B context preservation). |
-| Volumen BAJO + Complejidad BAJA = Read directo | Coste de delegación > coste del Read directo. |
-| Complejidad ALTA siempre va a scout | Aunque sea 1 archivo, si requiere LSP/análisis, scout (Sonnet) es la elección correcta. |
-| Volumen ALTO + Complejidad BAJA = Haiku | Si es bulk read sin razonamiento profundo, modelo barato. |
-| Eje paralelo: "dificultad del cambio" | Si tras explorar hay que implementar cambio difícil, planificar con `planner` (independiente del eje exploración). |
+| The Lead never reads >2 files inline | For >2 files, delegate (Trigger B context preservation). |
+| LOW Volume + LOW Complexity = direct Read | Cost of delegation > cost of direct Read. |
+| HIGH Complexity always goes to scout | Even for 1 file, if it requires LSP/analysis, scout (Sonnet) is the right choice. |
+| HIGH Volume + LOW Complexity = Haiku | If it is bulk read without deep reasoning, cheap model. |
+| Parallel axis: "change difficulty" | If after exploring you must implement a difficult change, plan with `planner` (independent of the exploration axis). |
 
-### Eje paralelo — Dificultad del cambio
+### Parallel axis — Change difficulty
 
-La matriz arriba decide **exploración**. La dificultad del **cambio que sigue** es un eje independiente:
+The matrix above decides **exploration**. The difficulty of the **change that follows** is an independent axis:
 
-| Cambio | Acción tras exploración |
+| Change | Action after exploration |
 |--------|-------------------------|
-| Trivial (1 línea, rename) | builder directo |
-| Estándar (1 archivo, patrón claro) | builder con skills cargadas |
-| Multi-archivo / arquitectural | planner → N builders |
+| Trivial (1 line, rename) | builder direct |
+| Standard (1 file, clear pattern) | builder with loaded skills |
+| Multi-file / architectural | planner → N builders |
 
-Una tarea puede ser **Volumen ALTO exploración + cambio trivial** (mucho que leer, poco que cambiar) o **Volumen BAJO + cambio complejo** (poco que leer, mucho que pensar). Decide cada eje por separado.
+A task can be **HIGH Volume exploration + trivial change** (lots to read, little to change) or **LOW Volume + complex change** (little to read, lots to think). Decide each axis separately.
 
 ---
 

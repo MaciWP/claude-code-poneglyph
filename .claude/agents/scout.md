@@ -135,43 +135,43 @@ Organize results into the structured output format (see Output Format section).
 
 ---
 
-## Reglas para tool-calls paralelas seguras
+## Rules for Safe Parallel Tool Calls
 
-Cuando un mensaje contiene varias tool-calls, Claude Code las ejecuta en paralelo. Si una falla, **las demás del mismo mensaje se cancelan** (cascading cancel). Para evitar pérdida de trabajo:
+When a message contains several tool-calls, Claude Code executes them in parallel. If one fails, **the others in the same message are cancelled** (cascading cancel). To avoid losing work:
 
-| Regla | Detalle |
-|-------|---------|
-| Nunca `Bash(cd <subdir>)` en paralelo | El cwd no persiste entre Bash calls. Usar paths absolutos siempre. (Scout no tiene Bash; aplica si se añade en el futuro.) |
-| Independencia obligatoria | Output de una tool-call no puede afectar el input de otra del mismo batch. |
-| WebFetch/WebSearch frágiles | Si una operación puede fallar (network), aislarla en su propio mensaje para no arrastrar Reads/Greps locales. |
-| N Reads/Greps/Globs locales | Seguro paralelizar — operaciones FS independientes y de bajo riesgo. |
-| LSP en paralelo solo entre símbolos distintos | Dos `goToDefinition` sobre símbolos disjuntos = OK. Sobre el mismo símbolo = redundante. |
-| Verificación: si dudas, secuencial | Coste de un mensaje extra < coste de perder un batch parcial. |
+| Rule | Detail |
+|------|--------|
+| Never `Bash(cd <subdir>)` in parallel | The cwd does not persist across Bash calls. Always use absolute paths. (Scout has no Bash; applies if it is added in the future.) |
+| Mandatory independence | Output of one tool-call cannot affect the input of another in the same batch. |
+| Fragile WebFetch/WebSearch | If an operation can fail (network), isolate it in its own message to avoid dragging down local Reads/Greps. |
+| N local Reads/Greps/Globs | Safe to parallelize — independent, low-risk FS operations. |
+| LSP in parallel only across distinct symbols | Two `goToDefinition` calls on disjoint symbols = OK. On the same symbol = redundant. |
+| Verification: if in doubt, sequential | Cost of one extra message < cost of losing a partial batch. |
 
 ## Internal Parallelization Recipes
 
-Cuando varias operaciones de exploración son independientes, agrúpalas en un único mensaje.
+When several exploration operations are independent, group them into a single message.
 
-### Recipe canónico para scout: ejemplo concreto
+### Canonical recipe for scout: concrete example
 
-Tarea: "encuentra los archivos de auth, busca usos de `verify()` y lee el README":
+Task: "find the auth files, search for uses of `verify()` and read the README":
 
 ```
-Glob("**/auth/**/*.ts") + Grep("verify\\(") + Read("README.md")   ← 1 mensaje, 3 tool calls
+Glob("**/auth/**/*.ts") + Grep("verify\\(") + Read("README.md")   ← 1 message, 3 tool calls
 ```
 
-Las tres operaciones son independientes — el Glob no necesita el resultado del Grep ni viceversa, y el README es lectura directa de path conocido.
+The three operations are independent — the Glob does not need the Grep's result or vice versa, and the README is a direct read of a known path.
 
-**Anti-patrón**: 3 mensajes consecutivos (`Glob`, esperar, `Grep`, esperar, `Read`) = 3x round-trips, mismo resultado. Penalización en latency y tokens.
+**Anti-pattern**: 3 consecutive messages (`Glob`, wait, `Grep`, wait, `Read`) = 3x round-trips, same result. Penalty in latency and tokens.
 
-### Otros patrones útiles para scout
+### Other useful patterns for scout
 
-| Patrón | Tool calls en 1 mensaje |
-|--------|-------------------------|
-| Mapear módulo nuevo | `Glob(src/<mod>/**)` + `Glob(src/<mod>/**/*.test.*)` + `Grep("export.*from", path: src/<mod>)` |
-| Encontrar tests + cobertura | `Glob("**/*.test.ts")` + `Grep("describe|it", glob: "*.test.ts")` |
-| Estructura de varios módulos | `LSP.documentSymbol(a.ts)` + `LSP.documentSymbol(b.ts)` + `LSP.documentSymbol(c.ts)` |
-| Investigar API externa | `WebSearch(query)` + `Glob("**/*<keyword>*")` (web frágil, considerar aislar si crítico) |
+| Pattern | Tool calls in 1 message |
+|---------|-------------------------|
+| Map new module | `Glob(src/<mod>/**)` + `Glob(src/<mod>/**/*.test.*)` + `Grep("export.*from", path: src/<mod>)` |
+| Find tests + coverage | `Glob("**/*.test.ts")` + `Grep("describe|it", glob: "*.test.ts")` |
+| Structure of multiple modules | `LSP.documentSymbol(a.ts)` + `LSP.documentSymbol(b.ts)` + `LSP.documentSymbol(c.ts)` |
+| Investigate external API | `WebSearch(query)` + `Glob("**/*<keyword>*")` (fragile web call, consider isolating if critical) |
 
 ## Tool Usage Guide
 

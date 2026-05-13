@@ -2,35 +2,35 @@
 
 # Skill Discovery — poneglyph
 
-## Skills disponibles
+## Available skills
 
-| Skill | Cubre |
+| Skill | Covers |
 |---|---|
-| `anti-hallucination` | Validación antes de afirmar: archivos, funciones, APIs |
-| `careful-mode` | Modo conservador para operaciones de riesgo o irreversibles |
-| `code-quality` | SOLID, DRY, code smells, refactoring, deuda técnica |
-| `database-patterns` | Diseño de schema, índices, migraciones, queries |
-| `decide` | Decisiones estratégicas con perspectivas multi-agente |
-| `decision-stress-test` | Stress-test multi-perspectiva (8 perspectivas + cross-debate + 5 técnicas) calibrado por stakes para decisiones técnicas pre-commitment |
-| `diagnostic-patterns` | Incidentes, error spikes, circuit breakers, retries |
-| `explain-changes` | Explicación educativa de cambios de código (file/commit/branch/pendientes) con verificación contra docs oficiales |
-| `freeze-mode` | Modo read-only — impide todas las modificaciones de archivos |
-| `logging-strategy` | Observabilidad, log levels, structured logging |
-| `lsp-operations` | Navegación semántica: definiciones, referencias, call hierarchy |
-| `meta-create-agent` | Crear nuevos agentes especializados |
-| `meta-create-hook` | Crear nuevos hooks (PreToolUse, PostToolUse, Stop…) |
-| `meta-create-mcp` | Crear configuraciones de MCP servers |
-| `meta-create-plugin` | Crear nuevos plugins de Claude Code |
-| `meta-create-rule` | Crear nuevas rules de comportamiento |
-| `meta-create-skill` | Crear nuevas skills con frontmatter y references |
-| `meta-settings-cookbook` | Patrones y recetas para settings.json |
-| `orchestrator-protocol` | Lead: complexity routing, delegación, error recovery |
-| `performance-review` | Bottlenecks, memory, latencia, N+1 queries |
-| `planner-protocol` | Protocolo adaptativo de planificación (Quick/Standard/Full): Discovery, Research, Gap Analysis, Classification, Roadmap, Validation |
-| `prompt-engineer` | Mejorar prompts vagos o ambiguos |
-| `security-review` | OWASP, vulnerabilidades, secrets, auditoría |
-| `sync-claude` | Sincronizar .claude/ a ~/.claude/ via symlinks |
-| `traces` | Costes de sesión, uso de tokens, analytics |
+| `anti-hallucination` | Validation before asserting: files, functions, APIs |
+| `careful-mode` | Conservative mode for risky or irreversible operations |
+| `code-quality` | SOLID, DRY, code smells, refactoring, technical debt |
+| `database-patterns` | Schema design, indexes, migrations, queries |
+| `decide` | Strategic decisions with multi-agent perspectives |
+| `decision-stress-test` | Multi-perspective stress-test (8 perspectives + cross-debate + 5 techniques) calibrated by stakes for pre-commitment technical decisions |
+| `diagnostic-patterns` | Incidents, error spikes, circuit breakers, retries |
+| `explain-changes` | Educational explanation of code changes (file/commit/branch/pending) with verification against official docs |
+| `freeze-mode` | Read-only mode — blocks all file modifications |
+| `logging-strategy` | Observability, log levels, structured logging |
+| `lsp-operations` | Semantic navigation: definitions, references, call hierarchy |
+| `meta-create-agent` | Create new specialized agents |
+| `meta-create-hook` | Create new hooks (PreToolUse, PostToolUse, Stop…) |
+| `meta-create-mcp` | Create MCP server configurations |
+| `meta-create-plugin` | Create new Claude Code plugins |
+| `meta-create-rule` | Create new behavioral rules |
+| `meta-create-skill` | Create new skills with frontmatter and references |
+| `meta-settings-cookbook` | Patterns and recipes for settings.json |
+| `orchestrator-protocol` | Lead: complexity routing, delegation, error recovery |
+| `performance-review` | Bottlenecks, memory, latency, N+1 queries |
+| `planner-protocol` | Adaptive planning protocol (Quick/Standard/Full): Discovery, Research, Gap Analysis, Classification, Roadmap, Validation |
+| `prompt-engineer` | Improve vague or ambiguous prompts |
+| `security-review` | OWASP, vulnerabilities, secrets, auditing |
+| `sync-claude` | Synchronize .claude/ to ~/.claude/ via symlinks |
+| `traces` | Session costs, token usage, analytics |
 
 ## Reference inventory
 

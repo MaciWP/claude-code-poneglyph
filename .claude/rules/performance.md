@@ -37,20 +37,20 @@ Use Grep as fallback when: LSP unavailable, literal text search, non-code files.
 
 **Anti-pattern**: Reading files one by one or running agents sequentially → BATCH in one message.
 
-### Cascading Cancel — riesgo del batching
+### Cascading Cancel — risk of batching
 
-Cuando un mensaje contiene N tool-calls paralelas y **una falla**, las demás del mismo mensaje se cancelan. Para evitar pérdida de trabajo:
+When a message contains N parallel tool-calls and **one fails**, the others in the same message are cancelled. To avoid losing work:
 
-| Regla | Razón |
+| Rule | Reason |
 |-------|-------|
-| Operaciones frágiles aisladas | Network (`WebFetch`, `git fetch`), FS write o `npm install` → mensaje propio. Su fallo no debe arrastrar Reads/Greps locales. |
-| Edits paralelos solo sobre paths disjuntos | Nunca 2 `Edit` al mismo archivo en el mismo mensaje. |
-| Sin `Bash(cd <subdir>)` paralelo | `cwd` no persiste entre Bash calls. Usar siempre paths absolutos. |
-| Si dudas, secuencial | Coste de un mensaje extra < coste de revertir un batch cancelado. |
+| Isolate fragile operations | Network (`WebFetch`, `git fetch`), FS write or `npm install` → own message. Their failure must not drag local Reads/Greps with them. |
+| Parallel Edits only on disjoint paths | Never 2 `Edit` on the same file in the same message. |
+| No parallel `Bash(cd <subdir>)` | `cwd` does not persist between Bash calls. Always use absolute paths. |
+| If in doubt, sequential | Cost of an extra message < cost of reverting a cancelled batch. |
 
-**Ejemplo seguro**: `Read(a.ts) + Read(b.ts) + Grep("foo") + Glob("**/*.test.ts")` en un mensaje — todas read-only, independientes, sobre paths distintos.
+**Safe example**: `Read(a.ts) + Read(b.ts) + Grep("foo") + Glob("**/*.test.ts")` in one message — all read-only, independent, on different paths.
 
-**Ejemplo arriesgado**: `Edit(file.ts) + WebFetch(url) + Bash("git push")` en un mensaje — si `WebFetch` falla, el `Edit` se cancela y `git push` no se ejecuta. Mejor: 3 mensajes secuenciales.
+**Risky example**: `Edit(file.ts) + WebFetch(url) + Bash("git push")` in one message — if `WebFetch` fails, the `Edit` is cancelled and `git push` does not run. Better: 3 sequential messages.
 
 ## Anti-Patterns
 

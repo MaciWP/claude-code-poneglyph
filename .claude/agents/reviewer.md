@@ -147,44 +147,44 @@ Check for performance issues:
 
 Produce structured review with verdict.
 
-## Reglas para tool-calls paralelas seguras
+## Rules for Safe Parallel Tool Calls
 
-Cuando un mensaje contiene varias tool-calls, Claude Code las ejecuta en paralelo. Si una falla, **las demás del mismo mensaje se cancelan** (cascading cancel). Para evitar pérdida de trabajo:
+When a message contains several tool-calls, Claude Code executes them in parallel. If one fails, **the others in the same message are cancelled** (cascading cancel). To avoid losing work:
 
-| Regla | Detalle |
-|-------|---------|
-| Nunca `Bash(cd <subdir>)` en paralelo | El cwd no persiste entre Bash calls. Usar paths absolutos siempre. |
-| Independencia obligatoria | Output de una tool-call no puede afectar el input de otra del mismo batch. |
-| Tests + lint + typecheck en paralelo, OK | Bash de comandos de validación son independientes y producen output a stdout — seguro batchear. |
-| Aislar operaciones frágiles | Comandos que tocan red/FS-state (git fetch, npm install) van en su propio mensaje. |
-| Reads/Greps/Globs paralelos siempre | Operaciones read-only sobre paths distintos — el caso ideal para batch. |
-| Verificación: si dudas, secuencial | Coste de un mensaje extra < coste de perder un batch de validaciones cancelado. |
+| Rule | Detail |
+|------|--------|
+| Never `Bash(cd <subdir>)` in parallel | The cwd does not persist across Bash calls. Always use absolute paths. |
+| Mandatory independence | Output of one tool-call cannot affect the input of another in the same batch. |
+| Tests + lint + typecheck in parallel, OK | Bash validation commands are independent and produce output to stdout — safe to batch. |
+| Isolate fragile operations | Commands that touch network/FS-state (git fetch, npm install) go in their own message. |
+| Always parallel Reads/Greps/Globs | Read-only operations on distinct paths — the ideal case for batching. |
+| Verification: if in doubt, sequential | Cost of one extra message < cost of losing a cancelled validation batch. |
 
 ## Internal Parallelization Recipes
 
-Cuando exploras un cambio multi-archivo, agrupa lecturas y búsquedas en un único mensaje.
+When exploring a multi-file change, group reads and searches into a single message.
 
-### Recipe canónico para reviewer
+### Canonical recipe for reviewer
 
-Tarea: revisar 3 archivos modificados, encontrar sus tests, y rastrear callers:
+Task: review 3 modified files, find their tests, and trace callers:
 
 ```
 Read(file_a.ts) + Read(file_b.ts) + Read(file_c.ts)
 + Grep("file_a|file_b|file_c", glob: "*.test.*")
-+ LSP.findReferences(symbolModificado)
-                                                       ← 1 mensaje, 5 tool calls
++ LSP.findReferences(modifiedSymbol)
+                                                       ← 1 message, 5 tool calls
 ```
 
-Todas son read-only e independientes. Resultado: contexto completo en 1 round-trip.
+All are read-only and independent. Result: full context in 1 round-trip.
 
-**Anti-patrón**: 5 mensajes secuenciales. Multiplica latency por 5 y aumenta el riesgo de perder hilo al revisar.
+**Anti-pattern**: 5 sequential messages. Multiplies latency by 5 and increases the risk of losing the thread while reviewing.
 
-### Otros patrones útiles para reviewer
+### Other useful patterns for reviewer
 
-| Patrón | Tool calls en 1 mensaje |
-|--------|-------------------------|
-| Validation batch | `Bash(<test-cmd>)` + `Bash(<typecheck-cmd>)` + `Bash(<lint-cmd>)` — todos validación, output independiente |
-| Audit security multi-file | `Grep("password\|secret\|token")` + `Grep("env\\.|process\\.env")` + `Glob(".env*")` |
+| Pattern | Tool calls in 1 message |
+|---------|-------------------------|
+| Validation batch | `Bash(<test-cmd>)` + `Bash(<typecheck-cmd>)` + `Bash(<lint-cmd>)` — all validation, independent output |
+| Multi-file security audit | `Grep("password\|secret\|token")` + `Grep("env\\.|process\\.env")` + `Glob(".env*")` |
 | Caller analysis | `LSP.findReferences(fnA)` + `LSP.findReferences(fnB)` + `LSP.findReferences(fnC)` |
 
 ## Tools Usage

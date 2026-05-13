@@ -48,10 +48,10 @@ For architectural/comparison decisions → `Skill('decide')` before proceeding.
 
 **Delegation triggers** (apply after triage):
 
-- **Trigger A — Delegar implementación**: ≥3 archivos a modificar OR cambio architectural → `builder`/`planner`. 1-2 archivos + complejidad <20 → Lead directo.
-- **Trigger B — Delegar exploración (matriz 2×2)**: ver `references/04-agent-selection.md` §Exploration Decision Matrix. BAJO+BAJA → Read directo. ALTO o ALTA → `scout` (Sonnet) o `Explore` (Haiku) según ejes.
+- **Trigger A — Delegate implementation**: ≥3 files to modify OR architectural change → `builder`/`planner`. 1-2 files + complexity <20 → Lead direct.
+- **Trigger B — Delegate exploration (2×2 matrix)**: see `references/04-agent-selection.md` §Exploration Decision Matrix. LOW+LOW → Read direct. HIGH or HIGH → `scout` (Sonnet) or `Explore` (Haiku) depending on axes.
 
-Triggers son independientes — pueden disparar uno, otro o ambos.
+Triggers are independent — they can fire one, the other, or both.
 
 ### Step 2: Complexity
 
@@ -102,9 +102,9 @@ Show inline: `Complexity: ~XX`
 **Wave PARALLEL pattern**:
 
 ```
-Wave PARALLEL = Agent(builder, T1) + Agent(builder, T2) + Agent(scout, T3) en MISMO assistant message.
-Condiciones: (a) sin dependencias output→input, (b) archivos disjuntos, (c) sin shared state.
-NO paralelizar: (a) builder usa salida de planner, (b) Edit en mismo archivo, (c) checkpoint review tras escritura.
+Wave PARALLEL = Agent(builder, T1) + Agent(builder, T2) + Agent(scout, T3) in the SAME assistant message.
+Conditions: (a) no output→input dependencies, (b) disjoint files, (c) no shared state.
+Do NOT parallelize: (a) builder uses planner output, (b) Edit on same file, (c) checkpoint review after writing.
 ```
 
 ### Step 5: Validate
@@ -118,7 +118,7 @@ NO paralelizar: (a) builder usa salida de planner, (b) Edit en mismo archivo, (c
 
 **NEVER report "completed" without confirmation that tests are passing.**
 
-**Reportar al usuario**: aplica reglas de `08-output-style.md`. Por defecto terse; expande en escape triggers.
+**Reporting to the user**: apply rules from `08-output-style.md`. Terse by default; expand on escape triggers.
 
 ---
 
@@ -163,4 +163,4 @@ Self-check before EVERY delegation: "Is there another independent Task I could b
 | Skill matching + keywords | `${CLAUDE_SKILL_DIR}/references/05-skill-matching.md` | Read when matching task keywords to skills for Arch H delegation. Contains Keywords→Skills table (19 entries), Task Type Detection, Priority Scoring formula, Synergy Rules, Conflict Rules, and baseline skills per agent. |
 | Context management + Arch H | `${CLAUDE_SKILL_DIR}/references/06-context-arch-h.md` | Read when preparing a delegation prompt or understanding what reaches subagents. Contains Architecture Levels diagram, Rules vs Skills decision table, Skill Loading Limits per agent, Propagation Model (what reaches/doesn't), full Arch H delegation template with ALL blocks, Skill Discovery steps, Content Map pattern description, Anti-claims, and orchestration consequences. |
 | Delegation rules + error recovery | `${CLAUDE_SKILL_DIR}/references/07-delegation-recovery.md` | Read when a delegation fails, an agent is stuck, or you need the NEVER/ALWAYS rules. Contains NEVER/ALWAYS tables, permission mode inheritance (bypassPermissions propagation), Continuous Validation Pipeline (checkpoints + validation by change type + feedback template), Retry Budget, SendMessage vs Re-spawn decision table, Stuck Detection thresholds, Worktree Cleanup on Failure, run_in_background guidance, and Parallelization when/when-not tables. |
-| Output style + escape rules | `${CLAUDE_SKILL_DIR}/references/08-output-style.md` | Read at session start to set Lead↔user communication baseline. Contains terse-first rules, escape triggers (security, irreversible, multi-step ambiguity), antes/después examples, when NOT to apply (planner outputs, MEMORY.md, docs). |
+| Output style + escape rules | `${CLAUDE_SKILL_DIR}/references/08-output-style.md` | Read at session start to set Lead↔user communication baseline. Contains terse-first rules, escape triggers (security, irreversible, multi-step ambiguity), before/after examples, when NOT to apply (planner outputs, MEMORY.md, docs). |
