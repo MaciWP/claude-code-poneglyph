@@ -262,7 +262,7 @@ Failed checks must be reported in the output. Silent suppression of a failed che
 | 14 | Step-back capture | Judge stays meta; if it argues for/against, override and re-prompt |
 | 15 | Karpathy/Linus solape | If both sound the same, voices weren't differentiated; verify the persona-specific output addenda differ |
 | 16 | Simplifier nihilism | "Delete everything" without working alternative — Simplifier must propose minimal-viable version |
-| 17 | Cost Optimizer false economy | Recortar lo crítico (security/reliability/correctness) por ahorrar cents — flag any cost cut affecting these dimensions |
+| 17 | Cost Optimizer false economy | Cutting critical dimensions (security/reliability/correctness) to save cents — flag any cost cut affecting these dimensions |
 
 Full detection signals and corrections in `${CLAUDE_SKILL_DIR}/references/04-anti-patterns.md`.
 

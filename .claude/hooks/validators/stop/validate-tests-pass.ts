@@ -255,7 +255,7 @@ async function main(): Promise<void> {
 
   if (lastAssistantMessage && ERROR_KEYWORDS.test(lastAssistantMessage)) {
     console.error(
-      "[stop-hook] Builder reportó posibles errores. Verificando tests...",
+      "[stop-hook] Builder reported possible errors. Verifying tests...",
     );
   }
 
