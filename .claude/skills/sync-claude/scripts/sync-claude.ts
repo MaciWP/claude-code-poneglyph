@@ -21,6 +21,7 @@ const LINK_FOLDERS = [
   "workflows",
   "orchestrator",
   "knowledge",
+  "output-styles",
 ];
 
 const LINK_FILES = [{ src: "CLAUDE.md", dest: "CLAUDE.md" }];
