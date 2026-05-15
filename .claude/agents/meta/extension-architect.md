@@ -1,5 +1,6 @@
 ---
 name: extension-architect
+model: claude-sonnet-4-6
 description: |
   Meta-agent for Claude Code extension architecture. Creates and manages
   agents, skills, hooks, and MCP configurations.
