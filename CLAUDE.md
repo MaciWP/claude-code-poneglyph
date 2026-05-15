@@ -38,16 +38,7 @@ Technical identifiers (names, commands, paths) stay in their original form regar
 
 ### Expected Behavior
 
-| Quality | Meaning |
-|---------|---------|
-| **Accurate** | Verify before asserting. LSP/Grep before assuming. |
-| **Simple by default** | Clean code, no over-engineering. Complicate only if strictly necessary. |
-| **Agile** | Parallelize operations, don't waste time. |
-| **Resourceful** | Elegant solutions, not brute force. |
-| **Explorer** | Understand context before acting. |
-| **Hardworking** | Complete tasks, don't leave them half done. |
-| **Radically honest** | If something doesn't work, if the user is wrong, if an idea is bad, if an approach is worse than the alternative — say it directly, with evidence, no sugar-coating. Factual truth is the basis for action. Covering up or being condescending is a serious failure. |
-| **Terse by default** | Response <=4 lines, no preamble/postamble, no tool narration. Escape rules for security, irreversible operations, multi-step, ambiguity. Detail in `orchestrator-protocol/references/08-output-style.md`. |
+Encapsulated in the 10 Commandments below. Terse by default (≤4 lines), full detail in `orchestrator-protocol/references/08-output-style.md`.
 
 ### NOT
 
@@ -103,54 +94,9 @@ The backbone of the project. Ordered from most fundamental (the human↔Claude r
 
 ---
 
-## WHAT
+## Anti-Hallucination (baseline)
 
-Orchestration system that powers Claude Code with specialized agents, skills, hooks and rules.
-
-## WHY
-
-| Problem | Solution |
-|---------|----------|
-| No orchestration | 6 core agents + 1 meta agent (`extension-architect`) with complexity-based routing |
-| No automatic validation | 14 hooks (pre/post/stop/compact/instructions/permission) |
-| No domain knowledge | 23 global skills auto-matched by keywords + project skills on-demand via Arch H |
-| No persistent memory | Semantic memory system + per-agent `MEMORY.md` |
-
-## HOW
-
-```mermaid
-graph LR
-    User --> CC[Claude Code]
-    CC --> Orch[Lead Orchestrator]
-    Orch --> Agents[6 core + 1 meta]
-    Orch --> Skills[23 Skills]
-    Orch --> Hooks[14 Hooks]
-    Orch --> Rules[6 Rules]
-```
-
-## Structure
-
-```
-.claude/
-├── agents/          # 6 core (architect, builder, error-analyzer, planner, reviewer, scout)
-│   └── meta/        # 1 meta agent (extension-architect)
-├── agent-memory/    # Per-agent MEMORY.md accumulated across sessions
-├── skills/          # 23 global skills (generic patterns — Django, React, OWASP...)
-│                    # Projects add their own under ./.claude/skills/ for domain knowledge
-├── hooks/           # 14 hooks (pre/post/stop/compact/instructions/permission)
-├── rules/           # 6 orchestration rules (4 global + 2 path-scoped)
-└── commands/        # 7 slash commands
-```
-
-## Anti-Hallucination (baseline for every action)
-
-1. **LSP** before asserting a symbol exists (`goToDefinition`, `findReferences`)
-2. **Grep** before asserting a literal string exists
-3. **Glob** before asserting a file exists
-4. **Read** before **Edit** — always
-5. If confidence < 70%: **ask**, don't guess (Commandment I)
-
-Tool priority: **LSP (primary) > Grep (fallback) > Glob (files)**
+LSP (primary) > Grep (fallback) > Glob (files). Read before Edit. If confidence <70% → ask. Full patterns in skill `anti-hallucination`.
 
 ---
 
@@ -253,19 +199,7 @@ Builder verifies automatically via the `validate-tests-pass.ts` Stop hook. The L
 
 ## Glossary
 
-| Term | Meaning |
-|------|---------|
-| **Agent** | The `Agent` tool used by the Lead to spawn a specialized subagent in a fresh context |
-| **Subagent** | A spawned instance of a specialized agent (builder, reviewer, planner, etc.) |
-| **Teammate** | A teammate spawned in team mode — an independent Claude Code process per domain. Only when `executionMode=team` |
-| **Skill** | Loadable domain context / pattern library. **Global skills** (`~/.claude/skills/`) carry cross-project patterns; **project skills** (`./.claude/skills/`) carry project-specific knowledge and examples. Full `SKILL.md` body loads on-demand via Arch H (subagent Read instruction), not always at startup — only the description auto-loads. Both global and project skills use the same Read mechanism; the subagent does not distinguish between them |
-| **Rule** | Behavioral policy in `.claude/rules/*.md`. Loaded implicitly or path-scoped via frontmatter |
-| **Hook** | TypeScript script (run via `bun`) triggered by Claude Code events (pre/post tool, stop, subagent, permission, etc.) configured in `settings.json` |
-| **Command** | Slash command in `.claude/commands/*.md` |
-| **Meta agent / meta skill** | Agent or skill whose purpose is to create, manage or evolve the Poneglyph system itself |
-| **`sensitive: <reason>`** | Inline declaration the Lead writes when editing sensitive paths (`.env`, `*.lock`, `package.json`, `.claude/settings.json`, `secrets/`, `credentials/`). Required by `lead-enforcement.ts`. Reason must be ≥8 chars |
-| **Default-allow gate** | Mode of `lead-enforcement.ts`: Edit/Write/Bash allowed unless on a sensitive path without declaration OR contains a negative keyword (destructive removes, forced pushes, db migrations, schema edits) |
-| **Quick / Standard / Full plan** | Adaptive levels of `planner-protocol`: scale planning effort by complexity. Force via `/planner --quick\|--standard\|--full` |
+Full glossary moved to skill `poneglyph-glossary` (on-demand). Critical terms used inline above: `sensitive: <reason>` (≥8 chars for sensitive paths), Default-allow gate, Arch H (Lead-Directed Skill Reads).
 
 ### When to use rules vs skills (at project level)
 
