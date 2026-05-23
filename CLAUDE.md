@@ -128,7 +128,7 @@ The `lead-enforcement.ts` hook operates in **default-allow** mode (replaces the 
 - Subagents (with `agent_id`) and writes to `~/.claude/plans|projects/` always pass.
 - Read-only git Bash (`status`, `log`, `diff`, `show`, `branch`, …) always allowed.
 
-When to delegate (not enforced by the gate, guided by `bootstrap-lead.md` Trigger A/B and `/parallelism-insights` metric):
+When to delegate (not enforced by the gate, guided by `bootstrap-lead.md` Trigger A/B):
 - ≥5 files OR architectural change → `builder` or `planner`.
 - 1-4 files, bounded change → Lead acts directly (no declaration needed).
 - Bulk exploration (≥3 files to read) → `Explore` (Haiku) or `scout` (Sonnet) by volume × complexity matrix.

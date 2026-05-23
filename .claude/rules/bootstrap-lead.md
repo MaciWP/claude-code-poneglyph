@@ -37,7 +37,7 @@ Applies when the change involves writing code. The `lead-enforcement.ts` gate op
 
 | Condition | Action |
 |-----------|--------|
-| ≥5 files to modify | Delegate to `builder` (or `planner` if complexity >60) — the gate does not enforce it, but the `/parallelism-insights` metric monitors it |
+| ≥5 files to modify | Delegate to `builder` (or `planner` if complexity >60) — the gate does not enforce it; rely on judgment |
 | Architectural change (cross-module, new interface, major refactor) | Delegate to `planner` → `builder` |
 | 1-4 files, bounded change | Lead acts directly — **no declaration required** |
 | Sensitive path (`.env`, `*.lock`, `package.json`, `.claude/settings.json`, `secrets/`, `credentials/`) | Declare inline `sensitive: <reason ≥8 chars>` or delegate to the builder |
