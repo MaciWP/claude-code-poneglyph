@@ -148,17 +148,6 @@
         ]
       }
     ],
-    "PreCompact": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bun $HOME/.claude/hooks/pre-compact.ts",
-            "timeout": 5000
-          }
-        ]
-      }
-    ],
     "PostCompact": [
       {
         "hooks": [
@@ -166,17 +155,6 @@
             "type": "command",
             "command": "bun $HOME/.claude/hooks/post-compact.ts",
             "timeout": 5000
-          }
-        ]
-      }
-    ],
-    "InstructionsLoaded": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bun $HOME/.claude/hooks/instructions-loaded.ts",
-            "async": true
           }
         ]
       }
