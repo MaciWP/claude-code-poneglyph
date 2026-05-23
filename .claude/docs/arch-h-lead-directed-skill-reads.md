@@ -44,7 +44,7 @@ This turns `Read` into a skill-loading primitive. No new tool, no new agent, no 
 ## 4. Mechanism (step by step)
 
 1. User submits a prompt that mentions file paths.
-2. The `memory-inject.ts` `UserPromptSubmit` hook matches those paths against `.claude/rules/paths/*.md` globs, extracts the relevant skill names, and emits a `## Path-Based Skills (for delegation)` section containing full `Read` instructions inside `hookSpecificOutput.additionalContext`.
+2. The `prompt-enrichment.ts` `UserPromptSubmit` hook matches those paths against `.claude/rules/paths/*.md` globs, extracts the relevant skill names, and emits a `## Path-Based Skills (for delegation)` section containing full `Read` instructions inside `hookSpecificOutput.additionalContext`.
 2b. If the project has a `skill-matching.md` rule (auto-loaded), the Lead also sees project-specific skill mappings in its context. These map domain keywords → `./.claude/skills/<name>/SKILL.md` Read paths for project-level skills that carry domain-specific knowledge.
 3. The Lead receives the suggestions in its own context alongside the user prompt.
 4. The Lead picks the appropriate subagent and builds the delegation prompt using the template below. Empty blocks are omitted entirely rather than left as empty headers.
@@ -173,7 +173,7 @@ Canonical files in this repo:
 
 | Component | Path |
 |---|---|
-| Hook that emits skill suggestions | `.claude/hooks/memory-inject.ts` (`extractPathSkills` function) |
+| Hook that emits skill suggestions | `.claude/hooks/prompt-enrichment.ts` (`extractPathSkills` function) |
 | Path-to-skill rules | `.claude/rules/paths/*.md` (e.g., `django.md`, `hooks.md`, `orchestration.md`) |
 | Delegation template (Memory + Skill Injection) | `.claude/rules/lead-orchestrator.md` (section "Memory + Skill Injection When Delegating (Arch H: Lead-Directed Skill Reads)") |
 | Canonical propagation model | `.claude/rules/context-management.md` (section "Skill Propagation Model (Empirically Verified)") |
@@ -193,7 +193,7 @@ skills:
   - code-style-enforcer
 ```
 
-When a user prompt mentions any matching path, `memory-inject.ts` emits Read instructions for the listed skills into the Lead's context, and the Lead copies them into the delegation prompt.
+When a user prompt mentions any matching path, `prompt-enrichment.ts` emits Read instructions for the listed skills into the Lead's context, and the Lead copies them into the delegation prompt.
 
 ## 10. Community context
 

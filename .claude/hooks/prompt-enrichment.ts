@@ -90,7 +90,7 @@ async function emitOutput(
         lines.join("\n");
     }
   } catch {
-    // best-effort — never break memory-inject
+    // best-effort — never break prompt-enrichment
   }
 
   const hasContext = enrichedContext && enrichedContext.trim().length > 0;

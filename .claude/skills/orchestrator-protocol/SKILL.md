@@ -68,7 +68,7 @@ Show inline: `Complexity: ~XX`
 
 ### Step 3: Prepare Context (Arch H)
 
-1. Check if `memory-inject.ts` emitted `## Path-Based Skills (for delegation)` — copy verbatim into delegation prompt
+1. Check if `prompt-enrichment.ts` emitted `## Path-Based Skills (for delegation)` — copy verbatim into delegation prompt
 2. If no hook suggestions: match keywords against §5 table (see Content Map), pick max 3 skills
 3. Also check project's `skill-matching.md` for project-specific skills
 4. Do NOT invoke `Skill()` as a delegation mechanism — use `Read` instructions instead

@@ -29,7 +29,7 @@ priority: 15
 | StopFailure | API error (rate limit, auth) | — |
 | PermissionRequest | Claude requests permission | auto-approve |
 | PostCompact | After compaction | post-compact |
-| UserPromptSubmit | On prompt submit | memory-inject |
+| UserPromptSubmit | On prompt submit | prompt-enrichment |
 
 ### `if` field for conditional filtering
 

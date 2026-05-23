@@ -28,6 +28,6 @@ console.log('Lesson recorded successfully.');
 ```
 
 3. Confirm to the user that the lesson was saved
-4. Mention it will be surfaced in future sessions via memory-inject
+4. Mention it will be surfaced in future sessions via prompt-enrichment
 
 If $ARGUMENTS is empty, ask the user what lesson they want to record.

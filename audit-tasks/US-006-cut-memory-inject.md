@@ -1,8 +1,9 @@
 ---
 id: US-006
 phase: 2.1
-status: pending
+status: completed
 estimate: 30m
+completed_at: 2026-05-23
 blocks: []
 blockedBy: [US-003]
 priority: high
@@ -218,11 +219,22 @@ REPAIR es un rename + actualización de strings — revertirlo es trivial y sin 
 
 ## Decisión
 
-> _Pre-determinada por US-003. Rellenar después de ejecutar la acción._
+**Veredicto ejecutado**: REPAIR (rename). `.claude/hooks/memory-inject.ts` → `.claude/hooks/prompt-enrichment.ts` vía `git mv`.
 
 **Resultado US-003** (commit `99ef23b`): `memory-inject.ts` no inyecta memoria. Inyecta `sessionTitle` + `## Path-Based Skills` (útil pero mal nombrado). El MEMORY.md que ve el Lead viene de auto-memory built-in, no del hook. Los subagents no reciben nada del hook (por diseño de Claude Code).
-**Veredicto US-006**: **REPAIR (rename)** — preferido. CUT total aceptable como fallback.
-**Commit hash**: ___
+
+**Actualizaciones de docs realizadas**:
+- `.claude/settings.json` — command actualizado a `prompt-enrichment.ts`
+- `.claude/skills/orchestrator-protocol/SKILL.md` — referencia en §3 Prepare Context (Arch H)
+- `.claude/skills/orchestrator-protocol/references/06-context-arch-h.md` — Skill Discovery step 1
+- `.claude/rules/paths/hooks.md` — tabla Available Hook Events
+- `.claude/docs/arch-h-lead-directed-skill-reads.md` — §4 step 2, §9 Implementation reference (2 menciones)
+- `.claude/commands/learn.md` — instrucción 4
+- `CLAUDE.md` raíz — bloque Arch H
+- `~/.claude/CLAUDE.md` — symlink al raíz, no requiere edición independiente
+- Comentario interno en `prompt-enrichment.ts` (catch block)
+
+**Commit hash**: (ver git log US-006)
 
 ## Notas
 

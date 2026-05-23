@@ -41,7 +41,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun $HOME/.claude/hooks/memory-inject.ts"
+            "command": "bun $HOME/.claude/hooks/prompt-enrichment.ts"
           }
         ]
       }

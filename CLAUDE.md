@@ -153,7 +153,7 @@ graph TD
     EA --> B
 ```
 
-**Arch H — Lead-Directed Skill Reads**: before delegating, the Lead picks up to 3 relevant skills (via `memory-inject.ts` path-based hints, manual keyword matching against `.claude/rules/paths/*.md`, or the project's `skill-matching.md` rule for project skills) and embeds `Read .claude/skills/<name>/SKILL.md` instructions in the delegation prompt's `[RELEVANT SKILLS FOR THIS TASK]` block. The subagent then Reads those files as its first actions. Default subagents cannot invoke `Skill()` — this is the canonical way to give them task-specific skill context. Both global and project skills use this same Read mechanism.
+**Arch H — Lead-Directed Skill Reads**: before delegating, the Lead picks up to 3 relevant skills (via `prompt-enrichment.ts` path-based hints, manual keyword matching against `.claude/rules/paths/*.md`, or the project's `skill-matching.md` rule for project skills) and embeds `Read .claude/skills/<name>/SKILL.md` instructions in the delegation prompt's `[RELEVANT SKILLS FOR THIS TASK]` block. The subagent then Reads those files as its first actions. Default subagents cannot invoke `Skill()` — this is the canonical way to give them task-specific skill context. Both global and project skills use this same Read mechanism.
 
 Score<70 is a **signal of doubt**, not a hard stop. If the prompt is ambiguous or the resulting plan needs validation, ask (`AskUserQuestion`) or refine with the `prompt-engineer` skill. If the prompt is pragmatically clear despite a low score, proceed and flag uncertainty.
 
