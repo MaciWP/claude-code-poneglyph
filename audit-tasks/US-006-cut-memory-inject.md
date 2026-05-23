@@ -234,7 +234,7 @@ REPAIR es un rename + actualización de strings — revertirlo es trivial y sin 
 - `~/.claude/CLAUDE.md` — symlink al raíz, no requiere edición independiente
 - Comentario interno en `prompt-enrichment.ts` (catch block)
 
-**Commit hash**: (ver git log US-006)
+**Commit hash**: `bf06e8e`
 
 ## Notas
 
