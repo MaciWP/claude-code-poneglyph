@@ -9,7 +9,7 @@ description: |
   Keywords - orchestrate, delegate, complexity, routing, agent, skill, checklist
 type: knowledge-base
 disable-model-invocation: false
-version: "2.0"
+version: "2.1"
 effort: high
 ---
 
@@ -28,50 +28,51 @@ Before asserting anything exists, verify with tools. Never assume.
 
 **Rule**: confidence < 70% → ask with `AskUserQuestion`, don't guess.
 
-Read `${CLAUDE_SKILL_DIR}/references/01-verification.md` for the full tool hierarchy, confidence levels, domain-adaptive thresholds, and validation pipeline.
+Tool hierarchy, confidence levels, validation pipeline: `references/01-verification.md`.
 
 ---
 
 ## §1 Orchestration Checklist
 
-Execute steps 1-5 IN ORDER before responding to any user prompt. No exceptions.
+Execute steps 1-5 IN ORDER before responding. No exceptions.
 
 ### Step 1: Triage
 
 | Condition | Action |
 |---|---|
-| Trivial (typo, rename, 1 line, simple question) | Skip to Step 4 |
-| Vague AND genuine doubt | `AskUserQuestion` or invoke `prompt-engineer` skill |
-| Clear (score ≥70, or pragmatically clear) | Continue to Step 2 |
+| Trivial (typo, rename, 1 line, simple Q) | Skip to Step 4 |
+| Vague AND genuine doubt | `AskUserQuestion` or `prompt-engineer` skill |
+| Clear (score ≥70, or pragmatically clear) | Continue |
 
-For architectural/comparison decisions → `Skill('decide')` before proceeding.
+For architectural/comparison decisions → `Skill('decide')` first. Scoring rubric: `references/02-prompt-scoring.md`.
 
-**Delegation triggers** (apply after triage):
+**Delegation triggers** (apply after triage — independent, fire one, the other, or both):
 
-- **Trigger A — Delegate implementation**: ≥3 files to modify OR architectural change → `builder`/`planner`. 1-2 files + complexity <20 → Lead direct.
-- **Trigger B — Delegate exploration (2×2 matrix)**: see `references/04-agent-selection.md` §Exploration Decision Matrix. LOW+LOW → Read direct. HIGH or HIGH → `scout` (Sonnet) or `Explore` (Haiku) depending on axes.
-
-Triggers are independent — they can fire one, the other, or both.
+- **Trigger A — implementation**: ≥5 files OR architectural change → `builder`/`planner`. 1-4 files + bounded change → Lead direct. Sensitive paths (`.env`, `*.lock`, `package.json`, `.claude/settings.json`, `secrets/`, `credentials/`) require inline `sensitive: <reason ≥8 chars>`. Destructive ops (`rm -rf`, force push, schema change) are blocked by `lead-enforcement.ts` — delegate.
+- **Trigger B — exploration (2×2)**: LOW+LOW (1-2 files, direct read) → Lead `Read`. LOW+HIGH (semantic) → `scout`. HIGH+LOW (≥3 bulk files) → `Explore` (Haiku) or `scout`. HIGH+HIGH → `scout`. Full matrix: `references/04-agent-selection.md` §Exploration Decision Matrix.
 
 ### Step 2: Complexity
 
-Show inline: `Complexity: ~XX`
+Show inline: `Complexity: ~XX`.
 
-| Score | Routing |
-|---|---|
-| <15 | builder direct, skip scoring/skills |
-| 15-30 | builder direct |
-| 30-60 | planner optional |
-| >60 | planner MANDATORY |
+| Score | Routing | Mode |
+|---|---|---|
+| <30 | builder direct, skip scoring/skills | subagents |
+| 30-60 | planner optional | subagents or tiered |
+| >60 | planner MANDATORY | subagents, tiered, or team |
 
-> **Effort signal**: if complexity > 60, suggest the user runs `/effort xhigh` before proceeding — `effort` is static in agent frontmatter and cannot be set per-invocation (CC issue #25591).
+> If complexity > 60, suggest `/effort xhigh` to the user — `effort` is static per agent frontmatter (CC issue #25591); compensate with richer delegation prompts.
+
+Complexity factors × weight, tiered/team gates, worktree decision, model routing: `references/03-complexity-routing.md`.
 
 ### Step 3: Prepare Context (Arch H)
 
-1. Check if `prompt-enrichment.ts` emitted `## Path-Based Skills (for delegation)` — copy verbatim into delegation prompt
-2. If no hook suggestions: match keywords against §5 table (see Content Map), pick max 3 skills
-3. Also check project's `skill-matching.md` for project-specific skills
-4. Do NOT invoke `Skill()` as a delegation mechanism — use `Read` instructions instead
+1. Check if `prompt-enrichment.ts` emitted `## Path-Based Skills (for delegation)` — copy verbatim into delegation prompt.
+2. If no hook suggestions: match keywords against `references/05-skill-matching.md` (max 3 skills per agent).
+3. Also check the project's `skill-matching.md` for project-specific skills.
+4. Do NOT invoke `Skill()` as a delegation mechanism — embed `Read .claude/skills/<name>/SKILL.md` instructions in the prompt.
+
+Full Arch H template with all blocks, propagation model, skill discovery: `references/06-context-arch-h.md`.
 
 ### Step 4: Delegate
 
@@ -81,86 +82,36 @@ Show inline: `Complexity: ~XX`
 | `Agent(subagent_type="scout")` | Explore codebase |
 | `Agent(subagent_type="planner")` | Plan complex tasks |
 | `Agent(subagent_type="reviewer")` | Validate changes |
-| `Skill()` | Load domain context into Lead's OWN session only |
+| `Skill()` | Load context into the Lead's OWN session only |
 
-**Direct-action rules:**
+Direct action is governed by `lead-enforcement.ts` (default-allow). Read is always permitted. Edit/Write/Bash pass unless on a sensitive path without `sensitive: <reason>` or matching a destructive pattern. Read-only git (`status`, `log`, `diff`, `show`, `branch`) is always allowed.
 
-**Rule 1 — Read always allowed (any path):** no complexity score required.
-
-**Rule 2 — Write/Edit/Bash allowed directly only if:**
-- Complexity explicitly calculated and scored **< 20**
-- Score stated inline (e.g., "Complexity: ~12 → direct action")
-- **Complexity ≥ 20**: delegate to builder regardless
-
-**Always allowed (no score required):**
-- `git status`, `git log`, `git diff`, `git show`
-- `git mv` single file (pure rename)
-- Answer questions needing zero file writes
-
-**Parallelize**: when Trigger A fires, send all independent Agents in the SAME message.
-
-**Wave PARALLEL pattern**:
-
-```
-Wave PARALLEL = Agent(builder, T1) + Agent(builder, T2) + Agent(scout, T3) in the SAME assistant message.
-Conditions: (a) no output→input dependencies, (b) disjoint files, (c) no shared state.
-Do NOT parallelize: (a) builder uses planner output, (b) Edit on same file, (c) checkpoint review after writing.
-```
+**Parallelize**: when ≥2 Agents have no output→input dependency AND disjoint files AND no shared state, send them in the SAME assistant message. Do NOT parallelize: builder consuming planner output, two `Edit`s on the same file, checkpoint review after writing. 8 multi-agent patterns + 7 anti-patterns: `references/04-agent-selection.md`.
 
 ### Step 5: Validate
 
 | Change type | Validation |
 |---|---|
 | Single file, low complexity | Builder confirms tests passing |
-| Multi-file | Delegate to reviewer |
-| Security-related | security-auditor |
-| Cross-domain | reviewer + test-watcher |
+| Multi-file | Delegate to `reviewer` |
+| Security-related | `security-auditor` |
+| Cross-domain | `reviewer` + test-watcher |
 
-**NEVER report "completed" without confirmation that tests are passing.**
+**NEVER report "completed" without confirmation that tests pass.**
 
-**Reporting to the user**: apply rules from `08-output-style.md`. Terse by default; expand on escape triggers.
-
----
-
-## §2 Complexity Routing
-
-Show inline: `Complexity: ~XX`. Direct action only if complexity < 20 AND stated inline.
-
-| Score | Routing | Mode |
-|---|---|---|
-| <15 | builder direct, skip scoring/skills | subagents |
-| 15-30 | builder direct | subagents |
-| 30-60 | planner optional | subagents or tiered |
-| >60 | planner MANDATORY | subagents, tiered, or team |
-
-Default is ALWAYS subagents. Tiered (~2x cost) only for 2-3 domains with shared interfaces at 45-60. Team (3-7x cost) only when all 4 gates pass. See Content Map for full routing tables.
-
-> **Effort limitation**: `effort` in agent frontmatter is static. Compensate by providing richer context in delegation prompts for high-complexity tasks. For complexity >60, suggest `/effort xhigh` to the user.
-
----
-
-## §3 Delegation Triggers
-
-| Trigger | Threshold |
-|---|---|
-| **A. Parallelization** | 2+ subtasks with NO data dependency |
-| **B. Context preservation** | Would read >10 files, >5 grep/glob, or >15K tokens inline |
-
-When ANY trigger fires → delegate. When BOTH → batch parallel.
-
-Self-check before EVERY delegation: "Is there another independent Task I could batch here?" Document dependency inline if not.
+Terse-first output style + escape triggers: `references/08-output-style.md`. NEVER/ALWAYS rules, retry budget, SendMessage vs re-spawn, stuck detection, worktree cleanup: `references/07-delegation-recovery.md`.
 
 ---
 
 ## Content Map
 
-| Topic | File | Contents |
-|---|---|---|
-| Verification & anti-hallucination | `${CLAUDE_SKILL_DIR}/references/01-verification.md` | Read when claiming a file/symbol exists or confidence is below threshold. Contains tool hierarchy, confidence levels, domain-adaptive thresholds, validation pipeline (3 stages), critical keywords that always require verification, and common hallucination patterns. |
-| Prompt scoring rubric | `${CLAUDE_SKILL_DIR}/references/02-prompt-scoring.md` | Read when the user's prompt feels ambiguous or scores below 70. Contains the 5-criterion table (20pts each), threshold table, improvement questions per criterion, before/after improvement example, and scoring examples. |
-| Complexity routing + mode selection | `${CLAUDE_SKILL_DIR}/references/03-complexity-routing.md` | Read when calculating complexity or choosing execution mode. Contains complexity factors × weight table, formula, routing thresholds, Mode Selection Table, Tiered Mode 5-step workflow, 4-Gate Criteria for team mode, Team Mode Execution protocol, Worktree Decision, Effort Routing, Model Routing. |
-| Agent selection matrix | `${CLAUDE_SKILL_DIR}/references/04-agent-selection.md` | Read when choosing which agent to delegate to. Contains the signal→agent selection matrix with suggested skills, 8 Multi-Agent Patterns, and 7 Anti-Patterns. |
-| Skill matching + keywords | `${CLAUDE_SKILL_DIR}/references/05-skill-matching.md` | Read when matching task keywords to skills for Arch H delegation. Contains Keywords→Skills table (19 entries), Task Type Detection, Priority Scoring formula, Synergy Rules, Conflict Rules, and baseline skills per agent. |
-| Context management + Arch H | `${CLAUDE_SKILL_DIR}/references/06-context-arch-h.md` | Read when preparing a delegation prompt or understanding what reaches subagents. Contains Architecture Levels diagram, Rules vs Skills decision table, Skill Loading Limits per agent, Propagation Model (what reaches/doesn't), full Arch H delegation template with ALL blocks, Skill Discovery steps, Content Map pattern description, Anti-claims, and orchestration consequences. |
-| Delegation rules + error recovery | `${CLAUDE_SKILL_DIR}/references/07-delegation-recovery.md` | Read when a delegation fails, an agent is stuck, or you need the NEVER/ALWAYS rules. Contains NEVER/ALWAYS tables, permission mode inheritance (bypassPermissions propagation), Continuous Validation Pipeline (checkpoints + validation by change type + feedback template), Retry Budget, SendMessage vs Re-spawn decision table, Stuck Detection thresholds, Worktree Cleanup on Failure, run_in_background guidance, and Parallelization when/when-not tables. |
-| Output style + escape rules | `${CLAUDE_SKILL_DIR}/references/08-output-style.md` | Read at session start to set Lead↔user communication baseline. Contains terse-first rules, escape triggers (security, irreversible, multi-step ambiguity), before/after examples, when NOT to apply (planner outputs, MEMORY.md, docs). |
+| Topic | File |
+|---|---|
+| Verification, anti-hallucination, confidence levels, validation pipeline | `references/01-verification.md` |
+| Prompt scoring rubric (5 criteria × 20pts, threshold table, improvement Qs) | `references/02-prompt-scoring.md` |
+| Complexity factors × weight, mode selection, tiered/team gates, worktree, effort/model routing | `references/03-complexity-routing.md` |
+| Agent selection matrix, exploration 2×2, 8 multi-agent patterns, 7 anti-patterns | `references/04-agent-selection.md` |
+| Keywords→skills mapping, priority scoring, synergy/conflict rules, baseline skills per agent | `references/05-skill-matching.md` |
+| Architecture levels, rules vs skills, full Arch H template, propagation model | `references/06-context-arch-h.md` |
+| NEVER/ALWAYS rules, retry budget, SendMessage vs re-spawn, stuck detection, worktree cleanup | `references/07-delegation-recovery.md` |
+| Output style baseline, escape triggers, terse-first rules, when NOT to apply | `references/08-output-style.md` |
