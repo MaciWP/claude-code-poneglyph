@@ -239,4 +239,10 @@ Solo aparecen en `audit-tasks/` (metadocumentación) y `PONEGLYPH-AUDIT.md`. No 
 - `bun test ./.claude/hooks/` → 139 pass, 0 fail
 - Listado de slash commands tras el cambio: `eval-skill` ya no aparece; `benchmark-skills` muestra la nueva descripción
 
-**Commit**: `5394026` (mezclado con US-015 por concurrencia con agente paralelo trabajando en planner-protocol; los cambios de US-009 están todos aplicados: `.claude/commands/benchmark-skills.md` modificado, `.claude/commands/eval-skill.md` eliminado, esta US añadida)
+**Commit**: `5e20291` — refactor(commands): merge /eval-skill into /benchmark-skills --single
+
+### Historial de la ejecución (concurrencia con agente paralelo)
+
+- Primer commit (`5394026`): mis cambios de US-009 se mezclaron con cambios de US-015 (planner-protocol) ejecutándose en paralelo. Mensaje engañoso (solo describía US-015).
+- Otro proceso hizo `git reset HEAD~1`, descartando `5394026`. Mis cambios operativos volvieron al working tree.
+- Re-commit limpio (`5e20291`) con solo los cambios de US-009 y mensaje correcto. Este es el commit autoritativo.
