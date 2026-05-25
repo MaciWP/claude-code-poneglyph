@@ -256,4 +256,4 @@ Edit .claude/skills/orchestrator-protocol/SKILL.md
 - Exploración → Trigger B 2×2 en Step 1 ✓
 - Fallo de subagente → puntero a `07-delegation-recovery.md` en Step 5 ✓
 
-Commit hash: 6c2c4c5 (placeholder — actualizado tras commit).
+Commit hash: 5c449af.
