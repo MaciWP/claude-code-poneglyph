@@ -74,6 +74,53 @@ The "Suggested skills to Read (for delegation)" column lists `.claude/skills/<na
 | **Tiered Build** | planner (Mode B contracts) + N builders + reviewer | complexity 45-60, 2-3 domains with shared interfaces |
 | **Team Parallel** | teammates (general-purpose) | executionMode=team, 3+ independent domains, complexity >60 |
 
+## Parallelization & Batch Operations
+
+When delegating or reading, decide PARALLEL vs SEQUENTIAL per call, not per session. Parallelize everything independent; sequence only on real dependency.
+
+### Parallel vs Sequential
+
+| Parallel (same message) | Sequential (wait for result) |
+|-------------------------|------------------------------|
+| 3+ independent Reads | Edit after Read on the same file |
+| 2+ different Glob patterns | Write that depends on Read |
+| 2+ independent Agent spawns | Agent that needs prior agent's output |
+| Multiple LSP queries on different symbols | LSP query after creating a file |
+| LSP + Grep for comprehensive search | Bash on a newly-created file |
+| WebSearch + WebFetch (read-only fetches) | Any tool consuming previous output |
+
+**Anti-pattern**: reading files one by one or spawning agents sequentially when independent → batch in one message.
+
+### Cascading Cancel — the parallelization risk
+
+When a message contains N parallel tool-calls and **one fails**, the others in the same message are cancelled. To avoid losing batch work:
+
+| Rule | Reason |
+|------|--------|
+| Isolate fragile operations | Network calls (`WebFetch`, `git fetch`), filesystem writes, or `npm install` go in their OWN message. Their failure must not drag local Reads/Greps with them. |
+| Parallel Edits only on disjoint paths | Never 2 `Edit` on the same file in the same message. |
+| No parallel `Bash(cd <subdir>)` | `cwd` does not persist between Bash calls. Always use absolute paths. |
+| When in doubt, sequential | Cost of an extra message < cost of reverting a cancelled batch. |
+
+**Safe example**: `Read(a.ts) + Read(b.ts) + Grep("foo") + Glob("**/*.test.ts")` in one message — read-only, independent, disjoint paths.
+
+**Risky example**: `Edit(file.ts) + WebFetch(url) + Bash("git push")` — if `WebFetch` fails, the `Edit` is cancelled and `git push` does not run. Split into 3 sequential messages.
+
+### LSP — semantic over text
+
+| Task | LSP operation | Fallback |
+|------|--------------|----------|
+| Where is X defined? | `goToDefinition` | Grep declaration |
+| Where is X used? | `findReferences` | Grep usages |
+| What parameters does X accept? | `hover` | Read signature |
+| What functions does file F have? | `documentSymbol` | Read + skim |
+| Who calls function F? | `incomingCalls` | Grep + verify |
+| What does function F call? | `outgoingCalls` | Read body |
+
+Full LSP reference: skill `lsp-operations`.
+
+---
+
 ## Anti-Patterns
 
 | Anti-Pattern | Problem | Use Instead |
@@ -85,3 +132,7 @@ The "Suggested skills to Read (for delegation)" column lists `.claude/skills/<na
 | 2+ builders in parallel without worktree on overlapping files | Write conflicts | Activate `isolation: "worktree"` |
 | team mode for <3 domains | 3-7x cost with no real benefit | parallel builders in worktrees |
 | team mode for dependent domains | file conflicts between teammates | sequential subagents |
+| Reading files one by one | Latency + context overhead | Batch 3+ Reads in one message |
+| Sequential agents with no dependency | Wasted parallelism | Spawn in one message |
+| Glob → Read → Grep when Glob+Grep would suffice | Round-trips add up | Glob + Grep in same message |
+| Edit without prior Read | check-staleness hook blocks; risk of stale content | Read first, then Edit sequentially |
