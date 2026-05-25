@@ -12,14 +12,11 @@ description: Keywords→skills table, task type detection, priority scoring, syn
 |--------------------|--------------|
 | auth, jwt, password, security, token, session | `security-review` |
 | refactor, extract, SOLID, clean, simplify | `review-patterns` |
-| log, logging, trace, debug, observability | `logging-strategy` |
 | error, retry, circuit, fallback, recovery | `diagnostic-patterns` |
 | performance, memory, optimization, bottleneck, slow, n+1 | `review-patterns` |
 | definition, references, hover, symbols, lsp | `lsp-operations` |
 | code quality, code smells, SOLID, complexity, duplication | `review-patterns` |
 | validate, verify, check, exists, hallucination, confidence | `anti-hallucination` |
-| careful, strict, production, critical, hotfix | `careful-mode` |
-| freeze, readonly, read-only, no-edit, lock | `freeze-mode` |
 | decide, decision, choose, evaluate, trade-off | `decide` |
 | stress-test, devil's advocate, challenge decision, pre-mortem | `decision-stress-test` |
 | explain, walkthrough, diff, learn, onboarding | `explain-changes` |
@@ -57,7 +54,8 @@ Some skills reinforce each other — both receive +1 when paired:
 
 | Pair | Synergy |
 |------|---------|
-| `diagnostic-patterns` + `logging-strategy` | Error tracing |
+| `diagnostic-patterns` + `anti-hallucination` | Error tracing with verified claims |
+| `review-patterns` + `security-review` | Quality + threat surface in one pass |
 
 ## Conflict Rules
 

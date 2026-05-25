@@ -170,7 +170,6 @@ Use this to organize into execution waves.
 | `anti-hallucination` | Verification | validate, verify, check, exists, confidence |
 | `review-patterns` | Code review & refactoring & performance | refactor, solid, clean, extract, quality, smells, performance, memory, bottleneck, slow, profiling |
 | `diagnostic-patterns` | Debugging & error recovery | retry, error, recovery, diagnose, stacktrace |
-| `logging-strategy` | Observability | log, trace, debug, observability |
 | `security-review` | Security audit | security, auth, validation, owasp, vulnerability |
 | `lsp-operations` | Symbol navigation | findReferences, goToDefinition, hover |
 
