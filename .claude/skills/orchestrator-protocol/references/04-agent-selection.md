@@ -48,15 +48,15 @@ The "Suggested skills to Read (for delegation)" column lists `.claude/skills/<na
 | Signal | Agent | Skill/Mode | Suggested skills to Read (for delegation) | Fallback |
 |--------|-------|------------|-------------------------------------------|----------|
 | implement, create, fix, build | builder | (by prompt) | (match domain via skill-matching) | — |
-| refactor, extract, simplify, restructure | builder | code-quality | code-quality | — |
+| refactor, extract, simplify, restructure | builder | review-patterns | review-patterns | — |
 | merge conflict, git conflict | builder | (prompt context) | — | — |
 | docs, sync, documentation | builder | (doc task) | — | — |
 | bug documentation, knowledge base | builder | diagnostic-patterns | diagnostic-patterns | — |
-| review, validate, check (generic) | reviewer | standard mode | code-quality | — |
+| review, validate, check (generic) | reviewer | standard mode | review-patterns | — |
 | security, audit, vulnerability, owasp | reviewer | security-review | security-review | — |
-| code quality, smells, SOLID, complexity | reviewer | code-quality | code-quality | — |
-| performance, slow, bottleneck, N+1 | reviewer | performance-review | performance-review | — |
-| plan, design, decompose, workflow, RFC, architecture, contract | planner | (Mode A or B) | decision-stress-test (for design risk), code-quality | — |
+| code quality, smells, SOLID, complexity | reviewer | review-patterns (quality mode) | review-patterns | — |
+| performance, slow, bottleneck, N+1 | reviewer | review-patterns (performance mode) | review-patterns | — |
+| plan, design, decompose, workflow, RFC, architecture, contract | planner | (Mode A or B) | decision-stress-test (for design risk), review-patterns | — |
 | >3 subtasks, breakdown, dependencies | planner | (decomposition built-in) | — | — |
 | find, explore, search codebase | scout | — | — | Explore agent |
 | error, failing, debug, diagnose | error-analyzer | diagnostic-patterns | diagnostic-patterns | builder (obvious fix) |

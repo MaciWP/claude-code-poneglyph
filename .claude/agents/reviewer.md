@@ -9,9 +9,8 @@ tools: Read, Grep, Glob, Bash, LSP
 permissionMode: plan
 disallowedTools: Edit, Write, Task
 skills:
-  - code-quality
+  - review-patterns
   - security-review
-  - performance-review
   - anti-hallucination
 memory: project
 background: true
@@ -532,8 +531,7 @@ sequenceDiagram
 | Skill | When Loaded | What It Adds |
 |-------|-------------|--------------|
 | `security-review` | Auth, data handling, APIs | OWASP checklist, vulnerability patterns |
-| `performance-review` | Critical paths, DB operations | N+1 detection, memory leak patterns |
-| `code-quality` | General review, refactoring | Code smells, SOLID principles, complexity |
+| `review-patterns` | Quality, performance, refactoring | Code smells, SOLID principles, complexity, N+1 detection, memory leak patterns |
 
 ### Skill Checklists
 
@@ -546,19 +544,19 @@ sequenceDiagram
 - Authorization correct
 - Sensitive data encrypted
 
-**performance-review** adds:
-- No N+1 queries
-- No memory leaks
-- Lazy loading where applicable
-- Caching appropriate
-- No blocking in hot paths
-
-**code-quality** adds:
+**review-patterns (quality mode)** adds:
 - Code smells detection
 - SOLID principles compliance
 - Cyclomatic complexity check
 - DRY violations
 - Naming conventions
+
+**review-patterns (performance mode)** adds:
+- No N+1 queries
+- No memory leaks
+- Lazy loading where applicable
+- Caching appropriate
+- No blocking in hot paths
 
 ### What Does NOT Change with Skills
 
@@ -575,11 +573,11 @@ The Lead activates the appropriate mode via prompt context and skill loading.
 
 | Mode | Trigger Keywords | Skill Loaded | Focus |
 |------|-----------------|--------------|-------|
-| **Standard** | review, check, validate | code-quality | Base quality checklist, correctness, style |
+| **Standard** | review, check, validate | review-patterns (quality mode) | Base quality checklist, correctness, style |
 | **Security Audit** | security, auth, owasp, audit, vulnerability | security-review | OWASP Top 10, secrets detection, injection patterns, auth flows |
-| **Code Quality** | quality, smells, SOLID, complexity, duplication | code-quality | Code smell detection, SOLID violations, complexity metrics, naming |
+| **Code Quality** | quality, smells, SOLID, complexity, duplication | review-patterns (quality mode) | Code smell detection, SOLID violations, complexity metrics, naming |
 | **Test Coverage** | coverage, untested, missing tests | (prompt context) | Coverage gaps, untested paths, test quality, edge cases |
-| **Performance** | performance, slow, bottleneck, N+1, memory | performance-review | N+1 queries, memory leaks, caching opportunities, algorithmic complexity |
+| **Performance** | performance, slow, bottleneck, N+1, memory | review-patterns (performance mode) | N+1 queries, memory leaks, caching opportunities, algorithmic complexity |
 
 ### Mode-Specific Checklists
 
@@ -593,7 +591,7 @@ The Lead activates the appropriate mode via prompt context and skill loading.
 - [ ] Rate limiting on sensitive endpoints
 - [ ] Secure headers configured
 
-**Code Quality Mode** (absorbed from code-quality):
+**Code Quality Mode** (via review-patterns quality mode):
 - [ ] No code duplication (DRY)
 - [ ] Single Responsibility Principle
 - [ ] Functions/methods not too long (< 30 lines)

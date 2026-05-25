@@ -15,7 +15,7 @@ Refactoring pipeline: analyze → plan → refactor → review
 
 | Field | Value |
 |-------|-------|
-| Agent | `code-quality` |
+| Agent | `review-patterns` |
 | Input | Code to refactor |
 | Output | Code smells, SOLID violations, complexity metrics |
 | Next | Step 2 |

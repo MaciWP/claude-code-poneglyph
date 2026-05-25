@@ -1,33 +1,10 @@
 ---
-name: performance-review
-description: |
-  Performance audit for identifying bottlenecks, memory issues, and optimization opportunities.
-  Use when: slow endpoint, response time degradation, memory growing, connection pool tuning, query optimization, latency investigation, N+1 queries, profiling results analysis.
-  Keywords - performance, memory, optimization, bottleneck, slow, leak, profiling, n+1, latency, response time, connection pool
-type: knowledge-base
-disable-model-invocation: false
-argument-hint: "[file-path or module]"
-effort: high
-activation:
-  keywords:
-    - performance
-    - memory
-    - optimization
-    - bottleneck
-    - slow
-    - leak
-    - profiling
-    - n+1
-    - latency
-for_agents: [reviewer, builder]
-version: "2.0"
-paths:
-  - "**/*perf*"
-  - "**/benchmark*/**"
-  - "**/*.bench.*"
+parent: review-patterns
+name: mode-performance
+description: Performance mode — bottlenecks, memory leaks, N+1, async patterns, metrics, profiling.
 ---
 
-# Performance Review Patterns
+# Performance Mode
 
 Performance audit checklist. Language-agnostic patterns applicable to any stack.
 
@@ -91,7 +68,7 @@ Performance audit checklist. Language-agnostic patterns applicable to any stack.
 - [ ] Not importing unnecessary polyfills
 - [ ] Using runtime-native database drivers when appropriate
 
-## Red Flags
+## Red Flags (Performance)
 
 | Pattern | Severity | Impact | Detection |
 |---------|----------|--------|-----------|
@@ -123,30 +100,9 @@ Performance audit checklist. Language-agnostic patterns applicable to any stack.
 | Missing Connection Pool | Connection exhaustion | Pool with max connections |
 | Event Listener Leak | Memory leak | Remove on cleanup |
 
-For N+1, sync blocking, unbatched, and sequential await patterns with before/after examples, see `references/n-plus-one-patterns.md`.
+For N+1, sync blocking, unbatched, and sequential await patterns with before/after examples, see `${CLAUDE_SKILL_DIR}/references/performance/n-plus-one-patterns.md`.
 
-For memory leak, event listener, and serialization patterns, see `references/memory-leak-patterns.md`.
-
-## Runtime-Specific Optimizations
-
-Use your runtime's native APIs when available for best performance:
-
-| Operation | Principle | Guidance |
-|-----------|-----------|----------|
-| File I/O | Use native async file API | Prefer runtime-provided async readers over polyfills |
-| HTTP client | Use native fetch with streaming | Use streaming body readers for large responses |
-| Child processes | Use native process spawning | Use runtime-specific spawn API for subprocesses |
-| WebSocket | Use native WS support | Prefer built-in WebSocket server over libraries |
-| Database | Use native drivers | Use runtime-optimized database bindings |
-
-## Severity Levels
-
-| Level | Definition | Metric Impact | Examples |
-|-------|------------|---------------|----------|
-| Critical | System unusable, crashes | > 10x slowdown, OOM | Sync I/O in handlers, N+1 in loops, memory leak |
-| High | Significant degradation | 3-10x slowdown | Missing pagination, no connection pool |
-| Medium | Noticeable impact | 1.5-3x slowdown | Missing indexes, no compression |
-| Low | Minor optimization | < 1.5x impact | Debug logging in prod, suboptimal caching |
+For memory leak, event listener, and serialization patterns, see `${CLAUDE_SKILL_DIR}/references/performance/memory-leak-patterns.md`.
 
 ## Performance Metrics
 
@@ -158,6 +114,16 @@ Use your runtime's native APIs when available for best performance:
 | DB Query Time (p95) | < 50ms | > 100ms | > 500ms |
 | Error Rate | < 0.1% | > 1% | > 5% |
 | Throughput | Baseline | -20% | -50% |
+
+## Runtime-Specific Optimizations
+
+| Operation | Principle | Guidance |
+|-----------|-----------|----------|
+| File I/O | Use native async file API | Prefer runtime-provided async readers over polyfills |
+| HTTP client | Use native fetch with streaming | Use streaming body readers for large responses |
+| Child processes | Use native process spawning | Use runtime-specific spawn API for subprocesses |
+| WebSocket | Use native WS support | Prefer built-in WebSocket server over libraries |
+| Database | Use native drivers | Use runtime-optimized database bindings |
 
 ## Output Format
 
@@ -200,6 +166,13 @@ Use your runtime's native APIs when available for best performance:
 - [x] Indexes on foreign keys
 ```
 
+## Reference Files
+
+| Topic | File | Contents |
+|-------|------|----------|
+| N+1 and sequential-op patterns | `${CLAUDE_SKILL_DIR}/references/performance/n-plus-one-patterns.md` | Detailed N+1 query problem (Problem/Impact/Detection/BEFORE-slow/AFTER-fast with JOIN and batch-loading variants), plus synchronous blocking, unbatched operations, and sequential-await-in-loop anti-patterns. Read when a query-in-loop or sequential-await pattern is suspected. |
+| Memory leak and serialization patterns | `${CLAUDE_SKILL_DIR}/references/performance/memory-leak-patterns.md` | Detection and fix patterns for unbounded cache growth, event listener leaks, closure-captured references, and large-object serialization CPU spikes. Read when memory grows over time, OOM crashes are reported, or GC pauses degrade p99 latency. |
+
 ## Gotchas
 
 | Gotcha | Why | Workaround |
@@ -209,24 +182,3 @@ Use your runtime's native APIs when available for best performance:
 | Connection pool != cache (pool manages connections, not query results) | Confusing the two leads to wrong architecture decisions | Don't confuse pooling with caching, they solve different problems |
 | `async/await` in loops looks sequential but may be batched by runtime | Some runtimes optimize sequential awaits internally | Verify actual execution order with timing logs, not just code reading |
 | Micro-benchmarks don't reflect production (JIT warmup, GC pressure differ) | Isolated benchmarks miss real-world contention and memory pressure | Use realistic workloads and sustained load tests |
-
-## Scripts
-
-| Script | Input | Output | Usage |
-|--------|-------|--------|-------|
-| `scripts/find-n-plus-one.ts` | file/dir path | JSON `{ findings, total }` | `bun .claude/skills/performance-review/scripts/find-n-plus-one.ts <path>` |
-
-## Content Map
-
-Supporting files loaded on demand based on task context. Consult the Contents column to decide which to Read for your current task.
-
-| Topic | File | Contents |
-|---|---|---|
-| N+1 and sequential-op patterns | `${CLAUDE_SKILL_DIR}/references/n-plus-one-patterns.md` | Detailed N+1 query problem (Problem/Impact/Detection/BEFORE-slow/AFTER-fast with JOIN and batch-loading variants), plus synchronous blocking, unbatched operations, and sequential-await-in-loop anti-patterns. Read when a query-in-loop or sequential-await pattern is suspected and you need concrete fix pseudocode with JOIN vs IN-batch trade-offs. |
-| Memory leak and serialization patterns | `${CLAUDE_SKILL_DIR}/references/memory-leak-patterns.md` | Detection and fix patterns for unbounded cache growth, event listener leaks, closure-captured references, and large-object serialization CPU spikes. Read when memory grows over time, OOM crashes are reported, or GC pauses degrade p99 latency — provides LRU/TTL cache patterns and listener cleanup templates. |
-
----
-
-**Version**: 2.0
-**For**: reviewer agent
-**Patterns**: Language-agnostic

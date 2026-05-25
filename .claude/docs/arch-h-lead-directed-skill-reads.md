@@ -120,7 +120,7 @@ Arch H's only real cost is the Read latency. Everything else is a win.
 - **Don't bother** for trivial tasks where even a single Read is net overhead (complexity < 15, single-file typo fixes, etc.).
 - **Don't use** when the subagent doesn't have `Read` in its tools allowlist (rare — essentially custom agents with an intentionally restricted toolset).
 - **Use project skills** (`./.claude/skills/`) for project-specific knowledge (naming conventions, architecture decisions, testing patterns specific to the project). They load on-demand via the same Arch H Read mechanism as global skills.
-- **Frontmatter is still correct** for baseline skills that a role always needs regardless of task (e.g., reviewer's permanent `code-quality` + `anti-hallucination`). Use frontmatter for the floor, Arch H for the task-specific ceiling.
+- **Frontmatter is still correct** for baseline skills that a role always needs regardless of task (e.g., reviewer's permanent `review-patterns` + `anti-hallucination`). Use frontmatter for the floor, Arch H for the task-specific ceiling.
 
 ## 8. The "entry + references" sub-pattern
 

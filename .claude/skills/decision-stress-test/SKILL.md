@@ -287,6 +287,6 @@ Full detection signals and corrections in `${CLAUDE_SKILL_DIR}/references/04-ant
 |---|---|
 | `decide` | Generates 3-perspective options for a decision; `decision-stress-test` stress-tests ONE option with 5-12 perspectives + debate. Use `decide` to choose an option, then `decision-stress-test` before committing |
 | `anti-hallucination` | Source of the Verification Gate and confidence levels; this skill inherits and applies them inside each perspective |
-| `code-quality` | Different scope: `code-quality` reviews implementation; `decision-stress-test` reviews the decision before implementation |
+| `review-patterns` | Different scope: `review-patterns` reviews implementation; `decision-stress-test` reviews the decision before implementation |
 | `security-review` | Different scope: `security-review` audits existing code; `decision-stress-test` includes Security as one perspective among 11 when stakes are High |
 | `prompt-engineer` | If the user's input to this skill is too vague to triage, the invoker may use `prompt-engineer` to refine before spawning perspectives |

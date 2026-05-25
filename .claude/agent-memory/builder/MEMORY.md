@@ -152,6 +152,12 @@
 - `bun build <file> --target bun` without `--outfile` performs an implicit typecheck emitting to stdout — if there are no TypeScript errors the output is the compiled bundle, not an error; it is the fastest way to validate types in standalone hooks without `package.json`.
 - When removing interfaces that only typed responses from external APIs, no other consumer needs updating if the type only appeared in the `as InjectionResponse` cast inside the removed block.
 
+## 2026-05-25 — Session US-011-partial-merge
+- When merging skills into a new merged skill, always grep for internal cross-references (`CLAUDE_SKILL_DIR|references/`) in the files being moved BEFORE moving — if none exist (as here), the copy is clean; if they exist, update paths to the new subdirectory structure AFTER copying.
+- Skill frontmatter fields that modify auto-activation behavior (`paths:`) must be preserved when merging — dropping them is a silent behavioral change. `effort: high` on a merged skill is ambiguous (both modes don't share the same effort) and can safely be dropped with an explicit decision.
+- The safe order for a skill merge: (1) create directories, (2) copy files, (3) update evals "skills" field (use `bun -e` on Windows since python3 may not be available), (4) write new SKILL.md and mode reference files, (5) delete source dirs, (6) update all cross-references, (7) run tests.
+- After a cross-reference sweep, `grep -r code-quality .claude` (or Grep tool) validates that no stale references remain — always do this before declaring done.
+
 ## Canonical Pattern — lead-enforcement bypass
 
 - `lead-enforcement.ts` blocks `Edit`/`Write` for the Lead session (`CLAUDE_LEAD_MODE=true`). Subagents are exempt: `input.agent_id` check exits 0 immediately — builder invoked via `Agent()` can Edit/Write freely without any workaround.

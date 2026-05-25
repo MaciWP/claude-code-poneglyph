@@ -31,7 +31,7 @@ graph TD
 | Agent | Base Skills (free) | Max Additional | Total Max | Notes |
 |-------|--------------------|----------------|-----------|-------|
 | builder | anti-hallucination | 5 | 6 | Base is free, does not count against max |
-| reviewer | code-quality, security-review, performance-review, anti-hallucination | 2 | 6 | Base skills are free |
+| reviewer | review-patterns, security-review, anti-hallucination | 3 | 6 | Base skills are free |
 | error-analyzer | diagnostic-patterns | 2 | 3 | + matched skills |
 | planner | — | 4 | 4 | Mode A decomposition + Mode B architectural decisions |
 | scout | — | 1 | 1 | Minimal context |

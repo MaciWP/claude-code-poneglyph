@@ -1,5 +1,7 @@
 {
-  "skills": ["code-quality"],
+  "skills": [
+    "review-patterns"
+  ],
   "query": "Analyze this codebase for code duplication and suggest DRY improvements",
   "expected_behavior": [
     "Identifies duplicated logic patterns",

@@ -168,11 +168,10 @@ Use this to organize into execution waves.
 | Skill | Domain | Keywords |
 |-------|--------|----------|
 | `anti-hallucination` | Verification | validate, verify, check, exists, confidence |
-| `code-quality` | Code review & refactoring | refactor, solid, clean, extract, quality, smells |
+| `review-patterns` | Code review & refactoring & performance | refactor, solid, clean, extract, quality, smells, performance, memory, bottleneck, slow, profiling |
 | `database-patterns` | Database & queries | database, sql, migration, query, orm, transaction |
 | `diagnostic-patterns` | Debugging & error recovery | retry, error, recovery, diagnose, stacktrace |
 | `logging-strategy` | Observability | log, trace, debug, observability |
-| `performance-review` | Performance optimization | performance, memory, bottleneck, slow, profiling |
 | `security-review` | Security audit | security, auth, validation, owasp, vulnerability |
 
 ## Task-Agent-Skill Mapping
@@ -189,14 +188,14 @@ Use this to organize into execution waves.
 
 | Task | Type | Agent | Suggested Skills | Reason |
 |------|------|-------|------------------|--------|
-| Create auth service | Implement | `builder` | security-review, code-quality | Auth requires secure patterns |
-| Refactor function | Implement | `builder` | code-quality | Refactoring is implementation |
+| Create auth service | Implement | `builder` | security-review, review-patterns | Auth requires secure patterns |
+| Refactor function | Implement | `builder` | review-patterns | Refactoring is implementation |
 | Database migration | Implement | `builder` | database-patterns | Domain-specific |
 | Review auth code | Validate | `reviewer` | security-review | Security needs checklist |
 | General checkpoint | Validate | `reviewer` | (none) | Basic review |
 | Analyze error | Diagnose | `error-analyzer` | diagnostic-patterns | Failure diagnosis |
 | Explore codebase | Read-only | `scout` | (none) | Discovery |
-| Design architecture | Strategic | `planner` (Mode B) | code-quality, decision-stress-test | RFC-style decisions handled in-skill |
+| Design architecture | Strategic | `planner` (Mode B) | review-patterns, decision-stress-test | RFC-style decisions handled in-skill |
 
 ## Wave Classification
 
@@ -258,7 +257,7 @@ Score = (tasks_in_parallel_waves / total_tasks) x 100
 Implement [WHAT] in [WHERE]. Affects N files, risk [LEVEL].
 
 **Agents**: builder, reviewer, error-analyzer
-**Suggested Skills**: security-review, code-quality
+**Suggested Skills**: security-review, review-patterns
 **Parallel Efficiency Score**: 83%
 **Execution Mode**: subagents (default) | tiered (planner Mode B contracts) | team (experimental)
 **Team Justification**: [only if mode=team: domains, proof of independence, communication needs]
@@ -268,7 +267,7 @@ Implement [WHAT] in [WHERE]. Affects N files, risk [LEVEL].
 ### PARALLEL-1: Foundation
 | # | File | Action | Agent | Skills | Reason |
 |---|------|--------|-------|--------|--------|
-| 1.1 | types/auth.ts | Create | builder | code-quality | Base types |
+| 1.1 | types/auth.ts | Create | builder | review-patterns | Base types |
 | 1.2 | - | Security Design | reviewer | security-review | Validate design |
 
 ### SEQ-2: Core
@@ -291,7 +290,7 @@ Implement [WHAT] in [WHERE]. Affects N files, risk [LEVEL].
     "totalTasks": 4,
     "parallelEfficiency": 0.83,
     "agentsUsed": ["builder", "reviewer"],
-    "skillsUsed": ["security-review", "code-quality"],
+    "skillsUsed": ["security-review", "review-patterns"],
     "executionMode": "subagents",
     "teamJustification": null,
     "_executionModeValues": "subagents | tiered | team"
@@ -306,7 +305,7 @@ Implement [WHAT] in [WHERE]. Affects N files, risk [LEVEL].
           "file": "src/types/auth.ts",
           "action": "Create",
           "agent": "builder",
-          "suggestedSkills": ["code-quality"],
+          "suggestedSkills": ["review-patterns"],
           "dependencies": [],
           "complexity": 10,
           "priority": "high",

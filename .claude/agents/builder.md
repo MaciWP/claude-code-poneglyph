@@ -318,7 +318,7 @@ When Lead passes additional skills via prompt, apply their patterns. Examples:
 | `api-design` | REST endpoints | Status codes, input validation, error responses |
 | `testing-strategy` | TDD, mocking | Test structure, mock patterns, cleanup |
 | `database-patterns` | SQL, ORM, migrations | Prepared statements, transactions |
-| `code-quality` | Refactoring, quality | SOLID principles, complexity reduction |
+| `review-patterns` | Refactoring, quality | SOLID principles, complexity reduction |
 
 ## Refactoring Mode
 
