@@ -1,36 +1,32 @@
 ---
 name: prompt-engineer
 description: |
-  Skill for improving vague or ambiguous prompts through analysis and structured reformulation.
-  Use proactively when: prompt score < 70, requirements unclear, vague instructions.
-  Keywords - prompt, improve, refine, clarify, ambiguous, vague, requirements
-type: encoded-preference
-disable-model-invocation: false
+  Skill for prompt quality in four contexts: refining vague USER prompts, GENERATING new prompts when the user asks for one as output, reviewing PROMPTS-TO-AGENTS before Agent() delegation (Commandment VIII — optimal meta-prompting), and auditing inter-agent/skill communication for quality.
+  Keywords - prompt, prompts, generar prompt, genera prompt, crea prompt, redacta prompt, escribe prompt, mejorar prompt, refine prompt, vague prompt, ambiguous, delegate agent, invoke agent, agent prompt, subagent prompt, meta-prompting, prompt engineering, write a prompt, create a prompt
+when_to_use: |
+  - The user submits a vague or ambiguous prompt and refinement would lift quality (score < 70 on the rubric, missing success criteria, multiple interpretations).
+  - The user asks Claude to generate, write, draft, or create a prompt as output ("genera un prompt para X", "create a prompt for Y", "write me a prompt that…", "redacta el prompt de Z").
+  - The Lead is about to invoke `Agent(subagent_type=…)` and the delegation prompt should be reviewed/strengthened against the Arch H template before sending.
+  - Auditing prompts that flow between agents or skills (delegation chains, multi-agent patterns) for quality and completeness.
 argument-hint: "[prompt text or task description]"
+disable-model-invocation: false
 effort: medium
-activation:
-  keywords:
-    - prompt
-    - improve
-    - refine
-    - clarify
-    - ambiguous
-    - vague
-for_agents: [builder, planner]
-version: "1.0"
 ---
 
 # Prompt Engineer
 
-**Version**: 1.1  
-**Keywords**: prompt, vague, unclear, improve, refine, clarify, requirements  
-**Trigger**: Prompt score < 70 or explicit request to improve prompt
-
 ## Overview
 
-This skill transforms vague or incomplete user prompts into actionable, well-structured requests. It applies a systematic scoring methodology to evaluate prompt quality across five criteria, then uses targeted improvement patterns to address deficiencies.
+This skill governs prompt quality across four contexts. The common backbone is the 5-criteria scoring rubric and the corrections catalog — applied differently depending on which context you are in.
 
-The prompt engineer follows a "measure first, improve second" approach. Every prompt is scored before any transformation, ensuring improvements are data-driven rather than arbitrary. The skill includes domain-specific templates for common task types and a catalog of anti-patterns to avoid.
+| Context | Input | Goal |
+|---|---|---|
+| **1. Refine user prompt** | A vague prompt the user just sent | Score, improve, present back |
+| **2. Generate a prompt** | A request to produce a prompt as output | Apply the same rubric in reverse: draft a prompt that would score ≥80 |
+| **3. Review delegation prompt** | A draft `Agent()` prompt the Lead is about to send | Verify it satisfies Arch H (context, goal, constraints, deliverable, injected memory) before invocation |
+| **4. Audit inter-agent communication** | A prompt flowing between agents/skills | Detect missing context, ambiguous handoffs, drift from the original intent |
+
+"Measure first, improve second" applies across all four. Score against the rubric before transforming.
 
 ## Content Map
 
@@ -47,18 +43,38 @@ Supporting files loaded on demand based on task context. Consult the Contents co
 
 ## Quick Start
 
-1. Score the prompt (5 criteria × 20 points = 100 max)
-2. If score >= 70: proceed with task
-3. If score < 70: identify lowest-scoring criteria
-4. Apply corrections from corrections.md
-5. Use domain template if task type matches
-6. Re-score to verify improvement (target: 80+)
-7. Present improved prompt to user for confirmation
+Pick the workflow by context.
+
+### Context 1 — Refine a user prompt
+
+1. Score the prompt (5 criteria × 20 points = 100 max).
+2. If score ≥ 70: proceed with task.
+3. If score < 70: identify lowest-scoring criteria, apply corrections from `corrections.md`, use a domain template if task type matches, re-score to ≥80, present the rewritten prompt back to the user for confirmation.
+
+### Context 2 — Generate a prompt as output
+
+When the user asks Claude to *produce* a prompt ("genera un prompt para X", "write me a prompt that…"):
+
+1. Clarify the target: who will receive the prompt (the user themselves? another Claude session? a specific agent type?), what task it must accomplish, what success looks like.
+2. Apply the rubric *in reverse*: draft a prompt that would score ≥ 80 against the 5 criteria (Clarity, Context, Structure, Success, Actionable).
+3. Use the matching domain template from `domain-templates.md` as a starting skeleton when applicable.
+4. Score the draft, iterate if < 80, deliver the prompt.
+
+### Context 3 — Review a delegation prompt (Lead → Agent)
+
+Before sending `Agent(subagent_type=…, prompt=…)`:
+
+1. Verify the Arch H blocks: `[TASK]`, `[CONTEXT]`, `[CONSTRAINTS]`, `[DELIVERABLE]`, `[RELEVANT SKILLS FOR THIS TASK]` (with `Read .claude/skills/<name>/SKILL.md` instructions, not `Skill()` calls).
+2. Score the same 5 criteria against the *subagent's perspective* (Context = files the agent will need to read; Success = the exact return shape the Lead expects).
+3. If a criterion scores low, fix before invoking — every back-and-forth round-trip with a subagent costs 2-5K tokens.
+
+### Context 4 — Audit an inter-agent communication
+
+When a prompt flows between agents (planner → builder, builder → reviewer) or between skills, run the rubric against the handoff: is intent preserved? Are constraints carried forward? Is the deliverable specified in a way the receiving side can verify?
 
 ## When to Use
 
-- User prompt scores below 70 on evaluation
-- Request contains ambiguous requirements
-- Success criteria are missing or vague
-- Technical context is insufficient
-- Multiple interpretations are possible
+- User prompt scores below 70 on evaluation (Context 1).
+- User asks Claude to write, draft, create, generate, or redact a prompt as output (Context 2).
+- Lead is about to delegate via `Agent()` and the prompt should be reviewed first (Context 3).
+- A multi-agent chain shows drift, ambiguity, or lost context between hops (Context 4).
