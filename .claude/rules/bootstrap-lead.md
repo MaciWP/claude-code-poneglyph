@@ -1,31 +1,56 @@
 ---
-description: Lead session activation — when and how to load the orchestrator skill
+description: Lead bootstrap — orchestrator-protocol in normal sessions, planner-protocol in plan mode
 ---
 
-<!-- Last verified: 2026-04-25 -->
+<!-- Last verified: 2026-05-25 -->
 
 # Lead Orchestration Bootstrap
 
 **Applies only to the Lead session** (`CLAUDE_LEAD_MODE=true` in your environment).
 Subagents: skip this rule entirely — `Skill()` is not available in your toolset.
 
-## When to invoke
+This rule covers two independent bootstrap triggers. Re-invoke either skill freely after context compaction or whenever the protocol guidance is no longer in memory (each skill has ~8 references; loading `SKILL.md` does not guarantee they are all in context).
 
-Invoke `Skill("orchestrator-protocol")` at session start, and re-invoke freely whenever the protocol needs to be refreshed:
-- Initial trigger: First user request that requires code, investigation, or decision (not trivial Q&A)
-- Re-invoke after context compaction if the orchestration protocol is no longer in memory
-- Re-invoke when protocol guidance is needed (the skill has 8 references; loading `SKILL.md` does not guarantee they are all in context)
-- Skip: If session is only casual conversation
+## Default trigger (orchestrator-protocol)
 
-## How to invoke
+Invoke `Skill("orchestrator-protocol")` at session start, on the first non-trivial request:
 
-As your FIRST action for the first non-trivial task of the session:
+- **When**: first user request that requires code, investigation, or decision (not trivial Q&A)
+- **How**: as your FIRST action for the first non-trivial task of the session
+  ```
+  Skill("orchestrator-protocol")
+  ```
+- **Skip**: casual conversation, trivial Q&A
+- **Re-invoke**: after context compaction, or when protocol guidance is needed
+
+This loads the complete protocol — complexity routing, delegation triggers, Arch H template, agent selection, and error recovery — into your active context.
+
+## Plan mode trigger (planner-protocol)
+
+Invoke `Skill("planner-protocol")` as your FIRST action whenever you enter plan mode:
+
+- **Primary trigger**: a system-reminder containing `Plan mode is active` (emitted by the Claude Code harness when plan mode is enabled). Invoke the skill immediately before any other action.
+- **Secondary trigger**: user explicitly invokes `/planner` or asks to plan/decompose/roadmap a non-trivial task.
+- **Skip**: trivial Q&A or pure conversation that does not require planning.
+- **Re-invoke**: after context compaction, or when protocol guidance is needed.
+
 ```
-Skill("orchestrator-protocol")
+Skill("planner-protocol")
 ```
 
-This loads the complete protocol — complexity routing, delegation triggers, Arch H template,
-agent selection, and error recovery — into your active context.
+This loads the adaptive planning protocol — Discovery, Research, Gap Analysis, Task Classification, Execution Roadmap with DAGs, TDD, Validation — into your active context.
+
+### Level triage is automatic
+
+The skill applies its own level triage (Quick / Standard / Full) based on complexity and scope:
+
+| Level | When | Cost target |
+|---|---|---|
+| **Quick** | Complexity <30, clear scope, 1-2 files | ~3-5 min |
+| **Standard** (default) | Complexity 30-60, some ambiguity | ~10 min |
+| **Full** | Complexity >60, multi-domain, plan mode with architectural risk | ~20-30 min |
+
+You do not need to pre-decide the level — the skill handles triage on its first step (§0). The Lead can force a level via flag (`--quick`, `--standard`, `--full`) or explicit instruction if needed.
 
 ## Delegation Decision Triggers
 
