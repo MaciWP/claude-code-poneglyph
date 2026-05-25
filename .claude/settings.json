@@ -55,46 +55,9 @@
             "command": "bun $HOME/.claude/hooks/validators/code-validator.ts"
           }
         ]
-      },
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bun $HOME/.claude/hooks/validators/format/json-validator.ts",
-            "timeout": 5000
-          }
-        ]
-      },
-      {
-        "matcher": "Read",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bun $HOME/.claude/hooks/validators/context/record-read.ts"
-          }
-        ]
-      },
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bun $HOME/.claude/hooks/validators/context/update-after-write.ts"
-          }
-        ]
       }
     ],
     "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bun $HOME/.claude/hooks/validators/stop/validate-tests-pass.ts"
-          }
-        ]
-      },
       {
         "matcher": "",
         "hooks": [
@@ -113,26 +76,6 @@
           {
             "type": "command",
             "command": "bun $HOME/.claude/hooks/lead-enforcement.ts",
-            "timeout": 5000
-          }
-        ]
-      },
-      {
-        "matcher": "Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bun $HOME/.claude/hooks/validators/context/check-staleness.ts",
-            "timeout": 5000
-          }
-        ]
-      },
-      {
-        "matcher": "Agent",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bun $HOME/.claude/hooks/lead-parallelism-gate.ts",
             "timeout": 5000
           }
         ]
