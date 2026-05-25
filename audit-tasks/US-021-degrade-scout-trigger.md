@@ -182,3 +182,14 @@ git revert <hash>
 - La métrica clave a vigilar: % de exploraciones que se delegan a `Explore` vs `scout` antes vs después
 - Si `Explore` mejora en futuras versiones de Claude Code, scout puede volverse innecesario por completo
 - Considera añadir al MEMORY.md global una nota: "Default exploration: Explore built-in. scout solo para HIGH+HIGH o WebSearch"
+
+## Ejecución (2026-05-25)
+
+- Commit: `1dcc9c1` — `docs(audit): close US-015 with hashes 5394026 + d92ed80 (concurrent session)`. **Mensaje engañoso**: el commit fue creado por una sesión concurrente que también stageó los cambios de US-021 (5 archivos: scout.md, bootstrap-lead.md, SKILL.md, 04-agent-selection.md, este archivo). Cierro la US contra ese hash porque ahí viven sus cambios.
+- Verificación de premisas: `Explore` (built-in Haiku) confirmado disponible en el agent list del system prompt (*"Fast read-only search agent... Tools: All tools except Agent, ExitPlanMode, Edit, Write, NotebookEdit"*).
+- **Divergencia detectada y corregida**: la US asumía que `WebSearch/WebFetch` eran exclusivos de scout. Falso — Explore también los tiene. El discriminador real (recogido del system prompt) es la ventana de lectura + profundidad de síntesis: *"Explore reads excerpts rather than whole files... Do NOT use it for code review, design-doc auditing, cross-file consistency checks, or open-ended analysis."* La matriz final lo refleja.
+- Cambios aplicados:
+  - `bootstrap-lead.md` Trigger B: Explore como default explícito; scout solo para HIGH+HIGH, design-doc audit, cross-file consistency, full-file reads past Explore's window.
+  - `scout.md` frontmatter description: reposicionado como "Heavy exploration agent (Sonnet) — fallback".
+  - `orchestrator-protocol/SKILL.md §52` y `references/04-agent-selection.md §Exploration Decision Matrix`: alineados con el nuevo default (coherencia con la fuente canónica que `bootstrap-lead.md` referencia).
+- `bun test ./.claude/hooks/` → 139/139 ✅
