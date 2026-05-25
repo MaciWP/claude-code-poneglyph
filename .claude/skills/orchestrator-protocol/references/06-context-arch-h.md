@@ -32,9 +32,9 @@ graph TD
 |-------|--------------------|----------------|-----------|-------|
 | builder | anti-hallucination | 5 | 6 | Base is free, does not count against max |
 | reviewer | review-patterns, security-review, anti-hallucination | 3 | 6 | Base skills are free |
-| error-analyzer | diagnostic-patterns | 2 | 3 | + matched skills |
-| planner | — | 4 | 4 | Mode A decomposition + Mode B architectural decisions |
 | scout | — | 1 | 1 | Minimal context |
+
+> Planning and error diagnosis are handled by the Lead invoking `Skill('planner-protocol')` / `Skill('diagnostic-patterns')` directly — no dedicated subagent.
 
 ## Precedence Rules
 

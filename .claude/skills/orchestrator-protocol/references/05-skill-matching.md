@@ -73,6 +73,8 @@ These are pre-loaded per agent role via frontmatter — they don't need keyword 
 |-------|---------------------|
 | builder | `anti-hallucination` |
 | reviewer | `review-patterns`, `security-review`, `anti-hallucination` |
-| error-analyzer | `diagnostic-patterns` |
+| scout | (none — minimal context) |
+
+> The Lead loads `diagnostic-patterns` itself when diagnosing builder failures, and `planner-protocol` when planning — no dedicated agents.
 
 Do NOT count these against the agent's max additional skill limit (they are free).

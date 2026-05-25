@@ -23,9 +23,9 @@ description: NEVER/ALWAYS tables, permission mode inheritance, continuous valida
 |-----------------|-----|
 | Delegate code to builder | `Agent(subagent_type="builder", prompt="...")` |
 | Validate with reviewer | `Agent(subagent_type="reviewer", prompt="...")` |
-| Plan complex tasks | `Agent(subagent_type="planner", prompt="...")` |
-| Explore codebase | `Agent(subagent_type="scout", prompt="...")` |
-| Analyze errors | `Agent(subagent_type="error-analyzer", prompt="...")` |
+| Plan complex tasks | `Skill('planner-protocol')` — Lead-driven, no dedicated agent |
+| Explore codebase | `Agent(subagent_type="scout", prompt="...")` (or built-in `Explore`) |
+| Analyze errors | `Skill('diagnostic-patterns')` — Lead-driven, no dedicated agent |
 | Load relevant skills | Use Arch H `Read` instructions in delegation prompt |
 | Clarify requirements | `AskUserQuestion(questions=[...])` |
 
@@ -49,7 +49,7 @@ Without this, the subagent may prompt the user for file edit / bash / destructiv
 
 | Checkpoint | Trigger | Agent | Action if Fails |
 |-----------|---------|--------|-----------------|
-| Pre-implementation | Before delegating to builder | planner | Re-plan with constraints |
+| Pre-implementation | Before delegating to builder | Lead with `Skill('planner-protocol')` | Re-plan with constraints |
 | Mid-implementation | Builder reports partial progress | reviewer (background) | Early feedback to builder |
 | Post-implementation | Builder completes task | reviewer | NEEDS_CHANGES → re-delegate |
 | Pre-merge | Worktree ready to merge | reviewer | Block merge if fails |
@@ -83,10 +83,10 @@ When sending reviewer feedback to builder, include:
 
 | Error Type | Max Retries | Backoff | Then |
 |------------|-------------|---------|------|
-| Builder test failure | 2 | None | error-analyzer → re-plan |
-| Builder Edit conflict | 1 | Re-read file | error-analyzer |
+| Builder test failure | 2 | None | Lead diagnoses with `diagnostic-patterns` → SendMessage or re-spawn |
+| Builder Edit conflict | 1 | Re-read file | Lead inspects, re-issues with updated context |
 | Agent timeout | 1 | Double timeout | Escalate to user |
-| Reviewer BLOCKED | 0 | — | Re-plan with planner |
+| Reviewer BLOCKED | 0 | — | Re-plan with `Skill('planner-protocol')` |
 | Reviewer NEEDS_CHANGES | 2 | Apply feedback | Escalate to user |
 | Worktree merge conflict | 1 | builder | Escalate to user |
 | Teammate failure | 1 | Re-prompt with context | Extract domain → builder subagent |
@@ -101,7 +101,7 @@ Use `SendMessage({to: agentId})` to continue a failed agent — preserves contex
 |-----------|--------|--------|
 | Builder failed test | SendMessage | Builder already has code context |
 | Builder failed due to stale edit | SendMessage | Re-read and retry in same context |
-| Error-analyzer diagnosed a fix | SendMessage to original builder | Avoids re-exploring the codebase |
+| Lead diagnosed a fix | SendMessage to original builder | Avoids re-exploring the codebase |
 | Builder failed 2+ times | Re-spawn with full diagnosis | Original context may be contaminated |
 | Error in a different agent | Re-spawn new agent | SendMessage does not cross agents |
 
@@ -123,7 +123,7 @@ When re-spawning, ALWAYS include:
 | Field | Content |
 |-------|---------|
 | **Original error** | Full error message |
-| **Diagnosis** | error-analyzer output (if available) |
+| **Diagnosis** | Root cause identified by the Lead (cite line + reasoning) |
 | **Do NOT repeat** | Specific action that caused the failure |
 | **Changed constraints** | New limits or additional context |
 
@@ -132,7 +132,7 @@ When re-spawning, ALWAYS include:
 | Condition | Action |
 |-----------|--------|
 | 3+ retries on the same task | STOP → AskUserQuestion |
-| 2+ error-analyzer runs without a fix | STOP → AskUserQuestion |
+| 2+ diagnoses without a working fix | STOP → AskUserQuestion |
 | Same exact error 2 times | STOP → AskUserQuestion |
 
 When blocked, ask: (1) missing context, (2) approach change, (3) task split.
@@ -141,8 +141,8 @@ When blocked, ask: (1) missing context, (2) approach change, (3) task split.
 
 | Condition | Action |
 |-----------|--------|
-| Builder in worktree fails | Preserve worktree, delegate to error-analyzer |
-| Error-analyzer diagnoses a fix | Retry builder in the SAME worktree |
+| Builder in worktree fails | Preserve worktree, Lead diagnoses with `diagnostic-patterns` |
+| Lead identifies a fix | Retry builder in the SAME worktree via SendMessage |
 | Retry fails | Delete worktree + branch, escalate to user |
 | Merge conflict in worktree | Delegate to builder |
 | Builder fails on merge | Preserve worktree, escalate to user with diff |
@@ -162,17 +162,17 @@ Do NOT parallelize: (a) builder uses planner output, (b) Edit on same file, (c) 
 | Parallel (same message) | Sequential (wait for result) |
 |-------------------------|------------------------------|
 | scout + builder on different files | builder that needs scout output |
-| 2+ builders on files without dependency | builder after planner |
+| 2+ builders on files without dependency | builder after the Lead's planning pass |
 | 2+ reviewers on independent modules | reviewer after builder on same file |
-| planner + scout for context | any Task with data dependency |
+| scout for two independent areas | any Task with data dependency |
 
 ### When to Use `run_in_background=true`
 
 | Use | Do not use |
 |-----|------------|
 | reviewer that does not block next step | builder that produces files needed for next Task |
-| exploratory scout when builder can start with known files | planner whose roadmap is needed before delegating |
-| audit reviewer in parallel with next feature | error-analyzer whose diagnosis determines next action |
+| exploratory scout when builder can start with known files | a Lead planning pass whose output is needed before delegating |
+| audit reviewer in parallel with next feature | a Lead diagnosis whose result determines next action |
 
 ### Anti-Patterns
 

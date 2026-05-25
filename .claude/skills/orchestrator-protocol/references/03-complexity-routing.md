@@ -140,13 +140,12 @@ Each teammate receives a prompt with:
 
 | Agent category | Complexity | Model |
 |----------------|------------|-------|
-| Code (builder, reviewer, error-analyzer) | < 30 | sonnet |
-| Code (builder, reviewer, error-analyzer) | 30-50 | sonnet |
-| Code (builder, reviewer, error-analyzer) | > 50 | opus |
+| Code (builder, reviewer) | < 30 | sonnet |
+| Code (builder, reviewer) | 30-50 | sonnet |
+| Code (builder, reviewer) | > 50 | opus |
 | Read-only (scout) | < 30 | haiku |
 | Read-only (scout) | 30-50 | haiku |
 | Read-only (scout) | > 50 | sonnet |
-| Strategic (planner) | Any | opus |
 
 ## Effort Routing (Frontmatter — static)
 
@@ -155,8 +154,6 @@ Effort scale: `low < medium < high < xhigh`
 | Agent | effort | Rationale |
 |-------|--------|-----------|
 | scout | `low` | Only reads files. No deep reasoning required. |
-| planner | `high` | Plan quality determines all execution. Covers decomposition (Mode A) and architectural decisions (Mode B). |
-| error-analyzer | `high` | Deep diagnosis requires extensive reasoning. |
 | builder | ❌ inherit | Depends on task. Inherits session default. |
 | reviewer | ❌ inherit | Depends on review type. Inherits session default. |
 

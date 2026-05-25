@@ -77,14 +77,15 @@ Full Arch H template with all blocks, propagation model, skill discovery: `refer
 | Tool | Usage |
 |---|---|
 | `Agent(subagent_type="builder")` | Implement code |
-| `Agent(subagent_type="scout")` | Explore codebase |
-| `Agent(subagent_type="planner")` | Plan complex tasks |
+| `Agent(subagent_type="scout")` | Explore codebase (HIGH+HIGH only — default is `Explore`) |
 | `Agent(subagent_type="reviewer")` | Validate changes |
+| `Skill('planner-protocol')` | Plan complex tasks — Lead invokes the skill, no dedicated agent |
+| `Skill('diagnostic-patterns')` | Diagnose builder failures — Lead invokes the skill, no dedicated agent |
 | `Skill()` | Load context into the Lead's OWN session only |
 
 Direct action is governed by `lead-enforcement.ts` (default-allow). Read is always permitted. Edit/Write/Bash pass unless on a sensitive path without `sensitive: <reason>` or matching a destructive pattern. Read-only git (`status`, `log`, `diff`, `show`, `branch`) is always allowed.
 
-**Parallelize**: when ≥2 Agents have no output→input dependency AND disjoint files AND no shared state, send them in the SAME assistant message. Do NOT parallelize: builder consuming planner output, two `Edit`s on the same file, checkpoint review after writing. 8 multi-agent patterns + 7 anti-patterns: `references/04-agent-selection.md`.
+**Parallelize**: when ≥2 Agents have no output→input dependency AND disjoint files AND no shared state, send them in the SAME assistant message. Do NOT parallelize: builder consuming a previously-produced plan, two `Edit`s on the same file, checkpoint review after writing. 6 multi-agent patterns + 7 anti-patterns: `references/04-agent-selection.md`.
 
 ### Step 5: Validate
 
