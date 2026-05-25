@@ -56,10 +56,4 @@ Quick-reference templates for Claude Code configurations.
 
 ## Related
 
-- `/meta-create-hook`: Create hooks (settings.json hooks field)
-- `/meta-create-rule`: Create rules (.claude/rules/)
-- `/meta-create-mcp`: Create MCP configs (.mcp.json)
-- `/meta-create-plugin`: Create plugins (bundles all config types)
-- `/meta-create-agent`: Create subagents
-- `/meta-create-skill`: Create skills
-- `extension-architect`: Meta-agent managing all extensions
+- `extension-architect`: Meta-agent that handles creation of hooks, rules, MCP configs, plugins, agents and skills (templates + references under `.claude/agents/meta/extension-architect/`)

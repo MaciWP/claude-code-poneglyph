@@ -53,7 +53,7 @@ Arrays **merge + deduplicate** across scopes (not replace).
 |---------|------|-------------|
 | `permissions` | object | allow/deny/ask arrays + defaultMode |
 | `env` | object | Env vars applied to every session |
-| `hooks` | object | Hook registration (see meta-create-hook) |
+| `hooks` | object | Hook registration (see extension-architect: `references/hook/`) |
 | `model` | string | Override default model |
 | `effortLevel` | string | `low`, `medium`, `high` |
 | `outputStyle` | string | Active output style name |
