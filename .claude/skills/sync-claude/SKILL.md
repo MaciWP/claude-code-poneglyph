@@ -126,7 +126,7 @@ bun .claude/skills/sync-claude/scripts/sync-claude.ts --unlink
 | `hooks/` | Automations |
 | `workflows/` | Multi-agent pipelines |
 | `knowledge/` | Knowledge base |
-| `output-styles/` | Output style modes (e.g. Caveman) |
+| `output-styles/` | Output style modes (e.g. Poneglyph) |
 | `CLAUDE.md` | Global instructions |
 
 ## NOT Synced (project-specific)
