@@ -185,7 +185,6 @@ Located at `.claude/skills/meta-create-skill/templates/`
 
 ```
 .claude/agents/
-├── architect.md
 ├── builder.md
 ├── error-analyzer.md
 ├── planner.md

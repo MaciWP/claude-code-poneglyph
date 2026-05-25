@@ -102,7 +102,7 @@ Keep these active throughout ALL planning and execution:
 
 | Trigger | Agent | Model | Background? |
 |---------|-------|-------|-------------|
-| Feature design | architect | opus | No |
+| Feature design / architectural decision | planner (Mode B, in-skill) | opus | No |
 | Implement code | builder | sonnet | No |
 | Refactoring | builder | sonnet | No |
 | Code review | reviewer | sonnet | Yes |

@@ -1,6 +1,6 @@
 # Workflow: Dev Cycle
 
-Full development pipeline: scout → architect → builder → reviewer
+Full development pipeline: scout → planner → builder → reviewer
 
 ## Trigger
 
@@ -20,13 +20,13 @@ Full development pipeline: scout → architect → builder → reviewer
 | Output | Identified structure, existing patterns, key files |
 | Next | Step 2 |
 
-### Step 2: Architect
+### Step 2: Plan
 
 | Field | Value |
 |-------|-------|
-| Agent | `architect` |
+| Agent | `planner` |
 | Input | Scout output + requirements |
-| Output | Implementation plan with technical decisions |
+| Output | Implementation plan with technical decisions (Mode A roadmap; Mode B RFC if design risk) |
 | Next | Step 3 |
 
 ### Step 3: Builder
@@ -34,7 +34,7 @@ Full development pipeline: scout → architect → builder → reviewer
 | Field | Value |
 |-------|-------|
 | Agent | `builder` |
-| Input | Architect's plan |
+| Input | Planner's roadmap |
 | Output | Implemented code |
 | Next | Step 4 |
 
@@ -51,8 +51,8 @@ Full development pipeline: scout → architect → builder → reviewer
 
 ```mermaid
 graph TD
-  S[Scout] --> A[Architect]
-  A --> B[Builder]
+  S[Scout] --> P[Planner]
+  P --> B[Builder]
   B --> R[Reviewer]
   R -->|Issues| B
   R -->|OK| E[END]

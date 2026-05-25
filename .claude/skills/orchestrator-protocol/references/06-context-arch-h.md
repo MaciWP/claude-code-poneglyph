@@ -33,8 +33,7 @@ graph TD
 | builder | anti-hallucination | 5 | 6 | Base is free, does not count against max |
 | reviewer | code-quality, security-review, performance-review, anti-hallucination | 2 | 6 | Base skills are free |
 | error-analyzer | diagnostic-patterns | 2 | 3 | + matched skills |
-| architect | — | 4 | 4 | |
-| planner | — | 2 | 2 | High-level only |
+| planner | — | 4 | 4 | Mode A decomposition + Mode B architectural decisions |
 | scout | — | 1 | 1 | Minimal context |
 
 ## Precedence Rules

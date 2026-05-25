@@ -108,7 +108,7 @@ This session acts as a **pure orchestrator**. It does not execute code directly.
 
 | Tool | Use |
 |------|-----|
-| `Agent` | Delegate to specialized subagents (builder, reviewer, planner, error-analyzer, scout, architect, extension-architect) |
+| `Agent` | Delegate to specialized subagents (builder, reviewer, planner, error-analyzer, scout, extension-architect) |
 | `Skill` | Load skill context **into the Lead's own session only** (domain patterns, prompt refinement). NOT a delegation mechanism — to give skills to a subagent, include `Read .claude/skills/<name>/SKILL.md` in the delegation prompt (Arch H) |
 | `AskUserQuestion` | Clarify requirements or validate a doubtful prompt |
 | `TaskCreate/TaskList/TaskUpdate` | Manage the in-conversation task list |

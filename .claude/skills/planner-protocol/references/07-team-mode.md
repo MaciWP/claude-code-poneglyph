@@ -46,7 +46,7 @@ sequenceDiagram
 
 | Task | Generator | Validator |
 |------|-----------|-----------|
-| New architecture | `architect` | `reviewer` |
+| New architecture | `planner` (Mode B) | `reviewer` |
 | Complex refactoring | `builder` | `reviewer` |
 | Feature with security | `builder` | `reviewer` |
 | Critical tests | `builder` | `reviewer` |
@@ -66,7 +66,7 @@ Select agents based on task analysis:
 | `scout` | Codebase exploration | ALWAYS |
 | `builder` | Code implementation | ALWAYS |
 | `reviewer` | Quality validation | ALWAYS |
-| `architect` | Complexity > 40 OR cross-domain interfaces | CONDITIONAL |
+| `planner` (Mode B) | Complexity > 40 OR cross-domain interfaces — emits RFC + contracts inline | CONDITIONAL |
 | `reviewer` (security) | Keywords: auth, token, password, jwt, encryption | CONDITIONAL |
 
 ### Domain Boundary Definition
@@ -108,7 +108,7 @@ Coordination: Use task list to signal completion and coordinate with other teamm
 | Teammate stuck (no progress) | Extract domain → run as builder subagent | 0 |
 | File conflict between teammates | Lead arbitrates via reviewer, loser re-executes | 1 |
 | Multiple teammates fail | Abort team mode → fallback to subagents | 0 |
-| Architecture mismatch | Architect redesigns contracts, re-delegate | 1 |
+| Architecture mismatch | Planner (Mode B) redesigns contracts, re-delegate | 1 |
 
 ### Correction Loop
 

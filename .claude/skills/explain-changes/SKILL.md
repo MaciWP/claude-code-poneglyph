@@ -21,7 +21,7 @@ activation:
     - cambios pendientes
     - onboarding
     - walkthrough this code
-for_agents: [builder, scout, architect]
+for_agents: [builder, scout, planner]
 version: "1.0"
 ---
 

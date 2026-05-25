@@ -20,7 +20,7 @@ activation:
     - find usages
     - where is
     - who calls
-for_agents: [builder, reviewer, error-analyzer, scout, architect]
+for_agents: [builder, reviewer, error-analyzer, scout, planner]
 version: "1.0"
 ---
 

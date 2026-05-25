@@ -50,7 +50,7 @@ When ANY of these triggers applies, expand verbosity without asking for permissi
 
 - Generated documentation (CLAUDE.md, READMEs, docs/)
 - Comments in code (follow CLAUDE.md "no comments unless WHY non-obvious" — but when added, they are normal)
-- Planner/architect outputs: need traceability → structured prose
+- Planner outputs (decomposition or Mode B architectural): need traceability → structured prose
 - Persistent memory (MEMORY.md): human readability > tokens
 - Commit messages (follow conventional commits)
 

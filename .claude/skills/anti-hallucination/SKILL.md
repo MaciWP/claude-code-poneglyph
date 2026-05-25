@@ -18,7 +18,7 @@ activation:
     - confidence
     - claim
     - assert
-for_agents: [builder, reviewer, error-analyzer, scout, architect]
+for_agents: [builder, reviewer, error-analyzer, scout, planner]
 version: "1.0"
 ---
 

@@ -54,7 +54,7 @@ The "Suggested skills to Read (for delegation)" column lists `.claude/skills/<na
 | security, audit, vulnerability, owasp | reviewer | security-review | security-review | — |
 | code quality, smells, SOLID, complexity | reviewer | code-quality | code-quality | — |
 | performance, slow, bottleneck, N+1 | reviewer | performance-review | performance-review | — |
-| plan, design, decompose, workflow | planner | — | — | architect |
+| plan, design, decompose, workflow, RFC, architecture, contract | planner | (Mode A or B) | decision-stress-test (for design risk), code-quality | — |
 | >3 subtasks, breakdown, dependencies | planner | (decomposition built-in) | — | — |
 | find, explore, search codebase | scout | — | — | Explore agent |
 | error, failing, debug, diagnose | error-analyzer | diagnostic-patterns | diagnostic-patterns | builder (obvious fix) |
@@ -69,7 +69,7 @@ The "Suggested skills to Read (for delegation)" column lists `.claude/skills/<na
 | **Error then Fix** | error-analyzer → builder | diagnosis before fix |
 | **Worktree Parallel** | 2+ builders in worktrees | parallel builders with file overlap potential |
 | **Security Review** | reviewer (security mode, model: opus) | auth/security changes |
-| **Tiered Build** | architect + N builders + reviewer | complexity 45-60, 2-3 domains with shared interfaces |
+| **Tiered Build** | planner (Mode B contracts) + N builders + reviewer | complexity 45-60, 2-3 domains with shared interfaces |
 | **Team Parallel** | teammates (general-purpose) | executionMode=team, 3+ independent domains, complexity >60 |
 
 ## Anti-Patterns

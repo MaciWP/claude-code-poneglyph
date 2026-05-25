@@ -233,7 +233,7 @@ activation:
     - structure
     - modules
     - design patterns
-for_agents: [architect, scout]
+for_agents: [planner, scout]
 version: "1.0"
 ---
 

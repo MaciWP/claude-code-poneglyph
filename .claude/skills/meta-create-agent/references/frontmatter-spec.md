@@ -62,4 +62,4 @@ Model is determined dynamically by the Lead based on agent category and task com
 |----------------|----------------|-------|------|
 | Code agents (builder, reviewer) | sonnet | sonnet | opus |
 | Read-only agents (scout, executor) | haiku | haiku | sonnet |
-| Strategic agents (planner, architect) | opus | opus | opus |
+| Strategic agents (planner) | opus | opus | opus |

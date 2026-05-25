@@ -38,7 +38,7 @@ The reviewer NEVER:
 - Modifies code
 - Implements fixes
 - Delegates to other agents
-- Decides architecture
+- Decides design quality and adherence to plan
 
 ## Primary Responsibilities
 
@@ -615,7 +615,7 @@ The Lead activates the appropriate mode via prompt context and skill loading.
 | Agent | Relationship |
 |-------|--------------|
 | `builder` | Reviews builder's implementation |
-| `architect` | May verify implementation matches plan |
+| `planner` | May verify implementation matches plan (Mode B architectural decisions) |
 | `scout` | May request context about codebase |
 
 ## Tension Tracking

@@ -53,23 +53,21 @@ Default is ALWAYS subagents.
 
 ## Tiered Mode
 
-Intermediate mode for 2-3 domains with shared interfaces and complexity 45-60. Architect designs contracts before builders start in parallel.
+Intermediate mode for 2-3 domains with shared interfaces and complexity 45-60. The planner (Mode B) designs contracts before builders start in parallel — no separate architect agent.
 
 ```mermaid
 graph TD
-    P[Planner: executionMode=tiered] --> A[Architect: designs interfaces/contracts]
-    A --> B1[Builder 1: domain A with contract]
-    A --> B2[Builder 2: domain B with contract]
+    P[Planner: Mode A roadmap + Mode B contracts]
+    P --> B1[Builder 1: domain A with contract]
+    P --> B2[Builder 2: domain B with contract]
     B1 & B2 --> R[Reviewer: validates cross-domain integration]
 ```
 
 | Step | Who | Action |
 |------|-----|--------|
-| 1 | Planner | Generates roadmap with `executionMode: "tiered"` |
-| 2 | Lead → Architect | "Design interface contracts between domains X and Y" |
-| 3 | Architect → Lead | Shared types, API signatures, data contracts |
-| 4 | Lead → Builders (parallel) | Each receives its domain + architect's contracts |
-| 5 | Lead → Reviewer | Validates cross-domain integration against contracts |
+| 1 | Planner | Generates roadmap with `executionMode: "tiered"` and an inline Mode B section (interface contracts between domains X and Y) |
+| 2 | Lead → Builders (parallel) | Each receives its domain + planner's contracts from the Mode B section |
+| 3 | Lead → Reviewer | Validates cross-domain integration against contracts |
 
 ## 4-Gate Criteria (Team Mode Only — ALL must pass)
 
@@ -148,7 +146,7 @@ Each teammate receives a prompt with:
 | Read-only (scout) | < 30 | haiku |
 | Read-only (scout) | 30-50 | haiku |
 | Read-only (scout) | > 50 | sonnet |
-| Strategic (planner, architect) | Any | opus |
+| Strategic (planner) | Any | opus |
 
 ## Effort Routing (Frontmatter — static)
 
@@ -157,8 +155,7 @@ Effort scale: `low < medium < high < xhigh`
 | Agent | effort | Rationale |
 |-------|--------|-----------|
 | scout | `low` | Only reads files. No deep reasoning required. |
-| architect | `high` | High-impact strategic decisions. |
-| planner | `high` | Plan quality determines all execution. |
+| planner | `high` | Plan quality determines all execution. Covers decomposition (Mode A) and architectural decisions (Mode B). |
 | error-analyzer | `high` | Deep diagnosis requires extensive reasoning. |
 | builder | ❌ inherit | Depends on task. Inherits session default. |
 | reviewer | ❌ inherit | Depends on review type. Inherits session default. |

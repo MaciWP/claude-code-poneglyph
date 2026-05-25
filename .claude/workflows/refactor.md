@@ -24,9 +24,9 @@ Refactoring pipeline: analyze → plan → refactor → review
 
 | Field | Value |
 |-------|-------|
-| Agent | `architect` |
+| Agent | `planner` |
 | Input | Quality analysis + refactor objective |
-| Output | Step-by-step refactoring plan |
+| Output | Step-by-step refactoring plan (Mode A) + architectural rationale if needed (Mode B) |
 | Next | Step 3 |
 
 ### Step 3: Refactor

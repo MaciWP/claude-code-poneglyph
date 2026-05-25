@@ -16,7 +16,7 @@ activation:
     - clarify
     - ambiguous
     - vague
-for_agents: [builder, planner, architect]
+for_agents: [builder, planner]
 version: "1.0"
 ---
 

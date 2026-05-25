@@ -22,7 +22,7 @@ activation:
     - antes-de-decidir
     - cuestiona esta decisión
     - stress-testea
-for_agents: [architect, planner, reviewer]
+for_agents: [planner, reviewer]
 version: "1.0"
 ---
 
@@ -57,7 +57,7 @@ Sycophancy is the silent killer of engineering decisions. Hallucination is its l
 
 ## Initial Triage
 
-If the input is ambiguous, the **invoker** (Lead, architect, planner, reviewer) asks 1-4 `AskUserQuestion` calls before Phase 1. Subagents cannot ask the user directly — they include questions in their output, which the invoker consolidates.
+If the input is ambiguous, the **invoker** (Lead, planner, reviewer) asks 1-4 `AskUserQuestion` calls before Phase 1. Subagents cannot ask the user directly — they include questions in their output, which the invoker consolidates.
 
 | Question | When to ask |
 |---|---|

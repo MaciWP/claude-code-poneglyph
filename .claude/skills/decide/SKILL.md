@@ -17,7 +17,7 @@ activation:
     - compare
     - trade-off
     - pros-cons
-for_agents: [architect, planner]
+for_agents: [planner]
 version: "1.0"
 ---
 
@@ -62,7 +62,7 @@ Respond in format:
 - ...
 ```
 
-#### Innovator Perspective (architect)
+#### Innovator Perspective (planner Mode B)
 ```
 You are the INNOVATOR in a strategic decision.
 
