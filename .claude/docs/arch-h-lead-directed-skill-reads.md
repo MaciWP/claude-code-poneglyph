@@ -45,7 +45,7 @@ This turns `Read` into a skill-loading primitive. No new tool, no new agent, no 
 
 1. User submits a prompt that mentions file paths.
 2. The `prompt-enrichment.ts` `UserPromptSubmit` hook matches those paths against `.claude/rules/paths/*.md` globs, extracts the relevant skill names, and emits a `## Path-Based Skills (for delegation)` section containing full `Read` instructions inside `hookSpecificOutput.additionalContext`.
-2b. If the project has a `skill-matching.md` rule (auto-loaded), the Lead also sees project-specific skill mappings in its context. These map domain keywords → `./.claude/skills/<name>/SKILL.md` Read paths for project-level skills that carry domain-specific knowledge.
+2b. If the project has its own skill-matching conventions (e.g., a paths rule or keyword mapping in `.claude/rules/paths/`), the Lead also sees project-specific skill mappings in its context. These map domain keywords → `./.claude/skills/<name>/SKILL.md` Read paths for project-level skills that carry domain-specific knowledge.
 3. The Lead receives the suggestions in its own context alongside the user prompt.
 4. The Lead picks the appropriate subagent and builds the delegation prompt using the template below. Empty blocks are omitted entirely rather than left as empty headers.
 5. The subagent's first tool calls are the `Read`s. Skill content enters its working context.
@@ -108,7 +108,7 @@ Test P5 is the load-bearing evidence: skills loaded via Arch H measurably expand
 | Aspect | Global skills | Project skills | Frontmatter |
 |---|---|---|---|
 | Scope | Cross-project | Single project | Per-agent |
-| Discovery | Path rules + auto-match | skill-matching.md rule | Hardcoded |
+| Discovery | Path rules + auto-match | Project skill conventions (paths rules or keywords) | Hardcoded |
 | Duplication | None | None (lives in the project) | Per-project agents |
 | Domain knowledge | Generic patterns | Project-specific | Fixed per agent |
 

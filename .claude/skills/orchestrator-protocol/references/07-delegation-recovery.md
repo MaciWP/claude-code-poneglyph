@@ -207,10 +207,10 @@ PreToolUse and PostToolUse hooks may silently fail to fire (known Claude Code bu
 
 | Hook type | Reliability | Use for |
 |---|---|---|
-| `Stop` | ✅ Reliable | Primary quality gate — tests, security validation |
+| `Stop` | ✅ Reliable | Quality gate — currently security validation (`security-gate.ts`). Test verification is manual by the Lead after the builder report. |
 | `UserPromptSubmit` | ✅ Reliable | Memory injection, routing hints |
 | `SubagentStop` | ✅ Reliable | Agent scoring, memory insights |
 | `PreToolUse` | ⚠️ Unreliable | Best-effort only — never sole gate for critical checks |
 | `PostToolUse` | ⚠️ Unreliable | Best-effort only — never sole gate for critical checks |
 
-**Implication**: `secrets-validator.ts` and `injection-validator.ts` (PostToolUse) are best-effort. The `validate-tests-pass.ts` (Stop) is the authoritative gate. Never rely solely on PostToolUse for security enforcement.
+**Implication**: `secrets-validator.ts` and `injection-validator.ts` (PostToolUse) are best-effort. The current Stop hook is `security-gate.ts` (async) — there is no automatic test-pass validator; the Lead is responsible for verifying tests after each builder report. Never rely solely on PostToolUse for security enforcement.

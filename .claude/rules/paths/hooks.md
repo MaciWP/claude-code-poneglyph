@@ -22,8 +22,8 @@ priority: 15
 
 | Event | When | Usage in Poneglyph |
 |-------|------|--------------------|
-| PreToolUse | Before tool | lead-enforcement, check-staleness |
-| PostToolUse | After tool | validators, context |
+| PreToolUse | Before tool | lead-enforcement |
+| PostToolUse | After tool | validators |
 | Stop | End of turn | validate-tests, security-gate |
 | SubagentStop | End of subagent | — |
 | StopFailure | API error (rate limit, auth) | — |

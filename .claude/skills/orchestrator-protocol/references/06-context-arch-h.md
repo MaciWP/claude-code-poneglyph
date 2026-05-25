@@ -111,7 +111,7 @@ When finished, include "### Memory Insights" with 1-5 reusable insights discover
 When preparing a delegation:
 
 1. Check if `prompt-enrichment.ts` emitted `## Path-Based Skills (for delegation)` — copy those `Read` suggestions verbatim into the delegation prompt's `[RELEVANT SKILLS FOR THIS TASK]` block
-2. Check the project's `skill-matching.md` rule (auto-loaded at spawn) for project-specific skill mappings — these point to `./.claude/skills/<name>/SKILL.md` paths
+2. Check the project's path rules or skill conventions (e.g., `.claude/rules/paths/`) for project-specific skill mappings — these point to `./.claude/skills/<name>/SKILL.md` paths
 3. Combine both into the `[RELEVANT SKILLS]` block. Max 3 skills total (1-2 global + 1-2 project is a good balance)
 4. Check if there is a specialized agent (e.g., `django-refactor-agent`, `django-security-auditor`) before routing to a generic one
 

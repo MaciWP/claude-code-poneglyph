@@ -25,7 +25,7 @@ Plus: design-doc audits, cross-file consistency checks, and full-file reads past
 | LOW Volume + LOW Complexity = direct Read | Cost of delegation > cost of direct Read. |
 | Default exploration = `Explore` (Haiku) | Empirical score 83, ~5× cheaper than scout. |
 | `scout` only for HIGH+HIGH or Explore-limited cases | Open-ended analysis, cross-file synthesis, full-file reads past Explore's window. |
-| Parallel axis: "change difficulty" | If after exploring you must implement a difficult change, plan with `planner` (independent of the exploration axis). |
+| Parallel axis: "change difficulty" | If after exploring you must implement a difficult change, invoke `planner-protocol` skill (independent of the exploration axis). |
 
 ### Parallel axis — Change difficulty
 
@@ -35,7 +35,7 @@ The matrix above decides **exploration**. The difficulty of the **change that fo
 |--------|-------------------------|
 | Trivial (1 line, rename) | builder direct |
 | Standard (1 file, clear pattern) | builder with loaded skills |
-| Multi-file / architectural | planner → N builders |
+| Multi-file / architectural | Lead (with planner-protocol skill) → N builders |
 
 A task can be **HIGH Volume exploration + trivial change** (lots to read, little to change) or **LOW Volume + complex change** (little to read, lots to think). Decide each axis separately.
 
@@ -43,7 +43,7 @@ A task can be **HIGH Volume exploration + trivial change** (lots to read, little
 
 ## Selection Matrix
 
-The "Suggested skills to Read (for delegation)" column lists `.claude/skills/<name>/SKILL.md` paths the Lead should include in the delegation prompt's `[RELEVANT SKILLS FOR THIS TASK]` block (Arch H). Max 3 per delegation. Pick the ones whose paths actually match the task context; skip the column if none apply. **Domain-specific skills (Django, React, OpenAPI, etc.) now live as project skills** under each repo's `./.claude/skills/` — check the project's `skill-matching.md` rule to discover them. The global skills listed below are cross-project patterns only.
+The "Suggested skills to Read (for delegation)" column lists `.claude/skills/<name>/SKILL.md` paths the Lead should include in the delegation prompt's `[RELEVANT SKILLS FOR THIS TASK]` block (Arch H). Max 3 per delegation. Pick the ones whose paths actually match the task context; skip the column if none apply. **Domain-specific skills (Django, React, OpenAPI, etc.) now live as project skills** under each repo's `./.claude/skills/` — check the project's path rules or skill conventions to discover them. The global skills listed below are cross-project patterns only.
 
 | Signal | Agent | Skill/Mode | Suggested skills to Read (for delegation) | Fallback |
 |--------|-------|------------|-------------------------------------------|----------|
@@ -126,13 +126,13 @@ Full LSP reference: skill `lsp-operations`.
 | Anti-Pattern | Problem | Use Instead |
 |--------------|---------|-------------|
 | builder for exploration | misses context, wastes tokens | scout |
-| planner for complexity <30 | overkill, slows execution | builder direct |
+| planner-protocol skill for complexity <30 | overkill, slows execution | builder direct |
 | skipping reviewer after multi-file changes | quality risk | reviewer checkpoint |
-| single builder for >60 complexity without planner | uncoordinated, error-prone | planner → N builders |
+| single builder for >60 complexity without planner-protocol | uncoordinated, error-prone | Lead (with planner-protocol skill) → N builders |
 | 2+ builders in parallel without worktree on overlapping files | Write conflicts | Activate `isolation: "worktree"` |
 | team mode for <3 domains | 3-7x cost with no real benefit | parallel builders in worktrees |
 | team mode for dependent domains | file conflicts between teammates | sequential subagents |
 | Reading files one by one | Latency + context overhead | Batch 3+ Reads in one message |
 | Sequential agents with no dependency | Wasted parallelism | Spawn in one message |
 | Glob → Read → Grep when Glob+Grep would suffice | Round-trips add up | Glob + Grep in same message |
-| Edit without prior Read | check-staleness hook blocks; risk of stale content | Read first, then Edit sequentially |
+| Edit without prior Read | risk of stale content | Read first, then Edit sequentially |

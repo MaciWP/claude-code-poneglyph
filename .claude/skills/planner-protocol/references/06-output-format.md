@@ -111,8 +111,8 @@ Implement agent `doc-generator.md` with skill `doc-patterns/SKILL.md` and tests 
 |--------|------|------|--------------|------|
 | Create | `.claude/agents/doc-generator.md` | - | `Glob('.claude/agents/')` dir exists | Low |
 | Create | `.claude/skills/doc-patterns/SKILL.md` | - | `Glob('.claude/skills/')` dir exists | Low |
-| Edit | `.claude/rules/skill-matching.md` | skill | `Glob` ✅ | Low |
-| Edit | `validate-tests-pass.test.ts` | - | `Glob` ✅ | Low |
+| Edit | `lead-enforcement.test.ts` | - | `Glob` ✅ | Low |
+| Edit | `lead-enforcement.test.ts` | - | `Glob` ✅ | Low |
 
 ### Dependency Graph
 
@@ -123,10 +123,10 @@ graph TD
     B[doc-patterns/SKILL.md]
   end
   subgraph "🟡 SEQ-2: Integration"
-    C[skill-matching.md]
+    C[lead-enforcement.test.ts]
   end
   subgraph "🔵 PARALLEL-3: Validation"
-    D[validate-tests-pass.test.ts]
+    D[lead-enforcement.test.ts]
     E[Task:reviewer]
   end
   subgraph "🔴 CHECKPOINT-4: Quality Gate"
@@ -151,12 +151,12 @@ graph TD
 #### 🟡 SEQ-2: Integration
 | # | File | Tool | Verification |
 |---|------|------|--------------|
-| 2.1 | `.claude/rules/skill-matching.md` | Edit | `Grep('doc-patterns')` confirms |
+| 2.1 | `lead-enforcement.test.ts` | Edit | `Grep('doc-patterns')` confirms |
 
 #### 🔵 PARALLEL-3: Validation
 | # | Action | Tool | Verification |
 |---|--------|------|--------------|
-| 3.1 | `validate-tests-pass.test.ts` | Edit | `bun test .claude/hooks/` |
+| 3.1 | `lead-enforcement.test.ts` | Edit | `bun test .claude/hooks/` |
 | 3.2 | reviewer review | Task:reviewer | - |
 
 **Execute**: `Edit(test) + Task(reviewer, background:true)` IN SAME MESSAGE

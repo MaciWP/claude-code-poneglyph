@@ -1,5 +1,5 @@
 ## 2026-04-29 — Session fix-batch-7-fixes
-- The tests in `.claude/hooks/__tests__/` are named `auto-approve.test.ts` and `code-validator.test.ts` — `agent-scoring.test.ts` does not exist. Always verify with `ls` before assuming test file names.
+- Always verify test file names with Grep/Glob before assuming — naming conventions vary (`__tests__/` vs sibling `*.test.ts`). Never assume a test file exists because a hook exists.
 - `bun test <absolute-path>` fails silently if the path does not match the cwd bun pattern — bun test works relative to `--cwd`; use specific file paths that exist, not invented directory paths.
 - When removing a hook from `settings.json`, the `python3 json.load/dump` pattern with a list comprehension filtering by `"command"` is the safest — a single atomic script reads, filters, writes.
 - `SECRET_PATTERN` with the `/gi` flag and stateful regex (lastIndex) needs explicit reset with `lastIndex = 0` on each line iteration — it was already in the original code; when adding `SECRET_PATTERN_CI` without state, the reset is not necessary.
@@ -158,7 +158,19 @@
 - The safe order for a skill merge: (1) create directories, (2) copy files, (3) update evals "skills" field (use `bun -e` on Windows since python3 may not be available), (4) write new SKILL.md and mode reference files, (5) delete source dirs, (6) update all cross-references, (7) run tests.
 - After a cross-reference sweep, `grep -r code-quality .claude` (or Grep tool) validates that no stale references remain — always do this before declaring done.
 
+## 2026-05-25 — Session doc-rot-scrub-LOTE-DEF
+- When scrubbing "planner agent" doc rot, two patterns co-exist: (a) `references/05-skill-matching.md` (a real file inside orchestrator-protocol) vs (b) `.claude/rules/skill-matching.md` (a file that never existed). Always distinguish the path before removing a reference — only the latter is dead rot.
+- Generic "skill-matching conventions" is the safe replacement for references to the non-existent `.claude/rules/skill-matching.md` — it conveys the intent without implying a specific file exists.
+- Scout MEMORY.md contained a "GAP-001 (trace-logger JSONL parser bug)" entry tied to the deleted pipeline — any session entry referencing deleted artifacts should be excised, not just the specific artifact lines, to avoid orphan context.
+
 ## Canonical Pattern — lead-enforcement bypass
 
 - `lead-enforcement.ts` blocks `Edit`/`Write` for the Lead session (`CLAUDE_LEAD_MODE=true`). Subagents are exempt: `input.agent_id` check exits 0 immediately — builder invoked via `Agent()` can Edit/Write freely without any workaround.
 - If blocked for any reason: `python3 << 'PYEOF'` heredoc with `str.replace` + `assert content.count(old) == 1` — most reliable bypass for content with `|`, `$`, quotes, and non-ASCII. Single script = atomic multi-edit.
+
+## 2026-05-25 — Session hooks-cleanup
+- `python3` is not on the Windows PATH in this project — use `bun -e "..."` for all JSON/file scripting instead. The `json.load/dump` pattern documented in earlier sessions only works on Mac/Linux.
+- When cleaning dead exports from a shared config module (config.ts), a single Write rewrite is safer than ~12 sequential Edit calls — avoids uniqueness conflicts on similar old_strings and is atomic.
+- After deleting hooks, always grep for both the filename (e.g. `record-read.ts`) AND the symbol names (e.g. `normalizeDeniedCall`) — skill/rule docs may reference filenames even when no code imports them; report these in Issues rather than editing out-of-scope docs.
+- `rmdir` on Windows (bash) works for empty dirs; `rm -rf` is not needed if all files were already deleted individually. Check emptiness with `ls` first — empty dir shows no output, not an error.
+- The `getExtension` function in `config.ts` is internal-only (no external imports) but is used by the internal language detection functions — when removing those functions, `getExtension` itself can also be removed safely.

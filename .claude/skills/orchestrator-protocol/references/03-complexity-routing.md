@@ -6,7 +6,7 @@ description: Complexity factors × weight table, formula, routing thresholds, mo
 
 # Complexity Routing
 
-Calculate complexity before delegating to determine if a planner is required and which execution mode to use.
+Calculate complexity before delegating to determine if invoking the `planner-protocol` skill is required and which execution mode to use.
 
 ## Complexity Factors
 
@@ -36,8 +36,8 @@ Each factor contributes a maximum of ~33 points (value=3 × 20% × 33.3). Total 
 |-------|---------|--------|
 | **< 15** | builder direct, skip scoring/skills | Trivial task (rename, typo, single-line) |
 | **15-30** | builder direct | Simple task, no planning needed |
-| **30-60** | planner optional | Consider plan if there is uncertainty |
-| **> 60** | planner mandatory | Requires structured roadmap |
+| **30-60** | planner-protocol optional | Consider plan if there is uncertainty |
+| **> 60** | planner-protocol mandatory | Requires structured roadmap |
 
 ## Mode Selection Table
 
@@ -53,7 +53,7 @@ Default is ALWAYS subagents.
 
 ## Tiered Mode
 
-Intermediate mode for 2-3 domains with shared interfaces and complexity 45-60. The planner (Mode B) designs contracts before builders start in parallel — no separate architect agent.
+Intermediate mode for 2-3 domains with shared interfaces and complexity 45-60. The `planner-protocol` skill (Mode B) designs contracts before builders start in parallel — no separate architect agent.
 
 ```mermaid
 graph TD

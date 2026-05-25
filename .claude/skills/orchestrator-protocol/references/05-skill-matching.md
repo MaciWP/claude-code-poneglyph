@@ -23,7 +23,6 @@ description: Keywords→skills table, task type detection, priority scoring, syn
 | prompt, generar prompt, refine, vague, agent prompt, meta-prompting | `prompt-engineer` |
 | CLAUDE.md, settings.json, permissions, env vars | `meta-settings-cookbook` |
 | create agent, new skill, add hook, scaffold extension, MCP server, plugin | `meta-create` |
-| sync claude, symlink config, share globally | `sync-claude` |
 
 ## Task Type Detection
 

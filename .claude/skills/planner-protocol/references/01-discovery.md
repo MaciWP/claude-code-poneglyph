@@ -14,7 +14,6 @@ Before generating any plan, consult these sources. **Assume nothing.**
 |------|---------|-----------------|
 | `docs/orchestrator/ORCHESTRATOR.md` | Philosophy, policies | Commit rules, evidence |
 | `docs/orchestrator/CAPABILITIES.md` | Real inventory | Available agents, skills, scripts |
-| `reports/QUALITY_GATES.md` | Quality standards | Coverage, linting, CI/CD status |
 
 ## B. Dynamic Sources (Code State)
 

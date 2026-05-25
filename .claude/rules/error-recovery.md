@@ -18,7 +18,7 @@ When a subagent fails, the Lead diagnoses inline (loading `diagnostic-patterns` 
 | Teammate stuck (no progress) | 0 | - | Extract domain → run as builder subagent |
 | Teammate file conflict | 0 | - | Lead resolves boundaries, re-assign |
 
-> Team mode recovery: see `complexity-routing.md §Team Mode Execution §Fallback to Subagents`.
+> Team mode recovery: see `.claude/skills/orchestrator-protocol/references/03-complexity-routing.md` §Team Mode Execution §Fallback to Subagents.
 
 ## SendMessage Recovery (Preferred)
 
@@ -87,10 +87,10 @@ PreToolUse and PostToolUse hooks may silently fail to fire (known Claude Code bu
 
 | Hook type | Reliability | Use for |
 |-----------|-------------|---------|
-| `Stop` | Reliable | Primary quality gate — tests, security validation |
+| `Stop` | Reliable | Quality gate — currently security validation (`security-gate.ts`). Test verification is performed manually by the Lead after the builder report. |
 | `UserPromptSubmit` | Reliable | Memory injection, routing hints |
 | `SubagentStop` | Reliable | Agent scoring, memory insights |
 | `PreToolUse` | Unreliable | Best-effort only — never sole gate for critical checks |
 | `PostToolUse` | Unreliable | Best-effort only — never sole gate for critical checks |
 
-`validate-tests-pass.ts` (Stop) is the authoritative gate. Never rely solely on PostToolUse for security enforcement.
+`security-gate.ts` (Stop, async) is the current Stop hook. There is no automatic test-pass validator at the moment — the Lead is responsible for verifying tests after each builder report. Never rely solely on PostToolUse for security enforcement.

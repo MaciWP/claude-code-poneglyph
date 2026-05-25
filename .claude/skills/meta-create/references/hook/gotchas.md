@@ -32,9 +32,9 @@ Critical pitfalls when creating hooks. Read these BEFORE writing any hook.
 ├── {hook-name}.ts              # Hook scripts
 ├── {hook-name}.test.ts         # Tests for the hook
 ├── lib/                        # Shared utilities
-│   ├── trace-extract.ts        # Transcript parsing
-│   ├── trace-metrics.ts        # Cost/token calculation
-│   └── error-patterns.ts       # Error pattern matching
+│   ├── hook-stdin.ts           # stdin parsing
+│   ├── path-rule-loader.ts     # path-based skill hints
+│   └── yaml-frontmatter.ts     # YAML frontmatter parser
 └── validators/                 # Grouped validators
     ├── config.ts               # Shared config (exit codes, readStdin)
     ├── security/               # Security validators

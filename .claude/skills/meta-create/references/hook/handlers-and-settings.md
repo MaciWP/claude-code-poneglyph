@@ -63,7 +63,7 @@ The EXACT JSON structure for registering hooks in `settings.json`.
         "hooks": [
           {
             "type": "command",
-            "command": "bun run $HOME/.claude/hooks/record-read.ts",
+            "command": "bun run $HOME/.claude/hooks/your-read-hook.ts",
             "timeout": 10,
             "async": true
           }

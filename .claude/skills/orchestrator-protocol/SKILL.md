@@ -67,7 +67,7 @@ Complexity factors × weight, tiered/team gates, worktree decision, model routin
 
 1. Check if `prompt-enrichment.ts` emitted `## Path-Based Skills (for delegation)` — copy verbatim into delegation prompt.
 2. If no hook suggestions: match keywords against `references/05-skill-matching.md` (max 3 skills per agent).
-3. Also check the project's `skill-matching.md` for project-specific skills.
+3. Also check the project's path rules (`.claude/rules/paths/`) for project-specific skill conventions.
 4. Do NOT invoke `Skill()` as a delegation mechanism — embed `Read .claude/skills/<name>/SKILL.md` instructions in the prompt.
 
 Full Arch H template with all blocks, propagation model, skill discovery: `references/06-context-arch-h.md`.

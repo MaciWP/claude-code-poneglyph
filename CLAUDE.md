@@ -194,7 +194,7 @@ Error recovery policy (still a rule): `@.claude/rules/error-recovery.md`
 
 ### Post-implementation verification (MANDATORY)
 
-Builder verifies automatically via the `validate-tests-pass.ts` Stop hook. The Lead reviews the builder report. If tests fail → Lead invokes `Skill('diagnostic-patterns')` for the diagnosis → re-delegate to builder (via SendMessage when context is preserved). **Never report "completed" without tests passing.** (Commandment IV.)
+Verification is the **Lead's explicit responsibility** after each builder report — there is no automatic test-pass Stop hook at the moment (was `validate-tests-pass.ts`, removed). The Lead runs `bun test ./.claude/hooks/` (or the relevant test command) and inspects the result. If tests fail → Lead invokes `Skill('diagnostic-patterns')` for the diagnosis → re-delegate to builder (via SendMessage when context is preserved). **Never report "completed" without tests passing.** (Commandment IV.)
 
 ---
 
@@ -221,8 +221,8 @@ Actualizado tras la auditoría poneglyph (May 2026). Cualquier nuevo componente 
 |---|---|---|---|
 | Agents | 7 + 1 meta | **3** | builder, reviewer, scout. Planning y diagnóstico viven en skills (`planner-protocol`, `diagnostic-patterns`) invocadas por el Lead — sin agents dedicados. Meta-create también es skill. |
 | Skills | 28 | **14** | Cortadas las skills genéricas (typescript/bun/testing/logging/db/careful/freeze) cuyo dominio ya conoce el LLM; consolidaciones (review-patterns, meta-create) preservadas |
-| Hooks registrados | 15+ | **12** | Pipeline trace/scoring/patterns eliminado; gates de seguridad preservados |
-| Slash commands | 10 | **6** | Wrappers triviales preservados (US-008 RECHAZADA: aportan activación explícita); sync-claude duplicado eliminado |
+| Hooks registrados | 15+ | **6** | Pipeline trace/scoring/patterns eliminado; gates de seguridad preservados, `lead-parallelism-gate` y `validators/context/*` eliminados en pre-migración iterativa; en iter 2 (2026-05-25d) se cortaron deliberadamente `validate-tests-pass.ts` (Stop) y `json-validator.ts` (PostToolUse) — funcionaban pero el coste (tiempo + tokens en cada turno/Edit) no se consideró proporcional al valor; verificación de tests pasa a ser responsabilidad explícita del Lead |
+| Slash commands | 10 | **5** | Wrappers triviales preservados (US-008 RECHAZADA: aportan activación explícita); `benchmark-skills` cortado en iter 2; `sync-claude` migrado de skill→command en iter 2 |
 | Rules | 7 | **2 + paths/** | `bootstrap-lead.md`, `error-recovery.md` (rewritten Lead-driven) + `paths/{hooks,orchestration}.md` |
 | Output-styles | 1 (caveman) | **1 (poneglyph)** | Caveman fusionado con la guía de formato en un único output-style |
 

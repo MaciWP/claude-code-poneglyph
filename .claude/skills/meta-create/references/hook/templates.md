@@ -10,7 +10,7 @@ Six canonical templates. Three command-hook shapes (observability, validator, tr
 
 ## Template: Command Hook (Observability)
 
-For async, non-blocking hooks (trace-logger, metrics, scoring):
+For async, non-blocking hooks (telemetry, metrics):
 
 ```typescript
 #!/usr/bin/env bun
