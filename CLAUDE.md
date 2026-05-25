@@ -108,14 +108,14 @@ This session acts as a **pure orchestrator**. It does not execute code directly.
 
 | Tool | Use |
 |------|-----|
-| `Agent` | Delegate to specialized subagents (builder, reviewer, planner, error-analyzer, scout, extension-architect) |
+| `Agent` | Delegate to specialized subagents (builder, reviewer, planner, error-analyzer, scout). Extension creation lives in the auto-activable `meta-create` skill, not in a dedicated agent. |
 | `Skill` | Load skill context **into the Lead's own session only** (domain patterns, prompt refinement). NOT a delegation mechanism — to give skills to a subagent, include `Read .claude/skills/<name>/SKILL.md` in the delegation prompt (Arch H) |
 | `AskUserQuestion` | Clarify requirements or validate a doubtful prompt |
 | `TaskCreate/TaskList/TaskUpdate` | Manage the in-conversation task list |
 
 Prohibited for the Lead: `Read`, `Edit`, `Write`, `Bash`, `Glob`, `Grep`, `WebFetch`, `WebSearch` — delegate them. Exceptions:
 **Read** any path — always allowed for orientation (no delegation needed).
-**Write/Edit/Bash** — see the Default-allow gate below; the Lead may act directly when the operation is not on a sensitive path and is not a destructive command. For ≥3 files OR architectural changes the Lead delegates to `builder` (or `planner` if complexity >60), guided by Trigger A/B in `bootstrap-lead.md`.
+**Write/Edit/Bash** — see the Default-allow gate below; the Lead may act directly when the operation is not on a sensitive path and is not a destructive command. For ≥5 files OR architectural changes the Lead delegates to `builder` (or `planner` if complexity >60), guided by Trigger A/B in `bootstrap-lead.md`.
 
 ### Default-allow gate
 
@@ -200,7 +200,7 @@ Builder verifies automatically via the `validate-tests-pass.ts` Stop hook. The L
 
 ## Glossary
 
-Full glossary moved to skill `poneglyph-glossary` (on-demand). Critical terms used inline above: `sensitive: <reason>` (≥8 chars for sensitive paths), Default-allow gate, Arch H (Lead-Directed Skill Reads).
+Critical terms used inline above: `sensitive: <reason>` (≥8 chars for sensitive paths), Default-allow gate, Arch H (Lead-Directed Skill Reads).
 
 ### When to use rules vs skills (at project level)
 
@@ -210,3 +210,20 @@ Full glossary moved to skill `poneglyph-glossary` (on-demand). Critical terms us
 | **Knowledge/guidance** — useful when relevant, not every prompt | **Skill** (on-demand) | e.g., "naming conventions", "function design patterns" |
 
 Guideline: if asking "does the agent need this in EVERY prompt?", and the answer is no → skill, not rule. Project skills load via the same Arch H Read mechanism as global skills.
+
+---
+
+## System inventory (post-audit 2026-05-25)
+
+Actualizado tras la auditoría poneglyph (May 2026). Cualquier nuevo componente debe justificarse contra los 10 Commandments y los anti-patterns oficiales 2026.
+
+| Componente | Antes | Ahora | Detalle |
+|---|---|---|---|
+| Agents | 7 + 1 meta | **5** | builder, reviewer, planner, error-analyzer, scout (no meta-agent — la skill `meta-create` lo reemplaza) |
+| Skills | 28 | **21** | Incluye `meta-create` (consolida 6× meta-create-* viejas) y `review-patterns` (consolida code-quality + performance-review) |
+| Hooks registrados | 15+ | **12** | Pipeline trace/scoring/patterns eliminado; gates de seguridad preservados |
+| Slash commands | 10 | **7** | Wrappers triviales preservados (US-008 RECHAZADA: aportan activación explícita) |
+| Rules | 7 | **2 + paths/** | `bootstrap-lead.md` (unifica con plan-mode), `error-recovery.md` + `paths/{hooks,orchestration}.md`. `performance.md` y `formatting.md` migradas |
+| Output-styles | 1 (caveman) | **1 (poneglyph)** | Caveman fusionado con la guía de formato en un único output-style |
+
+Detalle completo de cortes, fusiones y rechazos: `audit-tasks/` (cada US tiene su Execution closure) y `~/.claude/projects/D--PYTHON-claude-code-poneglyph/memory/project_audit_outcome_2026-05-25.md`.

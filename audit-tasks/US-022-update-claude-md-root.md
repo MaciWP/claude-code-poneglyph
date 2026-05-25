@@ -1,13 +1,21 @@
 ---
 id: US-022
 phase: 2.6
-status: pending
+status: completed
 estimate: 45m
 blocks: [US-024]
 blockedBy: [US-005, US-006, US-007, US-008, US-009, US-010, US-011, US-012, US-013, US-014, US-015, US-016, US-017, US-018, US-019, US-020, US-021]
 priority: high
 risk: low
 ---
+
+> Executed 2026-05-25. Scope mínimo (no se tocó la estructura conceptual, solo contadores + refs huérfanas):
+>
+> - Línea 111 (lista de subagentes): quitado `extension-architect` (agent eliminado), añadida nota de que ahora vive como skill `meta-create`.
+> - Línea 118: threshold de delegación `≥3 files` → `≥5 files` (coherente con `bootstrap-lead.md` post US-015 de model reassignment).
+> - Eliminada referencia a skill `poneglyph-glossary` que nunca existió.
+> - Añadida sección final "System inventory (post-audit 2026-05-25)" con contadores empíricos: 5 agents, 21 skills, 12 hooks, 7 commands, 2 rules + paths/, 1 output-style.
+> - También se limpió accidentalmente la carpeta vacía `.claude/agents/meta/` (residuo de US-012+US-020) y las 6 carpetas vacías `meta-create-*/` residuales del `git rm -r` previo que dejó subdirs vacíos en el filesystem.
 
 # US-022 · Actualizar `CLAUDE.md` raíz con la nueva estructura del sistema
 
