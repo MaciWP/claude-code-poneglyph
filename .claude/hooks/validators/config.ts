@@ -13,7 +13,7 @@
  * Input structure received from Claude Code hooks via stdin.
  * Contains information about the tool that was executed.
  */
-export interface HookInput {
+interface HookInput {
   tool_name: string;
   tool_input: {
     file_path?: string;
@@ -40,8 +40,6 @@ export const EXIT_CODES = {
   PASS: 0,
   BLOCK: 2,
 } as const;
-
-export type ExitCode = (typeof EXIT_CODES)[keyof typeof EXIT_CODES];
 
 // =============================================================================
 // Utility Functions
@@ -114,17 +112,6 @@ export function reportError(message: string): never {
 }
 
 /**
- * Checks if a file path has a TypeScript extension.
- *
- * @param path - File path to check
- * @returns True if path ends with .ts or .tsx
- */
-export function isTypeScriptFile(path: string): boolean {
-  const normalized = path.toLowerCase();
-  return normalized.endsWith(".ts") || normalized.endsWith(".tsx");
-}
-
-/**
  * Checks if a file path has a JSON extension.
  *
  * @param path - File path to check
@@ -132,17 +119,6 @@ export function isTypeScriptFile(path: string): boolean {
  */
 export function isJsonFile(path: string): boolean {
   return path.toLowerCase().endsWith(".json");
-}
-
-/**
- * Checks if a file path has a JavaScript extension.
- *
- * @param path - File path to check
- * @returns True if path ends with .js or .jsx
- */
-export function isJavaScriptFile(path: string): boolean {
-  const normalized = path.toLowerCase();
-  return normalized.endsWith(".js") || normalized.endsWith(".jsx");
 }
 
 const CODE_EXTENSIONS = new Set([
@@ -180,7 +156,7 @@ export function isCodeFile(path: string): boolean {
  * @param path - File path to extract extension from
  * @returns Extension without the dot, or empty string if none
  */
-export function getExtension(path: string): string {
+function getExtension(path: string): string {
   const lastDot = path.lastIndexOf(".");
   if (lastDot === -1 || lastDot === path.length - 1) {
     return "";
@@ -188,92 +164,9 @@ export function getExtension(path: string): string {
   return path.slice(lastDot + 1).toLowerCase();
 }
 
-/**
- * Normalizes a file path for consistent comparison.
- * Converts backslashes to forward slashes and lowercases.
- *
- * @param path - File path to normalize
- * @returns Normalized path
- */
-export function normalizePath(path: string): string {
-  return path.replace(/\\/g, "/").toLowerCase();
-}
-
-// =============================================================================
-// Language Detection
-// =============================================================================
-
-export type LanguageFamily =
-  | "typescript"
-  | "javascript"
-  | "python"
-  | "go"
-  | "rust"
-  | "java"
-  | "ruby"
-  | "php"
-  | "swift"
-  | "kotlin"
-  | "c"
-  | "csharp"
-  | "unknown";
-
-const EXTENSION_TO_FAMILY: Record<string, LanguageFamily> = {
-  ts: "typescript",
-  tsx: "typescript",
-  js: "javascript",
-  jsx: "javascript",
-  py: "python",
-  go: "go",
-  rs: "rust",
-  java: "java",
-  rb: "ruby",
-  php: "php",
-  swift: "swift",
-  kt: "kotlin",
-  c: "c",
-  cpp: "c",
-  h: "c",
-  cs: "csharp",
-};
-
-/**
- * Returns the language family for a file based on its extension.
- */
-export function getLanguageFamily(path: string): LanguageFamily {
-  const ext = getExtension(path);
-  return EXTENSION_TO_FAMILY[ext] ?? "unknown";
-}
-
-const BIOME_EXTENSIONS = new Set([
-  "ts",
-  "tsx",
-  "js",
-  "jsx",
-  "json",
-  "css",
-  "graphql",
-]);
-
-/**
- * Checks if a file is supported by Biome linter.
- */
-export function isBiomeSupported(path: string): boolean {
-  const ext = getExtension(path);
-  return BIOME_EXTENSIONS.has(ext);
-}
-
-/**
- * Checks if a file path has a Python extension.
- */
-export function isPythonFile(path: string): boolean {
-  return path.toLowerCase().endsWith(".py");
-}
-
 // =============================================================================
 // Mode Flags
 // =============================================================================
 
 export const CAREFUL = process.env.CLAUDE_CAREFUL_MODE === "true";
-export const FREEZE = process.env.CLAUDE_FREEZE_MODE === "true";
 export const COMPLEXITY_THRESHOLD = CAREFUL ? 15 : 25;

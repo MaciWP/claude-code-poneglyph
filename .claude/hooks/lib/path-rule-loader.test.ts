@@ -82,7 +82,7 @@ describe("globMatch", () => {
   });
 
   test("matches exact path segments", () => {
-    expect(globMatch(".claude/hooks/**", ".claude/hooks/trace-logger.ts")).toBe(
+    expect(globMatch(".claude/hooks/**", ".claude/hooks/auto-approve.ts")).toBe(
       true,
     );
     expect(globMatch(".claude/hooks/**", ".claude/rules/test.md")).toBe(false);
