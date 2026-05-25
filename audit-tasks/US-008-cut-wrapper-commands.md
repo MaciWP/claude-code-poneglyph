@@ -209,7 +209,7 @@ Cualquier re-evaluación requiere nueva US explícita.
 
 ---
 
-**Commit**: `faa1f76` — docs(audit): close US-008 as rejected — preserve all 4 wrapper commands
+**Commit**: `7ce2221` — docs(audit): close US-008 as rejected — preserve all 4 wrapper commands
 
 ## Criterios de aceptación
 
