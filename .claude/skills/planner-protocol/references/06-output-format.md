@@ -80,7 +80,7 @@ graph TD
 
 | # | File | Tool | Skills | Verification |
 |---|------|------|--------|--------------|
-| 2.1 | path/service.ts | Edit | typescript-patterns | `bun typecheck` |
+| 2.1 | path/service.ts | Edit | review-patterns | `bun typecheck` |
 
 **Execute**: AFTER PARALLEL-1
 **Corresponding test**: `path/service.test.ts` (TDD enforcement)

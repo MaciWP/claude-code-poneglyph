@@ -272,7 +272,7 @@ The `jose` library is not imported correctly.
 #### Strategy: RE-PLAN
 1. Verify that `jose` is in package.json
 2. Verify import: `import * as jose from 'jose'`
-3. Re-run with skill: bun-best-practices
+3. Re-run with skill: `anti-hallucination` (catches the missing-import pattern)
 ```
 
 ### Example 2: Network Timeout

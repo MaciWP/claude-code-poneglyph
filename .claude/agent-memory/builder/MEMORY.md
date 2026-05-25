@@ -3,7 +3,7 @@
 - `bun test <absolute-path>` fails silently if the path does not match the cwd bun pattern — bun test works relative to `--cwd`; use specific file paths that exist, not invented directory paths.
 - When removing a hook from `settings.json`, the `python3 json.load/dump` pattern with a list comprehension filtering by `"command"` is the safest — a single atomic script reads, filters, writes.
 - `SECRET_PATTERN` with the `/gi` flag and stateful regex (lastIndex) needs explicit reset with `lastIndex = 0` on each line iteration — it was already in the original code; when adding `SECRET_PATTERN_CI` without state, the reset is not necessary.
-- The skills `testing-strategy`, `typescript-patterns`, `bun-best-practices`, `api-design` do NOT exist as directories in `.claude/skills/` — never reference them in matching tables or catalogs.
+- The skills `testing-strategy`, `typescript-patterns`, `bun-best-practices`, `database-patterns`, `api-design` do NOT exist as directories in `.claude/skills/` — never reference them in matching tables or catalogs. (Updated 2026-05-25: all five confirmed absent — the first four were removed in commits 2f93aac, 56d65e3, 33c12df, e90b659.)
 
 
 ## 2026-04-29 — Session simplify-pipeline

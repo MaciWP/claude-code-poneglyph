@@ -11,7 +11,6 @@ description: Keywords→skills table, task type detection, priority scoring, syn
 | Keywords in Prompt | Skill to Load |
 |--------------------|--------------|
 | auth, jwt, password, security, token, session | `security-review` |
-| database, sql, drizzle, migration, query, orm, transaction | `database-patterns` |
 | refactor, extract, SOLID, clean, simplify | `review-patterns` |
 | log, logging, trace, debug, observability | `logging-strategy` |
 | error, retry, circuit, fallback, recovery | `diagnostic-patterns` |
@@ -22,9 +21,11 @@ description: Keywords→skills table, task type detection, priority scoring, syn
 | careful, strict, production, critical, hotfix | `careful-mode` |
 | freeze, readonly, read-only, no-edit, lock | `freeze-mode` |
 | decide, decision, choose, evaluate, trade-off | `decide` |
-| traces, cost, usage, tokens, spending | `traces` |
-| prompt, improve prompt, refine, ambiguous, vague | `prompt-engineer` |
+| stress-test, devil's advocate, challenge decision, pre-mortem | `decision-stress-test` |
+| explain, walkthrough, diff, learn, onboarding | `explain-changes` |
+| prompt, generar prompt, refine, vague, agent prompt, meta-prompting | `prompt-engineer` |
 | CLAUDE.md, settings.json, permissions, env vars | `meta-settings-cookbook` |
+| create agent, new skill, add hook, scaffold extension, MCP server, plugin | `meta-create` |
 | sync claude, symlink config, share globally | `sync-claude` |
 
 ## Task Type Detection

@@ -313,12 +313,11 @@ When Lead passes additional skills via prompt, apply their patterns. Examples:
 
 | Skill | When Loaded | Key Patterns |
 |-------|-------------|--------------|
-| `typescript-patterns` | TypeScript code | Type safety, async patterns, generics |
 | `security-review` | Auth, JWT, passwords | Input validation, no hardcoded secrets |
-| `api-design` | REST endpoints | Status codes, input validation, error responses |
-| `testing-strategy` | TDD, mocking | Test structure, mock patterns, cleanup |
-| `database-patterns` | SQL, ORM, migrations | Prepared statements, transactions |
-| `review-patterns` | Refactoring, quality | SOLID principles, complexity reduction |
+| `review-patterns` | Refactoring, quality, performance | SOLID, complexity reduction, bottlenecks |
+| `anti-hallucination` | Before asserting code exists | LSP/Grep/Read verification ladder |
+| `lsp-operations` | Symbol navigation | findReferences, goToDefinition, hover |
+| `diagnostic-patterns` | Error / retry / recovery | Backoff, circuit breaker, saga |
 
 ## Refactoring Mode
 

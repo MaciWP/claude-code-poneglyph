@@ -169,10 +169,10 @@ Use this to organize into execution waves.
 |-------|--------|----------|
 | `anti-hallucination` | Verification | validate, verify, check, exists, confidence |
 | `review-patterns` | Code review & refactoring & performance | refactor, solid, clean, extract, quality, smells, performance, memory, bottleneck, slow, profiling |
-| `database-patterns` | Database & queries | database, sql, migration, query, orm, transaction |
 | `diagnostic-patterns` | Debugging & error recovery | retry, error, recovery, diagnose, stacktrace |
 | `logging-strategy` | Observability | log, trace, debug, observability |
 | `security-review` | Security audit | security, auth, validation, owasp, vulnerability |
+| `lsp-operations` | Symbol navigation | findReferences, goToDefinition, hover |
 
 ## Task-Agent-Skill Mapping
 
@@ -190,7 +190,6 @@ Use this to organize into execution waves.
 |------|------|-------|------------------|--------|
 | Create auth service | Implement | `builder` | security-review, review-patterns | Auth requires secure patterns |
 | Refactor function | Implement | `builder` | review-patterns | Refactoring is implementation |
-| Database migration | Implement | `builder` | database-patterns | Domain-specific |
 | Review auth code | Validate | `reviewer` | security-review | Security needs checklist |
 | General checkpoint | Validate | `reviewer` | (none) | Basic review |
 | Analyze error | Diagnose | `error-analyzer` | diagnostic-patterns | Failure diagnosis |
