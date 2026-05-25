@@ -199,3 +199,12 @@ Trivial.
 
 - Si Paso 1 revela que las rules tienen frontmatter `paths:` distinto (e.g. bootstrap-plan-mode aplica solo en plan mode vía mecanismo del harness), respetar esa lógica en el merge usando `mode:` o equivalente
 - El mecanismo `Plan mode is active` viene del propio Claude Code como system reminder — el Lead lo detecta en runtime y aplica la sección B
+
+## Ejecución (2026-05-25)
+
+- Commit: `994d220` — `refactor(rules): merge bootstrap-plan-mode into bootstrap-lead`
+- Verificación de premisas: ambas rules eran Lead-only (`CLAUDE_LEAD_MODE=true`), frontmatter solo `description` (load-always, sin `paths:` ni `mode:`), estructura paralela (When/How to invoke).
+- Decisión: el nuevo `bootstrap-lead.md` tiene tres secciones — `Default trigger (orchestrator-protocol)`, `Plan mode trigger (planner-protocol)` (incluye `Level triage is automatic`) y la preexistente `Delegation Decision Triggers` (A/B).
+- Referencias huérfanas en `.claude/` tras el merge: **0** (`Grep "bootstrap-plan-mode" .claude/` → No matches).
+- Referencias en `audit-tasks/` y `PONEGLYPH-AUDIT.md`: intactas (documentación histórica de la auditoría). El `CLAUDE.md` raíz del proyecto no mencionaba `bootstrap-plan-mode.md`, así que no requirió cambios. El `~/.claude/CLAUDE.md` global se actualiza en US-022 / US-023.
+- `bun test ./.claude/hooks/` → 139/139 ✅
