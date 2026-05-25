@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-// scripts/sync-claude.ts
+// .claude/commands/sync-claude.ts
 // Syncs .claude/ from poneglyph to ~/.claude/ via symlinks
 // Supports: Windows (junction/symlink), macOS, Linux
 

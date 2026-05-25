@@ -1,15 +1,11 @@
 ---
-name: sync-claude
-description: |
-  Syncs .claude/ from the poneglyph project to ~/.claude/ global via symlinks.
-  Use proactively when: setting up new environment, sharing config globally.
-  Keywords - sync, config, global, claude, settings, symlink, setup
-disable-model-invocation: true
+description: "Syncs .claude/ from poneglyph to ~/.claude/ via symlinks/junctions (multi-OS)."
+argument-hint: "[--check|--status|--execute|--unlink] [--backup] [--method auto|symlink|junction|copy] [--force]"
 ---
 
 # Sync Claude Config
 
-Creates symlinks in `~/.claude/` pointing to `poneglyph/.claude/`, allowing skills/agents/commands to be used in any project.
+Creates symlinks (or junctions on Windows) in `~/.claude/` pointing to `poneglyph/.claude/`, allowing skills/agents/commands/rules to be used in any project.
 
 ## Multi-OS Compatibility
 
@@ -40,45 +36,40 @@ graph TD
 ### 1. Verify system (recommended first)
 
 ```bash
-bun .claude/skills/sync-claude/scripts/sync-claude.ts --check
+bun .claude/commands/sync-claude.ts --check
 ```
 
-Shows:
-- OS and version
-- Whether you are admin/root
-- Developer Mode (Windows)
-- Whether symlinks/junctions can be created
-- Recommendations if anything is missing
+Shows OS/version, admin/root status, Developer Mode (Windows), whether symlinks/junctions can be created, plus recommendations if anything is missing.
 
 ### 2. Preview changes
 
 ```bash
-bun .claude/skills/sync-claude/scripts/sync-claude.ts
+bun .claude/commands/sync-claude.ts
 ```
 
 ### 3. Run sync
 
 ```bash
 # Normal
-bun .claude/skills/sync-claude/scripts/sync-claude.ts --execute
+bun .claude/commands/sync-claude.ts --execute
 
 # With backup of existing content
-bun .claude/skills/sync-claude/scripts/sync-claude.ts --execute --backup
+bun .claude/commands/sync-claude.ts --execute --backup
 
-# Force specific method
-bun .claude/skills/sync-claude/scripts/sync-claude.ts --method junction --execute
+# Force a specific method
+bun .claude/commands/sync-claude.ts --method junction --execute
 ```
 
 ### 4. View current status
 
 ```bash
-bun .claude/skills/sync-claude/scripts/sync-claude.ts --status
+bun .claude/commands/sync-claude.ts --status
 ```
 
 ### 5. Undo (remove symlinks)
 
 ```bash
-bun .claude/skills/sync-claude/scripts/sync-claude.ts --unlink
+bun .claude/commands/sync-claude.ts --unlink
 ```
 
 ## CLI Options
@@ -98,7 +89,7 @@ bun .claude/skills/sync-claude/scripts/sync-claude.ts --unlink
 | Method | Advantages | Disadvantages |
 |--------|------------|---------------|
 | `symlink` | Standard, works with files and folders | Windows: requires Dev Mode or Admin |
-| `junction` | Windows: no special permissions needed | Folders only, Windows only |
+| `junction` | Windows: no special permissions | Folders only, Windows only |
 | `copy` | Always works | Does not sync changes |
 
 ## Synced Folders
@@ -130,49 +121,31 @@ bun .claude/skills/sync-claude/scripts/sync-claude.ts --unlink
 
 If `--check` shows Developer Mode disabled (and symlinks unavailable):
 
-1. **Option A**: Enable Developer Mode
-   - Settings → Privacy & Security → For developers → Developer Mode: ON
-   - Restart terminal
-
-2. **Option B**: Use junction (default)
-   - Junctions work without special permissions
-   - `--method junction` is automatic when symlink is unavailable
-
-3. **Option C**: Run as Admin
-   - Right-click terminal → "Run as administrator"
+1. **Option A**: Enable Developer Mode → Settings → Privacy & Security → For developers → Developer Mode: ON → restart terminal.
+2. **Option B**: Use junction (default). Junctions work without special permissions; `--method junction` is automatic when symlink is unavailable.
+3. **Option C**: Run terminal as Administrator.
 
 ### macOS: Permissions
 
 ```bash
-# Check home permissions
-ls -la ~
-
-# If ~/.claude has incorrect permissions
-chmod 755 ~/.claude
+ls -la ~                # Check home permissions
+chmod 755 ~/.claude     # Fix if needed
 ```
 
 ### Linux: Permissions
 
 ```bash
-# Check permissions
 ls -la ~/.claude
-
-# Fix if needed
 sudo chown -R $USER:$USER ~/.claude
 ```
 
 ### Symlink Conflicts
 
-If symlinks are pointing elsewhere:
-
 ```bash
-# See where they point
-bun .claude/skills/sync-claude/scripts/sync-claude.ts --status
-
-# Replace with backup
-bun .claude/skills/sync-claude/scripts/sync-claude.ts --execute --backup
+bun .claude/commands/sync-claude.ts --status            # See where they point
+bun .claude/commands/sync-claude.ts --execute --backup  # Replace with backup
 ```
 
 ---
 
-**Version**: 2.0.0
+**Version**: 2.1.0 (migrated from skill → slash command 2026-05-25)
