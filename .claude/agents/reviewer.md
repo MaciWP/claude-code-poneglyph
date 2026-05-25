@@ -423,7 +423,7 @@ Performance:
 |---------|---------|-------------|
 | **APPROVED** | All checks pass | Continue to next step |
 | **APPROVED_WITH_WARNINGS** | Minor issues, not blocking | Continue, fix optional |
-| **NEEDS_CHANGES** | Important issues found | Re-loop to planner |
+| **NEEDS_CHANGES** | Important issues found | Re-invoke `planner-protocol` skill |
 | **BLOCKED** | Critical issues found | Stop, review plan |
 
 ### Verdict Selection Criteria
@@ -613,7 +613,7 @@ The Lead activates the appropriate mode via prompt context and skill loading.
 | Agent | Relationship |
 |-------|--------------|
 | `builder` | Reviews builder's implementation |
-| `planner` | May verify implementation matches plan (Mode B architectural decisions) |
+| `planner-protocol` skill | Planning: Lead-invoked skill for Mode B architectural decisions (no separate agent) |
 | `scout` | May request context about codebase |
 
 ## Tension Tracking

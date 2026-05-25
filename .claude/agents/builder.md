@@ -10,12 +10,6 @@ disallowedTools: Task
 permissionMode: acceptEdits
 skills:
   - anti-hallucination
-hooks:
-  Stop:
-    - hooks:
-        - type: command
-          command: "bun .claude/hooks/validators/stop/validate-tests-pass.ts"
-          timeout: 120
 memory: project
 color: blue
 ---

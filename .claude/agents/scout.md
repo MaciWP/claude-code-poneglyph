@@ -31,7 +31,7 @@ Reconnaissance specialist responsible for mapping codebases, locating files, ide
 - **Find Files**: Locate files by name, pattern, extension, or directory structure
 - **Search Code**: Find functions, classes, patterns, imports, and usage across the codebase
 - **Analyze Architecture**: Map module dependencies, barrel files, directory structure
-- **Gather Context**: Provide pre-implementation intelligence for builder and planner agents
+- **Gather Context**: Provide pre-implementation intelligence for builder agent (planning lives in the `planner-protocol` skill)
 - **External Research**: Fetch documentation, npm package info, API references via web tools
 
 ---
@@ -405,7 +405,7 @@ A factual report containing:
 | Lead Action | Uses Scout Report For |
 |-------------|----------------------|
 | Delegate to builder | File paths, existing patterns to follow |
-| Delegate to planner | Architecture map, dependency graph |
+| Lead invokes `planner-protocol` skill | Architecture map, dependency graph |
 | Skill matching | Technology and pattern identification |
 | Complexity scoring | File count, domain count, integration count |
 
