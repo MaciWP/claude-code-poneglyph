@@ -3,35 +3,8 @@ name: diagnostic-patterns
 description: |
   Diagnostic, retry, and recovery patterns for debugging and resilience.
   Use when: production incident, error spike, timeout investigation, cascading failure, retry storm, circuit breaker tuning, rollback, saga orchestration.
-  Keywords - debug, diagnose, stacktrace, 5 whys, resilience, fallback, recovery
-type: knowledge-base
+  Keywords - debug, diagnose, stacktrace, 5 whys, resilience, fallback, recovery, error, investigate, trace, root cause, retry, timeout, backoff, circuit breaker, transient, rollback, compensation, saga, undo, restore, checkpoint, dead letter queue
 disable-model-invocation: false
-activation:
-  keywords:
-    - error
-    - debug
-    - diagnose
-    - investigate
-    - trace
-    - stacktrace
-    - root cause
-    - retry
-    - timeout
-    - backoff
-    - circuit breaker
-    - transient
-    - resilience
-    - fallback
-    - recovery
-    - rollback
-    - compensation
-    - saga
-    - undo
-    - restore
-    - checkpoint
-    - dead letter queue
-for_agents: [error-analyzer, builder]
-version: "2.0"
 ---
 
 # Diagnostic Patterns

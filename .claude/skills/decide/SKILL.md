@@ -4,21 +4,9 @@ description: |
   Decision Mode — makes strategic decisions using 3 agent perspectives (Pragmatist, Innovator, Critic) and generates a visual HTML memo.
   Use when: architectural decisions, tech stack choices, approach evaluation, strategic trade-offs.
   Keywords - decide, decision, choose, evaluate, compare, trade-off, pros-cons, architecture-decision
-type: knowledge-base
 disable-model-invocation: true
 argument-hint: "<question or brief>"
 effort: high
-activation:
-  keywords:
-    - decide
-    - decision
-    - choose
-    - evaluate
-    - compare
-    - trade-off
-    - pros-cons
-for_agents: [planner]
-version: "1.0"
 ---
 
 # Decision Mode

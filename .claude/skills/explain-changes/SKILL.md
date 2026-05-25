@@ -4,25 +4,9 @@ description: |
   Educational skill that explains code changes in depth — files, commits, branches, or working-tree pending edits — with verification against official documentation. Returns structured "professor-mode" reports with numbered points, logical chain of changes, and pre-anticipated Q&A.
   Use when: user asks to understand changes, learn from a diff/commit/PR, onboard onto unfamiliar code, audit recent edits, "explicame que hace este cambio", "ensename que cambio".
   Keywords - explain, explicar, learn, understand, walkthrough, diff, changes, what does this do, why this change, onboarding, code review educational, ensename
-type: workflow
 disable-model-invocation: false
 argument-hint: "[file | commit-hash | branch | --pending (default)]"
 effort: high
-activation:
-  keywords:
-    - explain changes
-    - explicame los cambios
-    - explicame que hace
-    - what does this change
-    - learn from this
-    - understand this PR
-    - explica este commit
-    - changes pending commit
-    - cambios pendientes
-    - onboarding
-    - walkthrough this code
-for_agents: [builder, scout, planner]
-version: "1.0"
 ---
 
 # explain-changes

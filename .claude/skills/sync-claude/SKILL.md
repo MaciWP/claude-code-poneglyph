@@ -4,19 +4,6 @@ description: |
   Syncs .claude/ from the poneglyph project to ~/.claude/ global via symlinks.
   Use proactively when: setting up new environment, sharing config globally.
   Keywords - sync, config, global, claude, settings, symlink, setup
-activation:
-  keywords:
-    - sync
-    - sincronizar
-    - global
-    - symlink
-    - setup
-    - configuracion
-    - compartir
-    - vincular
-for_agents: [builder, general-purpose]
-version: "2.0"
-type: encoded-preference
 disable-model-invocation: true
 ---
 

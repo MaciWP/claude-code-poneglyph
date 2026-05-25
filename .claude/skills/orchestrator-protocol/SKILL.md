@@ -7,9 +7,7 @@ description: |
   Use proactively when: starting a new session as Lead orchestrator.
   Invoke at session start; re-invoke after compaction or when protocol guidance is needed.
   Keywords - orchestrate, delegate, complexity, routing, agent, skill, checklist
-type: knowledge-base
 disable-model-invocation: false
-version: "2.1"
 effort: high
 ---
 

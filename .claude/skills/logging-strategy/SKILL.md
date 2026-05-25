@@ -4,20 +4,7 @@ description: |
   Structured logging patterns with context, log levels, and production observability.
   Use when: correlation ID setup, JSON log format, request tracing, log aggregation, observability setup, contextual logging.
   Keywords - log, logger, structured, correlation, trace id, observability
-type: knowledge-base
 disable-model-invocation: false
-activation:
-  keywords:
-    - log
-    - logging
-    - logger
-    - structured
-    - contextual logging
-    - correlation
-    - trace id
-    - log levels
-for_agents: [builder]
-version: "2.0"
 paths:
   - "**/logger*.{ts,js,py}"
   - "**/logging/**"

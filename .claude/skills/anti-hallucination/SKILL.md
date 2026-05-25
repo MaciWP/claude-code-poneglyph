@@ -4,22 +4,9 @@ description: |
   Validation patterns to prevent AI hallucinations about files, functions, and facts.
   Use when: before claiming file exists, verify function signature, check API endpoint, validate import path, confidence below threshold, suggesting code changes without reading first.
   Keywords - validate, verify, check, exists, hallucination, confidence, claim, assert, file exists, import path, function signature
-type: encoded-preference
 disable-model-invocation: false
 argument-hint: "[claim to validate]"
 effort: low
-activation:
-  keywords:
-    - validate
-    - verify
-    - check
-    - exists
-    - hallucination
-    - confidence
-    - claim
-    - assert
-for_agents: [builder, reviewer, error-analyzer, scout, planner]
-version: "1.0"
 ---
 
 # Anti-Hallucination Patterns

@@ -6,9 +6,7 @@ description: |
   scaled by complexity to avoid overhead on small tasks.
   Use proactively when: complexity ≥30, plan mode active, or user invokes /planner.
   Keywords - plan, roadmap, decompose, DAG, parallel waves, gap analysis, classification
-type: knowledge-base
 disable-model-invocation: false
-version: "1.1"
 effort: high
 ---
 

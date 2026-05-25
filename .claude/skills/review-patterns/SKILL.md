@@ -3,39 +3,9 @@ name: review-patterns
 description: |
   Code review patterns with two modes: quality (SOLID/DRY/smells/complexity/refactoring) and performance (bottlenecks, memory leaks, N+1, async).
   Use when: refactoring, technical debt, code review, SOLID violations, code smells, duplication, slow endpoint, memory issues, N+1 queries, profiling, bottlenecks, async patterns.
-  Keywords - code quality, SOLID, DRY, refactoring, complexity, performance, memory, N+1, bottleneck, leak, slow, latency
-type: knowledge-base
+  Keywords - code quality, SOLID, DRY, refactoring, complexity, performance, memory, N+1, bottleneck, leak, slow, latency, code smell, duplication, extract, simplify, decompose, clean code, maintainability, optimization, profiling
 disable-model-invocation: false
 argument-hint: "[file-path or module]"
-activation:
-  keywords:
-    - code quality
-    - SOLID
-    - DRY
-    - refactoring
-    - code smell
-    - complexity
-    - duplication
-    - extract
-    - simplify
-    - decompose
-    - clean code
-    - maintainability
-    - performance
-    - memory
-    - optimization
-    - bottleneck
-    - slow
-    - leak
-    - profiling
-    - n+1
-    - latency
-  paths:
-    - "**/*perf*"
-    - "**/benchmark*/**"
-    - "**/*.bench.*"
-for_agents: [reviewer, builder]
-version: "1.0"
 ---
 
 # Review Patterns

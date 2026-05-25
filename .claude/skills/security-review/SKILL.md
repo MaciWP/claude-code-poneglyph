@@ -4,23 +4,9 @@ description: |
   OWASP Top 10 security audit for auth, input handling, and vulnerability detection.
   Use when: CORS, rate limiting, input sanitization, secrets in code, token storage, OWASP compliance, pre-deployment check, auth review.
   Keywords - security, owasp, vulnerability, injection, xss, csrf, audit
-type: knowledge-base
 disable-model-invocation: false
 argument-hint: "[file-path or module]"
 effort: high
-activation:
-  keywords:
-    - security
-    - owasp
-    - vulnerability
-    - injection
-    - xss
-    - csrf
-    - audit
-    - secrets
-    - auth
-for_agents: [reviewer, builder]
-version: "2.0"
 paths:
   - "**/auth/**"
   - "**/api/**"

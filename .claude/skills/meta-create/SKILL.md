@@ -7,33 +7,9 @@ description: |
   builder agent only if the change touches ≥5 files or is architecturally complex.
   Use when: create agent, create skill, create hook, create rule, create MCP server, create plugin, scaffold extension.
   Keywords - create agent, new skill, add hook, create rule, MCP server, plugin, extension, meta, scaffold, new subagent, agent template, skill template, hook template
-type: workflow
 disable-model-invocation: false
 argument-hint: "[type] [name]"
 effort: medium
-activation:
-  keywords:
-    - create agent
-    - new agent
-    - scaffold agent
-    - create skill
-    - new skill
-    - add command
-    - scaffold skill
-    - create hook
-    - new hook
-    - add hook
-    - event handler
-    - create rule
-    - new rule
-    - add rule
-    - create mcp
-    - mcp server
-    - create plugin
-    - new plugin
-    - scaffold extension
-for_agents: [builder]
-version: "1.0"
 ---
 
 # Extension Create

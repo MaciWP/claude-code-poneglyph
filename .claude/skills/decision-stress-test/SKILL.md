@@ -4,26 +4,9 @@ description: |
   Stress-tests technical decisions before commitment via 5-12 perspectives in parallel (Outsider, Adversary, Simplifier, Maintainer, Linus, Cost Optimizer, Performance, Operator, Karpathy, Security, Product, User) with cross-debate rounds, plus 5 adversarial techniques (Steel-Man, Assumption Audit, Pre-Mortem, Inversion, Second-Order Effects), calibrated by stakes, with anti-hallucination verification on every finding.
   Use when: about to commit to architecture/library/framework choice, want to challenge a proposed solution, suspect agreement bias from Claude, need structured pros/cons before deciding.
   Keywords - stress-test, challenge this decision, devils-advocate, contrarian analysis, steel-man, pre-mortem, before-deciding, before-committing, antes-de-decidir, cuestiona esta decisión, stress-testea
-type: knowledge-base
 disable-model-invocation: false
 argument-hint: "<decision or proposal to stress-test>"
 effort: high
-activation:
-  keywords:
-    - stress-test
-    - stress test this
-    - challenge this decision
-    - devils-advocate
-    - contrarian analysis
-    - steel-man
-    - pre-mortem
-    - before-deciding
-    - before committing
-    - antes-de-decidir
-    - cuestiona esta decisión
-    - stress-testea
-for_agents: [planner, reviewer]
-version: "1.0"
 ---
 
 # Decision Stress-Test
