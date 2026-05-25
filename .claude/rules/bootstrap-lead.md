@@ -70,16 +70,21 @@ Applies when the change involves writing code. The `lead-enforcement.ts` gate op
 
 **Important change (allow-by-default)**: the Lead NO longer declares `Files: N + non-architectural` for each Edit. The only mandatory declarations are `sensitive: <reason>` when a sensitive path is touched. For everything else, the Lead decides when to delegate, guided by Trigger A/B and the parallelization metrics.
 
-### Trigger B — Delegate exploration (2×2 matrix)
+### Trigger B — Delegate exploration
 
 Applies when you need to understand the codebase before changing it.
+
+**Default exploration agent: `Explore`** (built-in, Haiku, fast & cheap, empirical score 83). Reach for the custom `scout` (Sonnet, score 60, ~5× cost) **only** when Explore's limits would actually hurt the task — Explore reads excerpts rather than whole files, misses content past its read window, and is not meant for open-ended analysis, design-doc auditing, or cross-file consistency checks.
 
 | Volume / Complexity | Action |
 |-----------------------|--------|
 | LOW + LOW (1-2 files, direct read) | Lead `Read` directly |
-| LOW + HIGH (1-2 files, requires LSP/semantics) | `scout` (Sonnet) |
-| HIGH + LOW (≥3 files, bulk read without reasoning) | `Explore` (Haiku) if available, otherwise `scout` |
-| HIGH + HIGH (≥3 files, requires synthesis) | `scout` (Sonnet) |
+| LOW + HIGH (1-2 files, requires LSP/semantics) | `Explore` (default); `scout` only if full-file synthesis is needed |
+| HIGH + LOW (≥3 files, bulk read without reasoning) | `Explore` — best fit |
+| HIGH + HIGH (≥3 files, cross-file synthesis / open-ended analysis) | `scout` (Sonnet) |
+| Design-doc audit, cross-file consistency check, full-file analysis past Explore's window | `scout` (Sonnet) |
+
+Both agents have WebSearch / WebFetch; that is **not** a discriminator. The discriminator is read window + synthesis depth.
 
 Full reference: `${CLAUDE_SKILL_DIR}/references/04-agent-selection.md` §Exploration Decision Matrix.
 

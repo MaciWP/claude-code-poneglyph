@@ -2,9 +2,11 @@
 name: scout
 model: claude-sonnet-4-6
 description: |
-  Read-only exploration agent. Finds files, searches code, and gathers context.
-  Use proactively when: exploring codebase, finding files, searching patterns, pre-implementation research.
-  Keywords - explore, find, search, locate, investigate, discover, scout, context, codebase
+  Heavy read-only exploration agent (Sonnet) — fallback for cases where the built-in `Explore` (Haiku) is not enough.
+  Default exploration in this project goes through `Explore`; pick `scout` only when its limits hurt the task.
+  Use when: HIGH+HIGH synthesis across multiple files, cross-file consistency checks, design-doc auditing, open-ended codebase analysis, reads that require full file content past Explore's read window.
+  Do NOT use for: simple file lookups, bulk reads without reasoning, targeted "where is X defined" — those go to `Explore`.
+  Keywords - deep dive, synthesize, multi-file, audit, open-ended, cross-file consistency, full-file read
 tools: Read, Grep, Glob, WebFetch, WebSearch
 disallowedTools: Task, Edit, Write
 permissionMode: default

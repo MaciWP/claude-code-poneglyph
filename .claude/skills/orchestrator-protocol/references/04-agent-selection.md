@@ -8,12 +8,14 @@ description: Signal→agent selection matrix, multi-agent patterns, anti-pattern
 
 ## Exploration Decision Matrix (Volume × Complexity)
 
-Before any delegation, decide HOW to explore the codebase. The choice depends on **volume** (how many files) and **complexity** (how difficult it is to understand what you see):
+Before any delegation, decide HOW to explore the codebase. **Default agent: `Explore`** (built-in, Haiku, fast & cheap, empirical score 83). `scout` (Sonnet, score 60, ~5× cost) is the fallback for cases Explore cannot serve well — cross-file synthesis, design-doc auditing, open-ended analysis, or reads that need full file content past Explore's read window.
 
 | | LOW complexity (direct read, no semantics) | HIGH complexity (relationships, LSP, architecture) |
 |---|---|---|
-| **LOW volume** (1-2 files) | Lead `Read` directly — no delegation | `scout` (Sonnet) — light semantic analysis |
-| **HIGH volume** (≥3 files) | `Explore` (Haiku) — cheap bulk read | `scout` (Sonnet) — exploration + LSP + synthesis |
+| **LOW volume** (1-2 files) | Lead `Read` directly — no delegation | `Explore` (default); `scout` only if full-file synthesis is needed |
+| **HIGH volume** (≥3 files) | `Explore` — best fit | `scout` (Sonnet) — cross-file synthesis / open-ended analysis |
+
+Plus: design-doc audits, cross-file consistency checks, and full-file reads past Explore's window always go to `scout`. WebSearch/WebFetch is **not** a discriminator (both agents have those tools).
 
 ### Derived rules
 
@@ -21,8 +23,8 @@ Before any delegation, decide HOW to explore the codebase. The choice depends on
 |-------|-------|
 | The Lead never reads >2 files inline | For >2 files, delegate (Trigger B context preservation). |
 | LOW Volume + LOW Complexity = direct Read | Cost of delegation > cost of direct Read. |
-| HIGH Complexity always goes to scout | Even for 1 file, if it requires LSP/analysis, scout (Sonnet) is the right choice. |
-| HIGH Volume + LOW Complexity = Haiku | If it is bulk read without deep reasoning, cheap model. |
+| Default exploration = `Explore` (Haiku) | Empirical score 83, ~5× cheaper than scout. |
+| `scout` only for HIGH+HIGH or Explore-limited cases | Open-ended analysis, cross-file synthesis, full-file reads past Explore's window. |
 | Parallel axis: "change difficulty" | If after exploring you must implement a difficult change, plan with `planner` (independent of the exploration axis). |
 
 ### Parallel axis — Change difficulty

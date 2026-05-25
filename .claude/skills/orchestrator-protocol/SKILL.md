@@ -49,7 +49,7 @@ For architectural/comparison decisions → `Skill('decide')` first. Scoring rubr
 **Delegation triggers** (apply after triage — independent, fire one, the other, or both):
 
 - **Trigger A — implementation**: ≥5 files OR architectural change → `builder`/`planner`. 1-4 files + bounded change → Lead direct. Sensitive paths (`.env`, `*.lock`, `package.json`, `.claude/settings.json`, `secrets/`, `credentials/`) require inline `sensitive: <reason ≥8 chars>`. Destructive ops (`rm -rf`, force push, schema change) are blocked by `lead-enforcement.ts` — delegate.
-- **Trigger B — exploration (2×2)**: LOW+LOW (1-2 files, direct read) → Lead `Read`. LOW+HIGH (semantic) → `scout`. HIGH+LOW (≥3 bulk files) → `Explore` (Haiku) or `scout`. HIGH+HIGH → `scout`. Full matrix: `references/04-agent-selection.md` §Exploration Decision Matrix.
+- **Trigger B — exploration**: default agent is `Explore` (Haiku, score 83). LOW+LOW (1-2 files, direct read) → Lead `Read`. LOW+HIGH / HIGH+LOW → `Explore`. HIGH+HIGH (cross-file synthesis, open-ended analysis) or design-doc audit / full-file reads past Explore's window → `scout` (Sonnet, score 60). Full matrix: `references/04-agent-selection.md` §Exploration Decision Matrix.
 
 ### Step 2: Complexity
 

@@ -221,4 +221,6 @@ git revert <hash>
 - Asignación de agents/skills → §3 puntero a `orchestrator-protocol` ✓
 - Escalado Quick→Standard→Full → §0 Escalation Rules ✓
 
-Commit hash: pendiente.
+**Commit hashes**: `5394026` (refactor planner-protocol + US-009 work + US-015 doc, mixto por concurrencia) y `d92ed80` (commit aclaratorio añadido por sesión paralela).
+
+**Nota de concurrencia**: durante la ejecución hubo una segunda sesión activa trabajando en US-009 (merge eval-skill into benchmark-skills). Cuando intenté hacer el commit limpio (`git add` solo de mis 2 archivos), el commit `5394026` resultó incluir TAMBIÉN los archivos de US-009 que estaban staged de la otra sesión. Detecté la mezcla, hice `git reset --soft HEAD~1` para corregir, pero entre tanto la sesión paralela hizo sus propios commits (incluyendo `d92ed80`) que absorbieron mi trabajo limpio. El estado final del repo es correcto (planner-protocol/SKILL.md a 108 líneas, US-009 también aplicada), aunque los commit messages no son ideales. Documentado aquí para auditoría.
