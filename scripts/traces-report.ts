@@ -89,12 +89,8 @@ function escapeHtml(str: string): string {
 const AGENT_COLORS: Record<string, string> = {
   builder: "#4f86c6",
   reviewer: "#6abf69",
-  planner: "#f4a261",
   scout: "#9b72cf",
-  architect: "#e76f51",
-  "error-analyzer": "#e63946",
   Explore: "#457b9d",
-  "extension-architect": "#2a9d8f",
 };
 
 function agentColor(name: string): string {

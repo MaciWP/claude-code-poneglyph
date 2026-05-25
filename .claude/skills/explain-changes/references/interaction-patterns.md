@@ -123,7 +123,7 @@ If the user asks to MODIFY code, DECIDE between alternatives, AUDIT quality, etc
 | "cambia esto" | builder agent |
 | "esta bien hecho?" | `review-patterns` skill |
 | "deberiamos usar A o B?" | `decide` skill |
-| "encuentra el bug" | `error-analyzer` agent |
-| "haz tests" | builder agent + `django-testing-patterns` skill |
+| "encuentra el bug" | `Skill('diagnostic-patterns')` (Lead-invoked) |
+| "haz tests" | builder agent |
 
 State the redirect briefly, then stop. Do not also try to do the redirected task.

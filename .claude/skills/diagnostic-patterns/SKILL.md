@@ -170,4 +170,4 @@ Covers: Error Analysis, Root Cause Analysis, Logging, Debugging Techniques, Post
 ---
 
 **Version**: 2.0
-**For**: error-analyzer, builder agents
+**For**: the Lead orchestrator (during error recovery) and the builder agent

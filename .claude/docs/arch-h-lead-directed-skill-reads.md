@@ -12,7 +12,7 @@ Claude Code offers three plausible mechanisms for getting skill content into a s
 |---|---|---|
 | **Frontmatter `skills:` pre-injection** | Agent definition declares a static list; full `SKILL.md` bodies are pre-loaded at spawn via `<command-message>` wrappers. | **All-or-nothing.** A project-scoped agent must declare its skill list statically; the list cannot vary per task. Every delegation pays the full token cost. |
 | **Lead `Skill()` invocation** | Loads skill content into the main orchestrator's working context. | **Does not propagate to subagents.** Subagents spawn in a fresh context. Anything the Lead loaded via `Skill()` stays with the Lead. |
-| **Subagent dynamic `Skill()`** | The subagent calls `Skill()` from inside its own turn. | **The `Skill` tool is not in the default subagent allowlist.** `builder`, `reviewer`, `scout`, `error-analyzer`, `planner` — none of them have `Skill` in `tools:`. The tool simply does not exist in their environment. |
+| **Subagent dynamic `Skill()`** | The subagent calls `Skill()` from inside its own turn. | **The `Skill` tool is not in the default subagent allowlist.** `builder`, `reviewer`, `scout` — none of them have `Skill` in `tools:`. The tool simply does not exist in their environment. |
 
 **The gap**: there is no documented way to give a default subagent **task-specific** skill content without either (a) creating per-project custom agents with bespoke frontmatter or (b) pre-declaring every skill the agent might ever need.
 

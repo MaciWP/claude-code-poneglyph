@@ -36,7 +36,7 @@ Every claim is grounded — in the codebase via Read/Grep/LSP, or in canonical d
 | User already understands the change and asks "fix it" | Builder agent |
 | User wants quality assessment of the change | `review-patterns` skill |
 | User wants to decide between approaches | `decide` skill |
-| Pure debugging of a runtime error | `error-analyzer` agent |
+| Pure debugging of a runtime error | `Skill('diagnostic-patterns')` invoked by the Lead |
 | User wants to MODIFY the code | Builder agent (this skill is read-only) |
 
 ## Input Resolution
