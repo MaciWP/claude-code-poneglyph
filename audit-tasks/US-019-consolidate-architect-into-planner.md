@@ -197,3 +197,13 @@ Trivial.
 - Si en Paso 1 se descubre que `architect` tiene tools/permissions completamente distintas (e.g. solo Read, no Edit), el merge puede romper la lógica de seguridad
 - En ese caso, considerar mantener architect pero **degradar a Sonnet** (de Opus) para reducir coste — alternativa intermedia
 - El smoke test del Paso 6 es crítico: si la calidad de Mode B (arch) es notablemente peor, evaluar si el prompt del planner necesita más detalle en la sección arquitectónica
+
+## Cierre
+
+- **Commit**: `80ce75d`
+- **Fecha**: 2026-05-25
+- **Tests**: 139 pass, 0 fail (`bun test ./.claude/hooks/`)
+- **Archivos tocados**: 25 (planner.md ampliado con Mode A/B; architect.md eliminado; refs actualizadas en agents/ skills/ workflows/ config/ docs/ CLAUDE.md)
+- **Diferencias de tools** observadas: architect tenía `Task` y `LSP` que planner no — ambos perdidos. La pérdida de `Task` es deseada (no delegate-to-delegate). La pérdida de `LSP` sólo afecta a Mode B; aceptable porque Mode B no navega código tan finamente como un builder.
+- **Tiered Mode**: actualizado para que el planner emita los contratos en una sección Mode B inline, sin agent intermedio.
+- **Residuales conocidos**: las menciones `extension-architect` quedaron intactas (otro agent distinto).
