@@ -196,3 +196,26 @@ Sin riesgo de pérdida — todo está en git history.
   - Llevar esa lógica al agent `extension-architect`
   - O mantener esa skill específica si la lógica es ortogonal al agent
 - Por ejemplo, `meta-create-plugin` puede tener lógica de bundling que no es trivial — verificar si justifica mantenerse separada
+
+---
+
+## Execution closure — REVISION (2026-05-25)
+
+**Primera ejecución** (commit `7566547`): el material se absorbió en el agent `extension-architect`. El usuario cuestionó la decisión: los agents no auto-activan, mientras que la mayoría de invocaciones de "crear skill X" deberían ejecutarse en sesión principal sin delegación.
+
+**Segunda ejecución** (este commit): el agent fue retirado y el material se reubicó en una skill auto-activable `meta-create`:
+
+- `.claude/agents/meta/extension-architect.md` → ELIMINADO
+- `.claude/agents/meta/extension-architect/{templates,references}/` → `.claude/skills/meta-create/{templates,references}/`
+- Frontmatter `parent: meta-create-X` → `parent: meta-create` (38 archivos)
+- Slash-command examples `/meta-create-X` → `/meta-create X` (varios ejemplos en references)
+- `.claude/agents/meta/` eliminado (carpeta vacía)
+- Skill SKILL.md (~150 líneas) con keywords amplias que cubren los 6 tipos de extensión y delega al builder solo cuando aplica Trigger A (≥5 archivos o complejidad arquitectónica)
+
+**Por qué esta revisión es mejor**:
+1. La skill auto-activa al detectar "create agent / new skill / add hook / ..." — el usuario no tiene que invocar a un agent manualmente
+2. Coherente con best practices oficiales (Boris Cherny / Anthropic engineers): pocos agents, muchas skills on-demand
+3. La mayoría de invocaciones son ≤4 archivos → el Lead ejecuta directamente (default-allow gate). Solo si toca ≥5 archivos delega al builder
+4. Patrón consistente con la consolidación US-011 (skills con modos vs múltiples skills paralelas)
+
+US-020 (absorb-meta-into-extension-architect) queda igualmente completada por esta revisión — el material está absorbido, solo cambia el contenedor (skill vs agent).

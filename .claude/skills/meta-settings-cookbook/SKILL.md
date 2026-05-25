@@ -18,7 +18,7 @@ activation:
     - project setup
     - statusline
     - ccstatusline
-for_agents: [extension-architect]
+for_agents: [builder]
 version: "1.2"
 ---
 
@@ -56,4 +56,4 @@ Quick-reference templates for Claude Code configurations.
 
 ## Related
 
-- `extension-architect`: Meta-agent that handles creation of hooks, rules, MCP configs, plugins, agents and skills (templates + references under `.claude/agents/meta/extension-architect/`)
+- `meta-create` skill: auto-activable skill that creates hooks, rules, MCP configs, plugins, agents and skills (templates + references under `.claude/skills/meta-create/`)

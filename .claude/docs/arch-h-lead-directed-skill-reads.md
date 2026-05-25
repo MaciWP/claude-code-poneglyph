@@ -151,7 +151,7 @@ The canonical realization of the pointer table is the **Content Map** — a 3-co
 
 This aligns with Anthropic's official skills guidance: *"Reference supporting files from SKILL.md so Claude knows what each file contains and when to load it."* — [code.claude.com/docs/en/skills](https://code.claude.com/docs/en/skills). The Contents column is the "when to load it" half of that instruction.
 
-Canonical reference: `.claude/rules/context-management.md` — "Content Map pattern (canonical for skills with subdirectories)". Canonical templates: `.claude/agents/meta/extension-architect/templates/skill/` (the 3 skill templates moved here after US-012 absorbed meta-create-* into the extension-architect agent).
+Canonical reference: `.claude/rules/context-management.md` — "Content Map pattern (canonical for skills with subdirectories)". Canonical templates: `.claude/skills/meta-create/templates/skill/` (the skill templates live here after US-012+US-020 consolidated the 6 meta-create-* skills into a single auto-activable `meta-create` skill).
 
 ### Limitations — lazy pointer-following
 
