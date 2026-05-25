@@ -17,7 +17,7 @@ activation:
 for_agents: [builder, general-purpose]
 version: "2.0"
 type: encoded-preference
-disable-model-invocation: false
+disable-model-invocation: true
 ---
 
 # Sync Claude Config
@@ -124,7 +124,6 @@ bun .claude/skills/sync-claude/scripts/sync-claude.ts --unlink
 | `rules/` | Behavior rules |
 | `docs/` | Technical documentation |
 | `hooks/` | Automations |
-| `workflows/` | Multi-agent pipelines |
 | `knowledge/` | Knowledge base |
 | `output-styles/` | Output style modes (e.g. Poneglyph) |
 | `CLAUDE.md` | Global instructions |
