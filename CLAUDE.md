@@ -108,14 +108,14 @@ This session acts as a **pure orchestrator**. It does not execute code directly.
 
 | Tool | Use |
 |------|-----|
-| `Agent` | Delegate to specialized subagents (builder, reviewer, planner, error-analyzer, scout). Extension creation lives in the auto-activable `meta-create` skill, not in a dedicated agent. |
+| `Agent` | Delegate to specialized subagents (builder, reviewer, scout). Planning lives in the `planner-protocol` skill (Lead-invoked); error diagnosis lives in the `diagnostic-patterns` skill (Lead-invoked); extension creation lives in the `meta-create` skill. |
 | `Skill` | Load skill context **into the Lead's own session only** (domain patterns, prompt refinement). NOT a delegation mechanism — to give skills to a subagent, include `Read .claude/skills/<name>/SKILL.md` in the delegation prompt (Arch H) |
 | `AskUserQuestion` | Clarify requirements or validate a doubtful prompt |
 | `TaskCreate/TaskList/TaskUpdate` | Manage the in-conversation task list |
 
 Prohibited for the Lead: `Read`, `Edit`, `Write`, `Bash`, `Glob`, `Grep`, `WebFetch`, `WebSearch` — delegate them. Exceptions:
 **Read** any path — always allowed for orientation (no delegation needed).
-**Write/Edit/Bash** — see the Default-allow gate below; the Lead may act directly when the operation is not on a sensitive path and is not a destructive command. For ≥5 files OR architectural changes the Lead delegates to `builder` (or `planner` if complexity >60), guided by Trigger A/B in `bootstrap-lead.md`.
+**Write/Edit/Bash** — see the Default-allow gate below; the Lead may act directly when the operation is not on a sensitive path and is not a destructive command. For ≥5 files OR architectural changes the Lead delegates to `builder` (preceded by `Skill('planner-protocol')` if complexity >60), guided by Trigger A/B in `bootstrap-lead.md`.
 
 ### Default-allow gate
 
@@ -129,7 +129,7 @@ The `lead-enforcement.ts` hook operates in **default-allow** mode (replaces the 
 - Read-only git Bash (`status`, `log`, `diff`, `show`, `branch`, …) always allowed.
 
 When to delegate (not enforced by the gate, guided by `bootstrap-lead.md` Trigger A/B):
-- ≥5 files OR architectural change → `builder` or `planner`.
+- ≥5 files OR architectural change → `builder` (with `Skill('planner-protocol')` first if complexity >60).
 - 1-4 files, bounded change → Lead acts directly (no declaration needed).
 - Bulk exploration (≥3 files to read) → `Explore` (Haiku) or `scout` (Sonnet) by volume × complexity matrix.
 
@@ -142,15 +142,15 @@ graph TD
     AQ --> S
     S -->|clear| C[Calculate complexity]
     C -->|< 30| SK[Pick relevant skills via path hints / keywords]
-    C -->|30-60| P1[planner optional]
-    C -->|> 60| P2[planner mandatory]
+    C -->|30-60| P1[Skill planner-protocol optional]
+    C -->|> 60| P2[Skill planner-protocol mandatory]
     P1 & P2 --> SK
     SK --> B[builder with Read SKILL.md instructions in prompt]
     B --> R[reviewer checkpoint]
     R -->|APPROVED| D[Done]
     R -->|NEEDS_CHANGES| B
-    B -->|Error| EA[error-analyzer]
-    EA --> B
+    B -->|Error| DG[Lead diagnoses with Skill diagnostic-patterns]
+    DG --> B
 ```
 
 **Arch H — Lead-Directed Skill Reads**: before delegating, the Lead picks up to 3 relevant skills (via `prompt-enrichment.ts` path-based hints, manual keyword matching against `.claude/rules/paths/*.md`, or the project's `skill-matching.md` rule for project skills) and embeds `Read .claude/skills/<name>/SKILL.md` instructions in the delegation prompt's `[RELEVANT SKILLS FOR THIS TASK]` block. The subagent then Reads those files as its first actions. Default subagents cannot invoke `Skill()` — this is the canonical way to give them task-specific skill context. Both global and project skills use this same Read mechanism.
@@ -194,7 +194,7 @@ Error recovery policy (still a rule): `@.claude/rules/error-recovery.md`
 
 ### Post-implementation verification (MANDATORY)
 
-Builder verifies automatically via the `validate-tests-pass.ts` Stop hook. The Lead reviews the builder report. If tests fail → delegate to `error-analyzer` → re-delegate to builder. **Never report "completed" without tests passing.** (Commandment IV.)
+Builder verifies automatically via the `validate-tests-pass.ts` Stop hook. The Lead reviews the builder report. If tests fail → Lead invokes `Skill('diagnostic-patterns')` for the diagnosis → re-delegate to builder (via SendMessage when context is preserved). **Never report "completed" without tests passing.** (Commandment IV.)
 
 ---
 
@@ -217,13 +217,13 @@ Guideline: if asking "does the agent need this in EVERY prompt?", and the answer
 
 Actualizado tras la auditoría poneglyph (May 2026). Cualquier nuevo componente debe justificarse contra los 10 Commandments y los anti-patterns oficiales 2026.
 
-| Componente | Antes | Ahora | Detalle |
+| Componente | Antes (audit baseline) | Ahora | Detalle |
 |---|---|---|---|
-| Agents | 7 + 1 meta | **5** | builder, reviewer, planner, error-analyzer, scout (no meta-agent — la skill `meta-create` lo reemplaza) |
-| Skills | 28 | **21** | Incluye `meta-create` (consolida 6× meta-create-* viejas) y `review-patterns` (consolida code-quality + performance-review) |
+| Agents | 7 + 1 meta | **3** | builder, reviewer, scout. Planning y diagnóstico viven en skills (`planner-protocol`, `diagnostic-patterns`) invocadas por el Lead — sin agents dedicados. Meta-create también es skill. |
+| Skills | 28 | **14** | Cortadas las skills genéricas (typescript/bun/testing/logging/db/careful/freeze) cuyo dominio ya conoce el LLM; consolidaciones (review-patterns, meta-create) preservadas |
 | Hooks registrados | 15+ | **12** | Pipeline trace/scoring/patterns eliminado; gates de seguridad preservados |
-| Slash commands | 10 | **7** | Wrappers triviales preservados (US-008 RECHAZADA: aportan activación explícita) |
-| Rules | 7 | **2 + paths/** | `bootstrap-lead.md` (unifica con plan-mode), `error-recovery.md` + `paths/{hooks,orchestration}.md`. `performance.md` y `formatting.md` migradas |
+| Slash commands | 10 | **6** | Wrappers triviales preservados (US-008 RECHAZADA: aportan activación explícita); sync-claude duplicado eliminado |
+| Rules | 7 | **2 + paths/** | `bootstrap-lead.md`, `error-recovery.md` (rewritten Lead-driven) + `paths/{hooks,orchestration}.md` |
 | Output-styles | 1 (caveman) | **1 (poneglyph)** | Caveman fusionado con la guía de formato en un único output-style |
 
-Detalle completo de cortes, fusiones y rechazos: `audit-tasks/` (cada US tiene su Execution closure) y `~/.claude/projects/D--PYTHON-claude-code-poneglyph/memory/project_audit_outcome_2026-05-25.md`.
+Detalle completo: `~/.claude/projects/D--PYTHON-claude-code-poneglyph/memory/project_audit_outcome_2026-05-25.md` + `project_cleanup_2026-05-25b.md`.
