@@ -1,7 +1,7 @@
 ---
 id: US-017
 phase: 2.4
-status: pending
+status: completed
 estimate: 25m
 blocks: []
 blockedBy: []

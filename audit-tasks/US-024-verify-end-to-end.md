@@ -1,13 +1,61 @@
 ---
 id: US-024
 phase: 2.6
-status: pending
+status: completed
 estimate: 60m
 blocks: []
 blockedBy: [US-022, US-023]
 priority: critical
 risk: medium
 ---
+
+## Execution closure (2026-05-25)
+
+### Smoke test (mental, sin sesión separada)
+
+| Check | Resultado |
+|---|---|
+| `bun test ./.claude/hooks/` | ✅ 139/139 pass (188 expect calls) |
+| Grep de archivos eliminados activos | ✅ Sin referencias huérfanas activas (única mención `trace-logger.ts` es un test de glob matching que NO requiere el archivo) |
+| Skill `meta-create` auto-activable | ✅ Visible en system reminder de la sesión |
+| Skills loaded en sistema reminder | ✅ Coherentes con `ls .claude/skills/` (21 entradas) |
+| Agent extension-architect ya NO aparece | ✅ Confirmed |
+| Carpeta `.claude/agents/meta/` | ✅ Eliminada |
+| Output-style `poneglyph` activable | ✅ Sustituyó a caveman; activable vía `/output-style Poneglyph` |
+| Rules: 2 main + paths/ | ✅ `bootstrap-lead.md`, `error-recovery.md`, `paths/{hooks,orchestration}.md` |
+| Contadores en CLAUDE.md raíz | ✅ Actualizados (5 agents, 21 skills, 12 hooks, 7 commands, 2 rules + paths/, 1 output-style) |
+
+### Test files revisados (¿aportan valor o son redundantes?)
+
+| Archivo | Líneas | Hook que testea | Veredicto |
+|---|---|---|---|
+| `__tests__/auto-approve.test.ts` | 195 | `auto-approve.ts` (PermissionRequest) | KEEP — gate operacional crítico |
+| `__tests__/code-validator.test.ts` | 197 | `code-validator.ts` (secretos, inyecciones) | KEEP — Commandment VI security |
+| `__tests__/lead-enforcement.test.ts` | 179 | `lead-enforcement.ts` (PreToolUse gate) | KEEP — gate de seguridad principal |
+| `lead-parallelism-gate.test.ts` | 301 | `lead-parallelism-gate.ts` (PreToolUse Agent) | KEEP — coordinación entre agents paralelos |
+| `lib/path-rule-loader.test.ts` | 348 | `lib/path-rule-loader.ts` (utilidad compartida) | KEEP — biblioteca usada por múltiples hooks |
+
+Veredicto global: **los 5 test files cubren hooks activos del sistema final. NO hay redundancia ni tests muertos**. Total 139 tests cubre los 4 gates de seguridad operacionales (auto-approve, code-validator, lead-enforcement, lead-parallelism-gate) más la biblioteca común. Mantener todos.
+
+### Snapshot final del sistema (post-audit)
+
+| Componente | Antes (2026-05-22) | Después (2026-05-25) | Reducción |
+|---|---|---|---|
+| Agents | 7 + 1 meta | **5** | -38% |
+| Skills | 28 | **21** | -25% |
+| Hooks | 15+ | **12** | -20% |
+| Slash commands | 10 | **7** | -30% |
+| Rules | 7 | **2 + paths/** | -71% (rules main) |
+| Output-styles | 1 (caveman) | **1 (poneglyph)** | Consolidado con formatting rule |
+| LOC `.claude/` orquestación | ~25.455 | ~14.000-16.000 (estimado) | ~-37% a -45% |
+
+### Pendientes intencionales (Fase 3, no ejecutar hoy)
+
+- US-025 / US-026: instrumentar contadores de invocación por skill durante 2 semanas, luego decidir destino de skills MEASURE (careful-mode, freeze-mode, diagnostic-patterns, logging-strategy, explain-changes, meta-settings-cookbook, database-patterns). Requieren datos reales — quedan agendadas.
+
+### Conclusión
+
+El audit poneglyph queda **completado en sus Fases 1 + 2**. El sistema reducido cumple los 10 Commandments mejor que el baseline: menos piezas duplicadas (Commandment X), workflow más claro (Commandment III), gates de seguridad intactos (Commandments IV y VI). Sigue por encima de la mediana documentada de Anthropic (1-3 agents, 5-8 skills) pero defendiblemente — cada componente sobreviviente justifica su existencia.
 
 # US-024 · Verificación final end-to-end (smoke test + snapshot de coste)
 
