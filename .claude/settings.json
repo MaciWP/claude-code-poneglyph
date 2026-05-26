@@ -36,16 +36,6 @@
     "defaultMode": "auto"
   },
   "hooks": {
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bun $HOME/.claude/hooks/prompt-enrichment.ts"
-          }
-        ]
-      }
-    ],
     "PostToolUse": [
       {
         "matcher": "Edit|Write",
@@ -118,7 +108,8 @@
   },
   "enabledPlugins": {
     "typescript-lsp@claude-plugins-official": false,
-    "frontend-design@claude-plugins-official": true
+    "frontend-design@claude-plugins-official": true,
+    "context7@claude-plugins-official": true
   },
   "language": "spanish",
   "sandbox": {
@@ -138,6 +129,7 @@
       "Optimizando"
     ]
   },
+  "advisorModel": "opus",
   "skipDangerousModePermissionPrompt": true,
   "autoCompactEnabled": true,
   "skipAutoPermissionPrompt": true,
@@ -149,6 +141,5 @@
       "Bash(rm .claude)",
       "Bash(rm -rf .claude)"
     ]
-  },
-  "advisorModel": "opus"
+  }
 }
