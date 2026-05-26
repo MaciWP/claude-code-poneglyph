@@ -77,6 +77,8 @@ nul
 # Generated reports
 *.html
 poneglyph-analysis.md
+# Exception: usage dashboard template (source, not generated)
+!.claude/scripts/dashboard-template.html
 
 # Specs (design documents, not part of distributed config)
 .specs/

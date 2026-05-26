@@ -1,3 +1,9 @@
+## 2026-05-26 — Session telemetry-dashboard
+- Claude Code trace JSONL events are cumulative snapshots: `tokens`, `inputTokens`, `outputTokens`, `durationMs`, `toolCalls`, `filesChanged` all increase monotonically within a session. `costUsd` is NOT monotonic — it is recalculated per event as `totalTokens * currentModelPrice`, so it resets when the model switches mid-session. Aggregate by computing incremental costs between consecutive events sorted by `ts`.
+- For a (date, sessionId) group: use the last event for cumulative scalars (durationMs, toolCalls, filesChanged) and sum incremental costs per model. Dates come from `ts` field, not filename — sessions can span days.
+- When building a dashboard with Chart.js via CDN + inline embedded JSON data, the `__DATA__` placeholder replacement pattern works cleanly with `template.replace("__DATA__", jsonData)`. Ensure no JSON special chars in the HTML outside the script tag.
+- `bun build <file> --target bun --outfile /dev/null` is the fastest typecheck for standalone `.ts` scripts — reports type errors and bundles in <10ms.
+
 ## 2026-04-29 — Session fix-batch-7-fixes
 - Always verify test file names with Grep/Glob before assuming — naming conventions vary (`__tests__/` vs sibling `*.test.ts`). Never assume a test file exists because a hook exists.
 - `bun test <absolute-path>` fails silently if the path does not match the cwd bun pattern — bun test works relative to `--cwd`; use specific file paths that exist, not invented directory paths.
