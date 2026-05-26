@@ -33,7 +33,6 @@ Critical pitfalls when creating hooks. Read these BEFORE writing any hook.
 ├── {hook-name}.test.ts         # Tests for the hook
 ├── lib/                        # Shared utilities
 │   ├── hook-stdin.ts           # stdin parsing
-│   ├── path-rule-loader.ts     # path-based skill hints
 │   └── yaml-frontmatter.ts     # YAML frontmatter parser
 └── validators/                 # Grouped validators
     ├── config.ts               # Shared config (exit codes, readStdin)

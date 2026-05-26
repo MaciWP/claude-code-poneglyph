@@ -1,8 +1,14 @@
 #!/usr/bin/env bun
+/**
+ * UserPromptSubmit hook — minimal version.
+ * Only emits a sessionTitle on the first turn for UI/transcript organization.
+ * Does NOT inject context to the LLM (decision 2026-05-26: skill hints removed
+ * because Claude already has skill descriptions in system prompt; injecting per
+ * prompt costs ~4,500 tokens/sesión with no behavioral upside).
+ */
 
 import { existsSync, readFileSync } from "node:fs";
 import { readHookStdin } from "./lib/hook-stdin";
-import { getSkillReadPaths, type SkillReadPath } from "./lib/path-rule-loader";
 
 interface HookInput {
   hook_event_name: string;
@@ -15,7 +21,6 @@ interface HookInput {
 interface HookOutput {
   hookSpecificOutput: {
     hookEventName: string;
-    additionalContext: string;
     sessionTitle?: string;
   };
 }
@@ -43,69 +48,6 @@ export function isFirstTurn(transcriptPath: string | undefined): boolean {
   }
 }
 
-const PATH_REGEX =
-  /(?:[\w./\\-]+\.(?:ts|tsx|js|jsx|py|go|rs|java|rb|php|swift|kt|c|cpp|cs|md|json|yaml|yml|toml|cfg|ini))/g;
-
-function extractPathSkills(prompt: string): SkillReadPath[] {
-  try {
-    const matches = prompt.match(PATH_REGEX);
-    if (!matches) return [];
-
-    const seen = new Set<string>();
-    const result: SkillReadPath[] = [];
-
-    for (const filePath of matches) {
-      const readPaths = getSkillReadPaths(filePath);
-      for (const entry of readPaths) {
-        if (!seen.has(entry.name)) {
-          seen.add(entry.name);
-          result.push(entry);
-        }
-      }
-    }
-
-    return result;
-  } catch {
-    return [];
-  }
-}
-
-async function emitOutput(
-  context: string,
-  prompt: string,
-  sessionTitle?: string,
-): Promise<void> {
-  let enrichedContext = context;
-
-  try {
-    const pathSkills = extractPathSkills(prompt);
-    if (pathSkills.length > 0) {
-      const lines = pathSkills.map(
-        (s) =>
-          `- \`Read ${s.readPath}\` — matched path glob in ${s.matchedGlob}`,
-      );
-      enrichedContext +=
-        `\n\n## Path-Based Skills (for delegation)\n\n` +
-        `Based on files in your prompt, these skills likely apply. When delegating to a subagent, include a \`Read\` instruction for each:\n\n` +
-        lines.join("\n");
-    }
-  } catch {
-    // best-effort — never break prompt-enrichment
-  }
-
-  const hasContext = enrichedContext && enrichedContext.trim().length > 0;
-  if (!hasContext && !sessionTitle) return;
-
-  const hookSpecificOutput: HookOutput["hookSpecificOutput"] = {
-    hookEventName: "UserPromptSubmit",
-    additionalContext: hasContext ? enrichedContext : "",
-  };
-  if (sessionTitle) hookSpecificOutput.sessionTitle = sessionTitle;
-
-  const output: HookOutput = { hookSpecificOutput };
-  console.log(JSON.stringify(output));
-}
-
 async function main(): Promise<void> {
   let input: HookInput;
   try {
@@ -114,14 +56,23 @@ async function main(): Promise<void> {
   } catch {
     process.exit(0);
   }
+
   const { prompt, transcript_path } = input;
   if (!prompt || prompt.trim().length < 5) {
     process.exit(0);
   }
-  const sessionTitle = isFirstTurn(transcript_path)
-    ? buildSessionTitle(prompt)
-    : undefined;
-  await emitOutput("", prompt, sessionTitle);
+
+  if (!isFirstTurn(transcript_path)) {
+    process.exit(0);
+  }
+
+  const output: HookOutput = {
+    hookSpecificOutput: {
+      hookEventName: "UserPromptSubmit",
+      sessionTitle: buildSessionTitle(prompt),
+    },
+  };
+  console.log(JSON.stringify(output));
 }
 
 if (import.meta.main) {
