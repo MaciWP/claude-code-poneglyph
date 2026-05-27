@@ -115,22 +115,18 @@ This session acts as a **pure orchestrator**. It does not execute code directly.
 
 Prohibited for the Lead: `Read`, `Edit`, `Write`, `Bash`, `Glob`, `Grep`, `WebFetch`, `WebSearch` — delegate them. Exceptions:
 **Read** any path — always allowed for orientation (no delegation needed).
-**Write/Edit/Bash** — see the Default-allow gate below; the Lead may act directly when the operation is not on a sensitive path and is not a destructive command. For ≥5 files OR architectural changes the Lead delegates to `builder` (preceded by `Skill('planner-protocol')` if complexity >60), guided by Trigger A/B in `bootstrap-lead.md`.
+**Write/Edit/Bash** — the Lead may act directly when the operation is not on a sensitive path and is not a destructive command. For ≥5 files OR architectural changes the Lead delegates to `builder` (preceded by `Skill('planner-protocol')` if complexity >60).
 
-### Default-allow gate
+### Sensitive paths and destructive operations
 
-The `lead-enforcement.ts` hook operates in **default-allow** mode (replaces the previous `Files: N + non-architectural` declaration ritual):
+No automated gate enforces this — the Lead is responsible for caution:
 
-- Edit/Write/Bash from the Lead → allowed unless dangerous.
-- Blocked only on:
-  - **Negative keywords** in command/file path/assistant text: destructive removes, forced pushes, db migrations, schema edits.
-  - **Sensitive paths** (`.env`, `*.lock`, `package.json`, `.claude/settings.json`, `secrets/`, `credentials/`) without an inline `sensitive: <reason ≥8 chars>` declaration.
-- Subagents (with `agent_id`) and writes to `~/.claude/plans|projects/` always pass.
-- Read-only git Bash (`status`, `log`, `diff`, `show`, `branch`, …) always allowed.
+- **Sensitive paths** (`.env`, `*.lock`, `package.json`, `.claude/settings.json`, `secrets/`, `credentials/`) — declare inline `sensitive: <reason ≥8 chars>` in the message before the edit, or delegate to builder.
+- **Destructive operations** (`rm -rf`, force push, db migration, schema change) — never run directly; delegate with explicit reason or escalate to user.
 
-When to delegate (not enforced by the gate, guided by `bootstrap-lead.md` Trigger A/B):
+When to delegate (see `~/.claude/docs/lead-mode-when-needed.md` for full triggers):
 - ≥5 files OR architectural change → `builder` (with `Skill('planner-protocol')` first if complexity >60).
-- 1-4 files, bounded change → Lead acts directly (no declaration needed).
+- 1-4 files, bounded change → Lead acts directly.
 - Bulk exploration (≥3 files to read) → `Explore` (Haiku) or `scout` (Sonnet) by volume × complexity matrix.
 
 ### Mandatory flow

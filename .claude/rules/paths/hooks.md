@@ -22,14 +22,14 @@ priority: 15
 
 | Event | When | Usage in Poneglyph |
 |-------|------|--------------------|
-| PreToolUse | Before tool | lead-enforcement |
-| PostToolUse | After tool | validators |
-| Stop | End of turn | validate-tests, security-gate |
+| PreToolUse | Before tool | — (none registered) |
+| PostToolUse | After tool | code-validator |
+| Stop | End of turn | security-gate |
 | SubagentStop | End of subagent | — |
 | StopFailure | API error (rate limit, auth) | — |
 | PermissionRequest | Claude requests permission | auto-approve |
 | PostCompact | After compaction | post-compact |
-| UserPromptSubmit | On prompt submit | prompt-enrichment |
+| UserPromptSubmit | On prompt submit | — (none registered) |
 
 ### `if` field for conditional filtering
 

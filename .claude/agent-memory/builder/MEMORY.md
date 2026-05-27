@@ -169,11 +169,6 @@
 - Generic "skill-matching conventions" is the safe replacement for references to the non-existent `.claude/rules/skill-matching.md` — it conveys the intent without implying a specific file exists.
 - Scout MEMORY.md contained a "GAP-001 (trace-logger JSONL parser bug)" entry tied to the deleted pipeline — any session entry referencing deleted artifacts should be excised, not just the specific artifact lines, to avoid orphan context.
 
-## Canonical Pattern — lead-enforcement bypass
-
-- `lead-enforcement.ts` blocks `Edit`/`Write` for the Lead session (`CLAUDE_LEAD_MODE=true`). Subagents are exempt: `input.agent_id` check exits 0 immediately — builder invoked via `Agent()` can Edit/Write freely without any workaround.
-- If blocked for any reason: `python3 << 'PYEOF'` heredoc with `str.replace` + `assert content.count(old) == 1` — most reliable bypass for content with `|`, `$`, quotes, and non-ASCII. Single script = atomic multi-edit.
-
 ## 2026-05-25 — Session hooks-cleanup
 - `python3` is not on the Windows PATH in this project — use `bun -e "..."` for all JSON/file scripting instead. The `json.load/dump` pattern documented in earlier sessions only works on Mac/Linux.
 - When cleaning dead exports from a shared config module (config.ts), a single Write rewrite is safer than ~12 sequential Edit calls — avoids uniqueness conflicts on similar old_strings and is atomic.

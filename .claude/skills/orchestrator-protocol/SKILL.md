@@ -46,7 +46,7 @@ For architectural/comparison decisions → `Skill('decide')` first. Scoring rubr
 
 **Delegation triggers** (apply after triage — independent, fire one, the other, or both):
 
-- **Trigger A — implementation**: ≥5 files OR architectural change → `builder`/`planner`. 1-4 files + bounded change → Lead direct. Sensitive paths (`.env`, `*.lock`, `package.json`, `.claude/settings.json`, `secrets/`, `credentials/`) require inline `sensitive: <reason ≥8 chars>`. Destructive ops (`rm -rf`, force push, schema change) are blocked by `lead-enforcement.ts` — delegate.
+- **Trigger A — implementation**: ≥5 files OR architectural change → `builder`/`planner`. 1-4 files + bounded change → Lead direct. Sensitive paths (`.env`, `*.lock`, `package.json`, `.claude/settings.json`, `secrets/`, `credentials/`) require inline `sensitive: <reason ≥8 chars>`. Destructive ops (`rm -rf`, force push, schema change) — never run directly; delegate with explicit reason.
 - **Trigger B — exploration**: default agent is `Explore` (Haiku, score 83). LOW+LOW (1-2 files, direct read) → Lead `Read`. LOW+HIGH / HIGH+LOW → `Explore`. HIGH+HIGH (cross-file synthesis, open-ended analysis) or design-doc audit / full-file reads past Explore's window → `scout` (Sonnet, score 60). Full matrix: `references/04-agent-selection.md` §Exploration Decision Matrix.
 
 ### Step 2: Complexity
@@ -83,7 +83,7 @@ Full Arch H template with all blocks, propagation model, skill discovery: `refer
 | `Skill('diagnostic-patterns')` | Diagnose builder failures — Lead invokes the skill, no dedicated agent |
 | `Skill()` | Load context into the Lead's OWN session only |
 
-Direct action is governed by `lead-enforcement.ts` (default-allow). Read is always permitted. Edit/Write/Bash pass unless on a sensitive path without `sensitive: <reason>` or matching a destructive pattern. Read-only git (`status`, `log`, `diff`, `show`, `branch`) is always allowed.
+Direct action: Read always permitted. For Edit/Write/Bash on sensitive paths (`.env`, `*.lock`, `package.json`, `.claude/settings.json`, `secrets/`, `credentials/`) declare inline `sensitive: <reason ≥8 chars>` or delegate to builder. Destructive patterns (`rm -rf`, force-push, schema changes) — delegate with explicit reason. No automated gate enforces this; the Lead is responsible.
 
 **Parallelize**: when ≥2 Agents have no output→input dependency AND disjoint files AND no shared state, send them in the SAME assistant message. Do NOT parallelize: builder consuming a previously-produced plan, two `Edit`s on the same file, checkpoint review after writing. 6 multi-agent patterns + 7 anti-patterns: `references/04-agent-selection.md`.
 

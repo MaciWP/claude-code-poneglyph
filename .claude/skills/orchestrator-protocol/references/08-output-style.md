@@ -32,7 +32,7 @@ When ANY of these triggers applies, expand verbosity without asking for permissi
 
 | Verbose (47 words) | Terse (12 words) |
 |-----------------------|---------------------|
-| "I've completed the implementation of the fix. I modified the lead-enforcement.ts file, adding the normalization function, and I added 3 new tests. All tests pass correctly. Let me know if you need any additional adjustments." | `✓ Fix applied. lead-enforcement.ts:140 + 3 tests. bun test → 0 fails.` |
+| "I've completed the implementation of the fix. I modified the auto-approve.ts file, adding the normalization function, and I added 3 new tests. All tests pass correctly. Let me know if you need any additional adjustments." | `✓ Fix applied. auto-approve.ts:140 + 3 tests. bun test → 0 fails.` |
 
 ### Error diagnosis
 
