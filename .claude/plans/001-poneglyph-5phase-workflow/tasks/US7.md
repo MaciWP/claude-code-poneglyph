@@ -1,6 +1,6 @@
 ---
 us: US7
-title: Skill `retro-learner` + command `/retro` (Fase 5) + living-spec loop
+title: Skill `retro` + command `/retro` (Fase 5) + living-spec loop
 wave: W2
 depends_on: [US1]
 tdd_mode: optional
@@ -9,7 +9,7 @@ status: approved
 approved: 2026-05-28
 ---
 
-# US7 — `retro-learner` skill + `/retro` command (Fase 5)
+# US7 — `retro` skill + `/retro` command (Fase 5)
 
 ## ⚡ Quick reference
 
@@ -19,7 +19,7 @@ approved: 2026-05-28
 | **Wave** | W2 (paralelo con US2-US6) |
 | **Depends on** | US1 |
 | **Blocks** | US8 |
-| **Files touched** | crear `.claude/skills/retro-learner/SKILL.md` + `.claude/commands/retro.md` |
+| **Files touched** | crear `.claude/skills/retro/SKILL.md` + `.claude/commands/retro.md` |
 | **TDD-mode** | optional |
 | **Estimate** | M |
 | **Cómo arrancar** | Read `spec.md` + `tasks/` + `review.md` + `state.json` → drillme retrospectivo → producir `retro.md` con promociones |
@@ -33,7 +33,7 @@ approved: 2026-05-28
 
 ## Acceptance criteria
 
-- **AC1**: Given Fase 4 cerrada (review.md APPROVED), when se invoca o auto-activa, then `retro-learner` arranca.
+- **AC1**: Given Fase 4 cerrada (review.md APPROVED), when se invoca o auto-activa, then `retro` arranca.
 - **AC2**: Given la skill activa, when produce `retro.md`, then incluye: Resumen, Lecciones técnicas (✅/❌), Proceso (fricción, fase más pesada), Promociones candidatas, Living-spec deltas, Commandments check, Action items.
 - **AC3**: Given lecciones identificadas reusables, when se proponen como promoción, then tabla con `candidate × scope (global/local/memory) × tipo (skill/rule/hook/command) × razón × propuesta concreta (path + diff)`.
 - **AC4**: Given el proceso Fase 1-4, when detecta algún Commandment violado, then lo reporta honestamente (sin softening — Commandment I).
@@ -44,14 +44,14 @@ approved: 2026-05-28
 
 | Path | Contenido |
 |---|---|
-| `.claude/skills/retro-learner/SKILL.md` | Skill markdown |
+| `.claude/skills/retro/SKILL.md` | Skill markdown |
 | `.claude/commands/retro.md` | Wrapper |
 
 ## Frontmatter de la skill
 
 ```yaml
 ---
-name: retro-learner
+name: retro
 description: |
   Post-feature retrospective: extracts lessons, proposes promotions
   (global poneglyph layer vs project local vs only-memory), closes

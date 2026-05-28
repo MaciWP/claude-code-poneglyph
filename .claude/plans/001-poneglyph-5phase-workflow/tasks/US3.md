@@ -1,6 +1,6 @@
 ---
 us: US3
-title: Skill `tech-planner` + command `/plan` (Fase 2) + decisión `planner-protocol`
+title: Skill `tech-plan` + command `/plan` (Fase 2) + decisión `planner-protocol`
 wave: W2
 depends_on: [US1]
 tdd_mode: optional
@@ -10,7 +10,7 @@ approved: 2026-05-28
 absorbs_decision: planner-protocol skill (cortar/simplificar/migrar)
 ---
 
-# US3 — `tech-planner` skill + `/plan` command (Fase 2)
+# US3 — `tech-plan` skill + `/plan` command (Fase 2)
 
 ## ⚡ Quick reference
 
@@ -20,7 +20,7 @@ absorbs_decision: planner-protocol skill (cortar/simplificar/migrar)
 | **Wave** | W2 (paralelo con US2, US4-US7) |
 | **Depends on** | US1 (estructura + templates) |
 | **Blocks** | US8 (`/flow` necesita esta skill) |
-| **Files touched** | crear `.claude/skills/tech-planner/SKILL.md` + `.claude/commands/plan.md`; condicionales: cortar/migrar `planner-protocol/` + actualizar refs en CLAUDE.md, bootstrap, otros |
+| **Files touched** | crear `.claude/skills/tech-plan/SKILL.md` + `.claude/commands/plan.md`; condicionales: cortar/migrar `planner-protocol/` + actualizar refs en CLAUDE.md, bootstrap, otros |
 | **TDD-mode** | optional |
 | **Estimate** | L (la más densa de W2 por la decisión absorbida) |
 | **Cómo arrancar** | Read `spec.md` aprobado → cuestionario para cerrar plan → investigación obligatoria (Context7 + WebFetch + Grep) → drillme → producir `tasks/index.md` + N `tasks/US{N}.md` |
@@ -34,23 +34,23 @@ absorbs_decision: planner-protocol skill (cortar/simplificar/migrar)
 
 ## Acceptance criteria
 
-- **AC1**: Given keywords `plan` / `planifica` / `roadmap` / `tareas` / `HU` + un `spec.md` aprobado disponible, when el Lead procesa el prompt, then la skill `tech-planner` se auto-activa.
+- **AC1**: Given keywords `plan` / `planifica` / `roadmap` / `tareas` / `HU` + un `spec.md` aprobado disponible, when el Lead procesa el prompt, then la skill `tech-plan` se auto-activa.
 - **AC2**: Given la skill activa, when arranca, then investiga obligatoriamente: (a) Context7 MCP para docs oficiales de APIs externas mencionadas en spec; (b) WebFetch para 1-2 proyectos exitosos como referencia (si área nueva); (c) Grep/Glob proyecto para 5-10 ejemplos del patrón a usar.
 - **AC3**: Given investigación completada, when produce HUs, then cada HU sigue formato canónico (role/action/benefit + AC Given/When/Then + depends-on + files + TDD-mode + estimate + wave) y se escribe como archivo separado en `.claude/plans/{NNN}-{slug}/tasks/US{N}.md` con su frontmatter.
 - **AC4**: Given las HUs, when termina la skill, then el `tasks/index.md` contiene DAG mermaid explícito + tabla resumen + cross-cutting decisions + open questions.
 - **AC5**: Given complejidad >60 declarada por el Lead, when hay 2+ soluciones técnicas razonables, then invoca `decision-stress-test` (existente) antes de cerrar el plan.
 - **AC6**: Given el plan producido, when la skill cierra, then invoca automáticamente `tdd-designer` (US4) para Fase 2.5 si modo standard/full; reporta al usuario: "tasks/ + tests.md listos — hard gate 2→3".
 - **AC7** (decisión absorbida): Given la skill operativa, when se compara con `planner-protocol` (existente, 116 líneas + references), then se ejecuta UNA de tres acciones documentadas:
-  - **CUT** si `tech-planner` cubre 100% de los casos de uso de `planner-protocol`.
+  - **CUT** si `tech-plan` cubre 100% de los casos de uso de `planner-protocol`.
   - **SIMPLIFICAR** si quedan references útiles no cubiertos (ej: complexity-routing, agent-selection) → reescribir SKILL.md viejo a su núcleo no cubierto.
-  - **MIGRAR-Y-CUT** si las references valiosas se absorben en `tech-planner` y se borra el resto.
+  - **MIGRAR-Y-CUT** si las references valiosas se absorben en `tech-plan` y se borra el resto.
 - **AC8**: Given la decisión de AC7, when se ejecuta, then todas las referencias cruzadas a `planner-protocol` en el repo se actualizan (Grep + Edit), incluyendo CLAUDE.md, otros skills, bootstrap-lead.md.
 
 ## Files a crear
 
 | Path | Contenido |
 |---|---|
-| `.claude/skills/tech-planner/SKILL.md` | Skill markdown con frontmatter + workflow + drillme + estructura output |
+| `.claude/skills/tech-plan/SKILL.md` | Skill markdown con frontmatter + workflow + drillme + estructura output |
 | `.claude/commands/plan.md` | Wrapper trivial |
 
 ## Files a modificar/borrar (según decisión AC7)
@@ -68,7 +68,7 @@ absorbs_decision: planner-protocol skill (cortar/simplificar/migrar)
 
 ```yaml
 ---
-name: tech-planner
+name: tech-plan
 description: |
   Technical plan from approved spec.md: atomic user stories (HUs) + DAG of
   dependencies + obligatory research (Context7 + WebFetch + project Grep).
@@ -122,12 +122,12 @@ argument-hint: "[--minimal|--standard|--full]"
 
 9. **Resolver AC7 (decisión planner-protocol)**:
    - Auditar `planner-protocol/SKILL.md` y references (already verified: 116 líneas + 8 references docs).
-   - Comparar cobertura con `tech-planner`:
-     - ¿§0 Level Triage cubierto? Sí, en el workflow de tech-planner (modo minimal/standard/full).
+   - Comparar cobertura con `tech-plan`:
+     - ¿§0 Level Triage cubierto? Sí, en el workflow de tech-plan (modo minimal/standard/full).
      - ¿§1 Fundamental Goals cubierto? Parcial — TDD pasa a `tdd-designer`, parallelism queda aquí.
      - ¿§2 Task Classification 🔵🟡🔴? Sí, en construcción del DAG.
      - ¿§4 Output Format? Sí — adaptado al nuevo formato (un archivo por HU).
-     - References 01-08: algunas válidas como referencia técnica (gap-analysis, classification-waves, workflow-phases) → migrar a `tech-planner/references/` si aporta; cortar el resto.
+     - References 01-08: algunas válidas como referencia técnica (gap-analysis, classification-waves, workflow-phases) → migrar a `tech-plan/references/` si aporta; cortar el resto.
    - Decisión propuesta: **MIGRAR-Y-CUT** — absorber references útiles, cortar el resto + cortar `/planner` command.
 
 10. **Ejecutar decisión**:
@@ -207,14 +207,14 @@ approved: 2026-05-28` (no aprobado) → STOP, escalar al usuario para aprobar Fa
 - ⚠️ Si una HU requiere >5 archivos → demasiado grande, split.
 - ⚠️ Si una HU tiene >5 deps → granularidad mal definida, refactor.
 - ⚠️ Si el DAG es lineal (todas secuenciales) → revisar si hay paralelismo no explotado.
-- ⚠️ Si la decisión AC7 (planner-protocol) se vuelve "mantener todo" → cuestionar; el solapamiento con tech-planner es real.
+- ⚠️ Si la decisión AC7 (planner-protocol) se vuelve "mantener todo" → cuestionar; el solapamiento con tech-plan es real.
 
 ## Verificación post-implementación
 
 - `bun test ./.claude/hooks/` sigue 81/81.
 - Si `planner-protocol` se cortó: `Grep "planner-protocol" .claude/` retorna 0 matches (excepto históricos en memoria/spec).
 - Smoke: invocar `/plan` con un spec.md de ejemplo → produce `tasks/index.md` + N archivos US{N}.md.
-- Smoke: invocar `/tech-planner` (auto-activación por keyword) → idem.
+- Smoke: invocar `/tech-plan` (auto-activación por keyword) → idem.
 
 ## Socratic categories (canonical mapping — research 2026-05-28)
 
@@ -232,13 +232,13 @@ El drillme de Fase 2 mapeado contra las **4 categorías canónicas** del [Socrat
 
 ## Nota sobre fiabilidad skill→skill (research 2026-05-28)
 
-`tech-planner` invoca automáticamente `tdd-designer` al cerrar (AC6) y opcionalmente `decision-stress-test` (AC5). Según [docs Anthropic](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview) + [Issue #59968](https://github.com/anthropics/claude-code/issues/59968):
+`tech-plan` invoca automáticamente `tdd-designer` al cerrar (AC6) y opcionalmente `decision-stress-test` (AC5). Según [docs Anthropic](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview) + [Issue #59968](https://github.com/anthropics/claude-code/issues/59968):
 
 - La invocación skill→skill **NO está garantizada al 100%**. Es probabilística (description-match) o de alta-fiabilidad-pero-no-absoluta (instrucción inline).
-- **Mitigación recomendada**: en el SKILL.md de `tech-planner`, escribir la invocación de `tdd-designer` como instrucción **imperativa explícita** ("MUST invoke `/tdd-design` after producing tasks/ — do not return control to user yet"), no como sugerencia. Si falla → el Lead detecta el gap en la verificación post-skill.
+- **Mitigación recomendada**: en el SKILL.md de `tech-plan`, escribir la invocación de `tdd-designer` como instrucción **imperativa explícita** ("MUST invoke `/tdd-design` after producing tasks/ — do not return control to user yet"), no como sugerencia. Si falla → el Lead detecta el gap en la verificación post-skill.
 - Si la invocación falla repetidamente → considerar promover a invocación programática vía `/flow` (US8 lo encadena).
 
 ## Open questions (implementación)
 
-- Si `planner-protocol/references/` tiene contenido valioso (ej. agent-selection.md), ¿migrar a `tech-planner/references/` o a `orchestrator-protocol`? Decidir en implementación tras leer cada reference.
+- Si `planner-protocol/references/` tiene contenido valioso (ej. agent-selection.md), ¿migrar a `tech-plan/references/` o a `orchestrator-protocol`? Decidir en implementación tras leer cada reference.
 - Si la decisión es CUT total → revisar si `bootstrap-lead.md` referencia planner-protocol y actualizar.

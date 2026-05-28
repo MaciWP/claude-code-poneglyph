@@ -1,5 +1,5 @@
 ---
-name: scope-definer
+name: scope
 description: |
   Define product-level scope BEFORE any technical work (Phase 1 of the 5-phase workflow).
   Generates spec.md via an intensive Q&A questionnaire + 5-question drillme (root problem,
@@ -15,9 +15,9 @@ argument-hint: "<brief or question>"
 effort: medium
 ---
 
-# Scope Definer (Phase 1)
+# Scope (Phase 1)
 
-Defines the **product-level scope** before any technical decision. The deliverable is a `spec.md` that survives a 5-question Socratic drillme and locks in: root problem, expected outcomes, success criteria (Given/When/Then), explicit out-of-scope, constraints, stakeholders. **No technology choices here** — those belong to Phase 2 (`tech-planner`).
+Defines the **product-level scope** before any technical decision. The deliverable is a `spec.md` that survives a 5-question Socratic drillme and locks in: root problem, expected outcomes, success criteria (Given/When/Then), explicit out-of-scope, constraints, stakeholders. **No technology choices here** — those belong to Phase 2 (`plan` skill).
 
 ## Underlying principle
 
@@ -193,15 +193,24 @@ Adaptación se declara honestamente en el output (`# Open questions` section o n
 | V | La fase entera es "entender antes de actuar" |
 | VIII | Cuestionarios estructurados; meta-prompting para perspectives en `full` |
 
-## Integration with other skills
+## Auxiliary skills invoked
 
-| Skill | Relationship |
+> Canonical matrix in `.claude/plans/001-poneglyph-5phase-workflow/tasks/index.md §Auxiliary skills matrix`. Row below is the literal subset that applies to this Phase 1 skill.
+
+| Auxiliary skill | When this skill invokes it | Fallback if skill->skill fails |
+|---|---|---|
+| `anti-hallucination` | Before asserting any premise the user mentions (file/function/path/library exists) | Lead applies Glob/Grep/LSP manually before including the premise in `spec.md` |
+| `drillme` | Before closing Phase 1 (hard gate 1->2) — applies 5 phase questions + canonical 4 Socratic categories | Lead invokes `/drillme "Phase 1 closing for <NNN-slug>"` manually before approving |
+| `prompt-engineer` | When the user's initial brief is too vague (multiple interpretations, missing success criteria) and refinement is warranted before the questionnaire | Lead applies the 5-criteria rubric inline; refines manually |
+| `decision-stress-test` | Mode `full` only — reuses Outsider/Product/User perspective templates from `references/01-perspectives.md` (NOT invoking the full stress-test pipeline, only the prompt catalog) | Lead spawns the 3 perspectives directly with `Agent(subagent_type=general-purpose, prompt=<adapted from catalog>)` |
+
+> Skill-to-skill invocation is **probabilistic** per docs Anthropic + [issue #59968](https://github.com/anthropics/claude-code/issues/59968). Each row's fallback documents the Lead's manual recovery path. The downstream `plan` skill (Phase 2) is NOT invoked here — it waits on the human hard gate 1->2.
+
+## Consumer downstream
+
+| Phase skill | Consumes from this skill |
 |---|---|
-| `drillme` (US11) | Invocada para Socratic check completo (4 categorías canónicas) cuando las 5 preguntas de fase necesitan complemento |
-| `decision-stress-test` | Catálogo de perspectives reutilizado en modo `full` (Outsider/Product/User adaptados a Phase 1) — NO se invoca la skill completa, solo se reusan los prompt templates |
-| `prompt-engineer` | Opcional, si el prompt original es demasiado vago — refinar antes del cuestionario |
-| `anti-hallucination` | Verificación de premisas factuales que el usuario menciona |
-| `tech-planner` (US3, Phase 2) | Consumidor del `spec.md` aprobado — NO se invoca aquí, espera al hard gate 1->2 |
+| `plan` (Phase 2) | The approved `spec.md` (after hard gate 1->2 closed by human). Wait — do not auto-invoke. |
 
 ## Verification (post-implementation of this skill)
 

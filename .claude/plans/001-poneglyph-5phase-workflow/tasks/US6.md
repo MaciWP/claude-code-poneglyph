@@ -1,16 +1,16 @@
 ---
 us: US6
-title: Skill `critic-reviewer` + command `/critic` (Fase 4) + decisión `reviewer` agent + uso `review-patterns`
+title: Skill `critic` + command `/critic` (Fase 4) + decisión `reviewer` agent + uso `review-patterns`
 wave: W2
 depends_on: [US1]
 tdd_mode: optional
 estimate: M
 status: approved
 approved: 2026-05-28
-absorbs_decision: reviewer agent (CUT / KEEP-cond / ABSORB) + cómo critic-reviewer usa review-patterns
+absorbs_decision: reviewer agent (CUT / KEEP-cond / ABSORB) + cómo critic usa review-patterns
 ---
 
-# US6 — `critic-reviewer` skill + `/critic` command (Fase 4)
+# US6 — `critic` skill + `/critic` command (Fase 4)
 
 ## ⚡ Quick reference
 
@@ -20,7 +20,7 @@ absorbs_decision: reviewer agent (CUT / KEEP-cond / ABSORB) + cómo critic-revie
 | **Wave** | W2 (paralelo con US2-US5, US7) |
 | **Depends on** | US1 |
 | **Blocks** | US8 |
-| **Files touched** | crear `.claude/skills/critic-reviewer/SKILL.md` + `.claude/commands/critic.md`; condicional sobre `reviewer` agent |
+| **Files touched** | crear `.claude/skills/critic/SKILL.md` + `.claude/commands/critic.md`; condicional sobre `reviewer` agent |
 | **TDD-mode** | optional |
 | **Estimate** | M |
 | **Cómo arrancar** | Read `spec.md` + `tasks/` + `state.json` → confirmar HUs cerradas → generar lista validaciones → ejecutar checks → producir `review.md` |
@@ -34,23 +34,23 @@ absorbs_decision: reviewer agent (CUT / KEEP-cond / ABSORB) + cómo critic-revie
 
 ## Acceptance criteria
 
-- **AC1**: Given todas las HUs del `tasks/` marcadas `completed` en `state.json`, when se invoca o auto-activa al cierre, then `critic-reviewer` arranca.
+- **AC1**: Given todas las HUs del `tasks/` marcadas `completed` en `state.json`, when se invoca o auto-activa al cierre, then `critic` arranca.
 - **AC2**: Given la skill activa, when genera lista de validaciones, then sigue el template `review.template.md` (5 secciones: Correctness / Quality / Security / Performance / Mantenibilidad).
 - **AC3**: Given las validaciones, when las ejecuta, then cada check pasa o se reporta como finding con severidad (BLOCKER / MAJOR / MINOR / NIT).
 - **AC4**: Given el conjunto, when termina, then veredicto es: APPROVED / NEEDS_CHANGES / BLOCKED.
 - **AC5**: Given NEEDS_CHANGES, when se detecta, then propone vuelta a Fase 3 con HU específica + diagnóstico.
 - **AC6**: Given la spec.md original, when se compara con lo entregado, then detecta delta legítimo → propone update para living-spec loop (Fase 5).
 - **AC7** (decisión absorbida — reviewer agent): Given la skill operativa, when se compara con `reviewer` agent (Opus), then se ejecuta:
-  - **CUT** si critic-reviewer cubre los casos sin necesidad de Opus independiente.
-  - **KEEP-conditional** si Opus aporta valor real en reviews complejas (default propuesto: KEEP-cond, invocado por critic-reviewer cuando complejidad >60 OR áreas críticas: auth/payments/security).
+  - **CUT** si critic cubre los casos sin necesidad de Opus independiente.
+  - **KEEP-conditional** si Opus aporta valor real en reviews complejas (default propuesto: KEEP-cond, invocado por critic cuando complejidad >60 OR áreas críticas: auth/payments/security).
   - **ABSORB**: migrar lógica del agent al SKILL.md.
-- **AC8** (decisión absorbida — review-patterns): Given la skill operativa, when se compara con `review-patterns` (skill existente con 17+ references valiosas: SOLID, N+1, complexity, refactoring), then **NO se corta**. `critic-reviewer` documenta cómo la **invoca** como catálogo de patrones (modo quality o performance).
+- **AC8** (decisión absorbida — review-patterns): Given la skill operativa, when se compara con `review-patterns` (skill existente con 17+ references valiosas: SOLID, N+1, complexity, refactoring), then **NO se corta**. `critic` documenta cómo la **invoca** como catálogo de patrones (modo quality o performance).
 
 ## Files a crear
 
 | Path | Contenido |
 |---|---|
-| `.claude/skills/critic-reviewer/SKILL.md` | Skill con frontmatter + workflow + drillme + invocación de review-patterns |
+| `.claude/skills/critic/SKILL.md` | Skill con frontmatter + workflow + drillme + invocación de review-patterns |
 | `.claude/commands/critic.md` | Wrapper |
 
 ## Files condicionales (decisión AC7)
@@ -64,13 +64,13 @@ absorbs_decision: reviewer agent (CUT / KEEP-cond / ABSORB) + cómo critic-revie
 
 | Path | Razón |
 |---|---|
-| `.claude/skills/review-patterns/` | KEEP — 17+ references valiosas no cubiertas por critic-reviewer (SOLID, N+1, complexity, refactoring patterns) |
+| `.claude/skills/review-patterns/` | KEEP — 17+ references valiosas no cubiertas por critic (SOLID, N+1, complexity, refactoring patterns) |
 
 ## Frontmatter de la skill
 
 ```yaml
 ---
-name: critic-reviewer
+name: critic
 description: |
   End-to-end review after all HUs completed: validates the original problem
   from spec.md was solved (not just unit tests passing). Produces review.md
@@ -157,26 +157,26 @@ disable-model-invocation: false
 | Uso histórico | ¿reviewer fue invocado en transcripts? ¿qué tipo de reviews? |
 | Valor único | Opus aporta análisis más profundo que Sonnet en reviews complejas/arquitecturales |
 | Coste | Opus delegation = +5-10K tokens. Justificado solo en complejidad >60 o áreas críticas |
-| Sin reviewer | ¿critic-reviewer ejecutándose como skill cubre el 80% de los casos? Probablemente sí |
+| Sin reviewer | ¿critic ejecutándose como skill cubre el 80% de los casos? Probablemente sí |
 
-**Veredicto propuesto**: **KEEP-conditional** — mantener `reviewer` agent, invocado por `critic-reviewer` solo cuando complejidad >60 OR áreas críticas (auth/payments/security/data). Criterio explícito en SKILL.md.
+**Veredicto propuesto**: **KEEP-conditional** — mantener `reviewer` agent, invocado por `critic` solo cuando complejidad >60 OR áreas críticas (auth/payments/security/data). Criterio explícito en SKILL.md.
 
 ## Decisión AC8 — `review-patterns` análisis (verificado)
 
 Tras leer `review-patterns/SKILL.md` (83 líneas + 17 references):
 
-| Aporte único de review-patterns | Cubierto por critic-reviewer? |
+| Aporte único de review-patterns | Cubierto por critic? |
 |---|---|
-| SOLID violations detail (5 principios) | NO — critic-reviewer es genérico |
+| SOLID violations detail (5 principios) | NO — critic es genérico |
 | Complexity metrics (cyclomatic/cognitive) | NO |
 | Anti-patterns table | NO |
 | Extract function/class patterns | NO |
 | N+1 query patterns + variants | NO |
 | Memory leak patterns | NO |
 | Refactoring safety checklists | NO |
-| Severity levels compartidos | Parcial — critic-reviewer los reusará |
+| Severity levels compartidos | Parcial — critic los reusará |
 
-**Veredicto**: **KEEP review-patterns** + critic-reviewer la **invoca como catálogo** vía `Read .claude/skills/review-patterns/references/<mode>.md` durante Fase 4. No duplicar contenido.
+**Veredicto**: **KEEP review-patterns** + critic la **invoca como catálogo** vía `Read .claude/skills/review-patterns/references/<mode>.md` durante Fase 4. No duplicar contenido.
 
 ## Adaptación intra-fase
 
@@ -202,10 +202,10 @@ Declarar en `review.md`: "Review light/standard/full por motivo X".
 ## Verificación post-implementación
 
 - Smoke: invocar `/critic` con feature completa → produce `review.md` con findings o APPROVED.
-- Si decisión AC7 = CUT: `Grep "reviewer" .claude/` retorna refs solo a `critic-reviewer`, no a `reviewer` agent.
+- Si decisión AC7 = CUT: `Grep "reviewer" .claude/` retorna refs solo a `critic`, no a `reviewer` agent.
 - `review-patterns/SKILL.md` sigue existente e invocable.
 
 ## Open questions (implementación)
 
-- ¿`critic-reviewer` puede invocar `reviewer` agent vía `Agent(subagent_type=reviewer)` o lo invoca el Lead? — patrón sub-skill→agent.
-- Si `reviewer` se KEEP-cond: ¿se actualiza su SKILL.md frontmatter para reflejar que ahora se invoca solo desde critic-reviewer?
+- ¿`critic` puede invocar `reviewer` agent vía `Agent(subagent_type=reviewer)` o lo invoca el Lead? — patrón sub-skill→agent.
+- Si `reviewer` se KEEP-cond: ¿se actualiza su SKILL.md frontmatter para reflejar que ahora se invoca solo desde critic?

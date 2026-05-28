@@ -56,17 +56,18 @@ Las validaciones se ejecutan en Fase 4 (`critic-reviewer`) como parte del checkl
 
 ---
 
-## US2 — `scope-definer` + `/scope`
+## US2 — `scope` skill (no wrapper command)
 
 ### Pre
 - US1 cerrada (templates existen).
 
 ### Post
-- `.claude/skills/scope-definer/SKILL.md` existe.
-- `.claude/commands/scope.md` existe.
+- `.claude/skills/scope/SKILL.md` existe.
+- `.claude/commands/scope.md` **NO** existe (wrapper redundante cortado per docs Anthropic 2026: skills se invocan como `/<skill-name>` directo).
 
 ### Structural assertions
-- SKILL.md frontmatter contiene: `name: scope-definer`, `description` (con keywords scope/idea/problema/alcance/quiero/necesito), `disable-model-invocation: false`.
+- SKILL.md frontmatter contiene: `name: scope` (renombrado de `scope-definer`), `description` con bloque `Use when:` + `Keywords - ...`, `disable-model-invocation: false`, `argument-hint`, `effort`. NO contiene `activation.keywords` (no funciona en harness, ver memoria `cleanup-25b`).
+- SKILL.md contiene sección "Auxiliary skills invoked" con tabla canónica (referencia `tasks/index.md §Auxiliary skills matrix` para la matriz completa).
 - SKILL.md contiene bloque "Drillme — Phase 1" con las 5 preguntas obligatorias literales.
 - SKILL.md contiene sección "Workflow detallado" con ≥6 pasos numerados.
 - SKILL.md menciona explícitamente: cuestionario intensivo + proactividad sobre gaps (SIEMPRE rules).
@@ -230,7 +231,7 @@ Las validaciones se ejecutan en Fase 4 (`critic-reviewer`) como parte del checkl
 
 ### Structural assertions
 - `flow.md` frontmatter: `argument-hint: "[--minimal|--standard|--full|--resume <slug>] <task>"`.
-- `flow.md` documenta encadenado: `scope-definer` → gate 1→2 → `tech-planner` → `tdd-designer` → gate 2→3 → loop `story-executor` por HU → `critic-reviewer` → `retro-learner`.
+- `flow.md` documenta encadenado: `scope` → gate 1→2 → `tech-planner` → `tdd-designer` → gate 2→3 → loop `story-executor` por HU → `critic-reviewer` → `retro-learner`.
 - `flow.md` documenta los dos hard gates humanos (1→2 y 2→3).
 
 ### Smoke
@@ -276,7 +277,7 @@ Las validaciones se ejecutan en Fase 4 (`critic-reviewer`) como parte del checkl
 
 ### Post
 - `.claude/skills/drillme/SKILL.md` existe.
-- `.claude/commands/drillme.md` existe.
+- `.claude/commands/drillme.md` **NO** existe (wrapper redundante cortado — skill se invoca como `/drillme` directo).
 
 ### Structural assertions
 - SKILL.md frontmatter: `name: drillme`, `description` con keywords drill/drillme/socratic/5-whys/valida/cuestiona/challenge/antes-de-cerrar.

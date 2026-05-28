@@ -1,6 +1,6 @@
 ---
 us: US4
-title: Skill `tdd-designer` + command `/tdd-design` (Fase 2.5) — soporta TDD-mode y validation-mode
+title: Skill `tdd-design` + command `/tdd-design` (Fase 2.5) — soporta TDD-mode y validation-mode
 wave: W2
 depends_on: [US1]
 tdd_mode: optional
@@ -9,7 +9,7 @@ status: approved
 approved: 2026-05-28
 ---
 
-# US4 — `tdd-designer` skill + `/tdd-design` command (Fase 2.5)
+# US4 — `tdd-design` skill + `/tdd-design` command (Fase 2.5)
 
 ## ⚡ Quick reference
 
@@ -19,7 +19,7 @@ approved: 2026-05-28
 | **Wave** | W2 (paralelo con US2, US3, US5-US7) |
 | **Depends on** | US1 |
 | **Blocks** | US8 |
-| **Files touched** | crear `.claude/skills/tdd-designer/SKILL.md` + `.claude/commands/tdd-design.md` |
+| **Files touched** | crear `.claude/skills/tdd-design/SKILL.md` + `.claude/commands/tdd-design.md` |
 | **TDD-mode** | optional |
 | **Estimate** | M |
 | **Cómo arrancar** | Read `tasks/` + `test-policy.md` → decidir output-mode (TDD o validation) → producir `tests.md` o `validations.md` |
@@ -27,7 +27,7 @@ approved: 2026-05-28
 
 ## Decisión de output-mode (NUEVO — feedback usuario 2026-05-28)
 
-`tdd-designer` produce **uno de dos artefactos** según la naturaleza de las HUs:
+`tdd-design` produce **uno de dos artefactos** según la naturaleza de las HUs:
 
 | Naturaleza HU | Output | Razón |
 |---|---|---|
@@ -45,27 +45,27 @@ La skill detecta la naturaleza por: tipo de archivos en `tasks/USX.md` campo `fi
 
 ## Acceptance criteria
 
-- **AC1**: Given `tasks/index.md` + US{N}.md recientes en el directorio activo, when el Lead procesa el prompt o termina `tech-planner`, then `tdd-designer` se auto-activa.
+- **AC1**: Given `tasks/index.md` + US{N}.md recientes en el directorio activo, when el Lead procesa el prompt o termina `tech-planner`, then `tdd-design` se auto-activa.
 - **AC2**: Given la skill activa, when arranca, then lee `.claude/rules/test-policy.md` (creado en commit `2349259`) y declara TDD-mode (`forced`/`adaptive`/`optional`) en el frontmatter de `tests.md`.
 - **AC3**: Given cada HU del `tasks/`, when produce specs de test, then cada HU recibe ≥1 test happy path + ≥1 edge case (cuando es testeable).
 - **AC4**: Given una HU no-testeable (ej. doc only), when se intenta producir test, then la skill lo declara explícitamente y propone `tdd-skip: <reason>` o re-revisar atomicidad de la HU.
 - **AC5**: Given una HU con invariantes claros (parser, transformación pura), when se evalúa, then sugiere property-based test opt-in (evidencia +23-37% sobre TDD plano per arxiv 2506.18315).
 - **AC6**: Given el `tests.md` o `validations.md` producido, when cierra, then se combina con `tasks/` para hard gate humano 2→3.
 - **AC7** (NUEVO): Given una HU cuyos `files` son solo `.md` / `.json` / configs / skills / templates (sin lógica ejecutable), when se evalúa, then la skill produce **validation-mode** en lugar de TDD-mode — `validations.md` con: Pre-conditions, Post-conditions, Structural assertions, Smoke checks, Cross-validations (NO tests unit ejecutables).
-- **AC8** (NUEVO): Given una HU mixta (algunos `files` ejecutables + otros markdown), when se evalúa, then `tdd-designer` aplica per-HU el modo correcto (algunas HUs en `tests.md`, otras en `validations.md`).
+- **AC8** (NUEVO): Given una HU mixta (algunos `files` ejecutables + otros markdown), when se evalúa, then `tdd-design` aplica per-HU el modo correcto (algunas HUs en `tests.md`, otras en `validations.md`).
 
 ## Files a crear
 
 | Path | Contenido |
 |---|---|
-| `.claude/skills/tdd-designer/SKILL.md` | Skill markdown con frontmatter + workflow + drillme |
+| `.claude/skills/tdd-design/SKILL.md` | Skill markdown con frontmatter + workflow + drillme |
 | `.claude/commands/tdd-design.md` | Wrapper trivial |
 
 ## Frontmatter de la skill
 
 ```yaml
 ---
-name: tdd-designer
+name: tdd-design
 description: |
   Test design BEFORE implementation. Reads tasks/ (HUs) and produces
   tests.md with per-HU specs (Pre/Action/Assert + expected red).
@@ -125,7 +125,7 @@ disable-model-invocation: false
 ## Reutiliza
 
 - `test-policy.md` rule (commit `2349259`).
-- TDD-mode declaration en `planner-protocol/SKILL.md` §0.1 (commit `2349259`). **Nota**: si US3 corta `planner-protocol`, esta lógica de TDD-mode declaration **migra** a `tdd-designer/SKILL.md`.
+- TDD-mode declaration en `planner-protocol/SKILL.md` §0.1 (commit `2349259`). **Nota**: si US3 corta `planner-protocol`, esta lógica de TDD-mode declaration **migra** a `tdd-design/SKILL.md`.
 - `anti-hallucination` (verificar funciones/módulos referenciados en tests).
 
 ## Adaptación intra-fase

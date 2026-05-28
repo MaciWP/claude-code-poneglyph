@@ -1,6 +1,6 @@
 ---
 us: US5
-title: Skill `story-executor` + command `/build` (Fase 3) + decisión `builder` agent
+title: Skill `build` + command `/build` (Fase 3) + decisión `builder` agent
 wave: W2
 depends_on: [US1]
 tdd_mode: optional
@@ -10,7 +10,7 @@ approved: 2026-05-28
 absorbs_decision: builder agent (CUT / KEEP-cond / ABSORB)
 ---
 
-# US5 — `story-executor` skill + `/build` command (Fase 3)
+# US5 — `build` skill + `/build` command (Fase 3)
 
 ## ⚡ Quick reference
 
@@ -20,7 +20,7 @@ absorbs_decision: builder agent (CUT / KEEP-cond / ABSORB)
 | **Wave** | W2 (paralelo con US2-US4, US6, US7) |
 | **Depends on** | US1 |
 | **Blocks** | US8 |
-| **Files touched** | crear `.claude/skills/story-executor/SKILL.md` + `.claude/commands/build.md`; condicional sobre `builder` agent (ver AC7) |
+| **Files touched** | crear `.claude/skills/build/SKILL.md` + `.claude/commands/build.md`; condicional sobre `builder` agent (ver AC7) |
 | **TDD-mode** | optional |
 | **Estimate** | M |
 | **Cómo arrancar** | Read `tasks/index.md` + `state.json` → elegir siguiente HU → Read US{N}.md + tests T{N}.* → Glob ejemplos → red→green |
@@ -34,7 +34,7 @@ absorbs_decision: builder agent (CUT / KEEP-cond / ABSORB)
 
 ## Acceptance criteria
 
-- **AC1**: Given keywords `build` / `implementa` / `ejecuta` / `construye` + `tasks/` con HUs pendientes en `state.json`, when el Lead procesa, then `story-executor` se auto-activa.
+- **AC1**: Given keywords `build` / `implementa` / `ejecuta` / `construye` + `tasks/` con HUs pendientes en `state.json`, when el Lead procesa, then `build` se auto-activa.
 - **AC2**: Given command `/build US{id}`, when se invoca, then ejecuta esa HU específica (no la siguiente disponible).
 - **AC3**: Given una HU con TDD-mode=forced y test asociado, when ejecuta, then escribe el test PRIMERO, lo ejecuta, verifica que falla (red) → implementa minimal → verifica que pasa (green).
 - **AC4**: Given una HU con `tdd-skip: <reason>`, when ejecuta, then implementa código directo + ejecuta suite existente como verificación.
@@ -42,14 +42,14 @@ absorbs_decision: builder agent (CUT / KEEP-cond / ABSORB)
 - **AC6**: Given HU completada, when cierra, then actualiza `state.json` (HU completada, timestamp, tests passed) + reporta siguiente HU disponible.
 - **AC7** (decisión absorbida): Given la skill operativa, when se compara con `builder` agent (existente en `.claude/agents/builder.md`), then se ejecuta UNA de tres acciones:
   - **CUT**: borrar `.claude/agents/builder.md` + purgar refs. Default si la skill cubre los casos en 1-4 archivos.
-  - **KEEP-conditional**: mantener `builder` solo invocado por `story-executor` cuando la HU implica **≥5 archivos OR cambio arquitectural** (context isolation justifica). El SKILL.md documenta el criterio.
-  - **ABSORB**: contenido relevante de `builder.md` se migra al SKILL.md de `story-executor`; agent se borra.
+  - **KEEP-conditional**: mantener `builder` solo invocado por `build` cuando la HU implica **≥5 archivos OR cambio arquitectural** (context isolation justifica). El SKILL.md documenta el criterio.
+  - **ABSORB**: contenido relevante de `builder.md` se migra al SKILL.md de `build`; agent se borra.
 
 ## Files a crear
 
 | Path | Contenido |
 |---|---|
-| `.claude/skills/story-executor/SKILL.md` | Skill markdown con frontmatter + workflow + drillme |
+| `.claude/skills/build/SKILL.md` | Skill markdown con frontmatter + workflow + drillme |
 | `.claude/commands/build.md` | Wrapper con `argument-hint: "[US{id}]"` |
 
 ## Files condicionales (según decisión AC7)
@@ -134,7 +134,7 @@ Auditoría a hacer en implementación:
 | Dimensión | Pregunta |
 |---|---|
 | Uso histórico | Grep en transcripts ~/.claude/projects/ — ¿builder fue invocado? ¿con qué frecuencia? ¿en qué tipos de tareas? |
-| Valor único | ¿builder hace algo que story-executor no podría hacer directo? (probablemente: context isolation cuando ≥5 archivos contaminan el main context) |
+| Valor único | ¿builder hace algo que build no podría hacer directo? (probablemente: context isolation cuando ≥5 archivos contaminan el main context) |
 | Coste | Delegar a builder = +1 context window = +tokens. Justificado solo si la HU lo requiere |
 | Sin builder | ¿Las HUs típicas de poneglyph son 1-4 archivos? Sí (la mayoría) → CUT default razonable |
 
@@ -168,5 +168,5 @@ Auditoría a hacer en implementación:
 
 ## Open questions (implementación)
 
-- Si decisión AC7 = KEEP-cond: ¿el SKILL.md de story-executor invoca `Agent(subagent_type=builder)` o el Lead lo invoca?
+- Si decisión AC7 = KEEP-cond: ¿el SKILL.md de build invoca `Agent(subagent_type=builder)` o el Lead lo invoca?
 - Si CUT: ¿`agent-memory/builder/` se borra o se preserva como histórico?

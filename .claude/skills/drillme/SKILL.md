@@ -227,11 +227,21 @@ If the user answers and asks for more drilling:
 | Confusion with decision-stress-test | Drillme used for genuinely high-stakes architectural decision | Escalate explicitly; drillme is for the lighter end |
 | Phase-bank dependency on meta-feature | Phase questions stored in `.claude/plans/001-...` (the meta-feature that created them) | Phase banks live in `references/03-phase-questions.md` of THIS skill, never in any specific feature plan |
 
-## Reutiliza
+## Auxiliary skills invoked
 
-- `AskUserQuestion` (mechanism to obtain user answers when iterating).
-- `anti-hallucination` (verify factual premises in answers if needed).
-- Catalog stems from `decision-stress-test` philosophy (5 adversarial techniques) but lightweight version — drillme is the ~10% tool, stress-test is the full deal.
+> Canonical matrix in `.claude/plans/001-poneglyph-5phase-workflow/tasks/index.md §Auxiliary skills matrix`. Row below is the literal subset that applies to this transversal skill.
+
+| Auxiliary skill | When this skill invokes it | Fallback if skill->skill fails |
+|---|---|---|
+| `anti-hallucination` | When user's answer cites a file/function/path/version — verify before treating it as Concrete | Lead Globs/Greps the cited reference manually; downgrade answer to Evasive if unverifiable |
+| `decision-stress-test` | **Escalation** when drillme reaches its ceiling: 3 iterations with persistent Evasive/Empty answers, or user asks for deeper analysis | Lead invokes `/decision-stress-test "<the unresolved decision>"` manually with stakes calibration |
+| `AskUserQuestion` | Mechanism to obtain user answers when iterating | Direct invocation (built-in tool, always reliable) |
+
+> Skill-to-skill invocation is **probabilistic** per docs Anthropic + [issue #59968](https://github.com/anthropics/claude-code/issues/59968). drillme itself is **guidance, not gate** (see SKILL.md header) — if it doesn't fire, phase outputs aren't corrupted; the Lead invokes manually as fallback.
+
+## Relationship to decision-stress-test
+
+Catalog stems from `decision-stress-test` philosophy (5 adversarial techniques + Socratic interrogation) but **lightweight**: drillme is the ~10% tool (3-7 questions, single turn, ~500 tokens); stress-test is the full deal (5-12 perspectives + cross-debate + synthesis + vote, ~3-10K tokens). Choose by stakes (see "Drillme vs decision-stress-test" table in SKILL.md).
 
 ## Verification (post-implementation of this skill)
 

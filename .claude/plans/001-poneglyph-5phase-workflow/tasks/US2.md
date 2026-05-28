@@ -1,6 +1,6 @@
 ---
 us: US2
-title: Skill `scope-definer` + command `/scope` (Fase 1)
+title: Skill `scope` (Fase 1) — sin command wrapper
 wave: W2
 depends_on: [US1]
 tdd_mode: optional
@@ -9,7 +9,7 @@ status: approved
 approved: 2026-05-28
 ---
 
-# US2 — `scope-definer` skill + `/scope` command (Fase 1)
+# US2 — `scope` skill + `/scope` command (Fase 1)
 
 ## ⚡ Quick reference
 
@@ -19,7 +19,7 @@ approved: 2026-05-28
 | **Wave** | W2 (paralelo con US3-US7) |
 | **Depends on** | US1 (estructura + templates) |
 | **Blocks** | US8 (`/flow` necesita esta skill) |
-| **Files touched** | crear `.claude/skills/scope-definer/SKILL.md` + `.claude/commands/scope.md` |
+| **Files touched** | crear `.claude/skills/scope/SKILL.md` (sin wrapper command — skill se invoca como `/scope` directo per docs Anthropic 2026) |
 | **TDD-mode** | optional |
 | **Estimate** | M |
 | **Cómo arrancar** | Read `templates/spec.template.md` (de US1) → escribir SKILL.md con frontmatter + workflow + drillme |
@@ -33,7 +33,7 @@ approved: 2026-05-28
 
 ## Acceptance criteria
 
-- **AC1**: Given una petición ambigua con keywords `scope` / `idea` / `problema` / `alcance` / `quiero` / `necesito`, when el Lead procesa el prompt, then la skill `scope-definer` se auto-activa via `description`.
+- **AC1**: Given una petición ambigua con keywords `scope` / `idea` / `problema` / `alcance` / `quiero` / `necesito`, when el Lead procesa el prompt, then la skill `scope` se auto-activa via `description`.
 - **AC2**: Given la skill activa, when no hay `spec.md` previo en el contexto, then ejecuta cuestionario intensivo (3-8 preguntas vía `AskUserQuestion`) hasta entender el alcance sin ambigüedad.
 - **AC3**: Given el cuestionario completado, when aplica drillme con las 5 preguntas obligatorias del modelo V2, then cada una recibe respuesta documentada antes de cerrar.
 - **AC4**: Given drillme cerrado, when produce el artefacto, then crea `.claude/plans/{NNN}-{slug}/spec.md` siguiendo `templates/spec.template.md` con frontmatter `mode`, `status: approved
@@ -46,14 +46,14 @@ approved: 2026-05-28`.
 
 | Path | Contenido |
 |---|---|
-| `.claude/skills/scope-definer/SKILL.md` | Skill markdown con frontmatter completo + workflow + drillme block + estructura output |
-| `.claude/commands/scope.md` | Wrapper trivial: `$ARGUMENTS\n\nInvoke the scope-definer skill.` con argument-hint `"<brief or question>"` |
+| `.claude/skills/scope/SKILL.md` | Skill markdown con frontmatter completo + workflow + drillme block + estructura output |
+| `.claude/commands/scope.md` | Wrapper trivial: `$ARGUMENTS\n\nInvoke the scope skill.` con argument-hint `"<brief or question>"` |
 
 ## Frontmatter de la skill (exacto)
 
 ```yaml
 ---
-name: scope-definer
+name: scope
 description: |
   Define product-level scope BEFORE any technical work. Generates spec.md
   through an intensive Q&A questionnaire + 5-question drillme. Identifies
