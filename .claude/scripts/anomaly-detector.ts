@@ -352,7 +352,7 @@ export function detectAlerts(daily: DayRowMinimal[], agg: AggregatesMinimal): Al
       message: `Sin actividad registrada en ${staleDays} días (última: ${agg?.dataRange?.latest ?? "desconocida"})`,
       data: { staleDays, lastActivity: agg?.dataRange?.latest },
       commandmentTriggered: "IX — Observability",
-      recommendation: "Ejecuta /usage-snapshot regularmente o automatiza la captura para mantener histórico al día",
+      recommendation: "Ejecuta 'bun .claude/scripts/usage-snapshot.ts' cuando sospeches de algo concreto (no hay command UI por diseño)",
     });
   }
 

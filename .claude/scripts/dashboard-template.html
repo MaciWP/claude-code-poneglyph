@@ -273,7 +273,7 @@ function renderAlerts() {
 function renderInsights() {
   const el = document.getElementById('insights-content');
   if (!insights || !insights.trim()) {
-    el.innerHTML = '<div class="insights-placeholder">Ejecuta <code>/usage-insights</code> para generar narrativa IA con recomendaciones.</div>';
+    el.innerHTML = '<div class="insights-placeholder">Genera narrativa IA delegando a builder con los archivos de .claude/data/usage/ como contexto.</div>';
     return;
   }
   if (md) {

@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 /**
  * Renders insights.md → insights.html (standalone, no full dashboard).
- * Same dark theme as dashboard-template.html. Reusable after each /usage-insights run.
+ * Same dark theme as dashboard-template.html. Reusable after each manual run (bun .claude/scripts/render-insights.ts).
  */
 
 import { existsSync, readFileSync, writeFileSync } from "fs";
@@ -226,7 +226,7 @@ document.getElementById('content').innerHTML = md.render(MD_CONTENT);
 async function main() {
   if (!existsSync(INSIGHTS_MD)) {
     console.error(`[error] No insights.md found at ${INSIGHTS_MD}`);
-    console.error("Run /usage-insights first to generate it.");
+    console.error("Run insights generation first (delegate to builder with .claude/data/usage/aggregates.json as context).");
     process.exit(1);
   }
 
