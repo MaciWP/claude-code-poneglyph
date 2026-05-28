@@ -5,8 +5,9 @@ wave: W4
 depends_on: [US8]
 tdd_mode: optional
 estimate: S
-status: approved
+status: implemented
 approved: 2026-05-28
+implemented: 2026-05-28
 ---
 
 # US9 — Update CLAUDE.md raíz
@@ -15,7 +16,7 @@ approved: 2026-05-28
 
 | Campo | Valor |
 |---|---|
-| **Status** | 🟡 draft |
+| **Status** | ✅ implemented (2026-05-28) |
 | **Wave** | W4 |
 | **Depends on** | US8 (debe estar resuelto saber si `orchestrator-protocol` queda o no, y `planner-protocol` ya resuelto en US3) |
 | **Blocks** | US10 (dogfooding) |
@@ -73,3 +74,39 @@ approved: 2026-05-28
 - `Grep "planner-protocol\|orchestrator-protocol" CLAUDE.md` retorna solo refs históricas legítimas (si las hay) o vacío.
 - Smoke: leer CLAUDE.md como recién llegado → en <2 minutos entender qué hace el sistema.
 - `bun test ./.claude/hooks/` sigue 81/81.
+
+## Closeout (2026-05-28)
+
+US sin decisión absorbida — solo actualización documental.
+
+### Edits ejecutadas
+
+| Edit | Sección | Cambio |
+|---|---|---|
+| 1 | Commandment IX (línea 86) | Añadida frase explícita sobre living-spec loop como mecánica de auto-improvement formal (vía `/retro` Phase 5) |
+| 2 | Mental model 4 phases → 5-phase workflow (líneas 97-114) | Renombrada sección + tabla completa rehecha con 6 fases (Scope/Tech-plan/TDD-design/Build/Critic/Retro) + columnas Output artefact + Hard gate; añadidas referencias a `/flow` orchestrator + `drillme` transversal + tabla de adaptación per mode (minimal/standard/full) |
+| 3 | System inventory (sección entera) | Tabla extendida con 3 columnas temporales (baseline → audit cleanup → 5-phase refactor); counts actualizados: Skills 14→19, Hooks 6→4, Commands 4→4 (con `/flow` reemplazando `/planner`); añadida sub-sección "5-phase workflow refactor (W1-W5)" con tabla de waves |
+
+### Counts canonical post-refactor
+
+| Componente | Count actual | Inventario |
+|---|---|---|
+| **Skills** | 19 | anti-hallucination, build, critic, decide, decision-stress-test, diagnostic-patterns, drillme, explain-changes, lsp-operations, meta-create, meta-settings-cookbook, orchestrator-protocol, prompt-engineer, retro, review-patterns, scope, security-review, tdd-design, tech-plan |
+| **Commands** | 4 | decide, explain-changes, flow, sync-claude |
+| **Agents** | 3 | builder, reviewer, scout |
+| **Hooks** | 4 | auto-approve, post-compact, security-gate, validators/code-validator |
+| **Rules** | 2 + paths/ | error-recovery, test-policy + paths/{hooks,orchestration} |
+| **Output-styles** | 1 | poneglyph |
+
+### Refs muertas auditadas
+
+- `planner-protocol`: 2 menciones — ambas históricas legítimas (documentan MIGRAR-Y-CUT de US3). NO refs muertas.
+- `tech-planner` / `tdd-designer` / `story-executor` / `critic-reviewer` / `retro-learner` / `scope-definer`: 0 matches (nombres long-form descartados; canonical = action-verb cortos).
+- `orchestrator-protocol`: refs activas legítimas (skill sigue viva, SIMPLIFICAR ratificada en US8).
+
+### Verificación post-impl
+
+- `bun test ./.claude/hooks/` → 81/81 ✅
+- CLAUDE.md 270 líneas (bajo smell signal de 300 ✅)
+- `Grep` confirma 0 refs muertas
+- Lectura cold-read: sección "Mental model" + "System inventory" + "5-phase workflow refactor" da picture completo del sistema sin acudir al spec histórico

@@ -83,7 +83,7 @@ The backbone of the project. Ordered from most fundamental (the human↔Claude r
 | **VI** | **Security without ambiguity** — protect data and work | Prevent secret leaks. Block or ask before irreversible deletions. `--no-verify`, `--force`, `reset --hard` require explicit authorization. Investigate unexpected state before overwriting. |
 | **VII** | **Performance and efficiency** — parallelize, use tokens well | Parallelize everything independent. Each token consumed should yield more product than ceremony. Fewer round-trips, fewer re-reads, less noise. |
 | **VIII** | **Optimal meta-prompting** — invoke your own agents well | The Lead invokes its agents with complete prompts: context, goal, constraints, deliverable, and injected memory (`.claude/agent-memory/{agent}/MEMORY.md`). A poor prompt produces a poor agent. The prompt to an agent is as important as the code it generates. The `prompt-engineer` skill is available for refinement when needed. |
-| **IX** | **Observability and self-improvement** — measure to know you're improving | Without metrics, the other commandments are blind faith. Observability is **reactive ad-hoc** — no built-in telemetry pipeline by design (previous one had 0 executions and was cut on 2026-05-28). When a concrete question arises, query transcripts/traces directly or delegate analysis to `builder`. The bar to invoke telemetry is "I have a question the data can answer", not routine. |
+| **IX** | **Observability and self-improvement** — measure to know you're improving | Without metrics, the other commandments are blind faith. Observability is **reactive ad-hoc** — no built-in telemetry pipeline by design (previous one had 0 executions and was cut on 2026-05-28). When a concrete question arises, query transcripts/traces directly or delegate analysis to `builder`. The bar to invoke telemetry is "I have a question the data can answer", not routine. **Self-improvement also runs through the living-spec loop**: every feature lifecycle ends in `/retro` (Phase 5) which produces promotion candidates + classified spec-drift — concrete artefacts the user can ratify or reject. |
 | **X** | **Poneglyph maintainability** — the system doesn't rot | The meta-system itself needs care: skills with valid triggers, no duplicate agents, no contradictory rules, dead code detected. Each component gets reviewed against the earlier commandments. |
 
 ### How to use the commandments to decide
@@ -94,18 +94,32 @@ The backbone of the project. Ordered from most fundamental (the human↔Claude r
 
 ---
 
-## Mental model: 4 phases of work
+## Mental model: 5-phase workflow
 
-Every non-trivial task passes through four phases. The system covers each phase with specific components, but the phases are a **mental model**, not a forced pipeline — small tasks skip to phase 3 directly.
+Every non-trivial **feature** passes through 5 phases. The system covers each phase with a dedicated skill, but the phases are a **mental model**, not a forced pipeline — small tasks skip to Phase 3 directly (`minimal` mode) or bypass the workflow entirely (single-turn edits don't need it).
 
-| Phase | Components |
-|---|---|
-| **1. Idea / Problem** | `prompt-engineer` (refine vague prompts), `AskUserQuestion` (clarify intent), `anti-hallucination` (verify premises before asserting) |
-| **2. Refine / Plan** | `tech-plan` skill (Quick/Standard/Full), `/decide` (3 perspectives, low-stakes), `/decision-stress-test` (5-12 perspectives, high-stakes). When project test policy is `business-critical` or `mixed`, planner places test nodes before impl nodes in the DAG (TDD-first decomposition — see `rules/test-policy.md`) |
-| **3. Execute / Develop** | `builder` agent, `meta-create` (extensions), `lsp-operations`, `review-patterns`. Builder respects TDD-first nodes from the plan (red→green) when policy applies; otherwise tests run as post-impl verification |
-| **4. Review / Observe** | `reviewer` agent, `review-patterns`, `security-review`, `diagnostic-patterns`. Telemetry is reactive ad-hoc: query transcripts/traces directly or delegate analysis to `builder` when a concrete question arises (no built-in pipeline by design) |
+| Phase | Skill / Command | Output artefact | Hard gate |
+|---|---|---|---|
+| **1. Scope** | `scope` skill | `spec.md` (problem + AC + out-of-scope) | 1→2 (human approval) |
+| **2. Tech-plan** | `tech-plan` skill (Quick/Standard/Full) | `tasks/index.md` + `tasks/US{N}.md` (DAG) | — |
+| **2.5. Oracle design** | `tdd-design` skill (dual-mode) | `tests.md` (TDD) and/or `validations.md` (markdown/configs) | 2→3 (human approval) |
+| **3. Build** | `build` skill (loop per HU) | code diff (with TDD red→green when policy applies) | per-HU tests pass |
+| **4. Critic** | `critic` skill | `review.md` (5-section checklist + verdict) | verdict APPROVED |
+| **5. Retro** | `retro` skill | `retro.md` (promotions + living-spec deltas + Commandments audit) | feature lifecycle closes |
 
-Phase 4 is **reactive ad-hoc** by design (see Commandment IX) — observability runs only when the user suspects something concrete, not on every turn nor as a regular routine.
+**Orchestrator**: `/flow <task>` chains all 5 phases end-to-end with adaptive triage (`--minimal|--standard|--full`) and resumability (`--resume <slug>`). Reads/writes `.claude/plans/{NNN}-{slug}/state.json`. See `.claude/commands/flow.md` for the canonical workflow.
+
+**Transversal**: `drillme` skill provides Socratic check on-demand (4 canonical categories — location/approach/context/failure) — auto-invoked by phase skills at closure; user-invokable via `/drillme`.
+
+**Adaptation per mode**:
+
+| Mode | Phases executed | When |
+|---|---|---|
+| `minimal` | Phase 3 direct + Phase 4 light | trivial task, 1-2 files, no design decisions |
+| `standard` (default) | All 5 phases, drillme normal | feature 2-5 files OR single domain |
+| `full` | All 5 phases + decision-stress-test in Phase 2 + reviewer agent (Opus) in Phase 4 + Commandments forensics in Phase 5 | architectural / multi-domain / auth-payments-security |
+
+Telemetry stays **reactive ad-hoc** by design (Commandment IX) — observability runs only when the user has a concrete question, not on every turn.
 
 ### Test policy (this repo)
 
@@ -230,17 +244,27 @@ Guideline: if asking "does the agent need this in EVERY prompt?", and the answer
 
 ---
 
-## System inventory (post-audit 2026-05-25)
+## System inventory (post-5-phase workflow refactor 2026-05-28)
 
-Actualizado tras la auditoría poneglyph (May 2026). Cualquier nuevo componente debe justificarse contra los 10 Commandments y los anti-patterns oficiales 2026.
+Actualizado tras el refactor del 5-phase workflow (US1-US10) sobre la baseline de la auditoría poneglyph (May 2026). Cualquier nuevo componente debe justificarse contra los 10 Commandments y los anti-patterns oficiales 2026.
 
-| Componente | Antes (audit baseline) | Ahora | Detalle |
-|---|---|---|---|
-| Agents | 7 + 1 meta | **3** | builder, reviewer, scout. Planning y diagnóstico viven en skills (`tech-plan`, `diagnostic-patterns`) invocadas por el Lead — sin agents dedicados. Meta-create también es skill. |
-| Skills | 28 | **14** | Cortadas las skills genéricas (typescript/bun/testing/logging/db/careful/freeze) cuyo dominio ya conoce el LLM; consolidaciones (review-patterns, meta-create) preservadas |
-| Hooks registrados | 15+ | **6** | Pipeline trace/scoring/patterns eliminado; gates de seguridad preservados, `lead-parallelism-gate` y `validators/context/*` eliminados en pre-migración iterativa; en iter 2 (2026-05-25d) se cortaron deliberadamente `validate-tests-pass.ts` (Stop) y `json-validator.ts` (PostToolUse) — funcionaban pero el coste (tiempo + tokens en cada turno/Edit) no se consideró proporcional al valor; verificación de tests pasa a ser responsabilidad explícita del Lead |
-| Slash commands | 10 | **4** | `decide`, `explain-changes`, `planner`, `sync-claude`. Cortados en 2026-05-28 tras medición empírica 0 uso 30d: `/usage-snapshot`, `/usage-insights`, `/retrospective`, `/learn`. Wrappers triviales preservados (US-008 RECHAZADA: activación explícita aporta) |
-| Rules | 7 | **2 + paths/** | `bootstrap-lead.md`, `error-recovery.md` (rewritten Lead-driven) + `paths/{hooks,orchestration}.md` |
-| Output-styles | 1 (caveman) | **1 (poneglyph)** | Caveman fusionado con la guía de formato en un único output-style |
+| Componente | Audit baseline (early 2026) | Post-audit cleanup (2026-05-25/28) | Post 5-phase refactor (2026-05-28) | Detalle |
+|---|---|---|---|---|
+| Agents | 7 + 1 meta | 3 | **3** | builder, reviewer, scout. Builder y reviewer KEEP-conditional (invoked by `build`/`critic` skills only when HU ≥5 files OR critical area). Meta-create también es skill. |
+| Skills | 28 | 14 | **19** (+7 phase, -2 absorbed) | 6 phase skills (`scope`, `tech-plan`, `tdd-design`, `build`, `critic`, `retro`) + transversal `drillme` añadidas en W2; `planner-protocol` migrada-y-cortada (6 refs preservadas bajo `tech-plan/references/`); `orchestrator-protocol` SIMPLIFICADA -3 refs (US8) |
+| Hooks registrados | 15+ | 6 | **4** | `auto-approve`, `post-compact`, `security-gate`, `validators/code-validator`. Verificación de tests = responsabilidad explícita del Lead (no Stop hook automático) |
+| Slash commands | 10 | 4 | **4** | `decide`, `explain-changes`, `flow`, `sync-claude`. `/flow` (W3) reemplaza al wrapper `/planner`; skills nuevas usan canonical pattern skill-name = command-name sin wrapper redundante (docs Anthropic 2026) |
+| Rules | 7 | 2 + paths/ | **2 + paths/** | `error-recovery.md` (Lead-driven), `test-policy.md` + `paths/{hooks,orchestration}.md` |
+| Output-styles | 1 (caveman) | 1 (poneglyph) | **1 (poneglyph)** | Cross-ref desde `orchestrator-protocol` post-US8 SIMPLIFICAR |
 
-Detalle completo: `~/.claude/projects/D--PYTHON-claude-code-poneglyph/memory/project_audit_outcome_2026-05-25.md` + `project_cleanup_2026-05-25b.md`.
+Detalle completo: `~/.claude/projects/D--PYTHON-claude-code-poneglyph/memory/project_audit_outcome_2026-05-25.md` + `project_cleanup_2026-05-25b.md` + spec `.claude/plans/001-poneglyph-5phase-workflow/spec.md`.
+
+### 5-phase workflow refactor (W1-W5, 2026-05-28)
+
+| Wave | HUs | Outcome |
+|---|---|---|
+| W1 Foundation | US1 | Estructura `.claude/plans/{NNN}-{slug}/` + 7 templates (spec, tasks, tasks-index, tests, validations, review, retro, state.json) |
+| W2 Skills | US2-US7, US11 | 7 skills nuevas (6 phase + drillme transversal); decisiones absorbidas: `planner-protocol` MIGRAR-Y-CUT (US3), `builder` KEEP-cond (US5), `reviewer` KEEP-cond + `review-patterns` KEEP (US6) |
+| W3 Orquestación | US8 | `/flow` command (feature-level orchestrator) + `orchestrator-protocol` SIMPLIFICAR (-3 refs duplicadas/obsoletas) |
+| W4 Integración | US9 | CLAUDE.md actualizada (este documento) reflejando estado final |
+| W5 Cierre | US10 | Dogfooding + retro final sobre el meta-refactor |
