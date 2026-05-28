@@ -1,12 +1,14 @@
 ---
 us: US4
-title: Skill `tdd-design` + command `/tdd-design` (Fase 2.5) — soporta TDD-mode y validation-mode
+title: Skill `tdd-design` (Fase 2.5) — soporta TDD-mode y validation-mode
 wave: W2
 depends_on: [US1]
 tdd_mode: optional
 estimate: M
-status: approved
+status: closed
 approved: 2026-05-28
+closed: 2026-05-28
+note: status normalized in lifecycle closure (Phase 3 predated Step 8b convention)
 ---
 
 # US4 — `tdd-design` skill + `/tdd-design` command (Fase 2.5)

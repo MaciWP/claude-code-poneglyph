@@ -1,13 +1,15 @@
 ---
 us: US3
-title: Skill `tech-plan` + command `/plan` (Fase 2) + decisión `planner-protocol`
+title: Skill `tech-plan` (Fase 2) + decisión `planner-protocol` (MIGRAR-Y-CUT ratificado)
 wave: W2
 depends_on: [US1]
 tdd_mode: optional
 estimate: L
-status: approved
+status: closed
 approved: 2026-05-28
-absorbs_decision: planner-protocol skill (cortar/simplificar/migrar)
+closed: 2026-05-28
+absorbs_decision: planner-protocol skill (MIGRAR-Y-CUT ratificado — 6 refs preservadas, 2 cortadas)
+note: status normalized in lifecycle closure (Phase 3 predated Step 8b convention)
 ---
 
 # US3 — `tech-plan` skill + `/plan` command (Fase 2)

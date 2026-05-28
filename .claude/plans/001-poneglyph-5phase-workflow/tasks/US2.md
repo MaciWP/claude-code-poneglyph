@@ -5,8 +5,10 @@ wave: W2
 depends_on: [US1]
 tdd_mode: optional
 estimate: M
-status: approved
+status: closed
 approved: 2026-05-28
+closed: 2026-05-28
+note: status normalized in lifecycle closure (Phase 3 predated Step 8b convention)
 ---
 
 # US2 — `scope` skill + `/scope` command (Fase 1)

@@ -5,9 +5,10 @@ wave: W4
 depends_on: [US8]
 tdd_mode: optional
 estimate: S
-status: implemented
+status: closed
 approved: 2026-05-28
 implemented: 2026-05-28
+closed: 2026-05-28
 ---
 
 # US9 — Update CLAUDE.md raíz

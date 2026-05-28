@@ -5,9 +5,10 @@ wave: W2
 depends_on: [US1]
 tdd_mode: optional
 estimate: M
-status: implemented
+status: closed
 approved: 2026-05-28
 implemented: 2026-05-28
+closed: 2026-05-28
 absorbs_decision: builder agent (KEEP-conditional ratificado)
 ratified_decision: KEEP-conditional — builder agent kept, invoked by build skill only when HU >=5 files OR architectural change
 ---

@@ -36,6 +36,7 @@ Honest caveat: este propio retro NO se produjo vía `/flow --resume 001-poneglyp
 
 ### ❌ No funcionó
 
+- **Phase 3 (build) NO actualizó status frontmatter de US{N}.md al cerrar HU** — los US1-US4 quedaron en `status: approved` y US11 en `status: draft` aunque sus skills/templates estaban entregados. US5-US9 quedaron en `status: implemented` no `closed`. Usuario detectó la incoherencia al cerrar feature: "De la spec 001 está todo hecho?" → audit reveló 11 frontmatters US no normalizados a `closed`. **Causa raíz**: la skill `build` (US5) no incluía Step 8b (update US{N}.md frontmatter como parte del cierre HU); el meta-refactor en sí precedió a esa convención. **Fix aplicado en este mismo commit**: (1) `build/SKILL.md` patched con Step 8b explícito; (2) `retro/SKILL.md` Step 13 patched con verification gate iterativo que cierra residuales + flag para Phase 3 lessons; (3) `retro.template.md §Cierre del feature` reescrito como mandatory verification gate; (4) memoria `feedback_status_close_verification.md` añadida; (5) los 11 frontmatters normalizados manualmente como cleanup residual. **Lección estructural**: status closure por HU = responsabilidad Phase 3 (build); verification + cleanup residual = responsabilidad Phase 5 (retro). Si retro tiene que cerrar residuales → flag para improving Phase 3.
 - **No consulté memorias propias antes de re-decidir cosas conocidas** — `activation.keywords` NO funciona (documentado en cleanup-25b 2026-05-25) pero al diseñar scope/drillme intenté añadirlo. Usuario tuvo que flagged: "esto es verdad? me suena que una vez me dijiste que no funcionaba". Lección: consultar `MEMORY.md` ANTES de tomar decisiones, no DESPUÉS.
 - **Creé wrappers `commands/*.md` redundantes** antes de descubrir docs Anthropic 2026 ("Custom commands have been merged into skills"). Tuve que `git rm` los wrappers (scope/drillme/planner) mid-flight. Lección: verificar docs antes de duplicar mecanismos.
 - **No activé `meta-create` ni `meta-settings-cookbook` proactivamente al inicio** — usuario lo flagged: "no has activado la skill meta creator ni cookbook (esto es justo lo que quiero evitar)". Lección: al tocar `.claude/{skills,commands,hooks,rules,agents}/`, primera acción debe ser invocar las meta-skills.
@@ -125,14 +126,24 @@ Total: **6 candidatas**. 0 aplicadas automáticamente — todas requieren aproba
 - [ ] **Promoción a global via `/sync-claude`** del 5-phase workflow — Owner: usuario invoca cuando esta feature cierre. Trigger: feature lifecycle `status: closed`. Side effect: las 7 skills + `/flow` command quedan disponibles en `~/.claude/` para cualquier otro proyecto.
 - [ ] **Decidir promoción de "Auxiliary skills pattern" a rule global** — Owner: sesión siguiente cuando segundo proyecto necesite multi-skill orchestration. Si emerge → `~/.claude/rules/auxiliary-skills-pattern.md`. Si no emerge en 2 sprints → mantener solo como memory.
 
-## Cierre del feature
+## Cierre del feature (verification gate executed)
 
-Al cerrar este retro:
+Aplicando el verification checklist (post-mejora Step 13 de `retro` skill) — iterado y verificado tras audit del usuario:
 
 - ✅ `spec.md` frontmatter → `status: closed`
 - ✅ `tasks/index.md` frontmatter → `status: closed`
+- ✅ **`tasks/US{1-11}.md` frontmatters → `status: closed`** (los 11 normalizados — 5 cerrados residualmente desde `approved`/`draft` + 5 promovidos desde `implemented` + 1 ya estaba en `closed` desde US10). Cierre residual flagged en §Lecciones ❌ como Phase 3 process gap (build skill missed Step 8b — fix aplicado en este commit)
 - N/A `state.json` (no se creó — meta-refactor se ejecutó antes de que `/flow` existiera; documentado como honest caveat en §Resumen)
 - ✅ Commit final con mensaje convencional
+
+**Improvement aplicado en este mismo commit (para futuras features)**:
+
+| Patch | Archivo | Cambio |
+|---|---|---|
+| Phase 3 ownership | `.claude/skills/build/SKILL.md` Step 8 | Renombrado a "Update state.json AND `tasks/US{N}.md` frontmatter"; añadido sub-step 8b mandatory; anti-pattern bloqueado |
+| Phase 5 verification | `.claude/skills/retro/SKILL.md` Step 13 | Reescrito como "Close feature lifecycle (verification gate)" con checklist iterativo explícito + flag para Phase 3 lessons si encuentra residuales |
+| Template authoritative | `.claude/plans/templates/retro.template.md §Cierre del feature` | Reescrito como mandatory verification gate con loop "para cada US{N}.md" |
+| Memory persistente | `~/.claude/projects/.../memory/feedback_status_close_verification.md` | Añadida memory para evitar regresión en futuras sesiones |
 
 ## Honest caveat sobre el dogfooding
 

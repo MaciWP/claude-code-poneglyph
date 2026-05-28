@@ -241,15 +241,42 @@ status: open  # flips to "approved" after user reviews
 
 Body: 8 sections (Summary, Lessons ✅/❌, Process, Drillme, Promotions, Living-spec, Commandments, Action items).
 
-### Step 13 — Close feature lifecycle
+### Step 13 — Close feature lifecycle (verification gate)
 
 After producing retro.md AND user has reviewed (light/standard) or explicitly closed (full):
 
-- Update `spec.md` frontmatter: `status: closed` + `closed: YYYY-MM-DD` + `retro: retro.md`.
-- Update `tasks/index.md` frontmatter: `status: closed` + `closed: YYYY-MM-DD`.
-- Update `state.json`: `current_phase: 5` complete + `feature_closed: true`.
+**13a. Mandatory verification checklist** — iterate and verify EACH artefact:
 
-**Important**: do NOT close lifecycle while promotions are still pending approval. Either close them in this session or carry as action items into the next session — but the feature itself can close.
+```
+For each artefact in .claude/plans/{NNN}-{slug}/:
+  - [ ] spec.md frontmatter status: closed (else: update + add closed: YYYY-MM-DD)
+  - [ ] tasks/index.md frontmatter status: closed (else: update + add closed: YYYY-MM-DD)
+  - [ ] For each tasks/US{N}.md:
+        if status != closed:
+          → mark closed: YYYY-MM-DD + status: closed RESIDUALLY
+          → record in retro.md §Lessons ❌: "Phase 3 did not close US{N}.md frontmatter — build skill missed Step 8b on this HU"
+  - [ ] If state.json exists → current_phase: closed + feature_closed: true + last_update: YYYY-MM-DD
+  - [ ] retro.md frontmatter status: approved (after user review) — flips from initial `open`
+```
+
+The retro skill is the **last gate**. Any US{N}.md found not-closed at this point is a Phase 3 (`build`) process failure that the retro must:
+
+1. Close residually (do the work).
+2. Flag in lessons ❌ for process improvement (the lesson is about Phase 3, not the HU itself).
+
+**Anti-pattern blocked**: closing the feature with US frontmatters left in `approved` or `draft` → documental incoherence; future audits will surface ghost-state.
+
+**13b. Apply approved promotions and living-spec deltas**:
+
+- Approved promotions → Lead writes target file (default-allow) or delegates to `builder` if ≥5 files.
+- Approved living-spec diff → patch `spec.md` with note "v2 — delta from retro {NNN}-{slug}".
+
+**13c. Update counters**:
+
+- `state.json.retro_status = "approved"`, `feature_closed = true`.
+- `retro.md.promotions_approved` counter += N (per actually-applied).
+
+**Important**: do NOT close lifecycle while promotions are still pending approval. Either close them in this session or carry as action items into the next session — but the feature itself CAN close once 13a verification passes (residuals fixed) + retro.md is produced.
 
 ### Step 14 — Report + approval request
 

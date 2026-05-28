@@ -5,9 +5,10 @@ wave: W2
 depends_on: [US1]
 tdd_mode: optional
 estimate: M
-status: implemented
+status: closed
 approved: 2026-05-28
 implemented: 2026-05-28
+closed: 2026-05-28
 absorbs_decision: reviewer agent (KEEP-conditional ratificado) + review-patterns (KEEP ratificado)
 ratified_decision: |
   reviewer agent: KEEP-conditional — invocado por critic solo cuando complejidad >60

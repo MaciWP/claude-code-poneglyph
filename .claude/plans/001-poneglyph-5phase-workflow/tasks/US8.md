@@ -5,9 +5,10 @@ wave: W3
 depends_on: [US2, US3, US4, US5, US6, US7]
 tdd_mode: optional
 estimate: L
-status: implemented
+status: closed
 approved: 2026-05-28
 implemented: 2026-05-28
+closed: 2026-05-28
 absorbs_decision: orchestrator-protocol skill (SIMPLIFICAR ratificado)
 ratified_decision: |
   SIMPLIFICAR — orchestrator-protocol mantiene su núcleo turn-level (5-step Lead

@@ -164,9 +164,11 @@ Coverage: 4/4 in the `[approach]` category — Phase 3 is implementation-focused
 
 > Skill-to-skill invocation is probabilistic. If `drillme` does not auto-fire and a real doubt blocks progress, the Lead invokes `/drillme "<concrete doubt — HU US{N}>"` manually before closing the HU.
 
-### Step 8 — Update state.json
+### Step 8 — Update state.json AND `tasks/US{N}.md` frontmatter
 
-After tests pass (or validations close):
+Two updates per HU closure (both mandatory — Cmd IX observability + documental coherence):
+
+**8a. Update `state.json`** after tests pass (or validations close):
 
 ```json
 {
@@ -187,6 +189,23 @@ After tests pass (or validations close):
 ```
 
 If `state.json` does not exist yet (first HU of Phase 3) → create it with the schema declared in US8 (`/flow`). If schema undefined → use the minimal shape above.
+
+**8b. Update `tasks/US{N}.md` frontmatter** — the closed HU's own document:
+
+```diff
+ ---
+ us: US{N}
+ ...
+- status: approved
++ status: closed
++ closed: YYYY-MM-DD
++ implemented: YYYY-MM-DD  # if not present
+ ---
+```
+
+Without this update, the US document remains in `status: approved` even though its code is delivered → documental incoherence at feature closure (Phase 5 retro catches this as a smell). The build skill is RESPONSIBLE for closing the US frontmatter the moment the HU passes its gate.
+
+**Anti-pattern blocked**: closing a HU in `state.json` but leaving `tasks/US{N}.md status: approved` → forces Phase 5 retro to do residual cleanup + flag a Phase 3 process failure in lessons ❌.
 
 ### Step 9 — Verify (blocking gate per HU)
 
@@ -211,6 +230,7 @@ Output to user:
 - Delegated to builder: <yes|no> + reason
 - AskUserQuestion fired: <count>
 - state.json updated.
+- tasks/US{N}.md frontmatter updated: status: closed + closed: YYYY-MM-DD
 
 Next HU available: US{M} (depends_on satisfied)
   → /build US{M} para ejecutar

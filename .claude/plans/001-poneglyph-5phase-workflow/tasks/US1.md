@@ -5,8 +5,13 @@ wave: W1
 depends_on: []
 tdd_mode: optional
 estimate: M
-status: approved
+status: closed
 approved: 2026-05-28
+closed: 2026-05-28
+note: |
+  Status normalized 2026-05-28 in feature lifecycle closure (US10 retro residual cleanup).
+  Original delivery was earlier in 2026-05-28. Phase 3 (build) at the time predated the
+  Step 8b convention that updates US{N}.md frontmatter per HU — gap fixed in this commit.
 ---
 
 # US1 — Foundation: estructura + templates
