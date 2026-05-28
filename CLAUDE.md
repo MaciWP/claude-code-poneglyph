@@ -83,7 +83,7 @@ The backbone of the project. Ordered from most fundamental (the human↔Claude r
 | **VI** | **Security without ambiguity** — protect data and work | Prevent secret leaks. Block or ask before irreversible deletions. `--no-verify`, `--force`, `reset --hard` require explicit authorization. Investigate unexpected state before overwriting. |
 | **VII** | **Performance and efficiency** — parallelize, use tokens well | Parallelize everything independent. Each token consumed should yield more product than ceremony. Fewer round-trips, fewer re-reads, less noise. |
 | **VIII** | **Optimal meta-prompting** — invoke your own agents well | The Lead invokes its agents with complete prompts: context, goal, constraints, deliverable, and injected memory (`.claude/agent-memory/{agent}/MEMORY.md`). A poor prompt produces a poor agent. The prompt to an agent is as important as the code it generates. The `prompt-engineer` skill is available for refinement when needed. |
-| **IX** | **Observability and self-improvement** — measure to know you're improving | Without metrics, the other commandments are blind faith. Observability is **reactive ad-hoc** — scripts in `.claude/scripts/` (`usage-snapshot.ts`, `anomaly-detector.ts`, `render-insights.ts`) are run manually when there is a concrete suspicion. No UI commands, no automation — measured 0 invocations of UI commands in 30d justifies this. The bar to invoke telemetry is "I have a question the data can answer", not routine. |
+| **IX** | **Observability and self-improvement** — measure to know you're improving | Without metrics, the other commandments are blind faith. Observability is **reactive ad-hoc** — no built-in telemetry pipeline by design (previous one had 0 executions and was cut on 2026-05-28). When a concrete question arises, query transcripts/traces directly or delegate analysis to `builder`. The bar to invoke telemetry is "I have a question the data can answer", not routine. |
 | **X** | **Poneglyph maintainability** — the system doesn't rot | The meta-system itself needs care: skills with valid triggers, no duplicate agents, no contradictory rules, dead code detected. Each component gets reviewed against the earlier commandments. |
 
 ### How to use the commandments to decide
@@ -103,7 +103,7 @@ Every non-trivial task passes through four phases. The system covers each phase 
 | **1. Idea / Problem** | `prompt-engineer` (refine vague prompts), `AskUserQuestion` (clarify intent), `anti-hallucination` (verify premises before asserting) |
 | **2. Refine / Plan** | `planner-protocol` skill (Quick/Standard/Full), `/decide` (3 perspectives, low-stakes), `/decision-stress-test` (5-12 perspectives, high-stakes) |
 | **3. Execute / Develop** | `builder` agent, `meta-create` (extensions), `lsp-operations`, `review-patterns` |
-| **4. Review / Observe** | `reviewer` agent, `review-patterns`, `security-review`, `diagnostic-patterns`. Telemetry is reactive ad-hoc via scripts: `bun .claude/scripts/usage-snapshot.ts`, `anomaly-detector.ts`, `render-insights.ts` (no UI commands by design) |
+| **4. Review / Observe** | `reviewer` agent, `review-patterns`, `security-review`, `diagnostic-patterns`. Telemetry is reactive ad-hoc: query transcripts/traces directly or delegate analysis to `builder` when a concrete question arises (no built-in pipeline by design) |
 
 Phase 4 is **reactive ad-hoc** by design (see Commandment IX) — observability runs only when the user suspects something concrete, not on every turn nor as a regular routine.
 
