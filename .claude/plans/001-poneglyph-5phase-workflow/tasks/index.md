@@ -1,0 +1,139 @@
+---
+spec: 001-poneglyph-5phase-workflow
+created: 2026-05-28
+mode: full
+status: approved
+approved: 2026-05-28
+phase: 2
+total_us: 10
+dag_complete: true
+---
+
+# Tasks index — 5-phase workflow refactor
+
+## Resumen ejecutivo
+
+Descomposición de `spec.md` aprobado en **10 HUs atómicas** (era 14 — se absorbieron 4 "HUs de decisión" como ACs de las HUs que naturalmente las requieren). Organizadas en **5 waves**.
+
+Cambio clave vs V1 del tasks: las decisiones arquitectónicas (cortar/mantener `builder` agent, `reviewer` agent, `planner-protocol`, `review-patterns`, `orchestrator-protocol`) **no son HUs independientes** — son ACs dentro de la HU que las requiere para funcionar coherentemente. Esto evita HU artificiales y mantiene atomicidad real.
+
+**Crítica empírica adicional** (post-lectura de `review-patterns/SKILL.md`): NO se corta `review-patterns` — tiene 17+ references valiosas (SOLID, N+1, complexity, refactoring patterns). `critic-reviewer` la **invoca** como catálogo de patrones, no la sustituye. Decisión refinada en US6.
+
+## Estimación de esfuerzo
+
+| Wave | HUs | Esfuerzo | Naturaleza |
+|---|---|---|---|
+| W1 Foundation | US1 | 0.5 sesión | Estructura + 6 templates IA-friendly (combinados) |
+| W2 Skills + commands | US2, US3, US4, US5, US6, US7 | 2-3 sesiones | 6 skills self-contained, paralelizables |
+| W3 Orquestación | US8 | 0.5-1 sesión | `/flow` command + decisión orchestrator-protocol |
+| W4 Integración | US9 | 0.3 sesión | CLAUDE.md update reflejando estado final |
+| W5 Cierre | US10 | 0.5-1 sesión | Dogfooding + retro Fase 5 sobre el meta-refactor |
+
+**Critical path**: ~4 sesiones standard.
+
+## DAG
+
+```mermaid
+graph TD
+  subgraph "W1 Foundation"
+    US1[US1 Estructura + 6 templates]
+  end
+
+  subgraph "W2 Skills + commands PARALELO 6 HUs"
+    US2[US2 scope-definer F1]
+    US3[US3 tech-planner F2 + decision planner-protocol]
+    US4[US4 tdd-designer F2.5]
+    US5[US5 story-executor F3 + decision builder agent]
+    US6[US6 critic-reviewer F4 + decision reviewer agent]
+    US7[US7 retro-learner F5]
+  end
+
+  subgraph "W3 Orquestacion"
+    US8[US8 /flow + decision orchestrator-protocol]
+  end
+
+  subgraph "W4 Integracion"
+    US9[US9 CLAUDE.md update]
+  end
+
+  subgraph "W5 Cierre"
+    US10[US10 Dogfooding + retro final]
+  end
+
+  US1 --> US2
+  US1 --> US3
+  US1 --> US4
+  US1 --> US5
+  US1 --> US6
+  US1 --> US7
+
+  US2 --> US8
+  US3 --> US8
+  US4 --> US8
+  US5 --> US8
+  US6 --> US8
+  US7 --> US8
+
+  US8 --> US9
+  US9 --> US10
+```
+
+**Leyenda**: W2 íntegra es paralela (6 skills self-contained, sin cross-imports). Resto secuencial por dependencias reales.
+
+## Tabla resumen
+
+| # | HU | Fase del workflow | Wave | Estimate | TDD-mode | Decisión absorbida |
+|---|---|---|---|---|---|---|
+| US1 | Estructura + templates IA-friendly | Foundation | W1 | M | optional | — |
+| US2 | `scope-definer` + `/scope` | Fase 1 | W2 | M | optional | — |
+| US3 | `tech-planner` + `/plan` | Fase 2 | W2 | L | optional | `planner-protocol` (cortar/simplificar) |
+| US4 | `tdd-designer` + `/tdd-design` | Fase 2.5 | W2 | M | optional | — |
+| US5 | `story-executor` + `/build` | Fase 3 | W2 | M | optional | `builder` agent (CUT/KEEP-cond/ABSORB) |
+| US6 | `critic-reviewer` + `/critic` | Fase 4 | W2 | M | optional | `reviewer` agent + uso de `review-patterns` |
+| US7 | `retro-learner` + `/retro` | Fase 5 | W2 | M | optional | — |
+| US8 | `/flow` orquestador | Orquestación | W3 | M-L | optional | `orchestrator-protocol` (cortar/simplificar/keep) |
+| US9 | Update CLAUDE.md raíz | Integración | W4 | S | optional | — |
+| US10 | Dogfooding + retro final | Cierre | W5 | M | optional | — |
+
+## Cross-cutting decisions (absorbidas en HUs)
+
+Decisiones que afectan a múltiples HUs pero **viven en una HU concreta** (no como HU separada):
+
+| Decisión | Dónde se toma | HUs afectadas | Criterio |
+|---|---|---|---|
+| `planner-protocol` skill (cortar/simplificar) | US3 | US3 (tech-planner la reemplaza) | Si tech-planner cubre 100% → cortar; si quedan refs útiles → migrar lo bueno + cortar resto |
+| `review-patterns` skill (cortar/mantener) | US6 | US6 (critic-reviewer la usa) | **NO cortar** (verificado: tiene 17+ refs únicas). critic-reviewer la INVOCA como catálogo |
+| `builder` agent (CUT/KEEP-cond/ABSORB) | US5 | US5 (story-executor lo invoca o no) | CUT por default; KEEP-cond solo si ≥5 archivos o context isolation real demostrada |
+| `reviewer` agent (CUT/KEEP-cond/ABSORB) | US6 | US6 (critic-reviewer lo invoca o no) | KEEP-cond por default (Opus aporta en reviews complejos); CUT si redundante con critic-reviewer en práctica |
+| `orchestrator-protocol` skill (cortar/simplificar/keep) | US8 | US8 (/flow puede solapar) | Si `/flow` cubre orquestación → simplificar el SKILL.md a verificación + agent-selection; cortar references duplicadas |
+| `scout` agent (mantener) | — | Decisión ya tomada en spec.md | KEEP — context isolation real demostrada (exploración masiva read-only) |
+
+## Open questions (deferidas a Fase 3)
+
+1. **Templates location**: confirmado `.claude/plans/templates/` en US1. Si cambia → impacto en US2-US7.
+2. **`/flow` declarativo (.md) vs .ts**: decidir en US8 según necesidad real de orquestación condicional.
+3. **Heurística complejidad para triaje**: empezar manual ("Lead estima"), automatizar si emerge patrón.
+4. **`state.json` schema**: definir mínimo en US8 (spec_id, current_phase, phases_completed, gates_approved, us_completed, us_pending, mode).
+5. **Hard gate UX**: `AskUserQuestion` 1 opción "approve" vs mensaje + espera. Empírico en US8.
+6. **Drillme: interno vs elevado al usuario**: ambos modos según necesidad — interno produce preguntas que opcionalmente se elevan.
+7. **Property-based tests opt-in**: criterio exacto en US4 (`tdd-designer`).
+8. **Living-spec loop**: criterio "delta legítimo" en US7 (`retro-learner`).
+9. **Reanudación de sesión via `/flow --resume <slug>`**: implementar en US8 si state.json existe.
+10. **Promociones a global vía PR automático**: out-of-scope (manual por ahora).
+
+## Anti-patterns mitigation
+
+| Anti-pattern | Cómo se evita en este plan |
+|---|---|
+| HUs artificiales (decisión = HU) | Decisiones absorbidas como ACs en HU dueña |
+| Over-specification del spec | 10 open questions deferidas, no inventadas |
+| Spec theater | Promociones en US7 requieren aprobación usuario = acción obligada |
+| Non-atomic tasks | Cada HU ≤1 sesión + deps explícitas + escape hatch documentado si decisión absorbida excede |
+| Ceremonia uniforme | Adaptación intra-fase en cada skill + triaje en `/flow` (US8) |
+| Sub-skills compartidas frágiles | Principio 5: self-contained; duplicación > orquestación manual |
+| Premisas falsas (Arch H) | Asumido: subagents pueden invocar skills (corregido per docs oficiales) |
+| Re-acumular complejidad | US3/US5/US6/US8 fuerzan poda condicional de viejas |
+
+## Próximo paso
+
+`tasks/` status: `draft`. Hard gate humano 2→3 requiere aprobación de **tasks/index.md + todas las US{N}.md + tests.md** (Fase 2.5 siguiente). Tras aprobación: arranca Fase 3.
