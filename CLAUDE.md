@@ -83,7 +83,7 @@ The backbone of the project. Ordered from most fundamental (the human↔Claude r
 | **VI** | **Security without ambiguity** — protect data and work | Prevent secret leaks. Block or ask before irreversible deletions. `--no-verify`, `--force`, `reset --hard` require explicit authorization. Investigate unexpected state before overwriting. |
 | **VII** | **Performance and efficiency** — parallelize, use tokens well | Parallelize everything independent. Each token consumed should yield more product than ceremony. Fewer round-trips, fewer re-reads, less noise. |
 | **VIII** | **Optimal meta-prompting** — invoke your own agents well | The Lead invokes its agents with complete prompts: context, goal, constraints, deliverable, and injected memory (`.claude/agent-memory/{agent}/MEMORY.md`). A poor prompt produces a poor agent. The prompt to an agent is as important as the code it generates. The `prompt-engineer` skill is available for refinement when needed. |
-| **IX** | **Observability and self-improvement** — measure to know you're improving | Without metrics, the other commandments are blind faith. Traces, scoring, error patterns and lessons feed a continuous improvement cycle. |
+| **IX** | **Observability and self-improvement** — measure to know you're improving | Without metrics, the other commandments are blind faith. Observability is **reactive ad-hoc** — scripts in `.claude/scripts/` (`usage-snapshot.ts`, `anomaly-detector.ts`, `render-insights.ts`) are run manually when there is a concrete suspicion. No UI commands, no automation — measured 0 invocations of UI commands in 30d justifies this. The bar to invoke telemetry is "I have a question the data can answer", not routine. |
 | **X** | **Poneglyph maintainability** — the system doesn't rot | The meta-system itself needs care: skills with valid triggers, no duplicate agents, no contradictory rules, dead code detected. Each component gets reviewed against the earlier commandments. |
 
 ### How to use the commandments to decide
@@ -91,6 +91,21 @@ The backbone of the project. Ordered from most fundamental (the human↔Claude r
 - **Creating something new?** It must map to ≥1 commandment. If it doesn't, it doesn't belong here.
 - **Two components covering the same ground?** One must die. Consolidation with criteria, not by impulse.
 - **Something feels valuable but doesn't fit any commandment?** That's a signal the commandments might be incomplete — discuss with the user before hoarding.
+
+---
+
+## Mental model: 4 phases of work
+
+Every non-trivial task passes through four phases. The system covers each phase with specific components, but the phases are a **mental model**, not a forced pipeline — small tasks skip to phase 3 directly.
+
+| Phase | Components |
+|---|---|
+| **1. Idea / Problem** | `prompt-engineer` (refine vague prompts), `AskUserQuestion` (clarify intent), `anti-hallucination` (verify premises before asserting) |
+| **2. Refine / Plan** | `planner-protocol` skill (Quick/Standard/Full), `/decide` (3 perspectives, low-stakes), `/decision-stress-test` (5-12 perspectives, high-stakes) |
+| **3. Execute / Develop** | `builder` agent, `meta-create` (extensions), `lsp-operations`, `review-patterns` |
+| **4. Review / Observe** | `reviewer` agent, `review-patterns`, `security-review`, `diagnostic-patterns`. Telemetry is reactive ad-hoc via scripts: `bun .claude/scripts/usage-snapshot.ts`, `anomaly-detector.ts`, `render-insights.ts` (no UI commands by design) |
+
+Phase 4 is **reactive ad-hoc** by design (see Commandment IX) — observability runs only when the user suspects something concrete, not on every turn nor as a regular routine.
 
 ---
 
@@ -218,7 +233,7 @@ Actualizado tras la auditoría poneglyph (May 2026). Cualquier nuevo componente 
 | Agents | 7 + 1 meta | **3** | builder, reviewer, scout. Planning y diagnóstico viven en skills (`planner-protocol`, `diagnostic-patterns`) invocadas por el Lead — sin agents dedicados. Meta-create también es skill. |
 | Skills | 28 | **14** | Cortadas las skills genéricas (typescript/bun/testing/logging/db/careful/freeze) cuyo dominio ya conoce el LLM; consolidaciones (review-patterns, meta-create) preservadas |
 | Hooks registrados | 15+ | **6** | Pipeline trace/scoring/patterns eliminado; gates de seguridad preservados, `lead-parallelism-gate` y `validators/context/*` eliminados en pre-migración iterativa; en iter 2 (2026-05-25d) se cortaron deliberadamente `validate-tests-pass.ts` (Stop) y `json-validator.ts` (PostToolUse) — funcionaban pero el coste (tiempo + tokens en cada turno/Edit) no se consideró proporcional al valor; verificación de tests pasa a ser responsabilidad explícita del Lead |
-| Slash commands | 10 | **5** | Wrappers triviales preservados (US-008 RECHAZADA: aportan activación explícita); `benchmark-skills` cortado en iter 2; `sync-claude` migrado de skill→command en iter 2 |
+| Slash commands | 10 | **4** | `decide`, `explain-changes`, `planner`, `sync-claude`. Cortados en 2026-05-28 tras medición empírica 0 uso 30d: `/usage-snapshot`, `/usage-insights`, `/retrospective`, `/learn`. Wrappers triviales preservados (US-008 RECHAZADA: activación explícita aporta) |
 | Rules | 7 | **2 + paths/** | `bootstrap-lead.md`, `error-recovery.md` (rewritten Lead-driven) + `paths/{hooks,orchestration}.md` |
 | Output-styles | 1 (caveman) | **1 (poneglyph)** | Caveman fusionado con la guía de formato en un único output-style |
 

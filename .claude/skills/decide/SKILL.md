@@ -11,6 +11,17 @@ effort: high
 
 # Decision Mode
 
+## When to use vs `decision-stress-test`
+
+| Use `decide` when | Use `decision-stress-test` when |
+|---|---|
+| Decision is reversible | Decision is irreversible or expensive to undo |
+| Low/medium stakes | High stakes (architecture, library, framework commitment) |
+| Want quick 3-perspective scan (~500-800 tokens) | Want adversarial 5-12 perspective stress-test (~2-3K tokens) |
+| Choosing among options | Validating ONE option already chosen |
+
+Pattern: `/decide` to **select** an option → `/decision-stress-test` to **commit** to it before implementing.
+
 ## Workflow
 
 ### Step 1: Prepare Brief

@@ -37,6 +37,7 @@ Sycophancy is the silent killer of engineering decisions. Hallucination is its l
 | Pure debugging / fix | No alternatives to weigh — find the bug, fix it |
 | Question is exploratory ("what is X?") | Use docs / Context7, not stress-test |
 | Stakes are zero (e.g., personal preference in a one-off script) | Stress-test cost > decision cost |
+| Decision is reversible / low-stakes / want quick scan | Use `decide` (3 perspectives, ~500-800 tokens) — cheaper ~3-4× |
 
 ## Initial Triage
 
