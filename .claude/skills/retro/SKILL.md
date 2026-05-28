@@ -1,0 +1,438 @@
+---
+name: retro
+description: |
+  Post-feature retrospective (Phase 5 of the 5-phase workflow). Captures
+  technical lessons (worked / didn't work), surfaces process friction, proposes
+  promotions to one of three scopes (global ~/.claude/ vs project .claude/ vs
+  memory-only), closes the living-spec loop by consuming `review.md.spec_drift`
+  classified by critic in Phase 4, and audits the 10 Commandments compliance.
+  Does NOT auto-edit spec.md for living-spec deltas — produces a diff proposal
+  for human approval. Closes the feature lifecycle by flipping spec.md +
+  tasks/index.md frontmatter to `status: closed`. Promotions also require
+  human approval before any file is written.
+  Use when: review.md APPROVED or APPROVED_WITH_WARNINGS, feature complete,
+  before declaring lifecycle done, after /critic in Phase 4, "retro",
+  "retrospectiva", "aprender", "qué hemos aprendido", "learn", "promote",
+  "promover", "living-spec".
+  Keywords - retro, retrospectiva, aprender, learn, lecciones, lessons,
+  promover, promotion, promote, living-spec, delta, commandments, closure,
+  fase-5, phase-5
+disable-model-invocation: false
+argument-hint: "[--light|--standard|--full]"
+effort: medium
+---
+
+# Retro (Phase 5)
+
+Last phase of the 5-phase workflow. Captures what worked, what didn't, proposes promotions, closes the living-spec loop. **Honesty is non-negotiable** (Commandment I) — a retro without friction or without a proposed lesson is review theater.
+
+## Underlying principle
+
+> "Without retro, every cycle starts from the same baseline." (Commandment IX — observability and self-improvement; Commandment X — meta-system maintainability)
+
+Phase 4 (critic) measures the deliverable. Phase 5 measures the **process** that produced the deliverable, and turns it into structural improvements. Without this loop the system doesn't learn; with it, every feature potentially upgrades the meta-system itself.
+
+## When to use
+
+| Trigger | Example |
+|---|---|
+| `review.md` exists with verdict APPROVED or APPROVED_WITH_WARNINGS | After `/critic` closes Phase 4 |
+| User invokes `/retro` explicitly | Direct invocation |
+| `critic` skill closes Phase 4 and triggers Phase 5 invocation | Auto-chain from Phase 4 |
+
+## When to skip
+
+| Anti-trigger | Why |
+|---|---|
+| `review.md` verdict is NEEDS_CHANGES or BLOCKED | Phase 3/4 first — retro on incomplete work captures wrong lessons |
+| Trivial mode (no `tasks/` directory) | Brief verbal recap to user — Phase 5 ceremony adds nothing |
+| Two consecutive retros on the same feature without code change between them | Diminishing returns; skip and proceed |
+
+## Workflow
+
+### Step 1 — Read inputs
+
+In parallel:
+
+1. `Glob .claude/plans/*-*/spec.md` — find active feature with status `approved` and `review.md` present.
+2. Read `spec.md` (original problem + AC + out-of-scope).
+3. Read `tasks/index.md` + `tasks/US{N}.md` (decomposition + DAG).
+4. Read `tests.md` and/or `validations.md` (oracle).
+5. Read `review.md` — particularly `frontmatter.verdict` + `frontmatter.spec_drift` + findings count.
+6. Read `state.json` — confirm `current_phase: 4` complete.
+7. Read `.claude/plans/templates/retro.template.md` (output template).
+8. Read `CLAUDE.md` root section "The 10 Commandments" (for Step 9 audit).
+
+### Step 2 — Confirm prerequisites
+
+| Check | Action if fails |
+|---|---|
+| `review.md.verdict` ∈ {APPROVED, APPROVED_WITH_WARNINGS} | STOP — escalate; do not produce retro on broken work |
+| All HUs in `state.json.us_completed` | STOP — escalate |
+| `retro.template.md` exists | If missing → use the embedded checklist (see §Embedded fallback) |
+
+### Step 3 — Determine retro level (adaptation)
+
+| Signal | Level | Scope |
+|---|---|---|
+| Feature trivial (1-2 HUs, light review in Phase 4, no decisions made) | **light** | Summary + 1-2 lessons + 0-1 promotion candidates; skip Commandments audit + living-spec loop |
+| Feature standard (3-N HUs, no architectural decision absorbed) | **standard** | Full template: Summary, Lessons, Process, Drillme, Promotions, Living-spec, Commandments, Action items |
+| Feature with absorbed decisions / architectural / spec-drift detected | **full** | Standard + dedicated section per absorbed decision + Commandments forensics if any violation flagged |
+
+CLI override: `/retro --light` / `--standard` / `--full`. Default = auto-detect from `review.md.review_level` + `state.json.us_history.length` + presence of absorbed decisions.
+
+Declare level in `retro.md` frontmatter (`retro_level: <light|standard|full>` + reason).
+
+### Step 4 — Executive summary
+
+1-2 paragraphs in `retro.md`:
+
+- What was the original problem (1 sentence quoting spec.md)?
+- What was delivered (1 sentence on the actual scope of the diff)?
+- Verdict (1 sentence: smooth / friction / pivoted mid-way / etc.).
+
+### Step 5 — Technical lessons (✅ worked / ❌ didn't work)
+
+Two lists, honest:
+
+```markdown
+### ✅ Patterns that worked
+- <pattern>: <why it worked + where to reuse>
+
+### ❌ Patterns that didn't work
+- <pattern>: <why it failed + how to avoid next time>
+```
+
+Anti-pattern: empty `❌` list. If genuinely zero failures → smell signal (Step 12). Usually at least one friction point exists; surfacing it is the value of the retro.
+
+### Step 6 — Process audit
+
+For each of the 5 phases the feature passed through (scope → tech-plan → tdd-design → build → critic):
+
+| Phase | Effort (S/M/L/XL) | Friction observed | Improvement candidate |
+|---|---|---|---|
+| Phase 1 (scope) | ... | ... | ... |
+| Phase 2 (tech-plan) | ... | ... | ... |
+| Phase 2.5 (tdd-design) | ... | ... | ... |
+| Phase 3 (build) | ... | ... | ... |
+| Phase 4 (critic) | ... | ... | ... |
+
+Identify the heaviest phase + diagnose why. Often the heaviest phase reveals a missing tool or a poorly-tuned skill.
+
+### Step 7 — Drillme Phase 5
+
+The 5 retro-specific questions:
+
+```markdown
+## Drillme — Phase 5 (retrospective)
+
+1. `[approach]` **Phase too heavy?** Which phase weighed more than it needed to? Why?
+2. `[approach]` **Avoidable friction?** Was there friction that didn't add value? Concrete instance?
+3. `[approach]` **Reusable pattern?** Did a pattern emerge that's reusable beyond this feature? Where else?
+4. `[context]` **Global vs local vs memory?** If reusable — is it promotable to `~/.claude/` global, only this project's `.claude/`, or just a memory entry?
+5. `[failure]` **Commandment violated silently?** Did any of the 10 Commandments get violated without notice during the feature?
+```
+
+Coverage: 3/4 canonical Socratic categories (`[approach]`/`[context]`/`[failure]`). Honest — `[location]` was covered in Phase 2/3 (where the code lives). NOT padding with artificial questions.
+
+> Skill-to-skill invocation is **probabilistic**. If `drillme` does not auto-fire, the Lead invokes `/drillme "Phase 5 retro of <NNN-slug>"` manually before closing the feature.
+
+### Step 8 — Promotion candidates
+
+For each reusable pattern surfaced in Step 5/7, produce a row:
+
+| Candidate | Scope | Type | Why | Concrete proposal (path + sketch) |
+|---|---|---|---|---|
+| `<name>` | global / local / memory | skill / rule / hook / command / agent / mcp / plugin | <1 sentence reason rooted in evidence from this feature> | `<exact path>` + brief diff/content sketch |
+
+**Scope decision matrix**:
+
+| Scope | Use when | Path |
+|---|---|---|
+| **global** (~/.claude/) | Pattern applies across multiple projects; reusable across stacks; meta-system improvement | `~/.claude/{skills,rules,hooks,agents,commands}/` |
+| **local** (project) | Pattern is project-specific (this codebase's conventions); useful here, ceremony elsewhere | `.claude/{skills,rules,hooks,agents,commands}/` |
+| **memory** (only) | Single fact / one-off learning; doesn't deserve a file | `MEMORY.md` entry via auto-memory |
+
+**Strict rules**:
+
+- Do NOT auto-promote — produce candidates only; the user approves.
+- Each candidate MUST cite the concrete evidence from this feature that motivated it (a finding, a recurring drillme question, a lesson).
+- `anti-hallucination`: verify the proposed path does NOT collide with an existing file. If collision → propose rename or merge.
+- If `meta-create` auxiliary is invoked → the proposal sketch follows the official frontmatter spec for that extension type.
+
+If zero promotion candidates emerge → declare honestly: "Zero promotions this cycle. Reasons: <list>." If this happens in 3+ consecutive retros → smell signal (Step 12).
+
+### Step 9 — Living-spec loop (consume `spec_drift` from review.md)
+
+Read `review.md.frontmatter.spec_drift`:
+
+| `spec_drift` | Action |
+|---|---|
+| `none` | No living-spec entry; declare in retro.md: "Spec drift: none — delivered matches spec.md exactly." |
+| `legitimate` | Propose a diff to `spec.md` in `retro.md` §Living-spec deltas. **NEVER auto-edit spec.md.** User approves the diff → then the patch is applied with a note "v2 — delta from retro {NNN}-{slug} (reason: <X>)" |
+| `scope_creep` | Log in §Lessons ❌ as "scope creep — feature extended beyond spec.md without ratification". Do NOT propose spec update; either revert the extra scope or re-open Phase 1 to ratify properly |
+| `skipped_ac` | Log in §Lessons ❌ as "AC X in spec.md not delivered — <reason>". Either schedule follow-up or update spec.md to remove the AC (with explicit "downscoped" annotation) |
+
+**Criterio "delta legítimo"** (formalized — addresses open question of US7):
+
+A delta is legitimate IF AND ONLY IF all three hold:
+
+1. **Real edge case**: the delta resolves an edge case discovered during Phase 3 (build) or Phase 4 (critic), not a change-of-mind without trigger.
+2. **No contradiction**: the delta does NOT contradict the original spec.md intent (verify against the problem statement, not just the AC).
+3. **Documented why**: the rationale is captured in retro.md §Living-spec deltas with the specific finding that motivated it.
+
+If any of the three fails → not legitimate; route to `scope_creep` instead.
+
+### Step 10 — Commandments audit
+
+For each of the 10 Commandments, mark compliance during this feature:
+
+| # | Commandment | Cumplido? | Evidencia / Violación |
+|---|---|---|---|
+| I | Honest symbiosis | ✅/⚠️/❌ | <concrete evidence from the diff or process> |
+| II | Factual truth | ✅/⚠️/❌ | ... |
+| III | Code quality / simple by default | ✅/⚠️/❌ | ... |
+| IV | Blocking quality gates | ✅/⚠️/❌ | ... |
+| V | Understand before acting | ✅/⚠️/❌ | ... |
+| VI | Security without ambiguity | ✅/⚠️/❌ | ... |
+| VII | Performance and efficiency | ✅/⚠️/❌ | ... |
+| VIII | Optimal meta-prompting | ✅/⚠️/❌ | ... |
+| IX | Observability and self-improvement | ✅/⚠️/❌ | ... |
+| X | Poneglyph maintainability | ✅/⚠️/❌ | ... |
+
+If ANY commandment is ⚠️ or ❌ → dedicated subsection "Commandment violations forensics" with:
+
+- Which moment in the feature it occurred.
+- What was the alternative path.
+- Action item to prevent recurrence.
+
+This section is mandatory in `retro_level: full`; optional in `standard`; skipped in `light`.
+
+### Step 11 — Action items
+
+A list of follow-ups, each with an owner:
+
+| Action | Owner | Trigger | Due |
+|---|---|---|---|
+| <action> | <user / Lead / next-session / new-HU> | <event that gates it> | <concrete date or "next sprint" or "before next feature"> |
+
+Action items typically include: applying approved promotions, ratifying living-spec deltas, addressing commandment violations, splitting an over-large skill that emerged.
+
+### Step 12 — Produce `retro.md`
+
+Write `.claude/plans/{NNN}-{slug}/retro.md` from `templates/retro.template.md`. Frontmatter:
+
+```yaml
+---
+spec: {NNN}-{slug}
+phase: 5
+retro_level: <light|standard|full>
+verdict_phase4: <APPROVED|APPROVED_WITH_WARNINGS>
+spec_drift: <none|legitimate|scope_creep|skipped_ac>
+promotions_proposed: N
+promotions_approved: 0  # updated after user approval
+commandment_violations: N  # count of ⚠️ + ❌ rows
+living_spec_delta: <yes|no>
+action_items: N
+created: YYYY-MM-DD
+status: open  # flips to "approved" after user reviews
+---
+```
+
+Body: 8 sections (Summary, Lessons ✅/❌, Process, Drillme, Promotions, Living-spec, Commandments, Action items).
+
+### Step 13 — Close feature lifecycle
+
+After producing retro.md AND user has reviewed (light/standard) or explicitly closed (full):
+
+- Update `spec.md` frontmatter: `status: closed` + `closed: YYYY-MM-DD` + `retro: retro.md`.
+- Update `tasks/index.md` frontmatter: `status: closed` + `closed: YYYY-MM-DD`.
+- Update `state.json`: `current_phase: 5` complete + `feature_closed: true`.
+
+**Important**: do NOT close lifecycle while promotions are still pending approval. Either close them in this session or carry as action items into the next session — but the feature itself can close.
+
+### Step 14 — Report + approval request
+
+```
+✅ Retro produced for {NNN}-{slug}.
+
+- retro.md: .claude/plans/{NNN}-{slug}/retro.md
+- retro_level: <light|standard|full> (<reason>)
+- Lessons: <✅ count> + / <❌ count> −
+- Process heaviest phase: <PhaseN> (<reason>)
+- Promotion candidates: <N>
+  - global: <list>
+  - local: <list>
+  - memory: <list>
+- Spec drift action: <none|propose-diff|log-creep|log-skipped>
+- Commandment status: <X/10 ✅, Y ⚠️, Z ❌>
+- Action items: <N>
+
+Pending your approval:
+  - Promotions to apply: ⏸️
+  - Living-spec diff (if any): ⏸️
+  - Commandment violation actions: ⏸️
+
+When approved → /retro --apply or reply ratifying which subset to apply.
+Feature lifecycle closure: <pending / done>.
+```
+
+## Auxiliary skills invoked
+
+> Canonical matrix in `.claude/plans/001-poneglyph-5phase-workflow/tasks/index.md §Auxiliary skills matrix`. Row below is the literal subset that applies to this Phase 5 skill.
+
+| Auxiliary skill | When this skill invokes it | Fallback if skill->skill fails |
+|---|---|---|
+| `anti-hallucination` | Before proposing any promotion — verify the target path does not collide with an existing file/skill/rule | Lead Globs/Reads the target path manually before the promotion is listed |
+| `drillme` | Step 7 — applies 5 retro-specific questions covering `[approach]`/`[context]`/`[failure]` | Lead invokes `/drillme "Phase 5 retro of <NNN-slug>"` manually before declaring the feature closed |
+| `explain-changes` | ⚠️ Conditional — if the retro produces an educational walkthrough as a candidate promotion (e.g., a doc.md to onboard newcomers to this area) | Lead invokes `/explain-changes` manually if the candidate is a learning artefact |
+| `meta-create` | ⚠️ Conditional — if a promotion candidate is a new skill/rule/hook/agent/command/MCP/plugin and the sketch needs the official frontmatter spec | Lead Reads `.claude/skills/meta-create/SKILL.md` references manually before sketching the candidate |
+| `meta-settings-cookbook` | ⚠️ Conditional — if a promotion candidate touches CLAUDE.md, settings.json, output styles, or permissions | Lead Reads `.claude/skills/meta-settings-cookbook/SKILL.md` references manually |
+
+> Skill-to-skill invocation is **probabilistic** per docs Anthropic + [issue #59968](https://github.com/anthropics/claude-code/issues/59968). Phase 5 is focused on synthesis — `anti-hallucination` and `drillme` are the canonical auxiliaries; `explain-changes`/`meta-create`/`meta-settings-cookbook` are conditional based on what the promotion candidates are. Honest 2 ✅ + 3 ⚠️.
+
+## SIEMPRE rules
+
+- Radical honesty (Commandment I): never produce a retro with zero ❌ lessons unless genuinely zero friction occurred.
+- NEVER auto-edit `spec.md` — living-spec deltas are proposals for human approval only.
+- NEVER auto-apply promotions — produce candidates; user approves before any file is written.
+- Cite concrete evidence per lesson, per promotion, per commandment violation. No abstract claims.
+- Close lifecycle only after retro.md is reviewed; promotions may remain as carried action items.
+- `anti-hallucination` before promoting: verify target path does not collide with existing file/skill/rule (Globs/Reads, not assumes).
+
+## Adaptation intra-phase (Principio 2 — "no siempre más es más")
+
+| Signal | Adaptation |
+|---|---|
+| `review.md.review_level: light` (trivial Phase 4 verdict) | Retro level light: Summary + 1-2 lessons + 0-1 promotion + skip Commandments audit + skip Living-spec section |
+| `review.md.spec_drift: none` AND verdict APPROVED | Skip §Living-spec section entirely |
+| Zero promotion candidates emerge honestly | Declare: "Zero promotions this cycle" + reasons; do not pad with synthetic candidates |
+| Commandment violation flagged in Phase 4 critic | Mandatory Commandments forensics subsection in this retro |
+| Feature with absorbed decisions (e.g., US3/US5/US6/US8) | Dedicated subsection per absorbed decision: what was decided, evidence-driven verdict, ratification status |
+| 3+ consecutive retros without promotions | Smell — escalate: either the system is genuinely stable (rare) or the retro is not honest enough |
+
+## Casos edge
+
+- **Edge 1** — `review.md.verdict: BLOCKED` → STOP; do not produce retro; route back to Phase 3/4 first.
+- **Edge 2** — `spec.md` original no longer exists (deleted or branch reset) → produce retro on what was delivered + flag "spec.md missing — retro based on tasks/ and review.md only" in retro.md.
+- **Edge 3** — Promotion candidate name collides with existing file in target scope → propose rename ("candidate-name-2") OR propose merge (diff against existing) — never overwrite silently.
+- **Edge 4** — `spec_drift: legitimate` AND user rejects the proposed diff → record rejection reason in retro.md; either revert the delta in code (action item) OR escalate to re-scope.
+- **Edge 5** — User approves a promotion mid-session → Lead writes the target file directly (Lead default-allow gate covers non-sensitive paths) or delegates to `builder` if ≥5 files / architectural; update retro.md.promotions_approved counter.
+- **Edge 6** — Retro proposes a promotion that turns out to be a near-duplicate of an existing skill — flag in §Lessons ❌ ("missed existing skill X during scope/plan") + redirect promotion to "improve existing X" instead of "create new".
+
+## Smell signals
+
+- ⚠️ Retro with empty ❌ lessons list → smell of review theater; force the question "what slowed us down?" — there's always something.
+- ⚠️ 3+ consecutive retros with zero promotions → system is "perfect" (improbable) OR retro isn't honest enough; audit retro process itself.
+- ⚠️ Living-spec deltas in >50% of retros → Phase 1 (scope) is too superficial; reopen `scope` skill criteria.
+- ⚠️ Commandment violations recorded in 3+ consecutive retros without corrective action items applied → action items aren't being followed up; escalate to dedicated meta-retro.
+- ⚠️ Promotion approved but never materialized (file not written in 2+ sessions) → either the candidate was wrong or follow-through is broken; remove the candidate.
+- ⚠️ Retro produced AFTER the user has already moved on to a new feature → retro lost its window; capture lightweight insights in MEMORY.md and skip the formal retro.md.
+
+## Anti-patterns
+
+| Anti-pattern | Detection | Correction |
+|---|---|---|
+| Synthetic promotion to fill the table | Promotion without concrete evidence from this feature | Remove; declare "zero promotions" honestly |
+| Auto-editing spec.md | `spec.md` modified in the same session as the retro without explicit user approval | Revert + propose as living-spec diff for approval |
+| Commandment audit all ✅ without evidence | All 10 rows green with one-word evidence ("yes", "ok") | Re-audit with concrete file:line or commit refs |
+| Promotion scope wrong | Project-specific pattern promoted to `~/.claude/` global | Re-classify to local; global is reserved for cross-project patterns |
+| Lifecycle closed with promotions still pending | spec.md `status: closed` while `promotions_approved < promotions_proposed` | Reopen or carry promotions explicitly as action items |
+| Living-spec delta routed wrong | `scope_creep` proposed as `legitimate` | Re-check the 3 criteria (real edge case / no contradiction / documented why); demote to scope_creep |
+
+## Embedded fallback (if `retro.template.md` missing)
+
+```markdown
+# Retro — {feature-name}
+
+## Frontmatter
+spec / phase / retro_level / verdict_phase4 / spec_drift / promotions_proposed / commandment_violations / living_spec_delta / action_items / created / status
+
+## 1. Executive summary
+1-2 paragraphs.
+
+## 2. Technical lessons
+### ✅ Patterns that worked
+- ...
+### ❌ Patterns that didn't work
+- ...
+
+## 3. Process audit
+| Phase | Effort | Friction | Improvement |
+|---|---|---|---|
+
+## 4. Drillme — 5 retro questions
+(See §Drillme block in skill.)
+
+## 5. Promotion candidates
+| Candidate | Scope | Type | Why | Concrete proposal |
+|---|---|---|---|---|
+
+## 6. Living-spec deltas
+spec_drift: <none|legitimate|scope_creep|skipped_ac>
+Proposed diff (if legitimate):
+```diff
+--- spec.md
++++ spec.md
+@@ ... @@
+- ...
++ ...
+```
+Rationale: ...
+
+## 7. Commandments audit
+| # | Commandment | Status | Evidence |
+|---|---|---|---|
+
+## 8. Action items
+| Action | Owner | Trigger | Due |
+|---|---|---|---|
+```
+
+## Commandments cubiertos
+
+| # | Cómo |
+|---|---|
+| I | Honest about failures, friction, and commandment violations — no softening |
+| II | Each promotion cites concrete evidence; anti-hallucination verifies paths exist |
+| III | Promotions for genuinely reusable patterns only; no premature abstraction |
+| IV | retro.md is the closure gate; lifecycle closes only after retro produced |
+| V | Read ALL inputs (spec/tasks/tests/review/state) BEFORE producing retro |
+| VIII | Promotion candidates that involve extensions go through `meta-create` for spec-compliant scaffolding |
+| IX | Process audit + commandments audit feed self-improvement (the loop's whole purpose) |
+| X | Promotions to global ~/.claude/ keep poneglyph healthy; never duplicate or contradict existing |
+
+## Verification (post-implementation of this skill)
+
+- Smoke: invoke `/retro` on a feature with `review.md: APPROVED` → produces `retro.md` with 8 sections + promotion candidates.
+- Verify `retro.md` frontmatter declares `retro_level` + `spec_drift` consistent with `review.md`.
+- Verify NO auto-edit of `spec.md` (the file mtime should NOT change during retro; only retro.md is written).
+- Verify `status: closed` is applied to `spec.md` + `tasks/index.md` only after user approval (or at end of full retro level).
+- `bun test ./.claude/hooks/` → 81/81 (this skill is markdown — no hook test impact).
+
+## Output format reminder
+
+```
+✅ Retro produced for {NNN}-{slug}.
+
+- retro.md: .claude/plans/{NNN}-{slug}/retro.md
+- retro_level: <light|standard|full> (<reason>)
+- Lessons: <✅ count> + / <❌ count> −
+- Process heaviest phase: <PhaseN> (<reason>)
+- Promotion candidates: <N>
+  - global: <list>
+  - local: <list>
+  - memory: <list>
+- Spec drift action: <none | propose-diff | log-creep | log-skipped>
+- Commandment status: <X/10 ✅, Y ⚠️, Z ❌>
+- Action items: <N>
+- drillme: covered 3/4 canonical Socratic categories
+
+Pending your approval:
+  ⏸️ Promotions to apply
+  ⏸️ Living-spec diff (if any)
+  ⏸️ Commandment violation actions
+
+When approved → reply ratifying which subset to apply.
+Feature lifecycle closure: <pending|done>.
+```

@@ -1,12 +1,13 @@
 ---
 us: US7
-title: Skill `retro` + command `/retro` (Fase 5) + living-spec loop
+title: Skill `retro` (Fase 5) — sin wrapper command + living-spec loop
 wave: W2
 depends_on: [US1]
 tdd_mode: optional
 estimate: M
-status: approved
+status: implemented
 approved: 2026-05-28
+implemented: 2026-05-28
 ---
 
 # US7 — `retro` skill + `/retro` command (Fase 5)
@@ -15,11 +16,11 @@ approved: 2026-05-28
 
 | Campo | Valor |
 |---|---|
-| **Status** | 🟡 draft |
+| **Status** | ✅ implemented (2026-05-28) |
 | **Wave** | W2 (paralelo con US2-US6) |
 | **Depends on** | US1 |
 | **Blocks** | US8 |
-| **Files touched** | crear `.claude/skills/retro/SKILL.md` + `.claude/commands/retro.md` |
+| **Files touched** | crear `.claude/skills/retro/SKILL.md` (NO wrapper command — docs Anthropic 2026) |
 | **TDD-mode** | optional |
 | **Estimate** | M |
 | **Cómo arrancar** | Read `spec.md` + `tasks/` + `review.md` + `state.json` → drillme retrospectivo → producir `retro.md` con promociones |
@@ -166,3 +167,32 @@ Ningún framework SDD existente (spec-kit, Pimzino, etc.) tiene este loop. Poneg
 
 - ¿Promociones a global se aplican automático tras aprobación (escribir el archivo) o se generan como propuesta PR-like? — empezar con propuesta manual.
 - ¿`retro.md` queda inmutable post-cierre o se puede editar manualmente después?
+
+## Closeout (2026-05-28)
+
+US sin decisión absorbida (la única limpia de W2 phase skills). Living-spec loop formalizado como feature nueva.
+
+**Entregables**:
+
+| Path | Estado | Notas |
+|---|---|---|
+| `.claude/skills/retro/SKILL.md` | Creado (438 líneas) | Frontmatter empírico; 14-step workflow; 8 secciones del retro.md (Summary/Lessons/Process/Drillme/Promotions/Living-spec/Commandments/Action items); 5 auxiliary skills block; embedded fallback si `retro.template.md` falta |
+| `.claude/commands/retro.md` | NO creado | Docs Anthropic 2026: skill name = command name; `/retro` resuelve directo |
+
+**Open Q resueltas**:
+
+1. **Auto-apply promociones tras aprobación**: NO. La skill produce candidatas; el usuario aprueba; el Lead (no la skill) escribe el archivo target con su default-allow gate (o delega a `builder` si ≥5 archivos / arquitectural). Documentado en Step 14 + Edge 5.
+2. **Inmutabilidad post-cierre de `retro.md`**: editable post-cierre. La skill no impone inmutabilidad; las acciones aprobadas tras el cierre actualizan `promotions_approved` counter del frontmatter.
+3. **Criterio "delta legítimo" formalizado** (Step 9): 3 condiciones AND — (a) real edge case Phase 3/4, (b) no contradice spec.md intent, (c) rationale documentado en retro.md §Living-spec deltas.
+
+**Living-spec loop ratificado**: consume `review.md.frontmatter.spec_drift` clasificado por `critic` en Phase 4. 4 ramas: `none` (skip), `legitimate` (propose diff), `scope_creep` (log ❌, no spec update), `skipped_ac` (log ❌ + opciones).
+
+**Promotion scope matrix ratificado**: global (`~/.claude/`) cross-project / local (`.claude/`) project-specific / memory (`MEMORY.md`) one-off.
+
+**Verificación post-impl**:
+- `bun test ./.claude/hooks/` → 81/81 ✅
+- Harness registra `/retro` con metadata empírica ✅
+- Auxiliaries (anti-hallucination, drillme, explain-changes, meta-create, meta-settings-cookbook) disponibles ✅
+- NO `commands/retro.md` creado — patrón canónico nuevo ✅
+
+**Smoke**: invocar `/retro` no aplica hasta que una feature llegue a Phase 5 (dogfooding US10 + orquestación US8 `/flow`).
