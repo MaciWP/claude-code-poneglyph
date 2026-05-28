@@ -101,7 +101,7 @@ Every non-trivial task passes through four phases. The system covers each phase 
 | Phase | Components |
 |---|---|
 | **1. Idea / Problem** | `prompt-engineer` (refine vague prompts), `AskUserQuestion` (clarify intent), `anti-hallucination` (verify premises before asserting) |
-| **2. Refine / Plan** | `planner-protocol` skill (Quick/Standard/Full), `/decide` (3 perspectives, low-stakes), `/decision-stress-test` (5-12 perspectives, high-stakes). When project test policy is `business-critical` or `mixed`, planner places test nodes before impl nodes in the DAG (TDD-first decomposition — see `rules/test-policy.md`) |
+| **2. Refine / Plan** | `tech-plan` skill (Quick/Standard/Full), `/decide` (3 perspectives, low-stakes), `/decision-stress-test` (5-12 perspectives, high-stakes). When project test policy is `business-critical` or `mixed`, planner places test nodes before impl nodes in the DAG (TDD-first decomposition — see `rules/test-policy.md`) |
 | **3. Execute / Develop** | `builder` agent, `meta-create` (extensions), `lsp-operations`, `review-patterns`. Builder respects TDD-first nodes from the plan (red→green) when policy applies; otherwise tests run as post-impl verification |
 | **4. Review / Observe** | `reviewer` agent, `review-patterns`, `security-review`, `diagnostic-patterns`. Telemetry is reactive ad-hoc: query transcripts/traces directly or delegate analysis to `builder` when a concrete question arises (no built-in pipeline by design) |
 
@@ -127,14 +127,14 @@ This session acts as a **pure orchestrator**. It does not execute code directly.
 
 | Tool | Use |
 |------|-----|
-| `Agent` | Delegate to specialized subagents (builder, reviewer, scout). Planning lives in the `planner-protocol` skill (Lead-invoked); error diagnosis lives in the `diagnostic-patterns` skill (Lead-invoked); extension creation lives in the `meta-create` skill. |
+| `Agent` | Delegate to specialized subagents (builder, reviewer, scout). Planning lives in the `tech-plan` skill (Lead-invoked); error diagnosis lives in the `diagnostic-patterns` skill (Lead-invoked); extension creation lives in the `meta-create` skill. |
 | `Skill` | Load skill context **into the Lead's own session only** (domain patterns, prompt refinement). NOT a delegation mechanism — to give skills to a subagent, include `Read .claude/skills/<name>/SKILL.md` in the delegation prompt (Arch H) |
 | `AskUserQuestion` | Clarify requirements or validate a doubtful prompt |
 | `TaskCreate/TaskList/TaskUpdate` | Manage the in-conversation task list |
 
 Prohibited for the Lead: `Read`, `Edit`, `Write`, `Bash`, `Glob`, `Grep`, `WebFetch`, `WebSearch` — delegate them. Exceptions:
 **Read** any path — always allowed for orientation (no delegation needed).
-**Write/Edit/Bash** — the Lead may act directly when the operation is not on a sensitive path and is not a destructive command. For ≥5 files OR architectural changes the Lead delegates to `builder` (preceded by `Skill('planner-protocol')` if complexity >60).
+**Write/Edit/Bash** — the Lead may act directly when the operation is not on a sensitive path and is not a destructive command. For ≥5 files OR architectural changes the Lead delegates to `builder` (preceded by `Skill('tech-plan')` if complexity >60).
 
 ### Sensitive paths and destructive operations
 
@@ -144,7 +144,7 @@ No automated gate enforces this — the Lead is responsible for caution:
 - **Destructive operations** (`rm -rf`, force push, db migration, schema change) — never run directly; delegate with explicit reason or escalate to user.
 
 When to delegate (see `~/.claude/docs/lead-mode-when-needed.md` for full triggers):
-- ≥5 files OR architectural change → `builder` (with `Skill('planner-protocol')` first if complexity >60).
+- ≥5 files OR architectural change → `builder` (with `Skill('tech-plan')` first if complexity >60).
 - 1-4 files, bounded change → Lead acts directly.
 - Bulk exploration (≥3 files to read) → `Explore` (Haiku) or `scout` (Sonnet) by volume × complexity matrix.
 
@@ -157,8 +157,8 @@ graph TD
     AQ --> S
     S -->|clear| C[Calculate complexity]
     C -->|< 30| SK[Pick relevant skills via path hints / keywords]
-    C -->|30-60| P1[Skill planner-protocol optional]
-    C -->|> 60| P2[Skill planner-protocol mandatory]
+    C -->|30-60| P1[Skill tech-plan optional]
+    C -->|> 60| P2[Skill tech-plan mandatory]
     P1 & P2 --> SK
     SK --> B[builder with Read SKILL.md instructions in prompt]
     B --> R[reviewer checkpoint]
@@ -182,7 +182,7 @@ Score<70 is a **signal of doubt**, not a hard stop. If the prompt is ambiguous o
 
 ### Planner adaptive levels
 
-The `planner-protocol` skill triages the planning effort into three levels (auto-triaged by complexity or forced via `/planner --quick|--standard|--full <task>`):
+The `tech-plan` skill triages the planning effort into three levels (auto-triaged by complexity or forced via `/tech-plan --quick|--standard|--full <task>`):
 
 | Level | When | Refs loaded | Target cost |
 |------|------|-------------|-------------|
@@ -234,7 +234,7 @@ Actualizado tras la auditoría poneglyph (May 2026). Cualquier nuevo componente 
 
 | Componente | Antes (audit baseline) | Ahora | Detalle |
 |---|---|---|---|
-| Agents | 7 + 1 meta | **3** | builder, reviewer, scout. Planning y diagnóstico viven en skills (`planner-protocol`, `diagnostic-patterns`) invocadas por el Lead — sin agents dedicados. Meta-create también es skill. |
+| Agents | 7 + 1 meta | **3** | builder, reviewer, scout. Planning y diagnóstico viven en skills (`tech-plan`, `diagnostic-patterns`) invocadas por el Lead — sin agents dedicados. Meta-create también es skill. |
 | Skills | 28 | **14** | Cortadas las skills genéricas (typescript/bun/testing/logging/db/careful/freeze) cuyo dominio ya conoce el LLM; consolidaciones (review-patterns, meta-create) preservadas |
 | Hooks registrados | 15+ | **6** | Pipeline trace/scoring/patterns eliminado; gates de seguridad preservados, `lead-parallelism-gate` y `validators/context/*` eliminados en pre-migración iterativa; en iter 2 (2026-05-25d) se cortaron deliberadamente `validate-tests-pass.ts` (Stop) y `json-validator.ts` (PostToolUse) — funcionaban pero el coste (tiempo + tokens en cada turno/Edit) no se consideró proporcional al valor; verificación de tests pasa a ser responsabilidad explícita del Lead |
 | Slash commands | 10 | **4** | `decide`, `explain-changes`, `planner`, `sync-claude`. Cortados en 2026-05-28 tras medición empírica 0 uso 30d: `/usage-snapshot`, `/usage-insights`, `/retrospective`, `/learn`. Wrappers triviales preservados (US-008 RECHAZADA: activación explícita aporta) |

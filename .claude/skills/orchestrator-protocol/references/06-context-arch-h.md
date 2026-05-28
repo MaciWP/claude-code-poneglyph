@@ -34,7 +34,7 @@ graph TD
 | reviewer | review-patterns, security-review, anti-hallucination | 3 | 6 | Base skills are free |
 | scout | — | 1 | 1 | Minimal context |
 
-> Planning and error diagnosis are handled by the Lead invoking `Skill('planner-protocol')` / `Skill('diagnostic-patterns')` directly — no dedicated subagent.
+> Planning and error diagnosis are handled by the Lead invoking `Skill('tech-plan')` / `Skill('diagnostic-patterns')` directly — no dedicated subagent.
 
 ## Precedence Rules
 

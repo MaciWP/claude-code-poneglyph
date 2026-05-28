@@ -1,5 +1,5 @@
 ---
-parent: planner-protocol
+parent: tech-plan
 name: gap-analysis
 description: Gap Analysis + Ground Truth — files to touch/create/delete with verifications, environment feedback per change.
 ---

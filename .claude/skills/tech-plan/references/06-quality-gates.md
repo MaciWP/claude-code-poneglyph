@@ -1,5 +1,5 @@
 ---
-parent: planner-protocol
+parent: tech-plan
 name: quality-gates
 description: Poka-Yoke tool usage + TDD-enforcement anti-patterns + final quality gate checklist.
 ---

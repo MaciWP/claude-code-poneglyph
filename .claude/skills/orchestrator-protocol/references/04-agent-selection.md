@@ -25,7 +25,7 @@ Plus: design-doc audits, cross-file consistency checks, and full-file reads past
 | LOW Volume + LOW Complexity = direct Read | Cost of delegation > cost of direct Read. |
 | Default exploration = `Explore` (Haiku) | Empirical score 83, ~5× cheaper than scout. |
 | `scout` only for HIGH+HIGH or Explore-limited cases | Open-ended analysis, cross-file synthesis, full-file reads past Explore's window. |
-| Parallel axis: "change difficulty" | If after exploring you must implement a difficult change, invoke `planner-protocol` skill (independent of the exploration axis). |
+| Parallel axis: "change difficulty" | If after exploring you must implement a difficult change, invoke `tech-plan` skill (independent of the exploration axis). |
 
 ### Parallel axis — Change difficulty
 
@@ -35,7 +35,7 @@ The matrix above decides **exploration**. The difficulty of the **change that fo
 |--------|-------------------------|
 | Trivial (1 line, rename) | builder direct |
 | Standard (1 file, clear pattern) | builder with loaded skills |
-| Multi-file / architectural | Lead (with planner-protocol skill) → N builders |
+| Multi-file / architectural | Lead (with tech-plan skill) → N builders |
 
 A task can be **HIGH Volume exploration + trivial change** (lots to read, little to change) or **LOW Volume + complex change** (little to read, lots to think). Decide each axis separately.
 
@@ -56,8 +56,8 @@ The "Suggested skills to Read (for delegation)" column lists `.claude/skills/<na
 | security, audit, vulnerability, owasp | reviewer | security-review | security-review | — |
 | code quality, smells, SOLID, complexity | reviewer | review-patterns (quality mode) | review-patterns | — |
 | performance, slow, bottleneck, N+1 | reviewer | review-patterns (performance mode) | review-patterns | — |
-| plan, design, decompose, workflow, RFC, architecture, contract | Lead via `Skill('planner-protocol')` | (no dedicated agent) | decision-stress-test (for design risk), review-patterns | — |
-| >3 subtasks, breakdown, dependencies | Lead via `Skill('planner-protocol')` | (decomposition in skill) | — | — |
+| plan, design, decompose, workflow, RFC, architecture, contract | Lead via `Skill('tech-plan')` | (no dedicated agent) | decision-stress-test (for design risk), review-patterns | — |
+| >3 subtasks, breakdown, dependencies | Lead via `Skill('tech-plan')` | (decomposition in skill) | — | — |
 | find, explore, search codebase | scout | — | — | Explore agent (default) |
 | error, failing, debug, diagnose | Lead via `Skill('diagnostic-patterns')` | (no dedicated agent) | diagnostic-patterns | builder (obvious fix) |
 
@@ -66,12 +66,12 @@ The "Suggested skills to Read (for delegation)" column lists `.claude/skills/<na
 | Pattern | Agents | When |
 |---------|--------|------|
 | **Explore then Build** | scout + builder | scout provides context, builder implements |
-| **Plan then Build** | Lead with `Skill('planner-protocol')` → N builders parallel | complexity >60 |
+| **Plan then Build** | Lead with `Skill('tech-plan')` → N builders parallel | complexity >60 |
 | **Build then Review** | builder → reviewer | mandatory for multi-file changes |
 | **Diagnose then Fix** | Lead with `Skill('diagnostic-patterns')` → builder | diagnosis before fix |
 | **Worktree Parallel** | 2+ builders in worktrees | parallel builders with file overlap potential |
 | **Security Review** | reviewer (security mode, model: opus) | auth/security changes |
-| **Tiered Build** | Lead with `Skill('planner-protocol')` Mode B contracts + N builders + reviewer | complexity 45-60, 2-3 domains with shared interfaces |
+| **Tiered Build** | Lead with `Skill('tech-plan')` Mode B contracts + N builders + reviewer | complexity 45-60, 2-3 domains with shared interfaces |
 | **Team Parallel** | teammates (general-purpose) | executionMode=team, 3+ independent domains, complexity >60 |
 
 ## Parallelization & Batch Operations
@@ -126,9 +126,9 @@ Full LSP reference: skill `lsp-operations`.
 | Anti-Pattern | Problem | Use Instead |
 |--------------|---------|-------------|
 | builder for exploration | misses context, wastes tokens | scout |
-| planner-protocol skill for complexity <30 | overkill, slows execution | builder direct |
+| tech-plan skill for complexity <30 | overkill, slows execution | builder direct |
 | skipping reviewer after multi-file changes | quality risk | reviewer checkpoint |
-| single builder for >60 complexity without planner-protocol | uncoordinated, error-prone | Lead (with planner-protocol skill) → N builders |
+| single builder for >60 complexity without tech-plan | uncoordinated, error-prone | Lead (with tech-plan skill) → N builders |
 | 2+ builders in parallel without worktree on overlapping files | Write conflicts | Activate `isolation: "worktree"` |
 | team mode for <3 domains | 3-7x cost with no real benefit | parallel builders in worktrees |
 | team mode for dependent domains | file conflicts between teammates | sequential subagents |

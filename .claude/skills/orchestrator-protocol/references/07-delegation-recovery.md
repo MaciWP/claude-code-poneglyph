@@ -23,7 +23,7 @@ description: NEVER/ALWAYS tables, permission mode inheritance, continuous valida
 |-----------------|-----|
 | Delegate code to builder | `Agent(subagent_type="builder", prompt="...")` |
 | Validate with reviewer | `Agent(subagent_type="reviewer", prompt="...")` |
-| Plan complex tasks | `Skill('planner-protocol')` — Lead-driven, no dedicated agent |
+| Plan complex tasks | `Skill('tech-plan')` — Lead-driven, no dedicated agent |
 | Explore codebase | `Agent(subagent_type="scout", prompt="...")` (or built-in `Explore`) |
 | Analyze errors | `Skill('diagnostic-patterns')` — Lead-driven, no dedicated agent |
 | Load relevant skills | Use Arch H `Read` instructions in delegation prompt |
@@ -49,7 +49,7 @@ Without this, the subagent may prompt the user for file edit / bash / destructiv
 
 | Checkpoint | Trigger | Agent | Action if Fails |
 |-----------|---------|--------|-----------------|
-| Pre-implementation | Before delegating to builder | Lead with `Skill('planner-protocol')` | Re-plan with constraints |
+| Pre-implementation | Before delegating to builder | Lead with `Skill('tech-plan')` | Re-plan with constraints |
 | Mid-implementation | Builder reports partial progress | reviewer (background) | Early feedback to builder |
 | Post-implementation | Builder completes task | reviewer | NEEDS_CHANGES → re-delegate |
 | Pre-merge | Worktree ready to merge | reviewer | Block merge if fails |
@@ -86,7 +86,7 @@ When sending reviewer feedback to builder, include:
 | Builder test failure | 2 | None | Lead diagnoses with `diagnostic-patterns` → SendMessage or re-spawn |
 | Builder Edit conflict | 1 | Re-read file | Lead inspects, re-issues with updated context |
 | Agent timeout | 1 | Double timeout | Escalate to user |
-| Reviewer BLOCKED | 0 | — | Re-plan with `Skill('planner-protocol')` |
+| Reviewer BLOCKED | 0 | — | Re-plan with `Skill('tech-plan')` |
 | Reviewer NEEDS_CHANGES | 2 | Apply feedback | Escalate to user |
 | Worktree merge conflict | 1 | builder | Escalate to user |
 | Teammate failure | 1 | Re-prompt with context | Extract domain → builder subagent |

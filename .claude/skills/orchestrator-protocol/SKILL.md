@@ -79,7 +79,7 @@ Full Arch H template with all blocks, propagation model, skill discovery: `refer
 | `Agent(subagent_type="builder")` | Implement code |
 | `Agent(subagent_type="scout")` | Explore codebase (HIGH+HIGH only — default is `Explore`) |
 | `Agent(subagent_type="reviewer")` | Validate changes |
-| `Skill('planner-protocol')` | Plan complex tasks — Lead invokes the skill, no dedicated agent |
+| `Skill('tech-plan')` | Plan complex tasks — Lead invokes the skill, no dedicated agent |
 | `Skill('diagnostic-patterns')` | Diagnose builder failures — Lead invokes the skill, no dedicated agent |
 | `Skill()` | Load context into the Lead's OWN session only |
 

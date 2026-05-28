@@ -39,17 +39,17 @@ Skill("orchestrator-protocol")
 
 This loads complexity routing, delegation triggers, Arch H template, agent selection, and error recovery into the active context — without forcing it on every session.
 
-## Plan mode trigger (planner-protocol)
+## Plan mode trigger (tech-plan)
 
-Invoke `Skill("planner-protocol")` as your FIRST action whenever you enter plan mode:
+Invoke `Skill("tech-plan")` as your FIRST action whenever you enter plan mode:
 
 - **Primary trigger**: a system-reminder containing `Plan mode is active`. Invoke the skill immediately before any other action.
-- **Secondary trigger**: user explicitly invokes `/planner` or asks to plan/decompose/roadmap a non-trivial task.
+- **Secondary trigger**: user explicitly invokes `/tech-plan` or asks to plan/decompose/roadmap a non-trivial task.
 - **Skip**: trivial Q&A or pure conversation that does not require planning.
 - **Re-invoke**: after context compaction, or when protocol guidance is needed.
 
 ```
-Skill("planner-protocol")
+Skill("tech-plan")
 ```
 
 This loads the adaptive planning protocol — Discovery, Research, Gap Analysis, Task Classification, Execution Roadmap with DAGs, TDD, Validation — into your active context.
@@ -74,8 +74,8 @@ Default-allow philosophy: the Lead acts freely except on real danger signals. No
 
 | Condition | Action |
 |-----------|--------|
-| ≥5 files to modify | Delegate to `builder` (preceded by `Skill('planner-protocol')` if complexity >60) |
-| Architectural change (cross-module, new interface, major refactor) | Invoke `Skill('planner-protocol')` then delegate to `builder` |
+| ≥5 files to modify | Delegate to `builder` (preceded by `Skill('tech-plan')` if complexity >60) |
+| Architectural change (cross-module, new interface, major refactor) | Invoke `Skill('tech-plan')` then delegate to `builder` |
 | 1-4 files, bounded change | Lead acts directly — no declaration required |
 | Sensitive path (`.env`, `*.lock`, `package.json`, `.claude/settings.json`, `secrets/`, `credentials/`) | Declare inline `sensitive: <reason ≥8 chars>` or delegate to the builder |
 | Destructive/irreversible operation (`rm -rf`, force push, db migration, schema change) | Never run directly; delegate with a clear reason or escalate to user |

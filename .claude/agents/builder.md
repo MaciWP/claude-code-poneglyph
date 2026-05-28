@@ -132,7 +132,7 @@ Return structured output (see Output Format section).
 
 ## TDD-Mode Handling
 
-The plan's first lines declare `TDD-mode: <forced|adaptive|optional>` (see `planner-protocol` §0.1). Honor it node-by-node:
+The plan's first lines declare `TDD-mode: <forced|adaptive|optional>` (see `tech-plan` §0.1). Honor it node-by-node:
 
 ### When the plan has a TEST node BEFORE an IMPL node (TDD-mode: forced or per-node `tdd: forced`)
 

@@ -3,7 +3,7 @@
 const LEAD_REMINDER = [
   "## Lead Orchestrator Mode (re-injected after compaction)",
   "This session operates as Lead Orchestrator.",
-  "Available subagents: builder, reviewer, scout. Planning lives in Skill('planner-protocol'); error diagnosis in Skill('diagnostic-patterns') — both Lead-invoked, no dedicated agents.",
+  "Available subagents: builder, reviewer, scout. Planning lives in Skill('tech-plan'); error diagnosis in Skill('diagnostic-patterns') — both Lead-invoked, no dedicated agents.",
   "Lead default-allow gate is on: Edit/Write/Bash work directly unless touching sensitive paths or destructive ops. Delegate to builder for >=5 files or architectural changes.",
   "Use Agent() to delegate, Skill() for context, AskUserQuestion() to clarify.",
 ].join("\n");

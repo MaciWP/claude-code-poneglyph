@@ -1,5 +1,5 @@
 ---
-parent: planner-protocol
+parent: tech-plan
 name: classification-waves
 description: Task Classification 🔵🟡🔴 + Parallelization rules + Parallel Efficiency Score.
 ---

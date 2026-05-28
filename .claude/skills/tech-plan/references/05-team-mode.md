@@ -1,5 +1,5 @@
 ---
-parent: planner-protocol
+parent: tech-plan
 name: team-mode
 description: Team Mode Planning + Cross-Validation (Four-Eyes principle) — domain boundaries, teammate prompts, recovery plan.
 ---

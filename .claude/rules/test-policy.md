@@ -1,6 +1,6 @@
 # Test Policy
 
-Defines whether TDD-first decomposition applies when planning changes to this repo. Read by `planner-protocol` (§0.1) and honored by `builder` per node.
+Defines whether TDD-first decomposition applies when planning changes to this repo. Read by `tech-plan` (§0.1) and honored by `builder` per node.
 
 ## Levels
 
@@ -32,7 +32,7 @@ Goal: atomize tasks and clarify scope by forcing the planner to articulate expec
 
 ## Related
 
-- `.claude/skills/planner-protocol/SKILL.md` §0.1 — applicability check
-- `.claude/skills/planner-protocol/references/06-output-format.md` — TDD-First Node Pattern
+- `.claude/skills/tech-plan/SKILL.md` §0.1 — applicability check
+- `.claude/skills/tech-plan/references/06-output-format.md` — TDD-First Node Pattern
 - `.claude/agents/builder.md` — TDD-mode handling (red→green)
 - `CLAUDE.md` Mental model phases 2/3 + "Test policy (this repo)" section

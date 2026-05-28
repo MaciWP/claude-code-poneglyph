@@ -1,5 +1,5 @@
 ---
-parent: planner-protocol
+parent: tech-plan
 name: discovery
 description: Discovery Protocol — static and dynamic sources, anti-duplicate verification before "create X".
 ---

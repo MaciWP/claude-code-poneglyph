@@ -11,7 +11,7 @@ When a subagent fails, the Lead diagnoses inline (loading `diagnostic-patterns` 
 | Builder test failure | 2 | None | Lead diagnoses with `diagnostic-patterns` → SendMessage or re-spawn |
 | Builder Edit conflict | 1 | Re-read file | Lead inspects, re-issues with updated context |
 | Agent timeout | 1 | Double timeout | Escalate to user |
-| Reviewer BLOCKED | 0 | - | Re-plan with `planner-protocol` skill |
+| Reviewer BLOCKED | 0 | - | Re-plan with `tech-plan` skill |
 | Reviewer NEEDS_CHANGES | 2 | Apply feedback | Escalate to user |
 | Worktree merge conflict | 1 | builder | Escalate to user |
 | Teammate failure | 1 | Re-prompt with context | Extract domain → run as builder subagent |
