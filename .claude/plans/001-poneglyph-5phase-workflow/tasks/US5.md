@@ -1,13 +1,15 @@
 ---
 us: US5
-title: Skill `build` + command `/build` (Fase 3) + decisión `builder` agent
+title: Skill `build` (Fase 3) — sin wrapper command + decisión `builder` agent
 wave: W2
 depends_on: [US1]
 tdd_mode: optional
 estimate: M
-status: approved
+status: implemented
 approved: 2026-05-28
-absorbs_decision: builder agent (CUT / KEEP-cond / ABSORB)
+implemented: 2026-05-28
+absorbs_decision: builder agent (KEEP-conditional ratificado)
+ratified_decision: KEEP-conditional — builder agent kept, invoked by build skill only when HU >=5 files OR architectural change
 ---
 
 # US5 — `build` skill + `/build` command (Fase 3)
@@ -16,11 +18,11 @@ absorbs_decision: builder agent (CUT / KEEP-cond / ABSORB)
 
 | Campo | Valor |
 |---|---|
-| **Status** | 🟡 draft |
+| **Status** | ✅ implemented (2026-05-28) |
 | **Wave** | W2 (paralelo con US2-US4, US6, US7) |
 | **Depends on** | US1 |
 | **Blocks** | US8 |
-| **Files touched** | crear `.claude/skills/build/SKILL.md` + `.claude/commands/build.md`; condicional sobre `builder` agent (ver AC7) |
+| **Files touched** | crear `.claude/skills/build/SKILL.md` (NO wrapper command — docs Anthropic 2026); `builder` agent KEEP-conditional (no se toca) |
 | **TDD-mode** | optional |
 | **Estimate** | M |
 | **Cómo arrancar** | Read `tasks/index.md` + `state.json` → elegir siguiente HU → Read US{N}.md + tests T{N}.* → Glob ejemplos → red→green |
@@ -170,3 +172,32 @@ Auditoría a hacer en implementación:
 
 - Si decisión AC7 = KEEP-cond: ¿el SKILL.md de build invoca `Agent(subagent_type=builder)` o el Lead lo invoca?
 - Si CUT: ¿`agent-memory/builder/` se borra o se preserva como histórico?
+
+## Closeout (2026-05-28)
+
+**AC7 ratificado**: KEEP-conditional.
+
+| Evaluación | Veredicto |
+|---|---|
+| CUT | ✗ Rechazado — pierde context isolation real para HUs >=5 archivos; `agent-memory/builder/MEMORY.md` ya existe con insights históricos preservables |
+| ABSORB | ✗ Rechazado — workflow inline en SKILL.md NO replica el aislamiento de contexto del sub-agent; es el valor estructural |
+| **KEEP-conditional** | ✓ **Adoptado** — `builder` se mantiene intacto; `build` skill lo invoca solo cuando HU >=5 archivos OR cambio arquitectural; criterio documentado en `build/SKILL.md` §Step 3 |
+
+**Open Q resuelta**: el SKILL.md de `build` invoca `Agent(subagent_type=builder)` con `[RELEVANT SKILLS]` + `[RELEVANT MEMORY]` blocks (Arch H), no el Lead a ciegas — la skill es la caller canónica; el Lead default-allow gate sigue válido para invocación directa fuera de Phase 3.
+
+**Entregables**:
+
+| Path | Estado | Notas |
+|---|---|---|
+| `.claude/skills/build/SKILL.md` | Creado (339 líneas) | Frontmatter empírico; auxiliary skills block (7 auxiliaries); workflow 10 steps; AC7 closeout interno |
+| `.claude/commands/build.md` | NO creado | Docs Anthropic 2026: skill name = command name; `/build` resuelve directo |
+| `.claude/agents/builder.md` | NO tocado | KEEP intacto |
+| `.claude/agent-memory/builder/MEMORY.md` | NO tocado | KEEP intacto |
+
+**Verificación post-impl**:
+- `bun test ./.claude/hooks/` → 81/81 ✅
+- Harness registra `/build` skill con metadata empírica ✅
+- Auxiliaries listadas (anti-hallucination, drillme, diagnostic-patterns, lsp-operations, review-patterns, meta-create, meta-settings-cookbook) están todas disponibles en el registry ✅
+- `Grep "scope-definer|tech-planner|tdd-designer|story-executor" .claude/skills/build/` → 0 matches ✅ (naming corto canon)
+
+**Smoke**: invocar `/build US5` no aplica (US5 es esta misma — es la skill que se acaba de crear). Smoke real ocurre cuando US8 `/flow` orquesta la primera ejecución end-to-end + dogfooding US10.
