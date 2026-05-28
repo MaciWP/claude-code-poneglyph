@@ -2,8 +2,16 @@
 id: 001-poneglyph-5phase-workflow
 created: 2026-05-28
 approved: 2026-05-28
+closed: 2026-05-28
 mode: full
-status: approved
+status: closed
+retro: retro.md
+note: |
+  Spec v1 — entregada con 2 living-spec deltas detectados (legitimate per retro.md):
+  (1) Naming long-form -> action-verb cortos (scope-definer -> scope, etc).
+  (2) "Auxiliary skills matrix" como sección canónica de composición skill->skill.
+  Diff propuesto en retro.md §Living-spec deltas. Patch a aplicar tras aprobación
+  del usuario (no auto-aplicado — Phase 5 retro NEVER auto-edits spec.md).
 ---
 
 # Problema

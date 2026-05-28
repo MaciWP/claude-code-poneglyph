@@ -2,12 +2,15 @@
 spec: 001-poneglyph-5phase-workflow
 created: 2026-05-28
 mode: full
-status: approved
+status: closed
 approved: 2026-05-28
-phase: 2
+closed: 2026-05-28
+phase: 5
 total_us: 11
+us_completed: 11
 dag_complete: true
 amended: 2026-05-28 — added US11 (drillme skill global) after research showed Socratic catalog should be transversal, not duplicated per-phase
+retro: retro.md
 ---
 
 # Tasks index — 5-phase workflow refactor
@@ -193,4 +196,4 @@ Leyenda: ✅ = invocación canónica esperada · ⚠️ = condicional según con
 
 ## Próximo paso
 
-`tasks/` status: `approved` (amended 2026-05-28). **W2 + W3 + W4 COMPLETAS**: US1 ✅, US2 ✅ (scope), US11 ✅ (drillme), US3 ✅ (tech-plan + MIGRAR-Y-CUT planner-protocol), US4 ✅ (tdd-design dual-mode), US5 ✅ (build + AC7 KEEP-cond builder), US6 ✅ (critic + AC7 KEEP-cond reviewer + AC8 KEEP review-patterns), US7 ✅ (retro + living-spec loop), US8 ✅ (/flow orquestador + AC7 SIMPLIFICAR orchestrator-protocol -3 refs), US9 ✅ (CLAUDE.md update — Mental model 4→5 phases + system inventory counts + Commandment IX +living-spec loop). Siguiente: W5 → US10 dogfooding + retro final sobre el meta-refactor.
+`tasks/` status: **`closed`** (2026-05-28). **TODAS LAS WAVES COMPLETAS** (W1-W5, 11/11 HUs): US1 ✅, US2 ✅ (scope), US11 ✅ (drillme), US3 ✅ (tech-plan + MIGRAR-Y-CUT planner-protocol), US4 ✅ (tdd-design dual-mode), US5 ✅ (build + AC7 KEEP-cond builder), US6 ✅ (critic + AC7 KEEP-cond reviewer + AC8 KEEP review-patterns), US7 ✅ (retro + living-spec loop), US8 ✅ (/flow orquestador + AC7 SIMPLIFICAR orchestrator-protocol -3 refs), US9 ✅ (CLAUDE.md update 4→5 phases), US10 ✅ (retro consolidado + cierre lifecycle — dogfooding empírico /flow deferido a sesión siguiente como action item). **Feature CERRADA**. Ver `retro.md` para promociones candidatas + living-spec deltas + Commandments audit + action items.
