@@ -1,13 +1,21 @@
 ---
 us: US8
-title: Command `/flow` orquestador + decisión `orchestrator-protocol`
+title: Command `/flow` orquestador + decisión `orchestrator-protocol` (SIMPLIFICAR ratificado)
 wave: W3
 depends_on: [US2, US3, US4, US5, US6, US7]
 tdd_mode: optional
 estimate: L
-status: approved
+status: implemented
 approved: 2026-05-28
-absorbs_decision: orchestrator-protocol skill (CUT / SIMPLIFICAR / KEEP)
+implemented: 2026-05-28
+absorbs_decision: orchestrator-protocol skill (SIMPLIFICAR ratificado)
+ratified_decision: |
+  SIMPLIFICAR — orchestrator-protocol mantiene su núcleo turn-level (5-step Lead
+  protocol) + 5 references útiles (01/03/04/05/06). CUT 3 references obsoletas/
+  duplicadas: 02-prompt-scoring (-> prompt-engineer skill), 07-delegation-recovery
+  (-> error-recovery.md rule), 08-output-style (-> output-styles/poneglyph.md).
+  /flow command es feature-level (multi-turn lifecycle); orchestrator-protocol
+  es turn-level (Lead 5-step per turn). Complementarios, no redundantes.
 ---
 
 # US8 — Command `/flow` orquestador
@@ -16,7 +24,7 @@ absorbs_decision: orchestrator-protocol skill (CUT / SIMPLIFICAR / KEEP)
 
 | Campo | Valor |
 |---|---|
-| **Status** | 🟡 draft |
+| **Status** | ✅ implemented (2026-05-28) |
 | **Wave** | W3 |
 | **Depends on** | US2-US7 (las 6 skills deben existir) |
 | **Blocks** | US9 (CLAUDE.md update espera saber si orchestrator-protocol queda) |
@@ -153,3 +161,57 @@ Alternativa: CUT total si `/flow` + `tech-planner` + `diagnostic-patterns` + ski
 - `/flow` declarativo (markdown) o `.ts`? Probar declarativo primero; si la lógica condicional (resume, gate handling) se vuelve compleja → `.ts`.
 - ¿Estimación de complejidad: heurística (# archivos) o el Lead estima por inspección del prompt? — empezar manual + recoger datos.
 - ¿`state.json` versionado en git o gitignored? Probablemente gitignored (work-in-progress).
+
+## Closeout (2026-05-28)
+
+**AC7 ratificado**: SIMPLIFICAR `orchestrator-protocol`.
+
+### Análisis empírico
+
+`/flow` y `orchestrator-protocol` NO se solapan al 100%:
+- `/flow` = **feature-level** orchestration (multi-turn, 5 phases, artefactos en plans/).
+- `orchestrator-protocol` = **turn-level** orchestration (Lead 5-step per turn: Triage/Complexity/Context/Delegate/Validate).
+
+Cortar = romper bootstrap del Lead (post-compact.ts hook + CLAUDE.md raíz dependen de la skill). KEEP = ceremonia (8 refs cuando 5 alcanzan).
+
+### Cortes ejecutados
+
+| Ref | Veredicto | Razón / canonical source |
+|---|---|---|
+| `01-verification.md` | KEEP | Turn-level anti-hallucination — Lead lo necesita |
+| `02-prompt-scoring.md` | **CUT** | Duplicado de `prompt-engineer` skill (4-context coverage) |
+| `03-complexity-routing.md` | KEEP | Tiered/team/worktree mode no replicados en `/flow` |
+| `04-agent-selection.md` | KEEP | Exploration matrix (Explore vs scout) no replicada |
+| `05-skill-matching.md` | KEEP | Keywords→skills mapping (Arch H) |
+| `06-context-arch-h.md` | KEEP | Delegation prompt template (Arch H canonical) |
+| `07-delegation-recovery.md` | **CUT** | Duplicado de `.claude/rules/error-recovery.md` |
+| `08-output-style.md` | **CUT** | Duplicado de `.claude/output-styles/poneglyph.md` |
+
+### Open Q resueltas
+
+1. **Declarativo vs .ts**: declarativo (`.claude/commands/flow.md`) suficiente. Lógica condicional (resume, gates, mode dispatch) implementable en markdown que el Lead lee + ejecuta. No se introduce `.ts`.
+2. **Estimación complejidad**: heurística simple en `flow.md` Step 2 (sentence length + file count hint + arquitectura keywords). Empezar manual; recoger datos en US10 dogfooding.
+3. **`state.json` en git**: gitignored (work-in-progress per-feature). Si una feature cerrada (`feature_closed: true`) interesa preservar → commit explícito a discreción del usuario.
+
+### Entregables
+
+| Path | Estado | Notas |
+|---|---|---|
+| `.claude/commands/flow.md` | Creado (~500 líneas) | Frontmatter (description + argument-hint + allowed-tools); 7-step workflow declarativo; state.json schema canonical; 3 modes (minimal/standard/full); hard gates 1→2 y 2→3 con AskUserQuestion; edge cases + smell signals |
+| `.claude/skills/orchestrator-protocol/SKILL.md` | Reescrita (~100 líneas) | Cross-ref explícita a `/flow` (turn-level vs feature-level); content map actualizado (5 refs KEEP); sección "Removed references" documenta el corte y dónde vive ahora cada conocimiento |
+| `.claude/skills/orchestrator-protocol/references/02-prompt-scoring.md` | **CUT** | `git rm` (preserva historia) |
+| `.claude/skills/orchestrator-protocol/references/07-delegation-recovery.md` | **CUT** | `git rm` |
+| `.claude/skills/orchestrator-protocol/references/08-output-style.md` | **CUT** | `git rm` |
+| `CLAUDE.md` (raíz) | Modificada | 2 líneas: ref output-style (línea 41) → poneglyph.md; tabla mapping legacy (línea 203) actualizada con 2 entradas nuevas (delegation-recovery → error-recovery.md, output-style → poneglyph.md) |
+
+### Verificación post-impl
+
+- `bun test ./.claude/hooks/` → 81/81 ✅
+- Harness registra `/flow` command ✅
+- Harness registra `orchestrator-protocol` skill actualizada (description refleja "turn-level" + cross-ref a /flow) ✅
+- 5 references KEEP siguen presentes (`Glob .claude/skills/orchestrator-protocol/references/*.md` → 5 archivos) ✅
+- post-compact.ts hook continuará re-invocando `Skill('orchestrator-protocol')` post-compaction sin romperse ✅
+
+### Smoke pendiente
+
+Smoke real ocurrirá en US10 (dogfooding): `/flow "feature mini"` → ejecuta minimal; `/flow --standard "feature acotada"` → 5 fases completas con 2 hard gates; `/flow --resume 001-foo` → continúa desde state.json. Documentado en US10.

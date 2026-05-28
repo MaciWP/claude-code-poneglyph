@@ -38,7 +38,7 @@ Technical identifiers (names, commands, paths) stay in their original form regar
 
 ### Expected Behavior
 
-Encapsulated in the 10 Commandments below. Terse by default (≤4 lines), full detail in `orchestrator-protocol/references/08-output-style.md`.
+Encapsulated in the 10 Commandments below. Terse by default (≤4 lines), full detail in `.claude/output-styles/poneglyph.md`.
 
 ### NOT
 
@@ -200,10 +200,12 @@ The full orchestration protocol lives in the `orchestrator-protocol` skill, load
 |---|---|
 | `lead-orchestrator.md` | `.claude/skills/orchestrator-protocol/SKILL.md` |
 | `orchestration-checklist.md` | `.claude/skills/orchestrator-protocol/references/01-verification.md` |
-| `prompt-scoring.md` | `.claude/skills/orchestrator-protocol/references/02-prompt-scoring.md` |
+| `prompt-scoring.md` | `.claude/skills/prompt-engineer/SKILL.md` (post-2026-05-28 — moved out of orchestrator-protocol) |
 | `complexity-routing.md` | `.claude/skills/orchestrator-protocol/references/03-complexity-routing.md` |
 | `agent-selection.md` | `.claude/skills/orchestrator-protocol/references/04-agent-selection.md` |
 | `context-management.md` | `.claude/skills/orchestrator-protocol/references/06-context-arch-h.md` |
+| `delegation-recovery.md` | `.claude/rules/error-recovery.md` (post-2026-05-28 — moved to rule) |
+| `output-style baseline` | `.claude/output-styles/poneglyph.md` (post-2026-05-28 — single output-style file) |
 
 Error recovery policy (still a rule): `@.claude/rules/error-recovery.md`
 

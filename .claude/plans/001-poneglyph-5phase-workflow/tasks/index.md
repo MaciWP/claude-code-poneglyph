@@ -193,4 +193,4 @@ Leyenda: ✅ = invocación canónica esperada · ⚠️ = condicional según con
 
 ## Próximo paso
 
-`tasks/` status: `approved` (amended 2026-05-28 con rename US3-US7 + Auxiliary skills matrix). **W2 COMPLETA**: US1 ✅, US2 ✅ (scope), US11 ✅ (drillme), US3 ✅ (tech-plan + MIGRAR-Y-CUT planner-protocol), US4 ✅ (tdd-design dual-mode), US5 ✅ (build + AC7 KEEP-cond builder), US6 ✅ (critic + AC7 KEEP-cond reviewer + AC8 KEEP review-patterns), US7 ✅ (retro + living-spec loop formalizado). Siguiente: W3 → US8 `/flow` orquestador (Phase 1-5 chaining + state.json schema + decisión absorbida `orchestrator-protocol` skill).
+`tasks/` status: `approved` (amended 2026-05-28). **W2 COMPLETA + W3 COMPLETA**: US1 ✅, US2 ✅ (scope), US11 ✅ (drillme), US3 ✅ (tech-plan + MIGRAR-Y-CUT planner-protocol), US4 ✅ (tdd-design dual-mode), US5 ✅ (build + AC7 KEEP-cond builder), US6 ✅ (critic + AC7 KEEP-cond reviewer + AC8 KEEP review-patterns), US7 ✅ (retro + living-spec loop), US8 ✅ (/flow orquestador + AC7 SIMPLIFICAR orchestrator-protocol -3 refs). Siguiente: W4 → US9 CLAUDE.md update reflejando estado final 5-phase workflow.

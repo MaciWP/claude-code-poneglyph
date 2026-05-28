@@ -1,17 +1,24 @@
 ---
 name: orchestrator-protocol
 description: |
-  Full Lead orchestration protocol: verification principles, 5-step checklist,
-  complexity routing, agent selection, delegation rules, and error recovery.
+  Turn-level Lead orchestration protocol: verification principles, 5-step
+  per-turn checklist (Triage / Complexity / Context / Delegate / Validate),
+  agent selection, skill matching, and delegation context template (Arch H).
+  Complementary to the `/flow` command — `/flow` orchestrates a FEATURE
+  lifecycle across multiple turns (5 phases with artefacts in plans/);
+  this skill governs each individual Lead turn within (or outside) that flow.
 
   Use proactively when: starting a new session as Lead orchestrator.
-  Invoke at session start; re-invoke after compaction or when protocol guidance is needed.
+  Invoke at session start; re-invoke after compaction or when protocol
+  guidance is needed.
   Keywords - orchestrate, delegate, complexity, routing, agent, skill, checklist
 disable-model-invocation: false
 effort: high
 ---
 
-# Lead Orchestration Protocol
+# Lead Orchestration Protocol (turn-level)
+
+> **Scope**: this skill defines what the Lead does in a single turn (Triage → Complexity → Context → Delegate → Validate). For multi-turn FEATURE orchestration (5-phase workflow with `spec.md`/`tasks/`/`tests.md`/`review.md`/`retro.md` artefacts), use the `/flow` command. They are complementary, not redundant.
 
 ## §0 Verify First
 
@@ -30,7 +37,7 @@ Tool hierarchy, confidence levels, validation pipeline: `references/01-verificat
 
 ---
 
-## §1 Orchestration Checklist
+## §1 Per-turn Checklist (5 steps)
 
 Execute steps 1-5 IN ORDER before responding. No exceptions.
 
@@ -40,13 +47,16 @@ Execute steps 1-5 IN ORDER before responding. No exceptions.
 |---|---|
 | Trivial (typo, rename, 1 line, simple Q) | Skip to Step 4 |
 | Vague AND genuine doubt | `AskUserQuestion` or `prompt-engineer` skill |
-| Clear (score ≥70, or pragmatically clear) | Continue |
+| Clear (pragmatically obvious intent) | Continue |
+| Feature-scope task (multi-phase work) | Suggest `/flow <task>` to the user |
 
-For architectural/comparison decisions → `Skill('decide')` first. Scoring rubric: `references/02-prompt-scoring.md`.
+For architectural/comparison decisions → `Skill('decide')` first.
+
+> Prompt quality refinement, "what is a good prompt" rubric, ambiguity detection → use the `prompt-engineer` skill (Keywords: prompt, generar prompt, refine prompt, vague prompt, ambiguous). This is the canonical source — do not re-implement scoring here.
 
 **Delegation triggers** (apply after triage — independent, fire one, the other, or both):
 
-- **Trigger A — implementation**: ≥5 files OR architectural change → `builder`/`planner`. 1-4 files + bounded change → Lead direct. Sensitive paths (`.env`, `*.lock`, `package.json`, `.claude/settings.json`, `secrets/`, `credentials/`) require inline `sensitive: <reason ≥8 chars>`. Destructive ops (`rm -rf`, force push, schema change) — never run directly; delegate with explicit reason.
+- **Trigger A — implementation**: ≥5 files OR architectural change → `builder`. 1-4 files + bounded change → Lead direct. Sensitive paths (`.env`, `*.lock`, `package.json`, `.claude/settings.json`, `secrets/`, `credentials/`) require inline `sensitive: <reason ≥8 chars>`. Destructive ops (`rm -rf`, force push, schema change) — never run directly; delegate with explicit reason.
 - **Trigger B — exploration**: default agent is `Explore` (Haiku, score 83). LOW+LOW (1-2 files, direct read) → Lead `Read`. LOW+HIGH / HIGH+LOW → `Explore`. HIGH+HIGH (cross-file synthesis, open-ended analysis) or design-doc audit / full-file reads past Explore's window → `scout` (Sonnet, score 60). Full matrix: `references/04-agent-selection.md` §Exploration Decision Matrix.
 
 ### Step 2: Complexity
@@ -56,8 +66,8 @@ Show inline: `Complexity: ~XX`.
 | Score | Routing | Mode |
 |---|---|---|
 | <30 | builder direct, skip scoring/skills | subagents |
-| 30-60 | planner optional | subagents or tiered |
-| >60 | planner MANDATORY | subagents, tiered, or team |
+| 30-60 | `Skill('tech-plan')` optional | subagents or tiered |
+| >60 | `Skill('tech-plan')` MANDATORY | subagents, tiered, or team |
 
 > If complexity > 60, suggest `/effort xhigh` to the user — `effort` is static per agent frontmatter (CC issue #25591); compensate with richer delegation prompts.
 
@@ -78,27 +88,27 @@ Full Arch H template with all blocks, propagation model, skill discovery: `refer
 |---|---|
 | `Agent(subagent_type="builder")` | Implement code |
 | `Agent(subagent_type="scout")` | Explore codebase (HIGH+HIGH only — default is `Explore`) |
-| `Agent(subagent_type="reviewer")` | Validate changes |
+| `Agent(subagent_type="reviewer")` | Validate changes (also invoked by the `critic` skill when complexity >60 or critical area) |
 | `Skill('tech-plan')` | Plan complex tasks — Lead invokes the skill, no dedicated agent |
 | `Skill('diagnostic-patterns')` | Diagnose builder failures — Lead invokes the skill, no dedicated agent |
 | `Skill()` | Load context into the Lead's OWN session only |
 
-Direct action: Read always permitted. For Edit/Write/Bash on sensitive paths (`.env`, `*.lock`, `package.json`, `.claude/settings.json`, `secrets/`, `credentials/`) declare inline `sensitive: <reason ≥8 chars>` or delegate to builder. Destructive patterns (`rm -rf`, force-push, schema changes) — delegate with explicit reason. No automated gate enforces this; the Lead is responsible.
+Direct action: Read always permitted. For Edit/Write/Bash on sensitive paths declare inline `sensitive: <reason ≥8 chars>` or delegate to builder. Destructive patterns — delegate with explicit reason. No automated gate enforces this; the Lead is responsible.
 
-**Parallelize**: when ≥2 Agents have no output→input dependency AND disjoint files AND no shared state, send them in the SAME assistant message. Do NOT parallelize: builder consuming a previously-produced plan, two `Edit`s on the same file, checkpoint review after writing. 6 multi-agent patterns + 7 anti-patterns: `references/04-agent-selection.md`.
+**Parallelize**: when ≥2 Agents have no output→input dependency AND disjoint files AND no shared state, send them in the SAME assistant message. Do NOT parallelize: builder consuming a previously-produced plan, two `Edit`s on the same file, checkpoint review after writing. Multi-agent patterns + anti-patterns: `references/04-agent-selection.md`.
 
 ### Step 5: Validate
 
 | Change type | Validation |
 |---|---|
 | Single file, low complexity | Builder confirms tests passing |
-| Multi-file | Delegate to `reviewer` |
-| Security-related | `security-auditor` |
-| Cross-domain | `reviewer` + test-watcher |
+| Multi-file | Delegate to `reviewer` agent or invoke `Skill('critic')` |
+| Security-related | `security-review` skill (mandatory dispatch — Cmd VI) |
+| Cross-domain feature | `Skill('critic')` (Phase 4 of the 5-phase workflow) |
 
-**NEVER report "completed" without confirmation that tests pass.**
+**NEVER report "completed" without confirmation that tests pass.** Test verification is the Lead's explicit responsibility — there is no automatic Stop hook for it (post-cleanup 2026-05-25d).
 
-Terse-first output style + escape triggers: `references/08-output-style.md`. NEVER/ALWAYS rules, retry budget, SendMessage vs re-spawn, stuck detection, worktree cleanup: `references/07-delegation-recovery.md`.
+Retry budget, SendMessage vs re-spawn, stuck detection, worktree cleanup → `error-recovery.md` rule (project root). Output style baseline + escape triggers → `output-styles/poneglyph.md`.
 
 ---
 
@@ -107,10 +117,22 @@ Terse-first output style + escape triggers: `references/08-output-style.md`. NEV
 | Topic | File |
 |---|---|
 | Verification, anti-hallucination, confidence levels, validation pipeline | `references/01-verification.md` |
-| Prompt scoring rubric (5 criteria × 20pts, threshold table, improvement Qs) | `references/02-prompt-scoring.md` |
 | Complexity factors × weight, mode selection, tiered/team gates, worktree, effort/model routing | `references/03-complexity-routing.md` |
-| Agent selection matrix, exploration 2×2, 8 multi-agent patterns, 7 anti-patterns | `references/04-agent-selection.md` |
+| Agent selection matrix, exploration 2×2, multi-agent patterns + anti-patterns | `references/04-agent-selection.md` |
 | Keywords→skills mapping, priority scoring, synergy/conflict rules, baseline skills per agent | `references/05-skill-matching.md` |
 | Architecture levels, rules vs skills, full Arch H template, propagation model | `references/06-context-arch-h.md` |
-| NEVER/ALWAYS rules, retry budget, SendMessage vs re-spawn, stuck detection, worktree cleanup | `references/07-delegation-recovery.md` |
-| Output style baseline, escape triggers, terse-first rules, when NOT to apply | `references/08-output-style.md` |
+
+### Removed references (simplified 2026-05-28 — US8 AC7 SIMPLIFICAR)
+
+| Former ref | Current canonical source |
+|---|---|
+| `02-prompt-scoring.md` | `prompt-engineer` skill (covers prompt quality + scoring) |
+| `07-delegation-recovery.md` | `.claude/rules/error-recovery.md` (retry budget, SendMessage, stuck detection, worktree cleanup) |
+| `08-output-style.md` | `output-styles/poneglyph.md` (terse-first rules, escape triggers) |
+
+## Related
+
+- `/flow` command — orchestrates a FEATURE lifecycle (5 phases, multi-turn). This skill orchestrates each Lead TURN within or outside a flow.
+- `prompt-engineer` skill — prompt quality refinement (replaces prompt-scoring reference).
+- `.claude/rules/error-recovery.md` — Lead-driven error diagnosis + retry policy.
+- `output-styles/poneglyph.md` — terse-first response style.
