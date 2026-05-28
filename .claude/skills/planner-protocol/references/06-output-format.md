@@ -167,3 +167,28 @@ graph TD
 | 4.1 | `bun test ./.claude/hooks/` | Exit code 0 |
 
 **Recovery**: If fails → fix before commit
+
+---
+
+## TDD-First Node Pattern (when `TDD-mode: forced`)
+
+When the project's `test-policy.md` declares `business-critical` (or a node carries `tdd: forced`), the DAG places a TEST node **before** the IMPL node. Test writes the failing behavior (red); impl makes it pass (green).
+
+### Example (TDD-mode: forced)
+
+| Wave | Node | Type | Action |
+|---|---|---|---|
+| 🔵 PARALLEL-1 | 1.1 Write test: `auth/login.test.ts` | TEST (red) | Create test asserting expected behavior; run it — must fail with "function not found" or similar |
+| 🟡 SEQ-2 | 2.1 Implement `auth/login.ts` | IMPL (green) | Write minimal code to pass test 1.1; run again — must pass |
+| 🔴 CHECKPOINT-3 | 3.1 Full test suite | GATE | Including 1.1 + regression |
+
+### Example with `tdd-skip` (escape hatch)
+
+| Wave | Node | Type | Notes |
+|---|---|---|---|
+| 🟡 SEQ-1 | 1.1 Update `README.md` | IMPL | `tdd-skip: doc-only change, no testable behavior` |
+| 🔴 CHECKPOINT-2 | 2.1 Existing tests pass | GATE | Regression check only |
+
+### When `TDD-mode: optional`
+
+Skip TDD-First. Tests run post-impl as verification (matches builder default). The "Corresponding test" field in execution nodes becomes informational, not enforced ordering.

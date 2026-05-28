@@ -31,11 +31,23 @@ Declare the level on the first line of the output: `Level: Quick|Standard|Full �
 - If escalation triggers fire mid-plan, restart at the higher level. Do not splice levels.
 - The Lead can force level via flag (`--quick`, `--standard`, `--full`) or explicit instruction.
 
+### §0.1 TDD Applicability Check (MANDATORY)
+
+Read `.claude/rules/test-policy.md` (if it exists). Declare the resolved mode on the line after `Level:`:
+
+`TDD-mode: <forced|adaptive|optional> — <reason from test-policy.md>`
+
+- `forced` → project policy is `business-critical` (or override `tdd: forced` on key nodes). Every code-impl node has a **paired test node BEFORE it** in the DAG (red→green).
+- `adaptive` → policy `mixed`. Per-node decision based on path/scope; planner declares rationale per node.
+- `optional` → policy `auxiliary`, or `test-policy.md` absent. Tests run post-impl as verification; TDD-first not enforced.
+
+A node may carry `tdd-skip: <reason ≥10 chars>` to opt out of test-first under `forced`/`adaptive` modes. Reason must be concrete (e.g., "doc-only change, no testable behavior"). Anti-pattern: skip without reason.
+
 ---
 
 ## §1 Fundamental Goals (active throughout)
 
-Certainty (verify before asserting) · Anti-Hallucination (Glob before referencing) · Parallelization (batch independent ops in one message) · TDD (each planned function → its test) · Clarity (tables > prose) · Traceability (milestones + dependencies explicit). Full operational meaning: poneglyph CLAUDE.md §10 Commandments.
+Certainty (verify before asserting) · Anti-Hallucination (Glob before referencing) · Parallelization (batch independent ops in one message) · TDD (each planned function → its test, scaled by `.claude/rules/test-policy.md` — see §0.1) · Clarity (tables > prose) · Traceability (milestones + dependencies explicit). Full operational meaning: poneglyph CLAUDE.md §10 Commandments.
 
 ---
 

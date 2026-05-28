@@ -101,11 +101,15 @@ Every non-trivial task passes through four phases. The system covers each phase 
 | Phase | Components |
 |---|---|
 | **1. Idea / Problem** | `prompt-engineer` (refine vague prompts), `AskUserQuestion` (clarify intent), `anti-hallucination` (verify premises before asserting) |
-| **2. Refine / Plan** | `planner-protocol` skill (Quick/Standard/Full), `/decide` (3 perspectives, low-stakes), `/decision-stress-test` (5-12 perspectives, high-stakes) |
-| **3. Execute / Develop** | `builder` agent, `meta-create` (extensions), `lsp-operations`, `review-patterns` |
+| **2. Refine / Plan** | `planner-protocol` skill (Quick/Standard/Full), `/decide` (3 perspectives, low-stakes), `/decision-stress-test` (5-12 perspectives, high-stakes). When project test policy is `business-critical` or `mixed`, planner places test nodes before impl nodes in the DAG (TDD-first decomposition — see `rules/test-policy.md`) |
+| **3. Execute / Develop** | `builder` agent, `meta-create` (extensions), `lsp-operations`, `review-patterns`. Builder respects TDD-first nodes from the plan (red→green) when policy applies; otherwise tests run as post-impl verification |
 | **4. Review / Observe** | `reviewer` agent, `review-patterns`, `security-review`, `diagnostic-patterns`. Telemetry is reactive ad-hoc: query transcripts/traces directly or delegate analysis to `builder` when a concrete question arises (no built-in pipeline by design) |
 
 Phase 4 is **reactive ad-hoc** by design (see Commandment IX) — observability runs only when the user suspects something concrete, not on every turn nor as a regular routine.
+
+### Test policy (this repo)
+
+This repo declares `auxiliary` in `.claude/rules/test-policy.md`. TDD-first decomposition is optional here (tests cover hooks/infrastructure, not business logic). For projects with `business-critical` or `mixed` policy, the planner enforces TDD-first by default — see the rule for levels and the `tdd-skip: <reason>` escape hatch.
 
 ---
 

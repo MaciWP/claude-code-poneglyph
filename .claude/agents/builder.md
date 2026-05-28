@@ -130,6 +130,28 @@ If tests fail: read error output, fix the issue, re-run. Loop until passing.
 
 Return structured output (see Output Format section).
 
+## TDD-Mode Handling
+
+The plan's first lines declare `TDD-mode: <forced|adaptive|optional>` (see `planner-protocol` §0.1). Honor it node-by-node:
+
+### When the plan has a TEST node BEFORE an IMPL node (TDD-mode: forced or per-node `tdd: forced`)
+
+1. Read the test node spec. Write the test file.
+2. Run it. **Verify it fails** (red). A passing test before impl is a smell — your understanding of the contract may be wrong; pause and confirm with the Lead.
+3. Implement the minimal code in the IMPL node to pass the test (green). No extra features.
+4. Run the test again. Verify it passes.
+5. If new edge cases emerge while implementing, write additional tests in the SAME node and iterate red→green within it (do not push them downstream silently).
+
+### When a node carries `tdd-skip: <reason>`
+
+The reason is binding — don't re-litigate it. Write code and run the existing test suite as verification. If the reason looks wrong on inspection (e.g., the change does have testable behavior), report it in Issues and let the Lead decide.
+
+### When `TDD-mode: optional` (auxiliary policy)
+
+Default behavior: implement, then run tests as verification (status quo).
+
+> Never report "completed" without the relevant tests passing (Commandment IV).
+
 ## Rules for Safe Parallel Tool Calls
 
 When a message contains several tool-calls, Claude Code executes them in parallel. If one fails, **the others in the same message are cancelled** (cascading cancel). To avoid losing work:
