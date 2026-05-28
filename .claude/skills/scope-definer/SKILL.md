@@ -89,7 +89,7 @@ Las 5 preguntas obligatorias **en orden** antes de cerrar la fase. Si alguna que
 5. **Out of scope?** — `[location]` Close doors explicitly. What is NOT included.
 ```
 
-> **For full Socratic check, invoke the `drillme` skill** (`.claude/skills/drillme/SKILL.md`). The 5 questions above are phase-specific; drillme provides the canonical 4-category catalog + complementary patterns (5-whys, first principles, inversion).
+> **For full Socratic check, invoke the `drillme` skill**. The 5 questions above are also stored canonically in `.claude/skills/drillme/references/03-phase-questions.md` §Phase 1 — that file is the single source of truth. Drillme additionally provides the canonical 4-category catalog (`01-catalog-socratic.md`) + complementary patterns (`02-complementary-patterns.md`) + quality check protocol (`04-quality-check.md`).
 >
 > Skill-to-skill invocation is probabilistic (docs Anthropic + issue #59968). If drillme does not auto-fire and the Lead detects the gap, invoke `/drillme "Phase 1 closing for <NNN-slug>"` manually before approving hard gate 1->2.
 
