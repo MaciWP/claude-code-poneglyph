@@ -269,6 +269,34 @@ Las validaciones se ejecutan en Fase 4 (`critic-reviewer`) como parte del checkl
 
 ---
 
+## US11 — `drillme` skill + `/drillme` command (Socratic catalog transversal)
+
+### Pre
+- US1 cerrada (templates existen).
+
+### Post
+- `.claude/skills/drillme/SKILL.md` existe.
+- `.claude/commands/drillme.md` existe.
+
+### Structural assertions
+- SKILL.md frontmatter: `name: drillme`, `description` con keywords drill/drillme/socratic/5-whys/valida/cuestiona/challenge/antes-de-cerrar.
+- SKILL.md contiene el catálogo canónico literal de las 4 categorías Socratic (`[location]`, `[approach]`, `[context]`, `[failure]`) con sus template questions.
+- SKILL.md describe técnicas complementarias (5-whys, first principles, inversión).
+- SKILL.md describe los modos de operación: contexto explícito (`/drillme <brief>`) vs auto-detección de fase activa.
+- SKILL.md declara explícitamente que es **guidance, NO gate** (Commandment IV no aplica — su fallo no rompe outputs de fase).
+- `commands/drillme.md` es wrapper trivial con `argument-hint: "[contexto o pregunta]"`.
+
+### Smoke
+- `/drillme "estoy dudando entre A y B"` → produce 3-5 preguntas etiquetadas con `[categoría]`.
+- En prompt con keyword "valida esto" o "challenge my decision" → la skill se auto-activa.
+- Invocada desde otra skill (US2-US7) → arranca; si falla por probabilismo, el Lead la invoca manualmente con contexto de fase.
+
+### Cross-validations
+- Las skills US2-US7 (cuando se implementen) referencian drillme en sus drillme blocks **sin duplicar el catálogo canónico** (las 4 categorías solo viven en drillme/SKILL.md).
+- `tasks/index.md` lista US11 en W2 + DAG actualizado.
+
+---
+
 ## US10 — Dogfooding final + retro consolidado
 
 ### Pre

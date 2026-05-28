@@ -122,6 +122,10 @@ disable-model-invocation: false
 2. **E2E happy path?** Does the full happy path work, not just modules?
 3. **Edge case the user will hit?** Is there an edge case we didn't test that real usage will surface?
 4. **Coverage matches policy?** Does test coverage match what test-policy.md expects?
+
+> **For full Socratic check, invoke the `drillme` skill** (US11). The 4 questions above are phase-specific (E2E + spec drift + coverage); drillme provides the canonical 4-category catalog (broader location/approach/context/failure). Do NOT duplicate the canon here.
+>
+> Skill→skill invocation is probabilistic — if drillme does not auto-fire, the Lead invokes `/drillme "Phase 4 review of <NNN-slug>"` manually before producing the final verdict.
 ```
 
 ## SIEMPRE rules

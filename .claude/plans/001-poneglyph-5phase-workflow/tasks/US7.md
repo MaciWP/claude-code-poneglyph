@@ -99,6 +99,10 @@ disable-model-invocation: false
 3. **Reusable pattern?** Did a pattern emerge that's reusable beyond this task?
 4. **Global vs local?** Is this promotable to ~/.claude/ global or just this project?
 5. **Commandment violated silently?** Did any Commandment get violated without noticing?
+
+> **For full Socratic check, invoke the `drillme` skill** (US11). The 5 questions above are phase-specific (retro lens); drillme provides the canonical 4-category catalog applicable to any retro decision. Do NOT duplicate the canon here.
+>
+> Skill→skill invocation is probabilistic — if drillme does not auto-fire, the Lead invokes `/drillme "Phase 5 retro of <NNN-slug>"` manually before declaring the feature closed.
 ```
 
 ## SIEMPRE rules

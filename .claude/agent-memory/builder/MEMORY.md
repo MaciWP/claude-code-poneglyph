@@ -169,6 +169,12 @@
 - Generic "skill-matching conventions" is the safe replacement for references to the non-existent `.claude/rules/skill-matching.md` — it conveys the intent without implying a specific file exists.
 - Scout MEMORY.md contained a "GAP-001 (trace-logger JSONL parser bug)" entry tied to the deleted pipeline — any session entry referencing deleted artifacts should be excised, not just the specific artifact lines, to avoid orphan context.
 
+## 2026-05-28 — Session US1-foundation-templates
+- When creating IA-friendly templates for a multi-phase workflow, the key test is "if I delete this section, does the model decide worse in a later phase?" — sections that don't survive this test are decorative and must go.
+- In markdown table cells with `|` inside values, escape as `\|` — critical for Quick reference tables with `forced \| optional \| skip:<reason>` patterns (see US1.md line 101 for the authoritative example).
+- Two frontmatter field names co-exist in the spec: `tdd_policy` (for `tests.template.md`) vs `test_policy` (for `validations.template.md`). This is deliberate per prompt — the existing `validations.md` artifact uses `test_policy`. Report discrepancy but preserve both as written.
+- `bun -e "console.log(JSON.parse(require('fs').readFileSync('path','utf8')))"` is the correct JSON validation command on Windows (python3 not on PATH). Use `.claude/` relative paths if cwd is the project root.
+
 ## 2026-05-25 — Session hooks-cleanup
 - `python3` is not on the Windows PATH in this project — use `bun -e "..."` for all JSON/file scripting instead. The `json.load/dump` pattern documented in earlier sessions only works on Mac/Linux.
 - When cleaning dead exports from a shared config module (config.ts), a single Write rewrite is safer than ~12 sequential Edit calls — avoids uniqueness conflicts on similar old_strings and is atomic.

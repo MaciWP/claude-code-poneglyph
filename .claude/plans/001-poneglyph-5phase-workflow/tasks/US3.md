@@ -156,6 +156,10 @@ Before closing this phase, validate:
 5. **Failure tolerance?** If one US fails mid-implementation, does the DAG survive?
 
 If any answer is "I don't know" or evasive → iterate plan; do NOT close.
+
+> **For full Socratic check, invoke the `drillme` skill** (US11). The 5 questions above are phase-specific; drillme provides the canonical 4-category catalog + complementary patterns. Do NOT duplicate the canon here.
+>
+> Skill→skill invocation is probabilistic — if drillme does not auto-fire, the Lead invokes `/drillme "Phase 2 plan closing for <NNN-slug>"` manually before approving the hard gate 2→3.
 ```
 
 ## SIEMPRE rules implementadas
@@ -211,6 +215,28 @@ approved: 2026-05-28` (no aprobado) → STOP, escalar al usuario para aprobar Fa
 - Si `planner-protocol` se cortó: `Grep "planner-protocol" .claude/` retorna 0 matches (excepto históricos en memoria/spec).
 - Smoke: invocar `/plan` con un spec.md de ejemplo → produce `tasks/index.md` + N archivos US{N}.md.
 - Smoke: invocar `/tech-planner` (auto-activación por keyword) → idem.
+
+## Socratic categories (canonical mapping — research 2026-05-28)
+
+El drillme de Fase 2 mapeado contra las **4 categorías canónicas** del [Socratic Prompt Method](https://blogs.jaseci.org/blog/2026/03/10/socratic-prompt-method/):
+
+| Pregunta drillme | Categoría canónica | Etiqueta |
+|---|---|---|
+| Drill 1 — Simpler option? | Challenge approach | `[approach]` |
+| Drill 2 — Reinventing wheel? | Introduce context (¿qué hay ya en el proyecto?) | `[context]` |
+| Drill 3 — Truly atomic? | Challenge approach (granularidad) | `[approach]` |
+| Drill 4 — Real deps? | Introduce context (dependencias funcionales reales) | `[context]` |
+| Drill 5 — Failure tolerance? | Probe failure modes | `[failure]` |
+
+**Cobertura**: 3/4 — falta `[location]` (¿es el sitio correcto para esta planificación?). Para reforzar, añadir en implementación una sexta pregunta opcional: `[location]` ¿Estos archivos viven en el directorio correcto, o el proyecto tiene una convención que las HUs están ignorando?
+
+## Nota sobre fiabilidad skill→skill (research 2026-05-28)
+
+`tech-planner` invoca automáticamente `tdd-designer` al cerrar (AC6) y opcionalmente `decision-stress-test` (AC5). Según [docs Anthropic](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview) + [Issue #59968](https://github.com/anthropics/claude-code/issues/59968):
+
+- La invocación skill→skill **NO está garantizada al 100%**. Es probabilística (description-match) o de alta-fiabilidad-pero-no-absoluta (instrucción inline).
+- **Mitigación recomendada**: en el SKILL.md de `tech-planner`, escribir la invocación de `tdd-designer` como instrucción **imperativa explícita** ("MUST invoke `/tdd-design` after producing tasks/ — do not return control to user yet"), no como sugerencia. Si falla → el Lead detecta el gap en la verificación post-skill.
+- Si la invocación falla repetidamente → considerar promover a invocación programática vía `/flow` (US8 lo encadena).
 
 ## Open questions (implementación)
 

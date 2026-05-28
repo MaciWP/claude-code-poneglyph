@@ -5,15 +5,16 @@ mode: full
 status: approved
 approved: 2026-05-28
 phase: 2
-total_us: 10
+total_us: 11
 dag_complete: true
+amended: 2026-05-28 — added US11 (drillme skill global) after research showed Socratic catalog should be transversal, not duplicated per-phase
 ---
 
 # Tasks index — 5-phase workflow refactor
 
 ## Resumen ejecutivo
 
-Descomposición de `spec.md` aprobado en **10 HUs atómicas** (era 14 — se absorbieron 4 "HUs de decisión" como ACs de las HUs que naturalmente las requieren). Organizadas en **5 waves**.
+Descomposición de `spec.md` aprobado en **11 HUs atómicas** (era 14 → 10 absorbiendo decisiones, +1 tras research 2026-05-28 sobre Socratic Method canon → drillme se centraliza como skill global transversal en lugar de duplicarse por fase). Organizadas en **5 waves**.
 
 Cambio clave vs V1 del tasks: las decisiones arquitectónicas (cortar/mantener `builder` agent, `reviewer` agent, `planner-protocol`, `review-patterns`, `orchestrator-protocol`) **no son HUs independientes** — son ACs dentro de la HU que las requiere para funcionar coherentemente. Esto evita HU artificiales y mantiene atomicidad real.
 
@@ -23,8 +24,8 @@ Cambio clave vs V1 del tasks: las decisiones arquitectónicas (cortar/mantener `
 
 | Wave | HUs | Esfuerzo | Naturaleza |
 |---|---|---|---|
-| W1 Foundation | US1 | 0.5 sesión | Estructura + 6 templates IA-friendly (combinados) |
-| W2 Skills + commands | US2, US3, US4, US5, US6, US7 | 2-3 sesiones | 6 skills self-contained, paralelizables |
+| W1 Foundation | US1 | 0.5 sesión | Estructura + 7 templates IA-friendly (combinados) |
+| W2 Skills + commands | US2, US3, US4, US5, US6, US7, US11 | 2-3 sesiones | 7 skills self-contained, paralelizables (6 de fase + 1 transversal drillme) |
 | W3 Orquestación | US8 | 0.5-1 sesión | `/flow` command + decisión orchestrator-protocol |
 | W4 Integración | US9 | 0.3 sesión | CLAUDE.md update reflejando estado final |
 | W5 Cierre | US10 | 0.5-1 sesión | Dogfooding + retro Fase 5 sobre el meta-refactor |
@@ -39,13 +40,14 @@ graph TD
     US1[US1 Estructura + 6 templates]
   end
 
-  subgraph "W2 Skills + commands PARALELO 6 HUs"
+  subgraph "W2 Skills + commands PARALELO 7 HUs"
     US2[US2 scope-definer F1]
     US3[US3 tech-planner F2 + decision planner-protocol]
     US4[US4 tdd-designer F2.5]
     US5[US5 story-executor F3 + decision builder agent]
     US6[US6 critic-reviewer F4 + decision reviewer agent]
     US7[US7 retro-learner F5]
+    US11[US11 drillme transversal Socratic catalog]
   end
 
   subgraph "W3 Orquestacion"
@@ -66,6 +68,7 @@ graph TD
   US1 --> US5
   US1 --> US6
   US1 --> US7
+  US1 --> US11
 
   US2 --> US8
   US3 --> US8
@@ -73,6 +76,7 @@ graph TD
   US5 --> US8
   US6 --> US8
   US7 --> US8
+  US11 --> US8
 
   US8 --> US9
   US9 --> US10
@@ -91,6 +95,7 @@ graph TD
 | US5 | `story-executor` + `/build` | Fase 3 | W2 | M | optional | `builder` agent (CUT/KEEP-cond/ABSORB) |
 | US6 | `critic-reviewer` + `/critic` | Fase 4 | W2 | M | optional | `reviewer` agent + uso de `review-patterns` |
 | US7 | `retro-learner` + `/retro` | Fase 5 | W2 | M | optional | — |
+| US11 | `drillme` skill + `/drillme` (Socratic catalog transversal) | Transversal | W2 | M | optional | — |
 | US8 | `/flow` orquestador | Orquestación | W3 | M-L | optional | `orchestrator-protocol` (cortar/simplificar/keep) |
 | US9 | Update CLAUDE.md raíz | Integración | W4 | S | optional | — |
 | US10 | Dogfooding + retro final | Cierre | W5 | M | optional | — |
@@ -130,7 +135,7 @@ Decisiones que afectan a múltiples HUs pero **viven en una HU concreta** (no co
 | Spec theater | Promociones en US7 requieren aprobación usuario = acción obligada |
 | Non-atomic tasks | Cada HU ≤1 sesión + deps explícitas + escape hatch documentado si decisión absorbida excede |
 | Ceremonia uniforme | Adaptación intra-fase en cada skill + triaje en `/flow` (US8) |
-| Sub-skills compartidas frágiles | Principio 5: self-contained; duplicación > orquestación manual |
+| Sub-skills compartidas frágiles | Principio 5: self-contained; duplicación > orquestación manual. **Excepción aceptable** (US11 drillme): si el patrón es transversal y NO es gate (Commandment IV no aplica), la skill→skill probabilística es aceptable porque su fallo no rompe el output de fase — el Lead detecta y dispara manual |
 | Premisas falsas (Arch H) | Asumido: subagents pueden invocar skills (corregido per docs oficiales) |
 | Re-acumular complejidad | US3/US5/US6/US8 fuerzan poda condicional de viejas |
 

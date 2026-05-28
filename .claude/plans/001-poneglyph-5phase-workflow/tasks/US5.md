@@ -97,6 +97,10 @@ Before marking HU as completed:
 2. **Duplication?** Does my implementation introduce duplication?
 3. **Over-engineering?** Am I adding more than the AC requires?
 4. **Naming consistent?** Are names consistent with the rest of the codebase?
+
+> **For full Socratic check, invoke the `drillme` skill** (US11). The 4 questions above are intra-HU (during implementation); drillme provides the canonical 4-category catalog when broader doubt arises. Do NOT duplicate the canon here.
+>
+> Skill→skill invocation is probabilistic — if drillme does not auto-fire and a real doubt blocks progress, the Lead invokes `/drillme "<concrete doubt>"` manually before continuing.
 ```
 
 ## SIEMPRE rules

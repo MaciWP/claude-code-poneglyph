@@ -156,3 +156,14 @@ Secciones 4-15 son **modulares**: se omiten si no aplican (Principio 3 — IA-fr
 ## Próximo paso
 
 Cuando esta HU se implemente: las 6 skills US2-US7 ya pueden referenciar los templates con `Read .claude/plans/templates/<name>.template.md` sin riesgo de ambigüedad.
+
+## Validación empírica del Principio 5 (research 2026-05-28)
+
+El Principio 5 ("self-contained skills > sub-skills compartidas salvo composición 100% automática") está **validado por docs oficiales Anthropic** ([Agent Skills overview](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview)):
+
+- La invocación skill→skill por auto-description-match es **probabilística** (depende de que el modelo decida que es relevante).
+- La invocación skill→skill por instrucción inline en SKILL.md ("After X, use Y skill") tiene alta fiabilidad pero NO garantizada al 100% (el LLM puede ignorar la instrucción).
+- [Issue #59968](https://github.com/anthropics/claude-code/issues/59968) documenta bugs reales en composición skill-a-skill desde subagentes (Skill tool no hereda parent's Agent tool grant).
+- Para garantía absoluta: duplicar contenido (Principio 5) o usar orquestación programática externa (ya no es "skill→skill").
+
+**Implicación para templates**: cada template es **self-contained** (frontmatter + descripción inline = todo lo que la skill necesita para rellenarlo). Las skills US2-US7 NO dependen de invocar otra skill para entender el formato — solo del template.

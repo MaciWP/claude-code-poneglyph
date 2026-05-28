@@ -126,6 +126,10 @@ Before closing this phase, the following questions must have explicit answers (i
 5. **Out of scope?** Close doors explicitly. What is NOT included.
 
 If any answer is vague or empty → iterate with follow-up. Do NOT close phase 1 with open drillme questions.
+
+> **For full Socratic check, invoke the `drillme` skill** (US11 — `.claude/skills/drillme/SKILL.md`). The 5 questions above are phase-specific; drillme provides the canonical 4-category catalog (`[location]`/`[approach]`/`[context]`/`[failure]`) + complementary patterns (5-whys, first principles, inversion). Do NOT duplicate the canon here.
+>
+> Skill→skill invocation is probabilistic — if drillme does not auto-fire, the Lead invokes `/drillme "Phase 1 closing for <NNN-slug>"` manually before approving the hard gate 1→2.
 ```
 
 ## SIEMPRE rules implementadas
@@ -180,6 +184,20 @@ approved: 2026-05-28` parcial.
 - Smoke: invocar `/scope "necesito hacer X"` → debe arrancar cuestionario.
 - Smoke: invocar `/scope` sin args → pedir brief al usuario, no fallar silenciosamente.
 - Verificar auto-activación: en prompt sin `/scope` pero con "necesito hacer X" → skill se auto-activa.
+
+## Socratic categories (canonical mapping — research 2026-05-28)
+
+El drillme de Fase 1 se mapea contra las **4 categorías canónicas** del [Socratic Prompt Method](https://blogs.jaseci.org/blog/2026/03/10/socratic-prompt-method/) (Jaseci Labs, 2026):
+
+| Pregunta drillme | Categoría canónica | Etiqueta |
+|---|---|---|
+| Drill 1 — Root problem? | Challenge approach (5-whys → why this is the actual problem) | `[approach]` |
+| Drill 2 — What if we don't? | Probe failure modes (severity test) | `[failure]` |
+| Drill 3 — Who suffers today? | Introduce context (stakeholders implícitos) | `[context]` |
+| Drill 4 — MVP outcome? | Challenge approach (minimum scope decision) | `[approach]` |
+| Drill 5 — Out of scope? | Challenge location (cierre de puertas) | `[location]` |
+
+**Cobertura**: 4/4 categorías ✅. Las 5 preguntas literales del drillme cubren las 4 dimensiones canónicas; al implementar el SKILL.md, añadir etiquetas `[categoría]` a cada drill para audibilidad.
 
 ## Open questions (a resolver en implementación)
 

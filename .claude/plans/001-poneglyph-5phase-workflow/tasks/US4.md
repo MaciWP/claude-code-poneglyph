@@ -104,6 +104,10 @@ disable-model-invocation: false
 1. **Happy + edge?** Each HU has ≥1 happy path + ≥1 edge case test?
 2. **Untestable HU?** If any HU has no natural test → is the HU well-defined or atomic?
 3. **Property-based fit?** Does any HU have invariants (parsers, pure transforms) that property-based would cover better than examples?
+
+> **For full Socratic check, invoke the `drillme` skill** (US11). The 3 questions above are phase-specific (focused on oracle design); drillme provides the canonical 4-category catalog (covers `[location]`/`[approach]`/`[context]`/`[failure]` more broadly). Do NOT duplicate the canon here.
+>
+> Skill→skill invocation is probabilistic — if drillme does not auto-fire, the Lead invokes `/drillme "Phase 2.5 test design for <NNN-slug>"` manually before approving hard gate 2→3.
 ```
 
 ## SIEMPRE rules
@@ -147,3 +151,15 @@ disable-model-invocation: false
 
 - Smoke: invocar `/tdd-design` con un `tasks/index.md` de ejemplo → produce `tests.md` válido.
 - Verificar frontmatter de `tests.md` declara TDD-mode correctamente según test-policy.md.
+
+## Socratic categories (canonical mapping — research 2026-05-28)
+
+El drillme de Fase 2.5 (3 preguntas — la fase más focalizada) mapeado contra las **4 categorías canónicas** del [Socratic Prompt Method](https://blogs.jaseci.org/blog/2026/03/10/socratic-prompt-method/):
+
+| Pregunta drillme | Categoría canónica | Etiqueta |
+|---|---|---|
+| Drill 1 — Happy + edge? | Probe failure modes (cobertura mínima) | `[failure]` |
+| Drill 2 — Untestable HU? | Challenge approach (HU mal definida) | `[approach]` |
+| Drill 3 — Property-based fit? | Challenge approach (técnica de test óptima) | `[approach]` |
+
+**Cobertura**: 2/4 — faltan `[location]` y `[context]`. Aceptable porque Fase 2.5 está focalizada en oracle design, no en arquitectura global; las otras dimensiones se cubren en Fase 2 (tech-planner). NO añadir preguntas artificialmente — sería ceremonia (Commandment III).
