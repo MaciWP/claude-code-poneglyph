@@ -193,4 +193,4 @@ Leyenda: ✅ = invocación canónica esperada · ⚠️ = condicional según con
 
 ## Próximo paso
 
-`tasks/` status: `approved` (amended 2026-05-28 con rename US3-US7 + Auxiliary skills matrix). Implementación Phase 3 ya en curso: US1 ✅, US2 ✅ (scope), US11 ✅ (drillme), US3 ✅ (tech-plan + MIGRAR-Y-CUT planner-protocol), US4 ✅ (tdd-design dual-mode), US5 ✅ (build + AC7 ratificado KEEP-conditional). Siguiente: US6 `critic` (Phase 4) + decisión absorbida `reviewer` agent + uso de `review-patterns`.
+`tasks/` status: `approved` (amended 2026-05-28 con rename US3-US7 + Auxiliary skills matrix). Implementación Phase 3 ya en curso: US1 ✅, US2 ✅ (scope), US11 ✅ (drillme), US3 ✅ (tech-plan + MIGRAR-Y-CUT planner-protocol), US4 ✅ (tdd-design dual-mode), US5 ✅ (build + AC7 KEEP-cond builder), US6 ✅ (critic + AC7 KEEP-cond reviewer + AC8 KEEP review-patterns). Siguiente: US7 `retro` (Phase 5).

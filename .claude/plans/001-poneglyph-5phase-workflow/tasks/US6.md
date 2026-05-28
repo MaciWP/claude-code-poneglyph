@@ -1,13 +1,19 @@
 ---
 us: US6
-title: Skill `critic` + command `/critic` (Fase 4) + decisión `reviewer` agent + uso `review-patterns`
+title: Skill `critic` (Fase 4) — sin wrapper command + decisiones reviewer/review-patterns
 wave: W2
 depends_on: [US1]
 tdd_mode: optional
 estimate: M
-status: approved
+status: implemented
 approved: 2026-05-28
-absorbs_decision: reviewer agent (CUT / KEEP-cond / ABSORB) + cómo critic usa review-patterns
+implemented: 2026-05-28
+absorbs_decision: reviewer agent (KEEP-conditional ratificado) + review-patterns (KEEP ratificado)
+ratified_decision: |
+  reviewer agent: KEEP-conditional — invocado por critic solo cuando complejidad >60
+    OR critical areas (auth/payments/security/data/secrets/crypto).
+  review-patterns: KEEP — invocado como catálogo (Read references) en modo quality
+    o performance per diff content; cero duplicación.
 ---
 
 # US6 — `critic` skill + `/critic` command (Fase 4)
@@ -16,11 +22,11 @@ absorbs_decision: reviewer agent (CUT / KEEP-cond / ABSORB) + cómo critic usa r
 
 | Campo | Valor |
 |---|---|
-| **Status** | 🟡 draft |
+| **Status** | ✅ implemented (2026-05-28) |
 | **Wave** | W2 (paralelo con US2-US5, US7) |
 | **Depends on** | US1 |
 | **Blocks** | US8 |
-| **Files touched** | crear `.claude/skills/critic/SKILL.md` + `.claude/commands/critic.md`; condicional sobre `reviewer` agent |
+| **Files touched** | crear `.claude/skills/critic/SKILL.md` (NO wrapper command — docs Anthropic 2026); `reviewer` agent KEEP-conditional (no se toca); `review-patterns` KEEP (no se toca) |
 | **TDD-mode** | optional |
 | **Estimate** | M |
 | **Cómo arrancar** | Read `spec.md` + `tasks/` + `state.json` → confirmar HUs cerradas → generar lista validaciones → ejecutar checks → producir `review.md` |
@@ -209,3 +215,50 @@ Declarar en `review.md`: "Review light/standard/full por motivo X".
 
 - ¿`critic` puede invocar `reviewer` agent vía `Agent(subagent_type=reviewer)` o lo invoca el Lead? — patrón sub-skill→agent.
 - Si `reviewer` se KEEP-cond: ¿se actualiza su SKILL.md frontmatter para reflejar que ahora se invoca solo desde critic?
+
+## Closeout (2026-05-28)
+
+**AC7 ratificado**: KEEP-conditional para `reviewer` agent.
+**AC8 ratificado**: KEEP para `review-patterns` skill.
+
+### AC7 — `reviewer` agent
+
+| Evaluación | Veredicto |
+|---|---|
+| CUT | ✗ Rechazado — Opus aporta análisis más profundo que Sonnet (modelo del skill) en reviews arquitecturales; `agent-memory/reviewer/MEMORY.md` ya existe con insights preservables |
+| ABSORB | ✗ Rechazado — workflow inline en SKILL.md no replica (a) aislamiento de contexto sub-agent, (b) upgrade a Opus, (c) read-only permission mode del agent |
+| **KEEP-conditional** | ✓ **Adoptado** — `reviewer` se mantiene; `critic` lo invoca solo cuando complejidad >60 OR áreas críticas (auth/payments/security/data/secrets/crypto); criterio en `critic/SKILL.md` Step 7 |
+
+### AC8 — `review-patterns` skill
+
+| Aporte único de `review-patterns` | Cubierto por `critic`? |
+|---|---|
+| SOLID violations (5 principios) | NO — critic checklist es genérico |
+| Cyclomatic/cognitive complexity | NO |
+| Anti-patterns catalog | NO |
+| Extract function/class patterns | NO |
+| N+1 query variants | NO |
+| Memory leak patterns | NO |
+| Refactoring safety checklists | NO |
+
+**Veredicto**: KEEP `review-patterns`. `critic` lo invoca como catálogo vía `Read .claude/skills/review-patterns/references/<mode>.md` (Step 6). Cero duplicación de contenido.
+
+**Open Q resuelta**: el SKILL.md de `critic` invoca `Agent(subagent_type=reviewer)` con `[RELEVANT SKILLS]` + `[RELEVANT MEMORY]` blocks (Arch H), no el Lead a ciegas. Reviewer agent runs `background: true` per su frontmatter — critic continúa otros checks en paralelo.
+
+**Entregables**:
+
+| Path | Estado | Notas |
+|---|---|---|
+| `.claude/skills/critic/SKILL.md` | Creado (447 líneas) | Frontmatter empírico; 11-step workflow; 5-section checklist (Correctness/Quality/Security/Performance/Maintainability); 9 auxiliary skills block; AC7+AC8 closeout interno; embedded fallback si `review.template.md` falta |
+| `.claude/commands/critic.md` | NO creado | Docs Anthropic 2026: skill name = command name; `/critic` resuelve directo |
+| `.claude/agents/reviewer.md` | NO tocado | KEEP intacto |
+| `.claude/agent-memory/reviewer/MEMORY.md` | NO tocado | KEEP intacto |
+| `.claude/skills/review-patterns/` | NO tocado | KEEP intacto (17+ refs únicas) |
+
+**Verificación post-impl**:
+- `bun test ./.claude/hooks/` → 81/81 ✅
+- Harness registra `/critic` skill con metadata empírica ✅
+- `review-patterns` + `reviewer` agent siguen disponibles e invocables ✅
+- Auxiliaries listadas (anti-hallucination, drillme, diagnostic-patterns, lsp-operations, review-patterns, security-review, decision-stress-test, explain-changes, simplify) están todas disponibles en el registry ✅
+
+**Smoke**: invocar `/critic` no aplica hasta que una feature end-to-end llegue a Phase 4 (dogfooding US10 + orquestación US8 `/flow`).
