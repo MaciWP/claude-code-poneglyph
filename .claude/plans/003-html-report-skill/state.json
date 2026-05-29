@@ -10,6 +10,8 @@
   "gates_note": "Gates 1->2 y 2->3 satisfechos por eleccion explicita del usuario (AskUserQuestion: Ola A + metodo dynamic-workflow). Scope ligero + tech-plan comprimido inline en el workflow script (Design phase). Usuario en go-mode, sin ceremonia adicional.",
   "us_completed": [],
   "us_pending": [],
+  "resume_note": "PAUSADO 2026-05-29. Design+Build COMPLETOS: 5 archivos de la skill html-report escritos (.claude/skills/html-report/). Verify (render report.md 002 -> build/audit-002-report.html) quedo en curso via dynamic workflow run wf_eba2f7a1-811. Pendiente: confirmar verify + Phase 4 critic (render real) + Phase 5 retro + cierre. Resume con /flow --resume 003-html-report-skill. Olas B (governance) y C (integracion nativa) tras cerrar A.",
+  "build_method_lesson": "Dynamic workflow para 5 archivos = overkill confirmado empiricamente. Lead-directo mas rapido en wall-clock. Workflows brillan a escala de cientos. Esta leccion es contenido para la futura skill workflows-integration (Ola C, finding #2).",
   "feature_closed": false,
   "review_verdict": null,
   "retro_status": null,
