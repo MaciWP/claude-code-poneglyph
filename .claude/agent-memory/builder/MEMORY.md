@@ -175,6 +175,20 @@
 - Two frontmatter field names co-exist in the spec: `tdd_policy` (for `tests.template.md`) vs `test_policy` (for `validations.template.md`). This is deliberate per prompt — the existing `validations.md` artifact uses `test_policy`. Report discrepancy but preserve both as written.
 - `bun -e "console.log(JSON.parse(require('fs').readFileSync('path','utf8')))"` is the correct JSON validation command on Windows (python3 not on PATH). Use `.claude/` relative paths if cwd is the project root.
 
+## 2026-05-29 — Session 002-US1-inventory
+- For markdown-deliverable HUs (no code), the word count constraint (AC5 ≤2000) is binding. `wc -w` on POSIX via Bash is the reliable counter — PowerShell `($content -split...)` syntax breaks in the Bash tool on Windows. Check early and trim redundant sections (coverage summary tables are prime candidates).
+- When inventorying a `.claude/` system: always include `CLAUDE.md` (root) and `.claude/settings.json` in an "out-of-.claude/" section — they are load-bearing meta-files that the advisor will flag if omitted.
+- Hook `.ts` Glob count (9) vs CLAUDE.md hook count (4) is expected: 4 main + 3 lib/helpers + 2 tests. Declare this explicitly in the inventory to avoid apparent discrepancy.
+- `git log -1 --format="%as"` on an untracked file returns empty output (not an error) — use "untracked" as the Última mod value rather than leaving blank.
+- Skill `references/` subdirectories (tech-plan, scope, build, critic, retro, orchestrator-protocol) contain the bulk of skill content but are NOT individual SKILL.md entries — note once in Meta-componentes, do not enumerate individually.
+
+## 2026-05-29 — Session 002-US4-scoring
+- For evidence-based rubric scoring, read the anchor criteria literally (not capability-based). "Skill `critic` no produce `review.md`" fires if `Glob .claude/plans/*/review.md` returns zero results — even if the skill is well-designed and capable. Capability ≠ evidenced output.
+- When correcting a score after a multi-field document is written, track ALL derivative fields: frontmatter (`mean_score`), table row (`Score`, `Anchor used`), Distribución section (`Mean`, `Min`, `Count scores ≤5`, sorted median list), and AC5 section (inline references like "Critic (5)"). Edit each independently — do not forget the sorted order in Median.
+- n=1 sample is a scoring ceiling for anchor-10 criteria that require "evidenciado en ≥2 plans/". Declaring this ceiling upfront as a "pre-commit honesty anchor" before scoring prevents self-congratulation creep on high-design/low-evidence categories.
+- Pre-committing a known low-score before scoring the rest reduces optimism bias — when you declare "Critic ≤6 before I start" and it comes out 3, honesty is structurally enforced, not just declared.
+- AC5 honesty check: mean <8.0 does NOT skip the check. Execute preventively when ≥12/14 scores cluster in 7-9 range — the clustering itself is the signal, not the mean crossing 8.0.
+
 ## 2026-05-25 — Session hooks-cleanup
 - `python3` is not on the Windows PATH in this project — use `bun -e "..."` for all JSON/file scripting instead. The `json.load/dump` pattern documented in earlier sessions only works on Mac/Linux.
 - When cleaning dead exports from a shared config module (config.ts), a single Write rewrite is safer than ~12 sequential Edit calls — avoids uniqueness conflicts on similar old_strings and is atomic.

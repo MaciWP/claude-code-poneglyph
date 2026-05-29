@@ -1,0 +1,24 @@
+{
+  "spec_slug": "003-html-report-skill",
+  "mode": "full",
+  "current_phase": 3,
+  "phases_completed": [1, 2, 2.5],
+  "gates_approved": {
+    "1->2": true,
+    "2->3": true
+  },
+  "gates_note": "Gates 1->2 y 2->3 satisfechos por eleccion explicita del usuario (AskUserQuestion: Ola A + metodo dynamic-workflow). Scope ligero + tech-plan comprimido inline en el workflow script (Design phase). Usuario en go-mode, sin ceremonia adicional.",
+  "us_completed": [],
+  "us_pending": [],
+  "feature_closed": false,
+  "review_verdict": null,
+  "retro_status": null,
+  "started_at": "2026-05-29",
+  "updated_at": "2026-05-29",
+  "notes": {
+    "wave": "A de 3 (audit 002 backlog). Olas B (governance) y C (integracion nativa) pendientes despues.",
+    "build_method": "dynamic workflow (Workflow tool) — user opt-in explicito 'usa workflows si es posible'. Primer dogfood de dynamic workflows. Cierra gap G1 del audit.",
+    "scope_mode": "LIGERO — aplica living-spec delta retro 002: build/research-features arrancan ligeras (menos ceremonia upfront, sustancia temprana). Evita over-engineering Commandment III.",
+    "precedent": ".claude/skills/decide genera HTML self-contained desde templates/memo.html — patron validado, esta skill lo generaliza"
+  }
+}
