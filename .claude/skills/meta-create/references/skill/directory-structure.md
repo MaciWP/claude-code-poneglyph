@@ -70,7 +70,7 @@ This aligns with Anthropic's official skills guidance:
 > *"Reference supporting files from SKILL.md so Claude knows what each file contains and when to load it."*
 > — [code.claude.com/docs/en/skills](https://code.claude.com/docs/en/skills)
 
-The Contents column is the "when to load it" half of that instruction. See `.claude/rules/context-management.md` ("Content Map pattern") for the canonical repo-wide rule.
+The Contents column is the "when to load it" half of that instruction. See `orchestrator-protocol/references/06-context-arch-h.md` (§Content Map Pattern) for the canonical repo-wide rule.
 
 ## Reference file frontmatter
 

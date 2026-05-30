@@ -4,7 +4,7 @@ globs:
 priority: 15
 ---
 
-<!-- Last verified: 2026-04-29 -->
+<!-- Last verified: 2026-05-30 -->
 
 ## Hooks Context
 

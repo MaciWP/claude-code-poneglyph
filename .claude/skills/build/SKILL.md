@@ -75,7 +75,7 @@ Read the chosen `tasks/US{N}.md` completely + its associated `T{N}.X` tests or v
 | HU characteristic | Mode | Reason |
 |---|---|---|
 | 1-4 files touched, bounded change | **Direct** (Lead in skill) | Default-allow gate covers it; delegation adds round-trip cost without isolation gain |
-| ≥5 files touched | **Delegate to `builder`** | Standard delegation threshold from `bootstrap-lead.md` Trigger A — context isolation real |
+| ≥5 files touched | **Delegate to `builder`** | Standard delegation threshold from `CLAUDE.md §When to delegate` (Trigger A) — context isolation real |
 | Architectural change declared in `tasks/US{N}.md` (`arch_change: true` or AC explicitly mentions structural refactor) | **Delegate to `builder`** | New patterns or cross-cutting structure → builder's focused context preserves main session quality |
 | HU touches sensitive paths (`.env`, `*.lock`, `package.json`, `.claude/settings.json`, `secrets/`) | **Delegate to `builder`** OR Lead declares inline `sensitive: <reason ≥8 chars>` | CLAUDE.md sensitive-paths rule |
 | HU is "create extension" (new skill/hook/rule/MCP/plugin/agent) | Lead invokes `meta-create` first; then direct OR delegate per file count | Meta-context requires `meta-create` consultation |
@@ -251,7 +251,7 @@ If all HUs closed → flag `state.json.current_phase: 4` and report "Phase 3 com
 **Effect**:
 - `.claude/agents/builder.md` — kept as-is.
 - `.claude/agent-memory/builder/MEMORY.md` — kept; injected in delegation prompts.
-- This skill is the canonical caller; Lead may still invoke `builder` directly per `bootstrap-lead.md` Trigger A.
+- This skill is the canonical caller; Lead may still invoke `builder` directly per `CLAUDE.md §When to delegate` (Trigger A).
 - Refs to `builder` agent in other docs (CLAUDE.md, rules) — no changes required.
 
 ## Auxiliary skills invoked

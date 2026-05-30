@@ -58,6 +58,7 @@ For architectural/comparison decisions → `Skill('decide')` first.
 
 - **Trigger A — implementation**: ≥5 files OR architectural change → `builder`. 1-4 files + bounded change → Lead direct. Sensitive paths (`.env`, `*.lock`, `package.json`, `.claude/settings.json`, `secrets/`, `credentials/`) require inline `sensitive: <reason ≥8 chars>`. Destructive ops (`rm -rf`, force push, schema change) — never run directly; delegate with explicit reason.
 - **Trigger B — exploration**: default agent is `Explore` (Haiku, score 83). LOW+LOW (1-2 files, direct read) → Lead `Read`. LOW+HIGH / HIGH+LOW → `Explore`. HIGH+HIGH (cross-file synthesis, open-ended analysis) or design-doc audit / full-file reads past Explore's window → `scout` (Sonnet, score 60). Full matrix: `references/04-agent-selection.md` §Exploration Decision Matrix.
+- **Trigger C — agent count (≥4 rule)**: spawn agents only when **≥4 independent units** would run in parallel (then prefer a workflow). 1-3 independent units → Lead acts inline (spawning 1-3 is wasted cost+latency vs the main session). Exception: read-only web research the Lead cannot run inline → delegate regardless of count (cheap). See `CLAUDE.md §When to delegate`.
 
 ### Step 2: Complexity
 
@@ -75,10 +76,10 @@ Complexity factors × weight, tiered/team gates, worktree decision, model routin
 
 ### Step 3: Prepare Context (Arch H)
 
-1. Check if `prompt-enrichment.ts` emitted `## Path-Based Skills (for delegation)` — copy verbatim into delegation prompt.
-2. If no hook suggestions: match keywords against `references/05-skill-matching.md` (max 3 skills per agent).
-3. Also check the project's path rules (`.claude/rules/paths/`) for project-specific skill conventions.
-4. Do NOT invoke `Skill()` as a delegation mechanism — embed `Read .claude/skills/<name>/SKILL.md` instructions in the prompt.
+Three mechanisms (corrected 2026-05-30 — subagents CAN now invoke `Skill()` when it's in their `tools:`):
+1. **`skills:` frontmatter** — for skills a subagent ALWAYS needs (preloads full content at startup). Already set per agent (builder→`anti-hallucination`, etc.).
+2. **`Skill` tool** — `builder`/`reviewer`/`scout` now list `Skill`, so they self-discover and invoke task-specific skills mid-task. Often no Lead pre-selection needed; just name the relevant skills in the task prose.
+3. **Arch H Lead-directed `Read`** — fallback: match task keywords against `references/05-skill-matching.md` + path rules (`.claude/rules/paths/`), pick max 3 skills, embed `Read .claude/skills/<name>/SKILL.md` in the `[RELEVANT SKILLS FOR THIS TASK]` block. Use when you want to force exact content. (Note: Lead-side `Skill()` still does NOT propagate — that's unchanged.)
 
 Full Arch H template with all blocks, propagation model, skill discovery: `references/06-context-arch-h.md`.
 
@@ -95,7 +96,7 @@ Full Arch H template with all blocks, propagation model, skill discovery: `refer
 
 Direct action: Read always permitted. For Edit/Write/Bash on sensitive paths declare inline `sensitive: <reason ≥8 chars>` or delegate to builder. Destructive patterns — delegate with explicit reason. No automated gate enforces this; the Lead is responsible.
 
-**Parallelize**: when ≥2 Agents have no output→input dependency AND disjoint files AND no shared state, send them in the SAME assistant message. Do NOT parallelize: builder consuming a previously-produced plan, two `Edit`s on the same file, checkpoint review after writing. Multi-agent patterns + anti-patterns: `references/04-agent-selection.md`.
+**Parallelize**: once the ≥4 agent-count threshold (Step 1, Trigger C) is met, send the independent agents — those with no output→input dependency AND disjoint files AND no shared state — in the SAME assistant message. (For 1-3 units the Lead acts inline — do not spawn just to parallelize.) Do NOT parallelize: builder consuming a previously-produced plan, two `Edit`s on the same file, checkpoint review after writing. Multi-agent patterns + anti-patterns: `references/04-agent-selection.md`.
 
 ### Step 5: Validate
 

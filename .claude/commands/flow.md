@@ -193,6 +193,8 @@ for HU in DAG-ordered-pending:
 
 Parallel HUs (independent leaves of the DAG) → may invoke multiple `build` calls in the same Lead message if their `files` are disjoint AND no shared state. Standard rule applies (≥5 files OR architectural → delegate to `builder` agent from inside `build` skill).
 
+> **Dynamic workflows engine (≥4 parallel HUs)** — when the DAG has **≥4 independent HUs** in a wave (the ≥4 agent-count rule), prefer the **Workflow tool** (GA since CC 2.1.154) over hand-spawned parallel `build` calls: it orchestrates the fan-out in the background, with `isolation: 'worktree'` per HU when files would collide, and `/workflows` to monitor. For 1-3 parallel HUs, the Lead runs `build` inline (spawning <4 agents is wasted cost). poneglyph first dogfooded this in feature 003. The Workflow tool requires explicit user opt-in (keyword "workflow" or direct request) — do NOT auto-launch it.
+
 ##### Phase 4 — critic
 
 Invoke `Skill('critic')` once all HUs completed. Produces `review.md` with verdict.

@@ -142,7 +142,7 @@ This session acts as a **pure orchestrator**. It does not execute code directly.
 | Tool | Use |
 |------|-----|
 | `Agent` | Delegate to specialized subagents (builder, reviewer, scout). Planning lives in the `tech-plan` skill (Lead-invoked); error diagnosis lives in the `diagnostic-patterns` skill (Lead-invoked); extension creation lives in the `meta-create` skill. |
-| `Skill` | Load skill context **into the Lead's own session only** (domain patterns, prompt refinement). NOT a delegation mechanism — to give skills to a subagent, include `Read .claude/skills/<name>/SKILL.md` in the delegation prompt (Arch H) |
+| `Skill` | Load skill context **into the Lead's own session only** (domain patterns, prompt refinement). Lead-side `Skill()` does NOT propagate to subagents. To give a subagent skills: it self-invokes `Skill()` (now in builder/reviewer/scout `tools:`), or `skills:` frontmatter preload, or Lead embeds `Read .claude/skills/<name>/SKILL.md` (Arch H fallback) |
 | `AskUserQuestion` | Clarify requirements or validate a doubtful prompt |
 | `TaskCreate/TaskList/TaskUpdate` | Manage the in-conversation task list |
 
@@ -158,6 +158,7 @@ No automated gate enforces this — the Lead is responsible for caution:
 - **Destructive operations** (`rm -rf`, force push, db migration, schema change) — never run directly; delegate with explicit reason or escalate to user.
 
 When to delegate (see `~/.claude/docs/lead-mode-when-needed.md` for full triggers):
+- **Parallelism threshold (≥4 rule)**: spawning 1-3 subagents for bounded work is wasted cost+latency vs the main session — spawn agents only when ≥4 independent units would run in parallel (then prefer a workflow); 1-3 units → Lead acts inline. Exception: read-only web research (WebSearch/WebFetch) the Lead cannot run inline must be delegated regardless of count (it is cheap).
 - ≥5 files OR architectural change → `builder` (with `Skill('tech-plan')` first if complexity >60).
 - 1-4 files, bounded change → Lead acts directly.
 - Bulk exploration (≥3 files to read) → `Explore` (Haiku) or `scout` (Sonnet) by volume × complexity matrix.
@@ -182,7 +183,7 @@ graph TD
     DG --> B
 ```
 
-**Arch H — Lead-Directed Skill Reads**: before delegating, the Lead picks up to 3 relevant skills (via `prompt-enrichment.ts` path-based hints, manual keyword matching against `.claude/rules/paths/*.md`, or the project's `skill-matching.md` rule for project skills) and embeds `Read .claude/skills/<name>/SKILL.md` instructions in the delegation prompt's `[RELEVANT SKILLS FOR THIS TASK]` block. The subagent then Reads those files as its first actions. Default subagents cannot invoke `Skill()` — this is the canonical way to give them task-specific skill context. Both global and project skills use this same Read mechanism.
+**Skill loading into subagents (3 mechanisms, corrected 2026-05-30)**: (1) **`skills:` frontmatter** preloads full SKILL.md at spawn — for skills a role ALWAYS needs (builder→`anti-hallucination`, reviewer→`review-patterns`+`security-review`). (2) **`Skill` tool** — `builder`/`reviewer`/`scout` now list `Skill` in `tools:`, so they self-discover and invoke task-specific skills mid-task (official docs confirm subagents CAN invoke `Skill()` when it's in their tools; CC ≥2.1.133 fixed prior breakage). Name the relevant skills in the task prose. (3) **Arch H — Lead-Directed Skill Reads** (fallback): the Lead picks up to 3 skills (keyword match against `.claude/rules/paths/*.md` + `orchestrator-protocol/references/05-skill-matching.md`) and embeds `Read .claude/skills/<name>/SKILL.md` in the `[RELEVANT SKILLS FOR THIS TASK]` block — use to force exact content. Lead-side `Skill()` does NOT propagate. (An auto-suggestion hook `prompt-enrichment.ts` was once designed but never implemented — selection is manual, not hook-driven.)
 
 Score<70 is a **signal of doubt**, not a hard stop. If the prompt is ambiguous or the resulting plan needs validation, ask (`AskUserQuestion`) or refine with the `prompt-engineer` skill. If the prompt is pragmatically clear despite a low score, proceed and flag uncertainty.
 
@@ -192,7 +193,10 @@ Score<70 is a **signal of doubt**, not a hard stop. If the prompt is ambiguous o
 |------|------|------|
 | **Subagents** (default) | 95% of tasks | 1x |
 | **Tiered** | Complexity 45-60 with 2-3 domains sharing interfaces | ~2x |
+| **Dynamic workflows** (Workflow tool, GA 2.1.154) | ≥4 independent units to fan out (the ≥4 rule); background orchestration + `/workflows` monitor; per-unit `isolation: 'worktree'` on collision. **User opt-in only** (keyword "workflow" or explicit ask) | scales w/ agent count |
 | **Team agents** (experimental) | Complexity >60, 3+ independent domains, interface negotiation, `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` | 3-7x |
+
+> **Background sessions / agent-view** (`claude agents`, CC ≥2.1.139): an orthogonal axis — runs whole **sessions** in the background (not subagents within one), with a single dashboard for running/blocked/done. Use to run a feature in the background and monitor, or fan out features across sessions (complements the ≥4 rule for real multi-session parallelism). `claude --bg` / `←←` to background; `/resume` lists them. Operational tool, not a per-turn routing mode.
 
 ### Planner adaptive levels
 
@@ -251,7 +255,7 @@ Actualizado tras el refactor del 5-phase workflow (US1-US10) sobre la baseline d
 | Componente | Audit baseline (early 2026) | Post-audit cleanup (2026-05-25/28) | Post 5-phase refactor (2026-05-28) | Detalle |
 |---|---|---|---|---|
 | Agents | 7 + 1 meta | 3 | **3** | builder, reviewer, scout. Builder y reviewer KEEP-conditional (invoked by `build`/`critic` skills only when HU ≥5 files OR critical area). Meta-create también es skill. |
-| Skills | 28 | 14 | **19** (+7 phase, -2 absorbed) | 6 phase skills (`scope`, `tech-plan`, `tdd-design`, `build`, `critic`, `retro`) + transversal `drillme` añadidas en W2; `planner-protocol` migrada-y-cortada (6 refs preservadas bajo `tech-plan/references/`); `orchestrator-protocol` SIMPLIFICADA -3 refs (US8) |
+| Skills | 28 | 14 | **20** (+7 phase, -2 absorbed, +1 `html-report` W3/003) | 6 phase skills (`scope`, `tech-plan`, `tdd-design`, `build`, `critic`, `retro`) + transversal `drillme` añadidas en W2; `planner-protocol` migrada-y-cortada (6 refs preservadas bajo `tech-plan/references/`); `orchestrator-protocol` SIMPLIFICADA -3 refs (US8) |
 | Hooks registrados | 15+ | 6 | **4** | `auto-approve`, `post-compact`, `security-gate`, `validators/code-validator`. Verificación de tests = responsabilidad explícita del Lead (no Stop hook automático) |
 | Slash commands | 10 | 4 | **4** | `decide`, `explain-changes`, `flow`, `sync-claude`. `/flow` (W3) reemplaza al wrapper `/planner`; skills nuevas usan canonical pattern skill-name = command-name sin wrapper redundante (docs Anthropic 2026) |
 | Rules | 7 | 2 + paths/ | **2 + paths/** | `error-recovery.md` (Lead-driven), `test-policy.md` + `paths/{hooks,orchestration}.md` |

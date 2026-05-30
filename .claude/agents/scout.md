@@ -7,7 +7,7 @@ description: |
   Use when: HIGH+HIGH synthesis across multiple files, cross-file consistency checks, design-doc auditing, open-ended codebase analysis, reads that require full file content past Explore's read window.
   Do NOT use for: simple file lookups, bulk reads without reasoning, targeted "where is X defined" — those go to `Explore`.
   Keywords - deep dive, synthesize, multi-file, audit, open-ended, cross-file consistency, full-file read
-tools: Read, Grep, Glob, WebFetch, WebSearch
+tools: Read, Grep, Glob, WebFetch, WebSearch, Skill
 disallowedTools: Task, Edit, Write
 permissionMode: default
 effort: low

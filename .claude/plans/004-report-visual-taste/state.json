@@ -1,0 +1,25 @@
+{
+  "spec_slug": "004-report-visual-taste",
+  "mode": "standard",
+  "scope_mode": "light",
+  "current_phase": 5,
+  "phases_completed": [1, 2, 2.5, 3, 4, 5],
+  "gates_approved": {
+    "1->2": true,
+    "2->3": true
+  },
+  "us_completed": ["US1", "US2", "US3", "US4", "US5"],
+  "us_pending": [],
+  "feature_closed": true,
+  "review_verdict": "APPROVED_WITH_WARNINGS",
+  "retro_status": "complete",
+  "depends_on": "003-html-report-skill",
+  "research": ".claude/plans/_research-skill-evolution-2026-05-29.md",
+  "scope_decision": "OQ1 RESOLVED (human): ENHANCE html-report in-place. NOT a separate skill.",
+  "outcome": "5 HUs built inline (regla ≥4, no spawns). Phase 4 APPROVED_WITH_WARNINGS. Corpus + critique mode CLOSED correctly. HONEST CORRECTION 2026-05-29: the real render (report.html) passed DATA + STRUCTURE + self-containment checks but FAILED the human eyeball test — Oriol: 'es horrible, no encaja nada, dark mode feo'. The earlier 'proved non-generic output' claim was wrong (grep cannot judge taste). Root cause = html-report TEMPLATES (003) are visually weak, NOT the corpus. The corpus documents rules; the templates do not yet embody them. Visual redesign of templates is NEW work (see 006-visual-redesign / 003 reopen).",
+  "visual_status": "REJECTED by Oriol — templates need real design iteration with his eye in the loop",
+  "promotions_pending_human": ["taste corpus -> shared project reference IF a 2nd consumer appears (YAGNI now)", "dossier-first feedback -> memory"],
+  "gates_note": "1->2 + 2->3 both APPROVED by user 2026-05-29.",
+  "started_at": "2026-05-29",
+  "updated_at": "2026-05-29"
+}

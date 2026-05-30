@@ -5,7 +5,7 @@ description: |
   Implementation and refactoring agent. Writes clean, functional code in any language.
   Use proactively when: implementing features, creating files, modifying code, writing tests, fixing bugs, refactoring, extracting functions, simplifying code, restructuring, resolving merge conflicts, updating docs.
   Keywords - implement, create, build, code, develop, write, modify, add, update, fix, refactoring, extract, simplify, restructure
-tools: Read, Glob, Grep, Edit, Write, Bash, LSP
+tools: Read, Glob, Grep, Edit, Write, Bash, LSP, Skill
 disallowedTools: Task
 permissionMode: acceptEdits
 skills:

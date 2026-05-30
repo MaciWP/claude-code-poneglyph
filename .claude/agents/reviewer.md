@@ -5,7 +5,7 @@ description: |
   Code review agent that validates implementations for quality, security, correctness, coverage, and performance.
   Use proactively when: reviewing code, validating changes, checking quality, pre-commit review, code audit, security audit, vulnerability scan, test coverage analysis, performance review, code smell detection.
   Keywords - review, validate, check, audit, verify, approve, quality, security, test, coverage, smells, SOLID, complexity, owasp, vulnerability, performance, bottleneck
-tools: Read, Grep, Glob, Bash, LSP
+tools: Read, Grep, Glob, Bash, LSP, Skill
 permissionMode: plan
 disallowedTools: Edit, Write, Task
 skills:

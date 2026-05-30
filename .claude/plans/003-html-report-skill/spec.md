@@ -2,8 +2,8 @@
 id: 003-html-report-skill
 created: 2026-05-29
 mode: full
-phase: 1
-status: draft
+phase: 5
+status: closed
 scope_mode: light
 wave: A
 parent_audit: 002-claude-config-deep-audit

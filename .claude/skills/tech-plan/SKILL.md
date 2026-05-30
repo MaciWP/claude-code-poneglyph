@@ -311,7 +311,7 @@ This skill implements decision **MIGRAR-Y-CUT** on the legacy `planner-protocol`
 - Legacy `planner-protocol/SKILL.md` — entire skill cut (this replaces it)
 - Legacy `commands/planner.md` wrapper — cut (skills are invoked as `/<skill-name>` directly per docs Anthropic 2026)
 
-References updated across the repo (CLAUDE.md, bootstrap-lead.md, orchestrator-protocol references, agents/builder|reviewer|scout, rules/error-recovery+test-policy, hooks/post-compact.ts) — see commit message.
+References updated across the repo (CLAUDE.md §When to delegate, orchestrator-protocol references, agents/builder|reviewer|scout, rules/error-recovery+test-policy, hooks/post-compact.ts) — see commit message.
 
 ## Content map
 

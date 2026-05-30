@@ -1,4 +1,4 @@
-<!-- Last verified: 2026-05-25 -->
+<!-- Last verified: 2026-05-30 -->
 
 # Error Recovery
 

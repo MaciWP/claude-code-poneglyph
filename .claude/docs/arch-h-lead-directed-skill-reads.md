@@ -4,6 +4,8 @@ A pattern for propagating task-specific skill content to default Claude Code sub
 
 Validated empirically on 2026-04-10 in the Poneglyph orchestration system. As of writing, this pattern has no public name or canonical documentation in the broader Claude Code community.
 
+> **2026-05-29 correction (feature 005)**: the `prompt-enrichment.ts` `UserPromptSubmit` hook described below (§4 step 2, §9) was **designed but never implemented** — it is a phantom. The Arch H pattern itself (the Lead embeds `Read .claude/skills/<name>/SKILL.md` per task) is real and validated; only the *auto-suggestion* step is manual — the Lead selects skills by matching `.claude/rules/paths/*.md` + `references/05-skill-matching.md` itself. Read every `prompt-enrichment.ts` mention below as "the Lead does this manually". The native agent **`skills:` frontmatter field** (§1, §6) is the supported way to preload skills an agent ALWAYS needs.
+
 ## 1. Problem statement
 
 Claude Code offers three plausible mechanisms for getting skill content into a subagent. All three have limitations:
@@ -12,7 +14,7 @@ Claude Code offers three plausible mechanisms for getting skill content into a s
 |---|---|---|
 | **Frontmatter `skills:` pre-injection** | Agent definition declares a static list; full `SKILL.md` bodies are pre-loaded at spawn via `<command-message>` wrappers. | **All-or-nothing.** A project-scoped agent must declare its skill list statically; the list cannot vary per task. Every delegation pays the full token cost. |
 | **Lead `Skill()` invocation** | Loads skill content into the main orchestrator's working context. | **Does not propagate to subagents.** Subagents spawn in a fresh context. Anything the Lead loaded via `Skill()` stays with the Lead. |
-| **Subagent dynamic `Skill()`** | The subagent calls `Skill()` from inside its own turn. | **The `Skill` tool is not in the default subagent allowlist.** `builder`, `reviewer`, `scout` — none of them have `Skill` in `tools:`. The tool simply does not exist in their environment. |
+| **Subagent dynamic `Skill()`** | The subagent calls `Skill()` from inside its own turn. | **Works when `Skill` is in the agent's `tools:` list** (corrected 2026-05-30 — official docs confirm subagents CAN invoke Skill(); CC ≥2.1.133 fixed prior breakage). `builder`/`reviewer`/`scout` now include `Skill`. Originally this doc claimed the tool was unavailable to default agents — that was the omission of `Skill` from `tools:`, not a harness limit. |
 
 **The gap**: there is no documented way to give a default subagent **task-specific** skill content without either (a) creating per-project custom agents with bespoke frontmatter or (b) pre-declaring every skill the agent might ever need.
 
@@ -43,15 +45,15 @@ This turns `Read` into a skill-loading primitive. No new tool, no new agent, no 
 
 ## 4. Mechanism (step by step)
 
-1. User submits a prompt that mentions file paths.
-2. The `prompt-enrichment.ts` `UserPromptSubmit` hook matches those paths against `.claude/rules/paths/*.md` globs, extracts the relevant skill names, and emits a `## Path-Based Skills (for delegation)` section containing full `Read` instructions inside `hookSpecificOutput.additionalContext`.
-2b. If the project has its own skill-matching conventions (e.g., a paths rule or keyword mapping in `.claude/rules/paths/`), the Lead also sees project-specific skill mappings in its context. These map domain keywords → `./.claude/skills/<name>/SKILL.md` Read paths for project-level skills that carry domain-specific knowledge.
-3. The Lead receives the suggestions in its own context alongside the user prompt.
+1. User submits a prompt (it may mention file paths).
+2. The Lead — **manually** (there is **no** hook; the `prompt-enrichment.ts` auto-suggestion was never built, see §0 correction) — matches the task keywords/paths against `.claude/rules/paths/*.md` globs + `orchestrator-protocol/references/05-skill-matching.md`, and selects the relevant skill names.
+2b. If the project has its own skill-matching conventions (e.g., a paths rule or keyword mapping in `.claude/rules/paths/`), the Lead also factors in project-specific skill mappings. These map domain keywords → `./.claude/skills/<name>/SKILL.md` Read paths for project-level skills that carry domain-specific knowledge.
+3. The Lead holds those selections in its own context alongside the user prompt.
 4. The Lead picks the appropriate subagent and builds the delegation prompt using the template below. Empty blocks are omitted entirely rather than left as empty headers.
 5. The subagent's first tool calls are the `Read`s. Skill content enters its working context.
 6. The subagent proceeds with the task, citing loaded skill content as warranted, and returns its deliverable plus a `### Memory Insights` block.
 
-### Delegation template (verbatim from `.claude/rules/lead-orchestrator.md`)
+### Delegation template (canonical in `orchestrator-protocol/SKILL.md §Arch H Delegation Template`)
 
 ```
 [ACCUMULATED MEMORY - {agent}]
@@ -74,7 +76,7 @@ When finished, include "### Memory Insights" with 1-5 reusable insights discover
 | Rule | Detail |
 |---|---|
 | Max skills | 3 per delegation (avoid token bloat) |
-| Source of truth | Hook-emitted suggestions > manual keyword match > omit |
+| Source of truth | manual keyword match (`orchestrator-protocol/references/05-skill-matching.md` + `.claude/rules/paths/*.md`) > omit. (No hook — see §0 phantom correction.) |
 | `Skill()` by the Lead | Still valid — loads into the Lead's own session, does NOT propagate |
 | Empty blocks | Omit the header entirely |
 
@@ -141,7 +143,7 @@ Concrete example: `.claude/skills/django-api/` ships a lean `SKILL.md` plus ~5 r
 
 ### Canonical solution: the Content Map
 
-The canonical realization of the pointer table is the **Content Map** — a 3-column `Topic | File | Contents` table placed at the bottom of the entry `SKILL.md`. It is now the mandatory format for any skill with subdirectories (see `.claude/rules/context-management.md`, section "Content Map pattern").
+The canonical realization of the pointer table is the **Content Map** — a 3-column `Topic | File | Contents` table placed at the bottom of the entry `SKILL.md`. It is now the mandatory format for any skill with subdirectories (see `orchestrator-protocol/references/06-context-arch-h.md` §Content Map Pattern).
 
 | Column | Load-bearing role |
 |---|---|
@@ -151,7 +153,7 @@ The canonical realization of the pointer table is the **Content Map** — a 3-co
 
 This aligns with Anthropic's official skills guidance: *"Reference supporting files from SKILL.md so Claude knows what each file contains and when to load it."* — [code.claude.com/docs/en/skills](https://code.claude.com/docs/en/skills). The Contents column is the "when to load it" half of that instruction.
 
-Canonical reference: `.claude/rules/context-management.md` — "Content Map pattern (canonical for skills with subdirectories)". Canonical templates: `.claude/skills/meta-create/templates/skill/` (the skill templates live here after US-012+US-020 consolidated the 6 meta-create-* skills into a single auto-activable `meta-create` skill).
+Canonical reference: `orchestrator-protocol/references/06-context-arch-h.md` §Content Map Pattern. Canonical templates: `.claude/skills/meta-create/templates/skill/` (the skill templates live here after US-012+US-020 consolidated the 6 meta-create-* skills into a single auto-activable `meta-create` skill).
 
 ### Limitations — lazy pointer-following
 
@@ -173,10 +175,10 @@ Canonical files in this repo:
 
 | Component | Path |
 |---|---|
-| Hook that emits skill suggestions | `.claude/hooks/prompt-enrichment.ts` (`extractPathSkills` function) |
-| Path-to-skill rules | `.claude/rules/paths/*.md` (e.g., `django.md`, `hooks.md`, `orchestration.md`) |
-| Delegation template (Memory + Skill Injection) | `.claude/rules/lead-orchestrator.md` (section "Memory + Skill Injection When Delegating (Arch H: Lead-Directed Skill Reads)") |
-| Canonical propagation model | `.claude/rules/context-management.md` (section "Skill Propagation Model (Empirically Verified)") |
+| ~~Hook that emits skill suggestions~~ | **(phantom — never implemented; skill selection is the Lead's manual step, see §0)** |
+| Path-to-skill rules | `.claude/rules/paths/*.md` (e.g., `hooks.md`, `orchestration.md`) |
+| Delegation template (Memory + Skill Injection) | `orchestrator-protocol/SKILL.md §Arch H Delegation Template` |
+| Canonical propagation model | `orchestrator-protocol/references/06-context-arch-h.md §Skill Propagation Model` |
 
 Example path rule (`.claude/rules/paths/django.md` frontmatter):
 
@@ -193,7 +195,7 @@ skills:
   - code-style-enforcer
 ```
 
-When a user prompt mentions any matching path, `prompt-enrichment.ts` emits Read instructions for the listed skills into the Lead's context, and the Lead copies them into the delegation prompt.
+When a task touches any matching path, the Lead — **manually** (no hook; see §0 phantom correction) — selects the listed skills and embeds their `Read` instructions in the delegation prompt.
 
 ## 10. Community context
 

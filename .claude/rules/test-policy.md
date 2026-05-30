@@ -33,6 +33,6 @@ Goal: atomize tasks and clarify scope by forcing the planner to articulate expec
 ## Related
 
 - `.claude/skills/tech-plan/SKILL.md` §0.1 — applicability check
-- `.claude/skills/tech-plan/references/06-output-format.md` — TDD-First Node Pattern
+- `.claude/skills/tech-plan/references/06-quality-gates.md` — TDD-mode quality gates
 - `.claude/agents/builder.md` — TDD-mode handling (red→green)
 - `CLAUDE.md` Mental model phases 2/3 + "Test policy (this repo)" section

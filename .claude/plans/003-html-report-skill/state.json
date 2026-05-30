@@ -1,26 +1,20 @@
 {
   "spec_slug": "003-html-report-skill",
   "mode": "full",
-  "current_phase": 3,
-  "phases_completed": [1, 2, 2.5],
-  "gates_approved": {
-    "1->2": true,
-    "2->3": true
-  },
-  "gates_note": "Gates 1->2 y 2->3 satisfechos por eleccion explicita del usuario (AskUserQuestion: Ola A + metodo dynamic-workflow). Scope ligero + tech-plan comprimido inline en el workflow script (Design phase). Usuario en go-mode, sin ceremonia adicional.",
+  "current_phase": 5,
+  "phases_completed": [1, 2, 2.5, 3, 4, 5],
+  "gates_approved": { "1->2": true, "2->3": true },
   "us_completed": [],
   "us_pending": [],
-  "resume_note": "PAUSADO 2026-05-29. Design+Build COMPLETOS: 5 archivos de la skill html-report escritos (.claude/skills/html-report/). Verify (render report.md 002 -> build/audit-002-report.html) quedo en curso via dynamic workflow run wf_eba2f7a1-811. Pendiente: confirmar verify + Phase 4 critic (render real) + Phase 5 retro + cierre. Resume con /flow --resume 003-html-report-skill. Olas B (governance) y C (integracion nativa) tras cerrar A.",
-  "build_method_lesson": "Dynamic workflow para 5 archivos = overkill confirmado empiricamente. Lead-directo mas rapido en wall-clock. Workflows brillan a escala de cientos. Esta leccion es contenido para la futura skill workflows-integration (Ola C, finding #2).",
-  "feature_closed": false,
-  "review_verdict": null,
-  "retro_status": null,
+  "verify_done": true,
+  "feature_closed": true,
+  "review_verdict": "APPROVED",
+  "retro_status": "complete",
+  "closure_note": "CLOSED 2026-05-29. Skill built (5 files) + verified (002 render, user-approved v8) + enhanced by 004 (taste corpus + critique) + v8 redesign baked into dashboard.template.html (KPI cards, color=info, Geist, dark-first). 7/7 AC, APPROVED. Olas B (governance) + C (native integration) remain as future features.",
   "started_at": "2026-05-29",
   "updated_at": "2026-05-29",
   "notes": {
-    "wave": "A de 3 (audit 002 backlog). Olas B (governance) y C (integracion nativa) pendientes despues.",
-    "build_method": "dynamic workflow (Workflow tool) — user opt-in explicito 'usa workflows si es posible'. Primer dogfood de dynamic workflows. Cierra gap G1 del audit.",
-    "scope_mode": "LIGERO — aplica living-spec delta retro 002: build/research-features arrancan ligeras (menos ceremonia upfront, sustancia temprana). Evita over-engineering Commandment III.",
-    "precedent": ".claude/skills/decide genera HTML self-contained desde templates/memo.html — patron validado, esta skill lo generaliza"
+    "wave": "A de 3. Olas B y C pendientes (features futuras).",
+    "design": "v8 dashboard = canonical. Reference render: .claude/plans/002-claude-config-deep-audit/report.html"
   }
 }

@@ -85,7 +85,8 @@
     "symlinkDirectories": [
       "node_modules",
       ".venv"
-    ]
+    ],
+    "baseRef": "head"
   },
   "statusLine": {
     "type": "command",
@@ -121,12 +122,19 @@
   "autoCompactEnabled": true,
   "skipAutoPermissionPrompt": true,
   "autoMode": {
+    "hard_deny": [
+      "Bash(rm -rf .claude)",
+      "Bash(rm -rf .claude/*)",
+      "Bash(rm -rf ~)",
+      "Bash(rm -rf $HOME)",
+      "Bash(git push --force*)",
+      "Bash(git push -f*)"
+    ],
     "soft_deny": [
       "$defaults",
       "Edit(.claude/settings.json)",
       "Write(.claude/settings.json)",
-      "Bash(rm .claude)",
-      "Bash(rm -rf .claude)"
+      "Bash(rm .claude)"
     ]
   }
 }

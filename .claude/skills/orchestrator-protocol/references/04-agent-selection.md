@@ -136,3 +136,5 @@ Full LSP reference: skill `lsp-operations`.
 | Sequential agents with no dependency | Wasted parallelism | Spawn in one message |
 | Glob → Read → Grep when Glob+Grep would suffice | Round-trips add up | Glob + Grep in same message |
 | Edit without prior Read | risk of stale content | Read first, then Edit sequentially |
+| Spawning 1-3 subagents when the Lead could act inline | wasted cost+latency, no parallelism return | Main session for ≤3 units; spawn only at ≥4 (Commandment VII) |
+| ≥4 parallel agents run ad-hoc instead of a workflow | no orchestration, hard to track | At ≥4 independent units → workflow |

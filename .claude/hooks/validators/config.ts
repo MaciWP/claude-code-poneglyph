@@ -111,16 +111,6 @@ export function reportError(message: string): never {
   process.exit(EXIT_CODES.BLOCK);
 }
 
-/**
- * Checks if a file path has a JSON extension.
- *
- * @param path - File path to check
- * @returns True if path ends with .json
- */
-export function isJsonFile(path: string): boolean {
-  return path.toLowerCase().endsWith(".json");
-}
-
 const CODE_EXTENSIONS = new Set([
   "ts",
   "tsx",
@@ -148,20 +138,6 @@ const CODE_EXTENSIONS = new Set([
 export function isCodeFile(path: string): boolean {
   const ext = path.split(".").pop()?.toLowerCase();
   return ext ? CODE_EXTENSIONS.has(ext) : false;
-}
-
-/**
- * Extracts the file extension from a path.
- *
- * @param path - File path to extract extension from
- * @returns Extension without the dot, or empty string if none
- */
-function getExtension(path: string): string {
-  const lastDot = path.lastIndexOf(".");
-  if (lastDot === -1 || lastDot === path.length - 1) {
-    return "";
-  }
-  return path.slice(lastDot + 1).toLowerCase();
 }
 
 // =============================================================================

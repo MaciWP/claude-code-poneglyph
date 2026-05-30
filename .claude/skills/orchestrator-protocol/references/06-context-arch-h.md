@@ -63,8 +63,8 @@ Ground-truth rules for what reaches subagents. Verified via direct testing on 20
 
 | Mechanism | Why not |
 |---|---|
-| Lead invokes `Skill()` before delegating | Loaded content stays in the Lead's context. Subagents spawn fresh. |
-| Subagent tries to call `Skill()` | `Skill` is NOT in default agents' tools allowlist. The tool does not exist in the subagent's environment. |
+| Lead invokes `Skill()` before delegating | Loaded content stays in the Lead's context. Subagents spawn fresh. (Still true.) |
+| Subagent calls `Skill()` **without** `Skill` in its `tools:` | If the agent's `tools:` omits `Skill` (or `disallowedTools` includes it), the tool is unavailable. Per-agent config choice, NOT a harness limit. **NOTE (2026-05-30): `builder`/`reviewer`/`scout` now DO list `Skill`, so they CAN invoke it** — official docs confirm subagents discover/invoke project/user/plugin skills via the Skill tool (CC ≥2.1.133). |
 
 ## Arch H Delegation Template
 
@@ -101,7 +101,7 @@ When finished, include "### Memory Insights" with 1-5 reusable insights discover
 | Rule | Detail |
 |------|--------|
 | Max skills | 3 per delegation (avoid token bloat) |
-| Source of truth | Hook-emitted suggestions > manual keyword match > omit |
+| Source of truth | manual keyword match (`05-skill-matching.md` + paths rules) > omit |
 | `Skill()` by the Lead | Loads context into Lead's OWN session only — does NOT propagate to subagents |
 | Empty blocks | Omit the header entirely rather than leaving an empty section |
 | Memory reminder | Explicit `[MEMORY OUTPUT]` is NECESSARY — agents miss the system-prompt instruction without it |
@@ -110,9 +110,9 @@ When finished, include "### Memory Insights" with 1-5 reusable insights discover
 
 When preparing a delegation:
 
-1. Check if `prompt-enrichment.ts` emitted `## Path-Based Skills (for delegation)` — copy those `Read` suggestions verbatim into the delegation prompt's `[RELEVANT SKILLS FOR THIS TASK]` block
-2. Check the project's path rules or skill conventions (e.g., `.claude/rules/paths/`) for project-specific skill mappings — these point to `./.claude/skills/<name>/SKILL.md` paths
-3. Combine both into the `[RELEVANT SKILLS]` block. Max 3 skills total (1-2 global + 1-2 project is a good balance)
+1. Match task keywords against `05-skill-matching.md` + the project's path rules (e.g., `.claude/rules/paths/`) — these map domain keywords → `.claude/skills/<name>/SKILL.md` paths (global + project)
+2. Put the chosen `Read` instructions into the delegation prompt's `[RELEVANT SKILLS FOR THIS TASK]` block. Max 3 skills total (1-2 global + 1-2 project is a good balance)
+3. For skills the agent ALWAYS needs, use the native `skills:` frontmatter field instead (preloads at startup)
 4. Check if there is a specialized agent (e.g., `django-refactor-agent`, `django-security-auditor`) before routing to a generic one
 
 ## Content Map Pattern (canonical for skills with subdirectories)
@@ -138,15 +138,14 @@ Any skill that has a `references/` subdirectory **MUST** include a canonical Con
 
 ## Anti-Claims (False — Never Repeat)
 
-1. *"Skill loaded by the Lead is automatically available to subagents."* — **False**. Lead context does not transit.
-2. *"Subagents can invoke `Skill()` dynamically."* — **False** for default agents.
-3. *"A prompt saying `invoke Skill('X')` works."* — **False**. Use `Read .claude/skills/<name>/SKILL.md` instead (Arch H).
+1. *"Skill loaded by the Lead is automatically available to subagents."* — **False**. Lead-side `Skill()` context does not transit (unchanged).
+2. ~~*"Subagents can never invoke `Skill()` dynamically."*~~ — **This claim was itself wrong; corrected 2026-05-30.** Subagents CAN invoke `Skill()` when `Skill` is in their `tools:` (official docs; CC ≥2.1.133). `builder`/`reviewer`/`scout` now include it.
+3. *"A prompt telling the subagent to `invoke Skill('X')` always works."* — **Conditional**: works only if the subagent has `Skill` in `tools:` (now true for our 3). Otherwise use `Read .claude/skills/<name>/SKILL.md` (Arch H fallback).
 
 ## Orchestration Consequences
 
 - **Rules + CLAUDE.md are the real context carriers.** Invest in them. A well-written project rule reaches every subagent automatically.
-- **Prefer Lead-directed `Read`s (Arch H) over frontmatter `skills:` pre-injection** for task-specific skill loading. Arch H is flexible, avoids the all-or-nothing pre-load problem, and works with every default agent because `Read` is always in the allowlist.
-- **Frontmatter `skills:` is still useful** as a baseline for agents whose role always needs the same skills.
+- **Three skill-loading mechanisms now (corrected 2026-05-30)**: (1) `skills:` frontmatter preload — fixed per-role needs (builder→`anti-hallucination`, etc.); (2) `Skill` tool self-invoke — `builder`/`reviewer`/`scout` now list it, so they load task-specific skills mid-task without Lead pre-selection; (3) Arch H Lead-directed `Read` — fallback to force exact content. `Read` is always in the allowlist so Arch H always works.
 - **Project skills are a valid on-demand knowledge layer.** They work identically to global skills via Arch H Read — the subagent doesn't distinguish between global and project skills at Read time.
 - **Rule of thumb at project level: constraint = rule, knowledge = skill.**
 - **Path-scoped loader quirk**: in `.claude/rules/paths/*.md`, globs starting with `**` require at least one leading path segment. A raw `apps/...` pattern will NOT match `apps/foo.py`; use `**/apps/...` explicitly.
