@@ -24,7 +24,15 @@ const LINK_FOLDERS = [
   "output-styles",
 ];
 
-const LINK_FILES = [{ src: "CLAUDE.md", dest: "CLAUDE.md" }];
+const LINK_FILES = [
+  { src: "CLAUDE.md", dest: "CLAUDE.md" },
+  // settings.json is symlinked so user-scope (~/.claude) config = single source of
+  // truth in the repo. Holds machine-specific paths (cclsp MCP, PATH) — acceptable
+  // for this personal single-machine system. Was previously a manual copy that
+  // drifted (hooks/baseRef/hard_deny missing from the active global) — added
+  // 2026-05-30 to fix that root cause.
+  { src: ".claude/settings.json", dest: "settings.json" },
+];
 
 // === TYPES ===
 
