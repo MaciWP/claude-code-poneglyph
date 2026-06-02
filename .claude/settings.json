@@ -4,7 +4,7 @@
   "env": {
     "BASH_DEFAULT_TIMEOUT_MS": "300000",
     "ENABLE_LSP_TOOL": "1",
-    "PATH": "/c/Users/Maci/.bun/bin:${HOME}/.bun/bin:/c/Users/Maci/AppData/Roaming/npm:/opt/homebrew/bin:/usr/local/bin:/bin:/usr/bin:/usr/sbin:/sbin:/c/Program Files/nodejs:./node_modules/.bin:${PATH}",
+    "PATH": "C:\\Users\\Oriol\\.bun\\bin;C:\\Users\\Oriol\\.local\\bin;C:\\Users\\Oriol\\AppData\\Local\\Microsoft\\WindowsApps;C:\\Users\\Oriol\\AppData\\Local\\Programs\\Zed\\bin;C:\\Users\\Oriol\\AppData\\Local\\Programs\\PortableGit\\cmd;C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\WINDOWS\\System32\\Wbem;C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0;C:\\Program Files\\NVIDIA Corporation\\NVIDIA App\\NvDLISR;C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common;C:\\WINDOWS\\System32\\OpenSSH;C:\\Program Files\\dotnet",
     "CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS": "50000",
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD": "1",
@@ -60,7 +60,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun $HOME/.claude/hooks/validators/code-validator.ts"
+            "command": "bun ${CLAUDE_PROJECT_DIR}/.claude/hooks/validators/code-validator.ts"
           }
         ]
       }
@@ -71,7 +71,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun $HOME/.claude/hooks/security-gate.ts",
+            "command": "bun ${CLAUDE_PROJECT_DIR}/.claude/hooks/security-gate.ts",
             "async": true
           }
         ]
@@ -82,7 +82,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun $HOME/.claude/hooks/post-compact.ts",
+            "command": "bun ${CLAUDE_PROJECT_DIR}/.claude/hooks/post-compact.ts",
             "timeout": 5000
           }
         ]
@@ -93,7 +93,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun $HOME/.claude/hooks/auto-approve.ts",
+            "command": "bun ${CLAUDE_PROJECT_DIR}/.claude/hooks/auto-approve.ts",
             "timeout": 3000
           }
         ]
@@ -109,7 +109,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "C:/Users/Maci/.bun/bin/ccstatusline.exe",
+    "command": "C:/Users/Oriol/.bun/bin/ccstatusline.exe",
     "padding": 0,
     "refreshInterval": 10
   },
@@ -119,18 +119,9 @@
     "frontend-design@claude-plugins-official": true,
     "context7@claude-plugins-official": true
   },
-  "mcpServers": {
-    "cclsp": {
-      "command": "C:\\Program Files\\nodejs\\node.exe",
-      "args": [
-        "C:\\Users\\Maci\\AppData\\Roaming\\npm\\node_modules\\cclsp\\dist\\index.js"
-      ],
-      "env": {
-        "CCLSP_CONFIG_PATH": "C:\\Users\\Maci\\.claude\\cclsp.json"
-      }
-    }
-  },
   "language": "spanish",
+  "theme": "dark",
+  "autoUpdatesChannel": "latest",
   "effortLevel": "xhigh",
   "sandbox": {
     "enabled": false
