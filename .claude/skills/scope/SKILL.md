@@ -153,6 +153,7 @@ The skill does NOT proceed to Phase 2. Only the user approves.
 | Petición trivial (typo, rename, 1-2 archivos) | Skill probablemente NO se activa (triaje del Lead la salta a Phase 3 directa) |
 | Petición arquitectural multi-dominio | Cuestionario 6-8 preguntas + drillme completo + perspectives en `full` |
 | Brief contradictorio o cambiante mid-questionnaire | Reabrir secciones afectadas, no forzar cierre con inconsistencias |
+| Research/audit feature (deliverable = report/análisis, no código) | Scope LIGERO: problema + corpus + rúbrica. Perspectives opcionales. Producir sustancia (research) temprano, formalizar incremental. Evita over-engineering pre-sustancia (Commandment III). Lección feature 002. |
 
 Adaptación se declara honestamente en el output (`# Open questions` section o nota): "Drillme reducido por contenido autoexplicativo". Nunca silente.
 

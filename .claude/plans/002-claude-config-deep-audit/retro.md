@@ -5,12 +5,13 @@ retro_level: full
 verdict_phase4: APPROVED_WITH_WARNINGS
 spec_drift: legitimate
 promotions_proposed: 5
-promotions_approved: 0
+promotions_approved: 5
 commandment_violations: 2
 living_spec_delta: yes
 action_items: 6
 created: 2026-05-29
-status: open
+closed: 2026-06-02
+status: closed
 ---
 
 # Retro — 002 Audit profundo Claude Code Poneglyph
@@ -135,3 +136,18 @@ Rationale: este /flow gastó ~15K tokens en ceremonia antes del primer hallazgo;
 ## Resumen de cierre
 
 Feature 002 entregó un audit honesto que confirmó su propia hipótesis: poneglyph es fuerte en diseño, débil en evidencia de uso. El proceso tuvo fricción real (heredoc bug, over-engineering upfront) capturada sin suavizar. La mitigación meta-circular funcionó. El trabajo NO es obsoleto frente a dynamic workflows — es governance layer. Próximo paso natural: dogfood real (finding #1) antes de añadir capacidades.
+
+## Cierre (2026-06-02)
+
+5 promotions + living-spec delta **aprobados por Oriol** y aplicados:
+
+| Item | Destino |
+|---|---|
+| P1 anti-heredoc | `.claude/agents/builder.md` (tabla NEVER) + `agent-memory/builder/MEMORY.md` |
+| P2 research-mode ligero | `.claude/skills/scope/SKILL.md` (Adaptación intra-fase) + `.claude/commands/flow.md` (Step 2 triage) |
+| P3 reviewer-independiente | memory `independent-reviewer-when-self-assessing.md` |
+| P4 compare-context labels | memory `compare-context-labels.md` |
+| P5 pre-commit honesty anchor | memory `pre-commit-honesty-anchor.md` |
+| Δ living-spec delta | `spec.md §Naturaleza atípica` (fila `upfront`) |
+
+Retro `status: closed`. **Feature 002 lifecycle COMPLETO.**

@@ -1,3 +1,6 @@
+## 2026-06-02 — Session 002-retro-promotions (anti-heredoc)
+- When producing markdown content with backticks or code fences, ALWAYS use the Write tool — NEVER a bash heredoc. In feature 002 the US6 builder tried to write findings.md (markdown with backticks/fences) via a bash heredoc and got stuck on the delimiter; the analysis was complete but the body was lost (tooling failure, not content). On Windows python3 is unavailable, so Write is the canonical path for any markdown/backtick content.
+
 ## 2026-05-26 — Session telemetry-dashboard
 - Claude Code trace JSONL events are cumulative snapshots: `tokens`, `inputTokens`, `outputTokens`, `durationMs`, `toolCalls`, `filesChanged` all increase monotonically within a session. `costUsd` is NOT monotonic — it is recalculated per event as `totalTokens * currentModelPrice`, so it resets when the model switches mid-session. Aggregate by computing incremental costs between consecutive events sorted by `ts`.
 - For a (date, sessionId) group: use the last event for cumulative scalars (durationMs, toolCalls, filesChanged) and sum incremental costs per model. Dates come from `ts` field, not filename — sessions can span days.

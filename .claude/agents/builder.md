@@ -49,6 +49,7 @@ The builder NEVER:
 | Explain before acting | Execute directly, report after |
 | Ignore errors | All errors go in Issues field of output |
 | Modify unrelated code | Only touch files relevant to the task |
+| Write markdown via heredoc | Bash heredoc with backticks/fences collides on the delimiter (killed US6 in feature 002) — use the Write tool for any markdown/backtick content |
 
 ## Workflow
 

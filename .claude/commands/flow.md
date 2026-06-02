@@ -72,6 +72,8 @@ When no `--minimal|--standard|--full` flag was passed:
 | Task suggests 2-5 files OR involves a single domain | `standard` |
 | Task mentions architecture, decisions, multiple domains, security/auth/payments, refactor of >5 files | `full` |
 
+> **Research/audit feature** (deliverable = report/analysis, not code): even at `standard|full`, keep the upfront ceremony LIGHT — scope = problem + corpus + rubric, perspectives optional, produce substance (research) early and formalize incrementally. Heavy spec/tasks/perspectives before any finding is over-engineering (Commandment III; lesson from feature 002).
+
 **Show the user**: `Triage: mode = <resolved> (reason: <one line>)`. The user can override with `--<mode>` flag if disagrees.
 
 Declare mode in `state.json` (Step 4).

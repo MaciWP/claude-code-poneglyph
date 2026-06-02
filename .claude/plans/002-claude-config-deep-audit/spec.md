@@ -19,6 +19,7 @@ ESTA feature NO produce código. Es una **auditoría de research + síntesis** c
 
 | Phase | Adaptación atípica |
 |---|---|
+| upfront | research-features arrancan LIGERAS: scope = problema + corpus + rúbrica. Perspectives opcionales. Sustancia temprano, formalización incremental. Evita over-engineering del proceso (Commandment III). [living-spec delta de retro, aprobado 2026-06-02] |
 | 2.5 | `validations.md` (no `tests.md`) — checklist de calidad del report |
 | 3 | "build" = research + cross-analysis + scoring (no implementación) |
 | 4 | critic revisa calidad del **report**, no del código. Phase 4 invoca **reviewer agent (Opus)** para audit independiente del report (mitigación sesgo meta-circular) |
