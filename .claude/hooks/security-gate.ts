@@ -4,17 +4,17 @@
 
 import { readHookStdin } from "./lib/hook-stdin";
 
-const SECRET_PATTERN =
+export const SECRET_PATTERN =
   /(?:API_KEY|SECRET|TOKEN|PASSWORD|PRIVATE_KEY)\s*[=:]\s*['"]?[A-Za-z0-9_\-\.]{16,}['"]?/gi;
 
-const SECRET_PATTERN_CI =
+export const SECRET_PATTERN_CI =
   /(?:password|passwd|secret|api_key|apikey|access_token|accesstoken|private_key|privatekey)\s*[=:]\s*.{8,}/i;
 
 const TEXT_EXTENSIONS = new Set([
   ".ts", ".js", ".json", ".md", ".env", ".yaml", ".yml",
 ]);
 
-function hasTextExtension(filePath: string): boolean {
+export function hasTextExtension(filePath: string): boolean {
   const dot = filePath.lastIndexOf(".");
   if (dot === -1) return false;
   return TEXT_EXTENSIONS.has(filePath.slice(dot).toLowerCase());

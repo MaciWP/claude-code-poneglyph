@@ -1,6 +1,7 @@
 {
-  "spec_id": "{NNN}-{slug}",
-  "current_phase": "fase-1|fase-2|fase-2.5|fase-3|fase-4|fase-5|closed",
+  "spec_slug": "{NNN}-{slug}",
+  "mode": "minimal|standard|full",
+  "current_phase": 1,
   "phases_completed": [],
   "gates_approved": {
     "1->2": false,
@@ -8,7 +9,9 @@
   },
   "us_completed": [],
   "us_pending": [],
-  "mode": "minimal|standard|full",
-  "started_at": "{ISO-datetime}",
-  "last_update": "{ISO-datetime}"
+  "feature_closed": false,
+  "review_verdict": null,
+  "retro_status": null,
+  "started_at": "{ISO-date}",
+  "updated_at": "{ISO-date}"
 }

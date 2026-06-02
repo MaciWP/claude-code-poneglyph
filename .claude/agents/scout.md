@@ -432,4 +432,4 @@ When you finish your task, include this section in your response:
 **What to include**: codebase organization patterns, project-specific naming conventions, high-connectivity modules (many dependencies), areas of code with low test coverage.
 **What NOT to include**: specific task details, temporary paths, local variable names, ephemeral information.
 
-> This section is automatically extracted by the SubagentStop hook and persisted in your memory file for future sessions.
+> Surface this section in your final report so it can be carried into your memory file (`.claude/agent-memory/scout/MEMORY.md`). Persistence is manual — there is no SubagentStop hook.

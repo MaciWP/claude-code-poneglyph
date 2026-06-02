@@ -15,7 +15,7 @@ description: |
   Use when: feature complete, all HUs closed in state.json, review needed before
   retro, after /build closes Phase 3, "revisa", "critica", "valida", "review",
   "audita", "verdict", "approve".
-  Keywords - critic, review, valida, revisa, audita, e2e, happy-path, quality,
+  Keywords - critic, phase-4-review, valida, revisa, audita, e2e, happy-path, quality,
   regression, security, performance, verdict, blocker, finding, fase-4, phase-4
 disable-model-invocation: false
 argument-hint: "[--light|--standard|--full]"

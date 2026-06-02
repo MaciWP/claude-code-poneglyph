@@ -637,4 +637,4 @@ When you finish your task, include this section in your response:
 **What to include**: code patterns that generate recurring issues, codebase-specific security gotchas, quality criteria the team prioritizes, common mistakes builders make.
 **What NOT to include**: specific task details, temporary paths, local variable names, ephemeral information.
 
-> This section is automatically extracted by the SubagentStop hook and persisted in your memory file for future sessions.
+> Surface this section in your final report so it can be carried into your memory file (`.claude/agent-memory/reviewer/MEMORY.md`). Persistence is manual — there is no SubagentStop hook.

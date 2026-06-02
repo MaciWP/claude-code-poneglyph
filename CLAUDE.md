@@ -261,7 +261,7 @@ Actualizado tras el refactor del 5-phase workflow (US1-US10) sobre la baseline d
 | Rules | 7 | 2 + paths/ | **2 + paths/** | `error-recovery.md` (Lead-driven), `test-policy.md` + `paths/{hooks,orchestration}.md` |
 | Output-styles | 1 (caveman) | 1 (poneglyph) | **1 (poneglyph)** | Cross-ref desde `orchestrator-protocol` post-US8 SIMPLIFICAR |
 
-Detalle completo: `~/.claude/projects/D--PYTHON-claude-code-poneglyph/memory/project_audit_outcome_2026-05-25.md` + `project_cleanup_2026-05-25b.md` + spec `.claude/plans/001-poneglyph-5phase-workflow/spec.md`.
+Detalle completo: report del audit `.claude/plans/002-claude-config-deep-audit/report.md` + retro `.claude/plans/001-poneglyph-5phase-workflow/retro.md` + spec `.claude/plans/001-poneglyph-5phase-workflow/spec.md`.
 
 ### 5-phase workflow refactor (W1-W5, 2026-05-28)
 

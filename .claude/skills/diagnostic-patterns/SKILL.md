@@ -5,6 +5,7 @@ description: |
   Use when: production incident, error spike, timeout investigation, cascading failure, retry storm, circuit breaker tuning, rollback, saga orchestration.
   Keywords - debug, diagnose, stacktrace, 5 whys, resilience, fallback, recovery, error, investigate, trace, root cause, retry, timeout, backoff, circuit breaker, transient, rollback, compensation, saga, undo, restore, checkpoint, dead letter queue
 disable-model-invocation: false
+effort: medium
 ---
 
 # Diagnostic Patterns

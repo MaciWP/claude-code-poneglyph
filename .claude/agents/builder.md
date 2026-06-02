@@ -512,4 +512,4 @@ At the end of your task, include this section in your response:
 **What to include**: patterns that work, discovered gotchas, relevant design decisions, common errors in the codebase.
 **What NOT to include**: specific task details, temporary paths, local variable names, ephemeral information.
 
-> This section is automatically extracted by the SubagentStop hook and persisted in your memory file for future sessions.
+> Surface this section in your final report so it can be carried into your memory file (`.claude/agent-memory/builder/MEMORY.md`). Persistence is manual — there is no SubagentStop hook.
