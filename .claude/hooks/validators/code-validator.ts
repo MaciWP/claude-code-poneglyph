@@ -24,19 +24,27 @@ import {
 // Path Ignore
 // =============================================================================
 
-export const IGNORE_PATH_PATTERNS = [
+// Distinctive substrings — safe to match anywhere in the path.
+export const IGNORE_SUBSTRINGS = [
   "code-validator",
-  "test",
-  "spec",
-  "mock",
-  "fixture",
   "node_modules",
   ".env.example",
 ];
 
+// Test/mock tokens — ignored ONLY when they appear as a real path segment or
+// filename token (bounded by a separator or string edge), never as an
+// incidental substring. Prevents silent security false-negatives like
+// "latest.ts" (contains "test") or "inspector.ts" (contains "spec") quietly
+// skipping the secret/injection scan.
+export const IGNORE_SEGMENT_PATTERN =
+  /(^|[\\/._-])(tests?|spec|mocks?|fixtures?)([\\/._-]|$)/;
+
 export function shouldIgnorePath(path: string): boolean {
   const normalized = path.toLowerCase().replace(/\\/g, "/");
-  return IGNORE_PATH_PATTERNS.some((p) => normalized.includes(p));
+  return (
+    IGNORE_SUBSTRINGS.some((p) => normalized.includes(p)) ||
+    IGNORE_SEGMENT_PATTERN.test(normalized)
+  );
 }
 
 // =============================================================================
@@ -153,7 +161,7 @@ function formatSecretsBlock(findings: SecretFinding[], filePath: string): string
   return [
     `SECURITY: Hardcoded secrets detected in ${filePath}`,
     "",
-    "BLOCKED (all secrets are high severity):",
+    "DETECTED — file is ALREADY written (PostToolUse runs post-write, cannot revert it). Remove the secret from the file AND rotate/revoke the credential (it may persist in git history):",
     ...findings.map((f) => `  - ${f.patternName}: ${f.match}`),
     "",
     "Recommendations:",

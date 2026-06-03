@@ -37,7 +37,7 @@ The reviewer NEVER:
 - Modifies code
 - Implements fixes
 - Delegates to other agents
-- Decides design quality and adherence to plan
+- Decides whether the technical plan itself is correct (that is the Lead / `tech-plan`'s call). The reviewer DOES assess code quality and adherence to the plan — it just does not re-litigate the plan's design.
 
 ## Primary Responsibilities
 

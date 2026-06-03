@@ -18,6 +18,8 @@ When a subagent fails, the Lead diagnoses inline (loading `diagnostic-patterns` 
 | Teammate stuck (no progress) | 0 | - | Extract domain → run as builder subagent |
 | Teammate file conflict | 0 | - | Lead resolves boundaries, re-assign |
 
+> **Identical-error override**: the retry counts above assume each attempt yields a *different* or *progressing* error. If a retry reproduces the **exact same error**, stop immediately per §Stuck Detection ("Same exact error 2 times → STOP") — do not spend the remaining budget on a non-progressing failure.
+
 > Team mode recovery: see `.claude/skills/orchestrator-protocol/references/03-complexity-routing.md` §Team Mode Execution §Fallback to Subagents.
 
 ## SendMessage Recovery (Preferred)

@@ -1,6 +1,8 @@
 #!/usr/bin/env bun
-// Stop hook: scans recently written files for potential secret leaks.
-// Best-effort: always exits 0 (never blocks), emits warnings to stderr.
+// Stop hook: scans recently modified files for potential secret leaks.
+// Synchronous + visible: when a secret is suspected it surfaces a `systemMessage`
+// to the user (stdout JSON). It NEVER blocks the turn (always exits 0) — it warns,
+// it does not gate. Registered WITHOUT `async` so the systemMessage is not discarded.
 
 import { readHookStdin } from "./lib/hook-stdin";
 
@@ -34,35 +36,45 @@ async function getModifiedFiles(): Promise<string[]> {
   return [...all].map((f) => f.trim()).filter((f) => f.length > 0 && hasTextExtension(f));
 }
 
-async function scanFile(filePath: string): Promise<void> {
+// Returns a list of "path:line" hits (empty if none). Pure — no stderr side effects,
+// so main() can aggregate hits into a single visible systemMessage.
+async function scanFile(filePath: string): Promise<string[]> {
+  const hits: string[] = [];
   try {
     const file = Bun.file(filePath);
-    if (!(await file.exists())) return;
+    if (!(await file.exists())) return hits;
     const content = await file.text();
     const lines = content.split("\n");
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
+      SECRET_PATTERN.lastIndex = 0; // reset BEFORE test — stateful /g gotcha
       if (SECRET_PATTERN.test(line) || SECRET_PATTERN_CI.test(line)) {
-        process.stderr.write(
-          `[security-gate] WARNING: Potential secret at ${filePath}:${i + 1}\n`,
-        );
+        hits.push(`${filePath}:${i + 1}`);
       }
-      SECRET_PATTERN.lastIndex = 0;
     }
   } catch {
     // best-effort — skip unreadable files
   }
+  return hits;
 }
 
 async function main(): Promise<void> {
   try {
     const raw = await readHookStdin();
-    if (!raw.trim()) {
-      process.exit(0);
-    }
+    if (!raw.trim()) process.exit(0);
 
     const files = await getModifiedFiles();
-    await Promise.all(files.map(scanFile));
+    if (files.length === 0) process.exit(0); // early-out: nothing changed → no file scan
+
+    const hits = (await Promise.all(files.map(scanFile))).flat();
+    if (hits.length > 0) {
+      const list = hits.map((h) => `  - ${h}`).join("\n");
+      const message =
+        `[security-gate] Potential secret(s) in recently modified files:\n${list}\n` +
+        `Review, then remove and rotate/revoke before committing.`;
+      // systemMessage is shown to the user; exit 0 keeps it non-blocking.
+      process.stdout.write(JSON.stringify({ systemMessage: message }) + "\n");
+    }
   } catch {
     // best-effort — never block
   }

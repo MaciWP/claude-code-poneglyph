@@ -146,7 +146,7 @@ This session acts as a **pure orchestrator**. It does not execute code directly.
 | `AskUserQuestion` | Clarify requirements or validate a doubtful prompt |
 | `TaskCreate/TaskList/TaskUpdate` | Manage the in-conversation task list |
 
-Prohibited for the Lead: `Read`, `Edit`, `Write`, `Bash`, `Glob`, `Grep`, `WebFetch`, `WebSearch` — delegate them. Exceptions:
+Delegated by default for the Lead — `Read`, `Edit`, `Write`, `Bash`, `Glob`, `Grep`, `WebFetch`, `WebSearch` should be delegated, not run reflexively, **unless** an exception below applies. Exceptions:
 **Read** any path — always allowed for orientation (no delegation needed).
 **Write/Edit/Bash** — the Lead may act directly when the operation is not on a sensitive path and is not a destructive command. For ≥5 files OR architectural changes the Lead delegates to `builder` (preceded by `Skill('tech-plan')` if complexity >60).
 
@@ -183,7 +183,7 @@ graph TD
     DG --> B
 ```
 
-**Skill loading into subagents (3 mechanisms, corrected 2026-05-30)**: (1) **`skills:` frontmatter** preloads full SKILL.md at spawn — for skills a role ALWAYS needs (builder→`anti-hallucination`, reviewer→`review-patterns`+`security-review`). (2) **`Skill` tool** — `builder`/`reviewer`/`scout` now list `Skill` in `tools:`, so they self-discover and invoke task-specific skills mid-task (official docs confirm subagents CAN invoke `Skill()` when it's in their tools; CC ≥2.1.133 fixed prior breakage). Name the relevant skills in the task prose. (3) **Arch H — Lead-Directed Skill Reads** (fallback): the Lead picks up to 3 skills (keyword match against `.claude/rules/paths/*.md` + `orchestrator-protocol/references/05-skill-matching.md`) and embeds `Read .claude/skills/<name>/SKILL.md` in the `[RELEVANT SKILLS FOR THIS TASK]` block — use to force exact content. Lead-side `Skill()` does NOT propagate. (An auto-suggestion hook `prompt-enrichment.ts` was once designed but never implemented — selection is manual, not hook-driven.)
+**Skill loading into subagents (3 mechanisms, corrected 2026-05-30)**: (1) **`skills:` frontmatter** preloads full SKILL.md at spawn — for skills a role ALWAYS needs (builder→`anti-hallucination`, reviewer→`review-patterns`+`security-review`). (2) **`Skill` tool** — `builder`/`reviewer`/`scout` now list `Skill` in `tools:`, so they self-discover and invoke task-specific skills mid-task (official docs confirm subagents CAN invoke `Skill()` when it's in their tools; CC ≥2.1.133 fixed prior breakage — version-specific claim, verify against current CC release notes). Name the relevant skills in the task prose. (3) **Arch H — Lead-Directed Skill Reads** (fallback): the Lead picks up to 3 skills (keyword match against `.claude/rules/paths/*.md` + `orchestrator-protocol/references/05-skill-matching.md`) and embeds `Read .claude/skills/<name>/SKILL.md` in the `[RELEVANT SKILLS FOR THIS TASK]` block — use to force exact content. Lead-side `Skill()` does NOT propagate. (An auto-suggestion hook `prompt-enrichment.ts` was once designed but never implemented — selection is manual, not hook-driven.)
 
 Score<70 is a **signal of doubt**, not a hard stop. If the prompt is ambiguous or the resulting plan needs validation, ask (`AskUserQuestion`) or refine with the `prompt-engineer` skill. If the prompt is pragmatically clear despite a low score, proceed and flag uncertainty.
 
@@ -193,10 +193,10 @@ Score<70 is a **signal of doubt**, not a hard stop. If the prompt is ambiguous o
 |------|------|------|
 | **Subagents** (default) | 95% of tasks | 1x |
 | **Tiered** | Complexity 45-60 with 2-3 domains sharing interfaces | ~2x |
-| **Dynamic workflows** (Workflow tool, GA 2.1.154) | ≥4 independent units to fan out (the ≥4 rule); background orchestration + `/workflows` monitor; per-unit `isolation: 'worktree'` on collision. **User opt-in only** (keyword "workflow" or explicit ask) | scales w/ agent count |
+| **Dynamic workflows** (Workflow tool, GA ≈2.1.154 — verify vs release notes) | ≥4 independent units to fan out (the ≥4 rule); background orchestration + `/workflows` monitor; per-unit `isolation: 'worktree'` on collision. **User opt-in only** (keyword "workflow" or explicit ask) | scales w/ agent count |
 | **Team agents** (experimental) | Complexity >60, 3+ independent domains, interface negotiation, `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` | 3-7x |
 
-> **Background sessions / agent-view** (`claude agents`, CC ≥2.1.139): an orthogonal axis — runs whole **sessions** in the background (not subagents within one), with a single dashboard for running/blocked/done. Use to run a feature in the background and monitor, or fan out features across sessions (complements the ≥4 rule for real multi-session parallelism). `claude --bg` / `←←` to background; `/resume` lists them. Operational tool, not a per-turn routing mode.
+> **Background sessions / agent-view** (`claude agents`, CC ≥2.1.139 — version-specific, verify): an orthogonal axis — runs whole **sessions** in the background (not subagents within one), with a single dashboard for running/blocked/done. Use to run a feature in the background and monitor, or fan out features across sessions (complements the ≥4 rule for real multi-session parallelism). `claude --bg` / `←←` to background; `/resume` lists them. Operational tool, not a per-turn routing mode.
 
 ### Planner adaptive levels
 
