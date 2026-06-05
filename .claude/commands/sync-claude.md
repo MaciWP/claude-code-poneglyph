@@ -50,11 +50,11 @@ bun .claude/commands/sync-claude.ts
 ### 3. Run sync
 
 ```bash
-# Normal
-bun .claude/commands/sync-claude.ts --execute
-
-# With backup of existing content
+# Normal (use --backup if any dest dir already exists, e.g. ~/.config/ccstatusline)
 bun .claude/commands/sync-claude.ts --execute --backup
+
+# Without backup (only if all destinations are new)
+bun .claude/commands/sync-claude.ts --execute
 
 # Force a specific method
 bun .claude/commands/sync-claude.ts --method junction --execute
@@ -106,6 +106,12 @@ bun .claude/commands/sync-claude.ts --unlink
 | `output-styles/` | Output style modes (e.g. Poneglyph) |
 | `CLAUDE.md` | Global instructions |
 
+## External Links (outside `~/.claude/`)
+
+| Dest | Source | Notes |
+|------|--------|-------|
+| `~/.config/ccstatusline/` | `.claude/ccstatusline/` | ccstatusline widget config — symlink (macOS) / junction (Windows). Parent `~/.config/` is created if absent. |
+
 ## NOT Synced (project-specific)
 
 | Folder | Reason |
@@ -148,4 +154,4 @@ bun .claude/commands/sync-claude.ts --execute --backup  # Replace with backup
 
 ---
 
-**Version**: 2.1.0 (migrated from skill → slash command 2026-05-25)
+**Version**: 2.2.0 (2026-06-01 — added external ccstatusline config link: `~/.config/ccstatusline` ← `.claude/ccstatusline`)

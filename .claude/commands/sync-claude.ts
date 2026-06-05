@@ -34,6 +34,14 @@ const LINK_FILES = [
   { src: ".claude/settings.json", dest: "settings.json" },
 ];
 
+// External links: src is relative to projectRoot/.claude/, dest is an absolute path outside ~/.claude/
+const LINK_EXTERNAL_DIRS = [
+  {
+    src: "ccstatusline",
+    dest: path.join(os.homedir(), ".config", "ccstatusline"),
+  },
+];
+
 // === TYPES ===
 
 interface LinkInfo {
@@ -362,6 +370,37 @@ function detectLinks(projectRoot: string, homeDir: string): LinkInfo[] {
     links.push({ source, dest, type: "file", status });
   }
 
+  for (const ext of LINK_EXTERNAL_DIRS) {
+    const source = path.join(srcBase, ext.src);
+    const dest = ext.dest;
+
+    if (!fs.existsSync(source)) continue;
+
+    let status: LinkInfo["status"] = "new";
+
+    if (fs.existsSync(dest)) {
+      if (isSymlink(dest)) {
+        const target = getSymlinkTarget(dest);
+        const resolvedTarget = target
+          ? path.resolve(path.dirname(dest), target)
+          : null;
+
+        if (
+          normalizePath(target || "") === normalizePath(source) ||
+          normalizePath(resolvedTarget || "") === normalizePath(source)
+        ) {
+          status = "already-linked";
+        } else {
+          status = "conflict";
+        }
+      } else {
+        status = "exists";
+      }
+    }
+
+    links.push({ source, dest, type: "directory", status });
+  }
+
   return links;
 }
 
@@ -490,6 +529,9 @@ async function createSymlinks(
         fs.rmSync(link.dest, { recursive: true, force: true });
       }
     }
+
+    // Ensure parent directory exists (required for external links outside ~/.claude/)
+    fs.mkdirSync(path.dirname(link.dest), { recursive: true });
 
     // Create link according to method
     try {

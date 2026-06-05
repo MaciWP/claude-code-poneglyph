@@ -90,6 +90,11 @@ poneglyph-analysis.md
 # Specs (design documents, not part of distributed config)
 .specs/
 
+# ccstatusline scratch files (settings.json is intentionally tracked)
+.claude/ccstatusline/*.bak
+.claude/ccstatusline/settings.bak
+.claude/ccstatusline/*.tmp
+
 # Poneglyph self-referential (only for developing Poneglyph itself)
 .claude/commands/insights-poneglyph.md
 
