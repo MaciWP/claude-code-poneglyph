@@ -14,6 +14,36 @@ Multi-agent orchestration system for Claude Code
 >
 > Claude Code combines both levels: global + project.
 
+> **Working model — poneglyph as the always-on background layer**
+>
+> The intended normal case is working in **another** project (the work repo on
+> the Mac, the PC-optimizer, anything personal) while poneglyph runs underneath
+> through `~/.claude/`, so Claude Code behaves exceptionally everywhere with zero
+> per-project setup. Install it **once per machine**:
+>
+> ```bash
+> bun .claude/commands/sync-claude.ts --execute --backup --force
+> ```
+>
+> This links `skills/commands/rules/docs/hooks/output-styles` into `~/.claude/`
+> (junctions on Windows — no admin; symlinks on macOS/Linux) and regenerates
+> `~/.claude/settings.json` = `settings.json` (committed base) deep-merged with
+> `settings.machine.json` (gitignored, per-machine). **On macOS** also create
+> `.claude/settings.machine.json` carrying that machine's `env.PATH`: the GUI app
+> launches with a minimal PATH, so linking alone leaves hooks/statusline broken —
+> the PATH overlay is what fixes it (this is a *separate* cause from linking).
+>
+> **The only place you see duplicates is inside this repo.** Here the global
+> (`~/.claude/skills`, junction → repo) and the project (`./.claude/skills`, real)
+> are the same files via two paths. Harmless for skills/commands (Claude Code
+> dedupes by name); but `hooks` (`security-gate`, `code-validator`) are declared
+> in **both** levels, so a maintenance session *in this repo* may **double-fire**
+> them. Other projects never see this — poneglyph reaches them only through the
+> global. Settings load at session start, so a fresh `sync` (and the duplicate
+> state) only takes effect on the **next** session. `CLAUDE.md` is **copied**, not
+> linked, into `~/.claude/` on Windows (junctions can't link files) → re-run the
+> sync after editing it or the global copy goes stale.
+
 ---
 
 ## What this project is
