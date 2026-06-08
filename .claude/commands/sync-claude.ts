@@ -26,13 +26,22 @@ const LINK_FOLDERS = [
 
 const LINK_FILES = [
   { src: "CLAUDE.md", dest: "CLAUDE.md" },
-  // settings.json is symlinked so user-scope (~/.claude) config = single source of
-  // truth in the repo. Holds machine-specific paths (cclsp MCP, PATH) — acceptable
-  // for this personal single-machine system. Was previously a manual copy that
-  // drifted (hooks/baseRef/hard_deny missing from the active global) — added
-  // 2026-05-30 to fix that root cause.
-  { src: ".claude/settings.json", dest: "settings.json" },
 ];
+
+// settings.json is NOT symlinked: it is GENERATED per-machine as a real file by
+// deep-merging the committed base with an optional gitignored machine overlay.
+// Why: the user-scope (~/.claude) settings.json applies to every project on every
+// OS, but a few keys are irreducibly machine-specific — env.PATH cannot be a single
+// cross-OS string, and the macOS GUI app launches with a minimal PATH that needs it.
+// Symlinking the cross-OS committed file therefore broke statusLine + hooks on macOS
+// outside poneglyph (2026-06-08). The base stays the single source of truth for
+// shared keys (regenerated each sync → no drift); the overlay carries only machine
+// paths. Replaces the previous symlink added 2026-05-30.
+const MERGED_SETTINGS = {
+  base: ".claude/settings.json", // committed, shared, cross-OS
+  overlay: ".claude/settings.machine.json", // gitignored, per-machine, optional
+  dest: "settings.json", // → ~/.claude/settings.json (real file)
+};
 
 // External links: src is relative to projectRoot/.claude/, dest is an absolute path outside ~/.claude/
 const LINK_EXTERNAL_DIRS = [
@@ -299,6 +308,123 @@ function isWindows(): boolean {
 
 function normalizePath(p: string): string {
   return p.replace(/\\/g, "/").toLowerCase();
+}
+
+// === MERGED SETTINGS (machine-specific, generated — not symlinked) ===
+
+function isPlainObject(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
+
+// Recursive deep-merge: nested plain objects merge per-key (so `env` keeps base
+// keys + overlay PATH); arrays and scalars are replaced by the overlay.
+function deepMerge(
+  base: Record<string, unknown>,
+  overlay: Record<string, unknown>,
+): Record<string, unknown> {
+  const out: Record<string, unknown> = { ...base };
+  for (const [key, value] of Object.entries(overlay)) {
+    const existing = out[key];
+    out[key] =
+      isPlainObject(value) && isPlainObject(existing)
+        ? deepMerge(existing, value)
+        : value;
+  }
+  return out;
+}
+
+interface SettingsResult {
+  status: "written" | "preview" | "error";
+  overlayApplied: boolean;
+  message: string;
+}
+
+// Generates ~/.claude/settings.json as a REAL file = deepMerge(base, machine overlay).
+// With config.execute=false it only previews. Replaces any prior symlink in place.
+function generateSettings(
+  projectRoot: string,
+  homeDir: string,
+  config: Config,
+): SettingsResult {
+  const basePath = path.join(projectRoot, MERGED_SETTINGS.base);
+  const overlayPath = path.join(projectRoot, MERGED_SETTINGS.overlay);
+  const destPath = path.join(homeDir, ".claude", MERGED_SETTINGS.dest);
+
+  if (!fs.existsSync(basePath)) {
+    return {
+      status: "error",
+      overlayApplied: false,
+      message: `base not found: ${basePath}`,
+    };
+  }
+
+  let merged: Record<string, unknown>;
+  let overlayApplied = false;
+  try {
+    const base = JSON.parse(fs.readFileSync(basePath, "utf-8")) as Record<
+      string,
+      unknown
+    >;
+    if (fs.existsSync(overlayPath)) {
+      const overlay = JSON.parse(fs.readFileSync(overlayPath, "utf-8")) as Record<
+        string,
+        unknown
+      >;
+      merged = deepMerge(base, overlay);
+      overlayApplied = true;
+    } else {
+      merged = base;
+    }
+  } catch (error) {
+    return {
+      status: "error",
+      overlayApplied: false,
+      message: `parse error: ${error instanceof Error ? error.message : String(error)}`,
+    };
+  }
+
+  if (!config.execute) {
+    return {
+      status: "preview",
+      overlayApplied,
+      message: overlayApplied
+        ? "would merge base + machine overlay → real file"
+        : "would copy base → real file (no machine overlay found)",
+    };
+  }
+
+  // Backup + remove existing (symlink OR real file) before writing.
+  if (fs.existsSync(destPath) || isSymlink(destPath)) {
+    if (config.backup) {
+      const backupDir = path.join(
+        homeDir,
+        ".claude.backup",
+        new Date().toISOString().split("T")[0],
+      );
+      fs.mkdirSync(backupDir, { recursive: true });
+      const backupPath = path.join(backupDir, MERGED_SETTINGS.dest);
+      if (isSymlink(destPath)) {
+        fs.writeFileSync(
+          backupPath + ".symlink",
+          getSymlinkTarget(destPath) || "unknown",
+        );
+      } else {
+        fs.copyFileSync(destPath, backupPath);
+      }
+    }
+    fs.unlinkSync(destPath); // unlinkSync removes both symlinks and regular files
+  }
+
+  fs.mkdirSync(path.dirname(destPath), { recursive: true });
+  fs.writeFileSync(destPath, JSON.stringify(merged, null, 2) + "\n");
+
+  return {
+    status: "written",
+    overlayApplied,
+    message: overlayApplied
+      ? "merged base + machine overlay → ~/.claude/settings.json"
+      : "copied base → ~/.claude/settings.json (no machine overlay)",
+  };
 }
 
 // === LINK DETECTION ===
@@ -659,6 +785,21 @@ function printStatus(links: LinkInfo[]): void {
       console.log(`🔵 ${path.basename(link.dest)}: local folder/file`);
     }
   }
+
+  // settings.json is a generated real file (not a symlink) — report it explicitly.
+  const settingsDest = path.join(destBase, "settings.json");
+  const overlayPath = path.join(getProjectRoot(), MERGED_SETTINGS.overlay);
+  if (!fs.existsSync(settingsDest) && !isSymlink(settingsDest)) {
+    console.log(`⚪ settings.json: does not exist (run --execute)`);
+  } else if (isSymlink(settingsDest)) {
+    console.log(
+      `🟡 settings.json: STALE symlink — should be a generated real file, run --execute`,
+    );
+  } else {
+    console.log(
+      `🟢 settings.json: generated real file ${fs.existsSync(overlayPath) ? "(base + machine overlay)" : "(base only — no machine overlay)"}`,
+    );
+  }
 }
 
 // === VALIDATE HOOKS ===
@@ -955,6 +1096,15 @@ Requirements per OS:
   const method = determineLinkMethod(systemInfo, config);
   printPreview(links, method);
 
+  // settings.json is generated (merged), not linked — preview it alongside.
+  const settingsPreview = generateSettings(projectRoot, homeDir, {
+    ...config,
+    execute: false,
+  });
+  console.log(
+    `\n⚙️  settings.json (generated real file, not linked): ${settingsPreview.message}`,
+  );
+
   if (!config.execute) {
     console.log("\n💡 Use --execute to create the symlinks");
     console.log("   Use --backup to save existing content");
@@ -963,18 +1113,14 @@ Requirements per OS:
   }
 
   const toModify = links.filter((l) => l.status !== "already-linked");
-  if (toModify.length === 0) {
-    console.log("\n✅ Everything is already linked correctly");
-    return;
-  }
 
   if (!config.force) {
     const hasExisting = links.some(
       (l) => l.status === "exists" || l.status === "conflict",
     );
     const message = hasExisting
-      ? `Create ${toModify.length} links? (existing content will be replaced${config.backup ? ", with backup" : ""})`
-      : `Create ${toModify.length} links?`;
+      ? `Create ${toModify.length} links + regenerate settings.json? (existing content will be replaced${config.backup ? ", with backup" : ""})`
+      : `Create ${toModify.length} links + regenerate settings.json?`;
 
     const confirmed = await askConfirmation(message);
     if (!confirmed) {
@@ -983,7 +1129,22 @@ Requirements per OS:
     }
   }
 
-  await createSymlinks(links, config, systemInfo);
+  if (toModify.length > 0) {
+    await createSymlinks(links, config, systemInfo);
+  } else {
+    console.log("\n✅ All symlinks already linked correctly");
+  }
+
+  // Always (re)generate the merged settings.json — per-machine, never symlinked.
+  const settingsResult = generateSettings(projectRoot, homeDir, config);
+  const sIcon =
+    settingsResult.status === "written"
+      ? "⚙️ "
+      : settingsResult.status === "error"
+        ? "❌"
+        : "📄";
+  console.log(`${sIcon} settings.json: ${settingsResult.message}`);
+
   console.log("\n✅ Sync completed");
 
   if (config.backup) {

@@ -43,6 +43,10 @@ npm-debug.log*
 # Claude Code local settings
 .claude/settings.local.json
 
+# Per-machine settings overlay (env.PATH etc.) — sync-claude deep-merges it into the
+# generated ~/.claude/settings.json. Each machine keeps its own; never committed.
+.claude/settings.machine.json
+
 # Agent memory (auto-generated per session, FIFO-pruned; builder/MEMORY.md is tracked intentionally)
 .claude/agent-memory/*/MEMORY.md
 !.claude/agent-memory/builder/MEMORY.md
