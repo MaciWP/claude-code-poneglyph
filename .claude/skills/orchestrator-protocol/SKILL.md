@@ -52,6 +52,8 @@ Execute steps 1-5 IN ORDER before responding. No exceptions.
 
 For architectural/comparison decisions → `Skill('decide')` first.
 
+**Multi-round questioning** (006): when a prompt is ambiguous or a plan needs alignment, ask in rounds while genuine doubt remains — include lateral / improvement questions — rather than stopping at one round; converge and say so when no real doubt is left (calibrated, Commandment III). Use `drillme` for iteration mechanics. Principle: CLAUDE.md §Communication & Honesty Protocol.
+
 > Prompt quality refinement, "what is a good prompt" rubric, ambiguity detection → use the `prompt-engineer` skill (Keywords: prompt, generar prompt, refine prompt, vague prompt, ambiguous). This is the canonical source — do not re-implement scoring here.
 
 **Delegation triggers** (apply after triage — independent, fire one, the other, or both):

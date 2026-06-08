@@ -246,6 +246,7 @@ Next:
 - `--resume` reads state.json strictly; if corrupted, reconstruct from artefacts + warn (never silently guess).
 - In standard/full, the slug is generated ONCE at Phase 1 start; subsequent phases honor it.
 - Phase 4 verdict BLOCKED stops `/flow`; user decides whether to reopen or abandon.
+- **Proactive multi-round questioning** (006): at hard gates + during scope/drillme, ask in rounds while genuine doubt remains — including lateral / improvement questions — instead of stopping at one round; converge and say so when no real doubt is left. Calibrated, anti-ceremony (Commandment III). Iteration mechanics via the `drillme` skill; principle in CLAUDE.md §Communication & Honesty Protocol.
 
 ## Adaptation per mode
 
