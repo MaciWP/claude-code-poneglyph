@@ -86,12 +86,10 @@ nul
 poneglyph-analysis.md
 # Exception: usage dashboard template (source, not generated)
 !.claude/scripts/dashboard-template.html
-# Exception: html-report skill templates are SOURCE (approved v8 design), not generated renders
-!.claude/skills/html-report/templates/dashboard.template.html
-!.claude/skills/html-report/templates/report.template.html
-!.claude/skills/html-report/templates/components.html
-!.claude/skills/html-report/templates/glance.template.html
-!.claude/skills/html-report/templates/decision.template.html
+# Exception: the whole html-report skill templates dir is SOURCE (approved designs,
+# the templates meant to be used), never generated renders. Whole-dir exception so new
+# templates are versioned without re-arming the *.html rule (it ate deliverables 2x).
+!.claude/skills/html-report/templates/**
 
 # Specs (design documents, not part of distributed config)
 .specs/
