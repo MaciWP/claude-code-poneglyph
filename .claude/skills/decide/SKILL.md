@@ -123,7 +123,7 @@ After receiving the 3 perspectives, synthesize:
 Delegate to builder: "Generate a self-contained HTML file with the decision memo."
 
 The HTML must:
-- Use the template at `.claude/skills/decide/templates/memo.html` as base
+- Use the html-report system template `.claude/skills/html-report/templates/decision.template.html` as base (single visual system — Cmd X; `memo.html` is retained as an offline fallback only)
 - Fill in with the actual data from the perspectives and synthesis
 - Save in the current directory as `decision-memo-{timestamp}.html`
 - Open automatically: `start decision-memo-{timestamp}.html` (Windows)

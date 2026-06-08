@@ -1,0 +1,31 @@
+{
+  "spec_slug": "007-report-template-v2",
+  "mode": "standard",
+  "current_phase": "closed",
+  "phases_completed": [1, 2, 3, 4, 5],
+  "gates_approved": {
+    "1->2": true,
+    "2->3": true
+  },
+  "us_completed": ["US1", "US2", "US3", "US4", "US5", "US6", "US7"],
+  "us_pending": [],
+  "feature_closed": true,
+  "review_verdict": "APPROVED_WITH_WARNINGS",
+  "retro_status": "approved",
+  "decisions": {
+    "OQ1": "decide REUSA plantillas de html-report (sistema visual unico, no duplicar)",
+    "OQ2": "NUEVO layout decision (opciones + scoring ponderado + recomendacion)",
+    "OQ3": "alcance acotado a decisiones con opciones comparables",
+    "env": "mmdc/npx/bunx/node ausentes -> SVG-a-mano-first + mermaid.js opt-in para complejos",
+    "scope-extra": "2026-06-03 ratificado: galeria shadcn (US6) + interactividad (US7). Deliverable = smoke-components-shadcn.html. Hornear a components.html = evolucion futura.",
+    "US4-memo": "memo.html conservado como fallback offline; Step 4 de decide apunta a decision.template.html",
+    "critic-M1": "gitignore *.html comia glance/decision.template.html -> RESUELTO (.gitignore excepciones :89-90)"
+  },
+  "promotions_applied": [
+    "pre-flight: salvaguarda git check-ignore para deliverables",
+    "memory ask-visual-reference-early: refuerzo recuperar-preferencias + variantes-para-comparar",
+    "living-spec: spec.md v2 (scope-extra US6/US7 evolucion incremental)"
+  ],
+  "started_at": "2026-06-03",
+  "updated_at": "2026-06-03"
+}

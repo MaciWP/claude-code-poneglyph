@@ -45,3 +45,11 @@ Run before declaring any `html-report` render done. **Gate semantics: if any ite
 ## Self-contained (html-report invariants)
 - [ ] Single inlined `<style>`; the only allowed external request is one Google Fonts `<link>` (v1.2.0 client-grade). For pure-offline: omit it and confirm the system-stack fallback renders.
 - [ ] `report.template`: dark/light both render. `dashboard.template`: dark-first + print-light (no OS flip, by design). Print stylesheet intact in both.
+
+## Cliente-ready / v2 (feature 007)
+- [ ] **Vistazo**: la acción/conclusión principal + KPIs/distribución se captan above-the-fold (sin scroll).
+- [ ] **Self-contained verificado**: abre con la red desactivada; sólo los webfonts degradan (system stack).
+- [ ] **Diagramas**: SVG inline legible offline; `mermaid.js` SOLO si es complejo y la dependencia está declarada en el header del documento.
+- [ ] **Interactividad** (si la hay): tabs/tooltips sin JS; command = único `<script>` vanilla declarado; `:focus-visible` ring en todo elemento interactivo (navegable por teclado).
+- [ ] **decision layout**: recomendación + confianza arriba; matriz opciones×criterios ponderada legible de un vistazo.
+- [ ] **Persistencia (deliverable)**: si el artefacto debe sincronizarse/commitearse (p.ej. un template del skill), `git check-ignore <path>` devuelve vacío — o hay excepción `!` en `.gitignore`. El patrón `*.html` se ha comido el deliverable 2× (commit 8a85e4a v8 + 007-M1); verifícalo antes de declarar el render entregado.

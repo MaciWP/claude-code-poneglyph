@@ -82,6 +82,14 @@ graph TD
 
 When unsure, default to `report` (long-form loses no information; dashboard compresses).
 
+> **v2 layouts (feature 007)** — two more templates extend the system:
+> - **`glance.template.html`** — scan-at-a-glance dark report: KPI row (color=info) + immediate-action callout + CSS-only filterable/expandable cards + drawer + next-steps. Pick for "se lee de un vistazo". **Defines the canonical dark token block** (decision template inlines it verbatim — Cmd X).
+> - **`decision.template.html`** — decisions WITH comparable options (dev or non-dev: monitor/PC/shoes): recommendation hero + weighted options×criteria matrix + per-option pros/cons + criteria&weights. The `decide` skill reuses this as its base (single visual system).
+>
+> **Diagrams / charts — hybrid SVG-first**: compose inline SVG by hand for simple flows/comparisons/charts (self-contained, 0 JS, like the gauge/sevbar); `mermaid.js` runtime is an **opt-in declared exception** for complex graphs only (no `mmdc` in this env). Patterns + decision rule: `references/visuals-svg-first.md`.
+>
+> **shadcn components + interactivity** (badges/alert/separator/progress/skeleton/empty-state + tabs/tooltips CSS-only + command JS-opt-in + `:focus-visible` ring): canonical reference render at `.claude/plans/007-report-template-v2/smoke-components-shadcn.html`. Baking into `components.html` + wiring into glance/decision is a tracked future evolution (state.json `scope-extra`).
+
 ### Step 3 — Design quality: frontend-design + taste corpus (AC5)
 
 **Explicitly invoke the builtin `frontend-design` skill** (`Skill('frontend-design')`, or — when this skill runs inside a delegated builder — instruct the builder to `Read` the frontend-design SKILL first). It produces distinctive, production-grade frontend that **avoids the generic AI aesthetic**.

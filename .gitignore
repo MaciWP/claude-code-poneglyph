@@ -90,6 +90,8 @@ poneglyph-analysis.md
 !.claude/skills/html-report/templates/dashboard.template.html
 !.claude/skills/html-report/templates/report.template.html
 !.claude/skills/html-report/templates/components.html
+!.claude/skills/html-report/templates/glance.template.html
+!.claude/skills/html-report/templates/decision.template.html
 
 # Specs (design documents, not part of distributed config)
 .specs/
