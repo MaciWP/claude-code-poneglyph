@@ -6,9 +6,10 @@ description: |
   HU (or specific via /build US{id}), Globs/Greps ejemplos del proyecto for style,
   honors TDD-mode (red->green when forced or tdd: forced on the node; impl + suite
   verify when tdd-skip or optional). Invokes AskUserQuestion on concrete doubts
-  (never improvises). Updates state.json on closure, reports next HU. For HUs
-  involving >=5 files OR architectural change, delegates to `builder` agent for
-  context isolation. Closes intra-HU drillme (4 questions) before declaring done.
+  (never improvises). Updates state.json on closure, reports next HU. Executes
+  INLINE in the main session (the spawn decision tree forbids 1 agent; ≥5 files is
+  still inline); only ≥4 independent parallel units fan out via Workflow.
+  Closes intra-HU drillme (4 questions) before declaring done.
   Use when: tasks/ approved + Phase 2.5 oracle approved + HU pending in state.json,
   "build", "implementa", "ejecuta", "construye", "implement HU", "next HU",
   after /tdd-design closes Phase 2.5, before /critic in Phase 4.
@@ -27,7 +28,7 @@ Implements ONE HU at a time from an approved `tasks/` + Phase 2.5 oracle. Each H
 
 > "Each HU closes intra-fase before the next one. Smallest diff that satisfies the AC + drillme." (Commandment III — simple by default; Commandment IV — blocking gates per HU)
 
-Phase 3 is the only phase that touches production code. Every other phase is design or verification. The discipline here is **atomicity + honest test/validation closure + delegation only when context isolation is genuinely needed**.
+Phase 3 is the only phase that touches production code. Every other phase is design or verification. The discipline here is **atomicity + honest test/validation closure + inline execution** (a single HU is one unit of work → the main session does it; "context isolation" is not a reason to spawn — see the canonical spawn decision tree in `orchestrator-protocol`).
 
 ## When to use
 
@@ -68,25 +69,18 @@ Phase 3 is the only phase that touches production code. Every other phase is des
 
 Read the chosen `tasks/US{N}.md` completely + its associated `T{N}.X` tests or validation block.
 
-### Step 3 — Decide: direct execution vs delegate to `builder` agent
+### Step 3 — Execute inline (the HU is one unit of work)
 
-**AC7 criterion** (KEEP-conditional): the `builder` agent is invoked ONLY for HUs with context-isolation value. Otherwise the skill executes directly (Lead default-allow gate).
+The HU is implemented **inline in the main session**. Per the canonical spawn decision tree (`orchestrator-protocol` §Step 1), **1 agent is forbidden** and "context isolation" is not a valid reason to spawn — a single HU, even one touching ≥5 files, is one unit of work the Lead does directly. `/clear` resets context between HUs if it grows.
 
 | HU characteristic | Mode | Reason |
 |---|---|---|
-| 1-4 files touched, bounded change | **Direct** (Lead in skill) | Default-allow gate covers it; delegation adds round-trip cost without isolation gain |
-| ≥5 files touched | **Delegate to `builder`** | Standard delegation threshold from `CLAUDE.md §When to delegate` (Trigger A) — context isolation real |
-| Architectural change declared in `tasks/US{N}.md` (`arch_change: true` or AC explicitly mentions structural refactor) | **Delegate to `builder`** | New patterns or cross-cutting structure → builder's focused context preserves main session quality |
-| HU touches sensitive paths (`.env`, `*.lock`, `package.json`, `.claude/settings.json`, `secrets/`) | **Delegate to `builder`** OR Lead declares inline `sensitive: <reason ≥8 chars>` | CLAUDE.md sensitive-paths rule |
-| HU is "create extension" (new skill/hook/rule/MCP/plugin/agent) | Lead invokes `meta-create` first; then direct OR delegate per file count | Meta-context requires `meta-create` consultation |
+| Any single HU (1..N files, bounded change) | **Inline** (Lead in skill) | Default-allow gate covers it; spawning 1 agent for isolation is forbidden (P1/P2) |
+| HU touches sensitive paths (`.env`, `*.lock`, `package.json`, `.claude/settings.json`, `secrets/`) | **Inline** + declare `sensitive: <reason ≥8 chars>` | CLAUDE.md sensitive-paths rule |
+| HU is "create extension" (new skill/hook/rule/MCP/plugin) | Lead invokes `meta-create` first; then inline | Meta-context requires `meta-create` consultation |
+| The wave has **≥4 independent HUs** with disjoint files and no shared state | **Workflow** fan-out (opt-in) | Only at ≥4 parallel units does delegation pay off (P3); `isolation: 'worktree'` per unit on collision |
 
-When delegating to `builder`, the prompt MUST include (per Arch H):
-- HU id + AC verbatim from `tasks/US{N}.md`
-- TDD-mode resolution + the relevant `T{N}.X` test or `US{N}` validation block
-- `[RELEVANT SKILLS FOR THIS TASK]` block listing `Read .claude/skills/<aux>/SKILL.md` for auxiliaries (anti-hallucination always; lsp-operations if semantic nav needed; diagnostic-patterns if test failures expected; meta-create if HU is extension)
-- `[RELEVANT MEMORY]` block injecting `.claude/agent-memory/builder/MEMORY.md` if it exists
-- Target files explicit
-- Style anchors (1-3 file paths to Glob/Read for project conventions)
+> A single HU is NEVER a reason to spawn. Fan-out is decided at the WAVE level (≥4 independent HUs), not per-HU — and it is user opt-in (Workflow). See `orchestrator-protocol` §Step 1 spawn decision tree + `references/04-agent-selection.md` §Workflow wiring.
 
 ### Step 4 — Glob/Grep ejemplos similares (style anchors)
 
@@ -181,7 +175,7 @@ Two updates per HU closure (both mandatory — Cmd IX observability + documental
       "completed_at": "2026-MM-DD",
       "tests_passed": true,
       "files_touched": ["path/a", "path/b"],
-      "delegated_to_builder": false,
+      "execution": "inline",
       "askuserquestion_count": 0
     }
   ]
@@ -227,7 +221,7 @@ Output to user:
 ✅ HU US{N} closed.
 - Files: <list>
 - Tests: <pass count>/<total>; red→green honored (or tdd-skip: <reason>; or validation closure)
-- Delegated to builder: <yes|no> + reason
+- Execution: inline (or Workflow fan-out if the wave had ≥4 independent HUs)
 - AskUserQuestion fired: <count>
 - state.json updated.
 - tasks/US{N}.md frontmatter updated: status: closed + closed: YYYY-MM-DD
@@ -240,19 +234,14 @@ Next HU available: US{M} (depends_on satisfied)
 
 If all HUs closed → flag `state.json.current_phase: 4` and report "Phase 3 complete. Hard gate 3->4 — review/critic pending."
 
-## AC7 decision: `builder` agent — KEEP-conditional
+## Execution model: inline (builder agent CUT — feature 008)
 
-| Option | Verdict | Reason |
-|---|---|---|
-| CUT (delete agent) | ✗ Rejected | Loses context-isolation capability for HUs ≥5 files; `.claude/agent-memory/builder/MEMORY.md` carries historical insights worth preserving |
-| ABSORB (migrate body into this SKILL.md) | ✗ Rejected | Inline workflow in skill does NOT replicate sub-agent context isolation — that's the structural value of the agent primitive |
-| **KEEP-conditional** | ✓ **Adopted** | Builder remains a sub-agent invoked ONLY by this skill (or by Lead default-allow gate) when HU ≥5 files OR architectural change. Criterion documented in Step 3. Audit: `.claude/agent-memory/builder/MEMORY.md` exists → historical context preserved |
+| Era | Decision |
+|---|---|
+| Original (feature 001, AC7) | `builder` agent KEEP-conditional — invoked for HUs ≥5 files "for context isolation" |
+| **Now (feature 008)** | **`builder` agent CUT.** The spawn decision tree forbids 1 agent; "context isolation" is not a valid reason (the user resets context with `/clear`). A single HU is one unit of work → **inline**. Fan-out happens only at the WAVE level when ≥4 independent HUs exist (Workflow, opt-in). |
 
-**Effect**:
-- `.claude/agents/builder.md` — kept as-is.
-- `.claude/agent-memory/builder/MEMORY.md` — kept; injected in delegation prompts.
-- This skill is the canonical caller; Lead may still invoke `builder` directly per `CLAUDE.md §When to delegate` (Trigger A).
-- Refs to `builder` agent in other docs (CLAUDE.md, rules) — no changes required.
+**Effect**: `.claude/agents/builder.md` deleted; `agent-memory/builder/MEMORY.md` archived under `plans/008-agent-spawn-policy/archive/`. This skill executes inline; for a ≥4-HU parallel wave the Lead may fan out via `Workflow` using the `default` subagent (see `orchestrator-protocol` spawn decision tree).
 
 ## Auxiliary skills invoked
 
@@ -265,7 +254,7 @@ If all HUs closed → flag `state.json.current_phase: 4` and report "Phase 3 com
 | `diagnostic-patterns` | When tests fail in Step 9 verification (5-whys, retry budget, stack-trace analysis) | Lead reads error output manually + applies error-recovery.md retry policy |
 | `lsp-operations` | During Step 4 ejemplos + Step 5 impl — `findReferences`/`hover`/`goToDefinition` for semantic navigation when blast radius matters | Lead uses Grep + Read manually as fallback (less precise but functional) |
 | `review-patterns` | ⚠️ Optional — during impl if quality concern emerges (SOLID violation suspected, performance bottleneck) | Lead invokes `/critic` review-patterns mode in Phase 4 anyway; intra-impl invocation is opportunistic |
-| `meta-create` | When HU's `files` field includes new `.claude/skills/`, `.claude/hooks/`, `.claude/rules/`, `.claude/agents/`, `.claude/plugins/`, `.mcp.json` | Lead reads `meta-create/SKILL.md` manually before designing the extension (Commandment X — meta-system maintainability) |
+| `meta-create` | When HU's `files` field includes new `.claude/skills/`, `.claude/hooks/`, `.claude/rules/`, `.claude/plugins/`, `.mcp.json` | Lead reads `meta-create/SKILL.md` manually before designing the extension (Commandment X — meta-system maintainability) |
 | `meta-settings-cookbook` | When HU touches `CLAUDE.md`, `.claude/settings.json`, output styles, permissions, env vars | Lead reads `meta-settings-cookbook/SKILL.md` references manually |
 
 > Skill-to-skill invocation is **probabilistic** per docs Anthropic + [issue #59968](https://github.com/anthropics/claude-code/issues/59968). For Phase 3, the canonical auxiliaries (anti-hallucination, drillme, diagnostic-patterns) MUST fire on every HU — the fallback column documents the Lead's manual recovery if auto-fire misses. `review-patterns` is opportunistic (⚠️); `meta-create`/`meta-settings-cookbook` are conditional on HU content.
@@ -277,8 +266,8 @@ If all HUs closed → flag `state.json.current_phase: 4` and report "Phase 3 com
 - AskUserQuestion on concrete doubts; NEVER improvise.
 - Read before Edit (always). Glob before Write (verify file does not exist).
 - Tests pass before declaring "completed" (Commandment IV — no exceptions).
-- Update `state.json` on every HU closure (closure + timestamp + tests_passed + delegation flag).
-- If delegating to `builder` → include `[RELEVANT SKILLS]` + `[RELEVANT MEMORY]` blocks per Arch H.
+- Update `state.json` on every HU closure (closure + timestamp + tests_passed + execution mode).
+- Execute inline — a single HU is never a reason to spawn an agent (P1/P2). Fan out only at ≥4 independent HUs (Workflow, wave-level).
 
 ## Adaptation intra-phase (Principio 2)
 
@@ -295,9 +284,9 @@ If all HUs closed → flag `state.json.current_phase: 4` and report "Phase 3 com
 - **Edge 1** — HU `depends_on` not satisfied (HU listed in `us_pending` but a dep is also pending): STOP, execute dep first or escalate to Lead.
 - **Edge 2** — `tests.md` has T{N}.X but the test file path conflicts with an existing test: ask user (rename/merge/skip).
 - **Edge 3** — HU AC mentions a function that doesn't exist yet AND isn't in any HU's `files` field: smell — Phase 2 decomposition missed it; abort and escalate.
-- **Edge 4** — Delegated to `builder` but it returns NEEDS_CHANGES or test failure: follow `error-recovery.md` (SendMessage to original builder if context is preserved; re-spawn if 2+ retries).
+- **Edge 4** — A ≥4-HU wave fanned out via Workflow and one unit fails: follow `error-recovery.md` (the Workflow runtime drops the failed unit to `null`; re-run that unit inline or in a follow-up Workflow).
 - **Edge 5** — User invokes `/build` but `state.json` says Phase 3 already complete: ask if re-run a specific HU or transition to Phase 4.
-- **Edge 6** — HU touches sensitive path AND was delegated to `builder`: builder's `acceptEdits` permission mode + the Lead's `sensitive:` declaration cover it; no extra ceremony.
+- **Edge 6** — HU touches sensitive path: Lead declares inline `sensitive: <reason ≥8 chars>` before the edit; no extra ceremony.
 
 ## Smell signals
 
@@ -306,7 +295,7 @@ If all HUs closed → flag `state.json.current_phase: 4` and report "Phase 3 com
 - ⚠️ If implementation introduces duplication detected by Glob/Grep → refactor before closing the HU.
 - ⚠️ If a TDD-mode test passes BEFORE impl (red expected, got green) → smell: the contract is misunderstood; STOP and confirm with Lead.
 - ⚠️ If `diagnostic-patterns` retries exceed budget on the same HU → escalate; do not loop silently.
-- ⚠️ If >30% HUs require `builder` delegation → smell: Phase 2 decomposition is too coarse; re-atomize.
+- ⚠️ If the Lead is tempted to spawn 1 agent "for isolation" on a big HU → forbidden (P1/P2); execute inline, `/clear` between HUs if context grows.
 
 ## Anti-patterns
 
@@ -316,7 +305,7 @@ If all HUs closed → flag `state.json.current_phase: 4` and report "Phase 3 com
 | Skip red phase in forced TDD | `tests.md` says forced but impl committed before test ran red | Re-run test in isolation (revert temporarily); verify red was reachable; document in Issues |
 | Over-engineer beyond AC | New abstraction/hook/fallback not requested in AC | Remove; simpler version that meets AC only |
 | Report "completed" without verifying | No test output in Step 9 yet HU marked done in state.json | Reopen HU; run verify; only then re-close |
-| Delegate to builder for 1-2 file changes | Delegation prompt sent for trivial HU | Recall; Lead executes directly (default-allow gate covers it) |
+| Spawn 1 agent for a big HU "for isolation" | An Agent() call for a single HU | Forbidden (P1/P2); execute inline; `/clear` if context grows |
 | Modify unrelated code "while there" | Diff includes files outside HU's `files` field | Revert non-HU edits; flag for retro if pattern emerges |
 
 ## Commandments cubiertos
@@ -328,17 +317,16 @@ If all HUs closed → flag `state.json.current_phase: 4` and report "Phase 3 com
 | IV | Tests pass before "completed"; no exceptions (blocking gate per HU) |
 | V | Read AC + tests/validations + ejemplos del proyecto BEFORE writing |
 | VI | Sensitive paths require inline declaration; destructive ops never run by this skill |
-| VII | Parallel Reads when independent; delegate to builder only when isolation justifies cost |
-| VIII | Delegation prompts to builder include AC + skills + memory blocks (Arch H meta-prompting) |
+| VII | Inline execution avoids wasteful 1-agent spawns; fan-out only at ≥4 independent HUs (P1/P3) |
 | X | Meta-extensions go through `meta-create` skill consultation (extensible meta-system) |
 
 ## Verification (post-implementation of this skill)
 
-- Smoke: invoke `/build US{N}` on an approved `tasks/` + `tests.md` → executes exactly that HU; produces diff + tests pass.
-- Verify `state.json` is updated with the HU's closure entry (timestamp, tests_passed, delegated_to_builder flag).
+- Smoke: invoke `/build US{N}` on an approved `tasks/` + `tests.md` → executes exactly that HU inline; produces diff + tests pass.
+- Verify `state.json` is updated with the HU's closure entry (timestamp, tests_passed, execution mode).
 - Verify NO files outside the HU's `files` field are touched (Glob diff vs `files`).
 - Verify if HU has `tdd: forced` then a test file was created + ran red before impl (audit via git log of the test file vs impl file).
-- `bun test ./.claude/hooks/` → 81/81 (this skill is markdown only — no hook test impact).
+- `bun test ./.claude/hooks/` → green (this skill is markdown only — no hook test impact).
 
 ## Output format reminder
 
@@ -348,7 +336,7 @@ When this skill closes a HU:
 ✅ HU US{N} closed.
 - Files: [<paths>]
 - Tests: <X/Y passing>; mode: <forced red→green | tdd-skip: <reason> | validation-mode | optional>
-- Delegated to builder: <yes|no> (<reason>)
+- Execution: inline (or Workflow fan-out if ≥4-HU wave)
 - AskUserQuestion fired: <N>
 - state.json updated.
 

@@ -8,10 +8,10 @@ description: |
   with severity (BLOCKER/MAJOR/MINOR/NIT) + verdict (APPROVED /
   APPROVED_WITH_WARNINGS / NEEDS_CHANGES / BLOCKED). Invokes the
   `review-patterns` skill catalog (quality or performance mode per content),
-  delegates to `reviewer` agent (Opus, KEEP-conditional) when complejidad >60
-  OR critical areas (auth/payments/security/data/secrets), and triggers
-  `security-review` for auth/payments/credentials. Detects spec-drift for the
-  living-spec loop (Phase 5).
+  escalates to a ≥4-perspective independent review PANEL (Workflow, opt-in) when
+  complejidad >60 OR critical areas (auth/payments/security/data/secrets), and
+  triggers `security-review` for auth/payments/credentials. Detects spec-drift
+  for the living-spec loop (Phase 5).
   Use when: feature complete, all HUs closed in state.json, review needed before
   retro, after /build closes Phase 3, "revisa", "critica", "valida", "review",
   "audita", "verdict", "approve".
@@ -77,9 +77,9 @@ In parallel:
 
 | Signal | Level | Scope |
 |---|---|---|
-| Feature trivial (1-2 HUs, no security/perf concern, mode minimal) | **light** | Base checks (tests + typecheck) + drillme Q1 only; skip reviewer agent + review-patterns + security-review |
+| Feature trivial (1-2 HUs, no security/perf concern, mode minimal) | **light** | Base checks (tests + typecheck) + drillme Q1 only; skip review panel + review-patterns + security-review |
 | Feature standard (3-N HUs, no critical area) | **standard** | Full 5-section checklist; review-patterns quality mode; drillme 4/4 |
-| Feature architectural / touches auth/payments/secrets / complexity >60 | **full** | Standard + reviewer agent (Opus) + security-review skill + review-patterns both modes (quality + performance) |
+| Feature architectural / touches auth/payments/secrets / complexity >60 | **full** | Standard + independent review PANEL (≥4 perspectives, Workflow opt-in) + security-review skill + review-patterns both modes (quality + performance) |
 
 CLI override: `/critic --light` / `--standard` / `--full`. Default = auto-detect from `spec.md.mode` + scanned content.
 
@@ -151,24 +151,17 @@ Apply the catalog's specific checks (cyclomatic complexity / N+1 patterns / leak
 
 ### Step 7 — Conditional invocations (level=full)
 
-**`reviewer` agent (Opus) — AC7 KEEP-conditional**:
+**Independent review PANEL (≥4 perspectives) — replaces the former single `reviewer` agent**:
 
-Invoke when ANY:
+Trigger when ANY:
 - Feature complexity >60 declared in `tasks/index.md` or `spec.md`.
 - Critical area touched: `auth/`, `payments/`, `secrets/`, `credentials/`, `crypto/`, `session/`, database migrations.
 - `--full` CLI flag.
-- User explicitly requests deeper review.
+- The critic is reviewing work the **same session produced** (author≠evaluator bias — the lesson behind the panel; see `independent-reviewer-when-self-assessing` memory).
 
-Delegation prompt MUST include (Arch H):
-- Changed file list (`git diff --stat`)
-- `spec.md` problem statement verbatim
-- AC trace (HU → AC mapping)
-- `[RELEVANT SKILLS]` block (review-patterns + security-review + anti-hallucination — already in reviewer's agent frontmatter)
-- `[RELEVANT MEMORY]` block injecting `.claude/agent-memory/reviewer/MEMORY.md`
-- Findings already collected by critic (Step 5) so reviewer does not duplicate
-- Expected output: structured review per `reviewer.md` Output Format
+**How**: per the spawn decision tree (1 agent is forbidden), an independent review runs as a **panel of ≥4 fresh perspectives via `Workflow`** (user opt-in), each a distinct lens — e.g. `correctness`, `security`, `performance`, `maintainability` — prompted read-only ("review, do not edit; load `review-patterns`/`security-review`"). The panel's verdicts are aggregated (majority on architectural/security concerns). This gives MORE independence than one reviewer, without spawning a single agent. Canonical panel prompt + wiring: `orchestrator-protocol/references/04-agent-selection.md` §Workflow wiring.
 
-The reviewer agent runs `background: true` per its frontmatter → critic continues other checks in parallel.
+> If the user does not opt into a Workflow, the critic performs the deeper review **inline** and declares residual author-bias honestly in `review.md` (same model family) — never silently skips the independence concern.
 
 **`security-review` skill**:
 
@@ -224,7 +217,7 @@ findings_count:
   major: N
   minor: N
   nit: N
-reviewer_agent_invoked: <yes|no>
+review_panel_invoked: <yes (N perspectives) | no (inline) | n/a>
 security_review_invoked: <yes|no>
 review_patterns_modes: [<quality?>, <performance?>]
 created: YYYY-MM-DD
@@ -250,7 +243,7 @@ Report:
 - review_level: <light|standard|full>
 - Findings: <blocker>/<major>/<minor>/<nit>
 - spec_drift: <none|legitimate|scope_creep|skipped_ac>
-- reviewer agent invoked: <yes|no>
+- review panel invoked: <yes (N perspectives) | no (inline)>
 - security-review invoked: <yes|no>
 
 Next:
@@ -259,18 +252,14 @@ Next:
   → STOP — escalate (if BLOCKED)
 ```
 
-## AC7 decision: `reviewer` agent — KEEP-conditional
+## Independent review model: panel ≥4 (reviewer agent CUT — feature 008)
 
-| Option | Verdict | Reason |
-|---|---|---|
-| CUT | ✗ Rejected | Opus delivers deeper analysis than Sonnet (the model running this skill); critic alone cannot replicate that depth on architectural reviews. `.claude/agent-memory/reviewer/MEMORY.md` carries historical insights worth preserving |
-| ABSORB | ✗ Rejected | Inline workflow in this SKILL.md cannot replicate (a) sub-agent context isolation, (b) the model upgrade to Opus, (c) the read-only permission mode of the reviewer agent |
-| **KEEP-conditional** | ✓ **Adopted** | `reviewer` remains a sub-agent invoked by this skill ONLY when complejidad >60 OR critical area touched (auth/payments/security/data/secrets/crypto). Criterion documented in Step 7. `reviewer.md` + `agent-memory/reviewer/MEMORY.md` untouched. |
+| Era | Decision |
+|---|---|
+| Original (feature 001, AC7) | `reviewer` agent (Opus, read-only) KEEP-conditional — 1 agent invoked for complexity >60 OR critical area |
+| **Now (feature 008)** | **`reviewer` agent CUT.** 1 agent is forbidden (spawn decision tree P1). Robust independent review = a **panel of ≥4 fresh perspectives** (Workflow, opt-in), which gives MORE independence than one Opus reviewer (diverse lenses, majority aggregation). When no Workflow opt-in → critic reviews inline + declares residual author-bias honestly. |
 
-**Effect**:
-- `.claude/agents/reviewer.md` — kept as-is.
-- `.claude/agent-memory/reviewer/MEMORY.md` — kept; injected in delegation prompts.
-- This skill is the canonical caller; Lead may still invoke `reviewer` directly outside Phase 4.
+**Effect**: `.claude/agents/reviewer.md` deleted; `agent-memory/reviewer/MEMORY.md` archived under `plans/008-agent-spawn-policy/archive/`. The independence lesson (author≠evaluator, feature 002) is preserved via the panel pattern — see `independent-reviewer-when-self-assessing` memory + `orchestrator-protocol/references/04-agent-selection.md` §Workflow wiring.
 
 ## AC8 decision: `review-patterns` skill — KEEP
 
@@ -299,7 +288,7 @@ Next:
 | `review-patterns` | Step 6 — MANDATORY catalog invocation in standard/full levels (quality or performance mode per diff content) | Lead Reads `references/01-mode-quality.md` or `02-mode-performance.md` manually |
 | `security-review` | Step 7 — MANDATORY dispatch when diff touches auth/payments/secrets/credentials/crypto (gate, not advisory; Cmd VI) | Lead invokes `/security-review` manually before declaring verdict if auto-fire missed |
 | `decision-stress-test` | ⚠️ Conditional — if Step 5 reveals an architectural decision that merits adversarial challenge (e.g., questionable abstraction or library choice) | Lead invokes `/decision-stress-test` manually if doubt warrants it |
-| `explain-changes` | ⚠️ Conditional — if a human reviewer needs a walkthrough of the diff for context | Lead invokes `/explain-changes` manually if requested |
+| `explain-changes` | ⚠️ Conditional — if a human needs a walkthrough of the diff for context | Lead invokes `/explain-changes` manually if requested |
 | `simplify` | ⚠️ Conditional — refactor opportunity surfaced but not mandatory | Lead may invoke `/simplify` post-review if findings warrant |
 
 > Skill-to-skill invocation is **probabilistic** per docs Anthropic + [issue #59968](https://github.com/anthropics/claude-code/issues/59968). Critical auxiliaries in Phase 4 are `review-patterns` (catalog) and `security-review` (gate — MANDATORY DISPATCH even if auto-fire succeeded). Other auxiliaries are best-effort; the fallback column documents manual recovery.
@@ -312,14 +301,15 @@ Next:
 - Tests pass on the assembled branch BEFORE declaring APPROVED (Cmd IV).
 - Spec-drift is flagged + classified, never silently absorbed (Cmd IX — observability).
 - Findings cite `file:line` exactly; no vague "somewhere in the auth module".
+- Independent review = panel ≥4 (Workflow) or inline-with-declared-bias — never a single spawned reviewer (P1).
 
 ## Adaptation intra-phase (Principio 2 — "no siempre más es más")
 
 | Signal | Adaptation |
 |---|---|
-| Mode `light` (trivial feature, 1-2 HUs, no security/perf) | Base checks + drillme Q1 only; skip reviewer agent + review-patterns + security-review |
+| Mode `light` (trivial feature, 1-2 HUs, no security/perf) | Base checks + drillme Q1 only; skip review panel + review-patterns + security-review |
 | Mode `standard` (default, 3-N HUs, no critical area) | Full 5-section + review-patterns quality + drillme 4/4 |
-| Mode `full` (architectural / auth / payments / complexity >60) | Standard + reviewer agent (Opus) + security-review + review-patterns both modes |
+| Mode `full` (architectural / auth / payments / complexity >60) | Standard + review panel ≥4 (Workflow opt-in) + security-review + review-patterns both modes |
 | Doc-only feature (markdown changes, no code) | Quality + Maintainability sections only; skip Performance + Security; drillme Q1 |
 | Bug fix with reproducible test | Correctness section + drillme Q3 (edge case); skip Performance unless bug was performance-related |
 
@@ -330,8 +320,8 @@ Declare adaptation in `review.md` frontmatter (`review_level` + reason).
 - **Edge 1** — HUs marcadas `completed` pero tests fallan en la rama ensamblada → STOP; escalate; do not generate review.md as APPROVED.
 - **Edge 2** — `spec.md` editada después de approved (timestamp post-approval) → revisar contra la versión actual + flag in review.md; the Phase 5 retro decides whether the edit is ratified.
 - **Edge 3** — `review-patterns` no existe (cortada por error) → fallback al checklist embebido + flag in Issues; this should never happen (AC8 KEEP).
-- **Edge 4** — `reviewer` agent invocation falla o timeout → continue with critic-only review; flag in `review.md.reviewer_agent_invoked: failed`; do not block the verdict on agent availability.
-- **Edge 5** — Reviewer agent returns conflicting verdict (e.g., critic = APPROVED, reviewer = NEEDS_CHANGES) → reviewer's verdict wins on architectural/security concerns; critic's wins on operational/test concerns; if irreconcilable → escalate to user.
+- **Edge 4** — Review panel (Workflow) not opted into by the user on a full-level review → critic reviews inline + declares residual author-bias in `review.md.review_panel_invoked: no (inline)`; do not block the verdict on Workflow availability.
+- **Edge 5** — Panel perspectives return conflicting verdicts → majority wins on architectural/security concerns; critic's inline judgment wins on operational/test concerns; if irreconcilable → escalate to user.
 - **Edge 6** — Diff is empty (no commits since spec approved) → STOP; ask if Phase 3 was actually executed.
 
 ## Smell signals
@@ -340,7 +330,7 @@ Declare adaptation in `review.md` frontmatter (`review_level` + reason).
 - ⚠️ NEEDS_CHANGES on >3 consecutive critic runs of the same feature → spec.md or HUs are poorly defined; reopen Phase 1/2.
 - ⚠️ Findings cite line numbers that don't exist in the file → anti-hallucination skipped; redo with verification.
 - ⚠️ `spec_drift: legitimate` proposed in >50% of reviews → planning is not capturing emergent requirements; review the planning process in Phase 5.
-- ⚠️ Reviewer agent invoked on every feature regardless of complexity → KEEP-conditional criterion ignored; cost-blind. Restrict to genuine complexity >60 OR critical area.
+- ⚠️ Review panel invoked on every feature regardless of complexity → KEEP-conditional criterion ignored; cost-blind. Restrict to genuine complexity >60 OR critical area OR author≠evaluator concern.
 
 ## Anti-patterns
 
@@ -350,7 +340,7 @@ Declare adaptation in `review.md` frontmatter (`review_level` + reason).
 | Severity inflation | All findings tagged BLOCKER | Re-classify by Cmd IV blocking criteria; BLOCKER = data loss/security/breaking change/hardcoded secret/fundamental design flaw |
 | Spec drift silently absorbed | `review.md` doesn't mention spec.md delta despite diff diverging | Add Spec-drift section with classification |
 | Skipping security on auth code | Diff touches auth but `security-review` not invoked | Re-run with security-review dispatched (mandatory gate) |
-| Reviewer agent invoked for trivial features | `reviewer_agent_invoked: yes` on light review | Reset to no; KEEP-cond criterion is "complejidad >60 OR critical area", not "every feature" |
+| Review panel invoked for trivial features | `review_panel_invoked: yes` on light review | Reset to no; criterion is "complejidad >60 OR critical area OR author-bias", not "every feature" |
 | Verdict APPROVED with failing tests | base checks (Step 4) red but verdict green | Re-verdict to NEEDS_CHANGES at minimum; tests-passing is a precondition |
 
 ## Embedded fallback (if `review.template.md` missing)
@@ -407,14 +397,14 @@ spec / phase / review_level / verdict / spec_drift / findings_count / created
 
 | # | Cómo |
 |---|---|
-| I | Honest findings sin softening; BLOCKED if BLOCKER exists |
+| I | Honest findings sin softening; BLOCKED if BLOCKER exists; residual author-bias declared when no panel |
 | II | `anti-hallucination` before every finding — no invented file:line |
 | III | Severity inflation anti-pattern blocked; simple by default |
 | IV | APPROVED only if tests pass on assembled branch (blocking gate) |
 | V | Read spec.md + tasks/ + tests/validations BEFORE producing review.md |
 | VI | `security-review` mandatory dispatch on auth/payments/secrets — gate, not advisory |
-| VII | Base checks executed in parallel (Step 4); review-patterns + reviewer agent + security-review may run concurrently in level=full |
-| VIII | Delegation prompts to `reviewer` agent include AC trace + skills + memory blocks (Arch H) |
+| VII | Base checks executed in parallel (Step 4); independent review = panel ≥4 (P1/P3) not a single spawn |
+| VIII | Panel prompts include AC trace + skills + read-only role (Arch H) |
 | IX | Spec-drift detection + classification feeds living-spec loop in Phase 5 (observability) |
 
 ## Verification (post-implementation of this skill)
@@ -422,8 +412,8 @@ spec / phase / review_level / verdict / spec_drift / findings_count / created
 - Smoke: invoke `/critic` on a feature with all HUs closed → produces `review.md` with 5 sections + verdict.
 - Verify `review.md` frontmatter declares `review_level` + reason.
 - Verify findings cite `file:line` (no vague references).
-- Verify `reviewer_agent_invoked` flag matches the level + complexity decision.
-- `bun test ./.claude/hooks/` → 81/81 (this skill is markdown — no hook test impact).
+- Verify `review_panel_invoked` flag matches the level + complexity decision.
+- `bun test ./.claude/hooks/` → green (this skill is markdown — no hook test impact).
 
 ## Output format reminder
 
@@ -435,7 +425,7 @@ When this skill closes a review:
 - review_level: <light|standard|full> (<reason>)
 - Findings: blocker=N major=N minor=N nit=N
 - spec_drift: <none|legitimate|scope_creep|skipped_ac>
-- reviewer agent (Opus): <invoked|skipped> (<reason>)
+- review panel (≥4 perspectives): <invoked (N) | inline | skipped> (<reason>)
 - review-patterns modes: [<quality?>, <performance?>]
 - security-review: <invoked|skipped|n/a>
 - drillme: covered 3/4 canonical Socratic categories
