@@ -1032,6 +1032,22 @@ Requirements per OS:
     method: (values.method as Config["method"]) ?? "auto",
   };
 
+  // Non-interactive guard: askConfirmation() blocks forever without a TTY (e.g.
+  // launched by an agent or in CI), which reads as "the command failed". Fail
+  // fast with guidance instead of hanging.
+  if (
+    (config.execute || config.unlink) &&
+    !config.force &&
+    !process.stdin.isTTY
+  ) {
+    console.error(
+      "\n❌ No interactive terminal and --force not set — this would hang on the\n" +
+        "   confirmation prompt. Re-run non-interactively with --force:\n" +
+        "     bun .claude/commands/sync-claude.ts --execute --backup --force\n",
+    );
+    process.exit(2);
+  }
+
   const projectRoot = getProjectRoot();
   const homeDir = getHomeDir();
 
