@@ -8,7 +8,7 @@ description: SVG-first diagram & chart patterns for self-contained reports + the
 
 How `html-report` embeds **diagrams** (flow, comparison) and **charts** (bars, score, decision matrix) while staying **self-contained**. The generator composes inline SVG by hand — same pattern already proven in the templates (gauge, severity-bar). No charting library, no JS by default.
 
-> **Environment fact (verified 2026-06-03)**: `mmdc` / `npx` / `bunx` / `node` are NOT available in this environment. There is **no Mermaid→SVG auto-render pipeline**. The generator MUST compose the SVG itself; Mermaid source is NOT rendered at runtime unless the JS opt-in path is taken.
+> **Environment fact (re-verified 2026-06-08 via `command -v`)**: `node` / `npx` / `bunx` / `bun` / `python3` / `pandoc` ARE present (`/opt/homebrew/bin`); `typst` / `weasyprint` / `chromium` are absent. (This corrects the prior "2026-06-03: node/npx absent" claim, which was stale.) Consequences: a **generation-time** step (e.g. running Observable Plot or `mmdc` via `npx` to emit SVG, then inlining it) IS now possible. **SVG-by-hand remains the default** — not because runtime is missing, but because it guarantees the artefact is **self-contained with zero generation-time dependencies** (Cmd III). Generation-time tooling is an opt-in that must degrade to the hand path if the package/network is unavailable.
 
 ## Decision rule — SVG-by-hand vs JS opt-in
 

@@ -53,3 +53,9 @@ Run before declaring any `html-report` render done. **Gate semantics: if any ite
 - [ ] **Interactividad** (si la hay): tabs/tooltips sin JS; command = único `<script>` vanilla declarado; `:focus-visible` ring en todo elemento interactivo (navegable por teclado).
 - [ ] **decision layout**: recomendación + confianza arriba; matriz opciones×criterios ponderada legible de un vistazo.
 - [ ] **Persistencia (deliverable)**: si el artefacto debe sincronizarse/commitearse (p.ej. un template del skill), `git check-ignore <path>` devuelve vacío — o hay excepción `!` en `.gitignore`. El patrón `*.html` se ha comido el deliverable 2× (commit 8a85e4a v8 + 007-M1); verifícalo antes de declarar el render entregado.
+
+## Modo dynamic (feature 010 — generador)
+- [ ] **Generación por datos**: el informe se produce desde un `ReportData` JSON vía `render.ts` (no HTML a mano) — baja tokens + consistencia.
+- [ ] **Un solo `<style>`**: charts/componentes inyectan su CSS en el `<style>` global (NO un `<style>` por SVG). Verificar `grep -c '<style' out.html` = 1.
+- [ ] **Fallback sin-JS**: deshabilitar JS → secciones abiertas (`<details open>`), nav por anclas, valores de charts/tabla visibles.
+- [ ] **Tests verdes**: `bun test ./.claude/skills/html-report/scripts/` (render/charts/components) + hooks 100/100 sin regresión.

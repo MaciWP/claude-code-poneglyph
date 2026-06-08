@@ -190,4 +190,22 @@ The canonical smoke test: render the real audit at `.claude/plans/002-claude-con
 
 ---
 
-**Version**: 1.2.0 — dashboard template redesigned (v7/v8): v5 serif-italic masthead + KPI-card body + **color = información** (score health on Mean/Median/Min, counts neutral), shadcn/Raycast language, **dark-first**, fonts Geist + Newsreader + Geist Mono (Google Fonts `<link>`; render no longer pure-offline by design — accepted for client-grade). Section heads = Geist semibold + number chip + hairline. Motion = single page fade. Taste corpus + critique mode (1.1.0) retained. Canonical reference render: `.claude/plans/002-claude-config-deep-audit/report.html`.
+## Modo dynamic (generador determinista — feature 010)
+
+Para informes **interactivos self-contained** (ver/presentar/compartir, PC+móvil) hay un **generador**: produces un JSON (`ReportData`) y un script bun emite **1 HTML** con CSS+JS inline. Baja tokens (datos vs HTML a mano) + consistencia (el diseño vive una vez).
+
+| Pieza | Path |
+|---|---|
+| Contrato de datos | `scripts/contract.ts` (`ReportData`) |
+| Tokens light/dark (jerarquía editorial) | `scripts/theme.ts` |
+| Generador (shell + nav sticky/scrollspy + colapsables + theme toggle) | `scripts/render.ts` |
+| Tabla filtrable + búsqueda | `scripts/components.ts` |
+| Charts SVG + tooltip (Observable Plot opt-in) | `scripts/charts.ts` |
+
+**Uso**: `bun run .claude/skills/html-report/scripts/render.ts < data.json > out.html`
+
+**Cuándo**: informe que el lector **explora** (filtros, charts, nav). Para audit/retro estático largo → `report`; glance dark estático → `glance`; el **dynamic** es el interactivo low-token. **JS permitido** (feature 010) siempre con **fallback sin-JS**: secciones `<details open>`, nav por anclas, valores de charts/tabla visibles. Charts: SVG a mano por defecto; `plotInline()` usa Observable Plot si `npx` disponible y **degrada a mano** si no (artefacto nunca depende de Plot).
+
+---
+
+**Version**: 1.3.0 — dynamic mode (generador determinista en `scripts/`: contract/theme/render/components/charts; JS self-contained con fallback sin-JS; charts híbridos Plot-opt-in; corrige el env-fact obsoleto de visuals-svg-first). · 1.2.0 — dashboard template redesigned (v7/v8): v5 serif-italic masthead + KPI-card body + **color = información** (score health on Mean/Median/Min, counts neutral), shadcn/Raycast language, **dark-first**, fonts Geist + Newsreader + Geist Mono (Google Fonts `<link>`; render no longer pure-offline by design — accepted for client-grade). Section heads = Geist semibold + number chip + hairline. Motion = single page fade. Taste corpus + critique mode (1.1.0) retained. Canonical reference render: `.claude/plans/002-claude-config-deep-audit/report.html`.
