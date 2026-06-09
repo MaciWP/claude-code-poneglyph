@@ -5,7 +5,7 @@ wave: 3
 depends_on: [US1, US2, US3, US4]
 tdd_mode: optional
 estimate: 0.5 session
-status: draft
+status: closed
 ---
 
 | Campo | Valor |

@@ -323,3 +323,5 @@ Detalle completo: report del audit `.claude/plans/002-claude-config-deep-audit/r
 | W3 Orquestación | US8 | `/flow` command (feature-level orchestrator) + `orchestrator-protocol` SIMPLIFICAR (-3 refs duplicadas/obsoletas) |
 | W4 Integración | US9 | CLAUDE.md actualizada (este documento) reflejando estado final |
 | W5 Cierre | US10 | Dogfooding + retro final sobre el meta-refactor |
+
+> **Nota (2026-06-09, audit 011)**: las decisiones `builder`/`reviewer` **KEEP-cond** de W2 (arriba) fueron **superseded por feature 008** — ambos agentes cortados (ver fila Agents en la tabla de inventario). `review-patterns` KEEP sigue válido (consumido inline por `critic`/`build`).

@@ -5,7 +5,7 @@ wave: W1
 depends_on: []
 tdd_mode: skip
 estimate: S
-status: draft
+status: closed
 approved:
 ---
 

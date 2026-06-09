@@ -3,7 +3,7 @@ spec: 001-poneglyph-5phase-workflow
 closed_at: 2026-05-28
 mode_used: full
 phase: 5
-status: open
+status: approved
 retro_level: full
 verdict_phase4: APPROVED_WITH_WARNINGS
 spec_drift: legitimate

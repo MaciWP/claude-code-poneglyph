@@ -106,7 +106,7 @@ absorbs_decision: <nombre>   # opcional — solo si la HU absorbe una decisión 
 ## Verificación post-implementación
 
 - Smoke: <verificación ejecutable>
-- `bun test ./.claude/hooks/` sigue 81/81 (si aplica).
+- `bun test ./.claude/hooks/` sigue green (si aplica).
 
 ## Open questions (a resolver en implementación)
 

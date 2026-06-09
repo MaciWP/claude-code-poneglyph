@@ -219,7 +219,7 @@ Adaptación se declara honestamente en el output (`# Open questions` section o n
 - Smoke: invocar `/scope` sin args → pedir brief al usuario, NO fallar silenciosamente.
 - Auto-activación: en prompt sin `/scope` pero con "necesito hacer X" → la skill se auto-activa via description match.
 - Verificar que `spec.md` resultante valida contra `templates/spec.template.md` (frontmatter + secciones obligatorias presentes).
-- `bun test ./.claude/hooks/` sigue 81/81 (no toca código).
+- `bun test ./.claude/hooks/` sigue green (no toca código).
 
 ## Output format (reminder)
 

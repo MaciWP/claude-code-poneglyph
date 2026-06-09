@@ -4,8 +4,10 @@ created: 2026-06-05
 approved: 2026-06-05
 mode: full
 phase: 1
-status: approved
+status: closed
+closed: 2026-06-09
 refine_note: "v2 (2026-06-05) — REFINE: scope ampliado de 'evitar 1-agente' a 'evitar mal uso + aprovechar bien workflows/teams' (dos caras de la misma moneda)"
+closure_note: "CLOSED 2026-06-09 via audit 011 (ultracode-audit). Minimal-coherent cut (US1/US2/US7/US4/US5) + deferred-HU completion sweep (US3/US6/US9 dead-ref cleanup, US8 version-wording + reviewer-memory archive, US10 verify: grep clean + bun test 101/0). US8 named-memory reconciliation is Windows-path -> no-op on macOS, re-check if working on Windows."
 ---
 
 # Problema

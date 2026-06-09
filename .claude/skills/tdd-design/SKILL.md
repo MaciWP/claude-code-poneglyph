@@ -257,7 +257,7 @@ Declare adaptation in output frontmatter notes: "Mode auxiliary minimal — happ
 - Verify `validations.md` frontmatter declares `test_policy` matching `test-policy.md`.
 - Each TDD-mode HU has ≥1 T{N}.X with "Must fail before impl (red)" annotation.
 - Each validation-mode HU has the 5 categories (or honest skips with reason).
-- `bun test ./.claude/hooks/` sigue 81/81 (this skill is markdown — no test impact).
+- `bun test ./.claude/hooks/` sigue green (this skill is markdown — no test impact).
 
 ## Output format reminder
 

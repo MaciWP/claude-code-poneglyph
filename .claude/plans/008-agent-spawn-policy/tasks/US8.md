@@ -5,7 +5,7 @@ wave: W2
 depends_on: [US1]
 tdd_mode: optional
 estimate: S
-status: draft
+status: closed
 absorbs_decision: AC9-version + reconciliar-memoria
 ---
 

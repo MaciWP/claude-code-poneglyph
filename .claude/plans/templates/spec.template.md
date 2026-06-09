@@ -36,7 +36,7 @@ status: draft
 
 - <Técnico>: <ej. "Bun + TypeScript; no toca runtime code">
 - <Temporal>: <ej. "antes del freeze del 2026-06-15">
-- <Compatibilidad>: <ej. "bun test ./.claude/hooks/ debe seguir 81/81">
+- <Compatibilidad>: <ej. "bun test ./.claude/hooks/ debe seguir green">
 
 # Stakeholders
 

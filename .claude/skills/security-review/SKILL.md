@@ -179,5 +179,5 @@ Supporting files loaded on demand based on task context. Consult the Contents co
 ---
 
 **Version**: 2.0
-**For**: reviewer agent
+**For**: Phase 4 `critic` (Step 7 dispatch for auth/payments/secrets/credentials/crypto). The legacy `reviewer` agent was cut in feature 008.
 **Patterns**: Language-agnostic

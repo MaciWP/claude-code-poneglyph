@@ -435,7 +435,7 @@ Rationale: ...
 - Verify `retro.md` frontmatter declares `retro_level` + `spec_drift` consistent with `review.md`.
 - Verify NO auto-edit of `spec.md` (the file mtime should NOT change during retro; only retro.md is written).
 - Verify `status: closed` is applied to `spec.md` + `tasks/index.md` only after user approval (or at end of full retro level).
-- `bun test ./.claude/hooks/` → 81/81 (this skill is markdown — no hook test impact).
+- `bun test ./.claude/hooks/` → green (this skill is markdown — no hook test impact).
 
 ## Output format reminder
 

@@ -48,7 +48,7 @@ description: Task Classification 🔵🟡🔴 + Parallelization rules + Parallel
 |------|--------|---------|
 | 🔵 Parallel | `A + B + C` | `Read(a) + Read(b) + Grep(c)` |
 | 🟡 Sequential | `A → WAIT → B` | `Read(file) → Edit(file)` |
-| Background | `Task(..., background:true)` | `Task(reviewer, background:true)` |
+| Background | `Task(..., background:true)` | `Task(Explore, background:true)` |
 
 ---
 
@@ -67,6 +67,8 @@ Evaluate after each task:
 ---
 
 ## Seed Wave Patterns
+
+> **Post-feature-008 mapping** — the named agents below (`builder`/`scout`/`reviewer`/`planner`) were **cut**. Read them as their current equivalents: `builder` → `build` skill (Phase 3, inline) or a Workflow impl unit; `scout` → `Explore` (Haiku built-in, read-only); `reviewer` → Phase 4 `critic` / review panel; `planner` → `tech-plan` skill. **Spawn rule**: 1-3 independent units run **inline** (never spawn); these patterns illustrate **≥4-unit** fan-outs → `Workflow`. The patterns themselves remain valid; only the names changed.
 
 Starting templates for the first wave of common task shapes. Adapt the agent/skill mix to the specific task. Each pattern targets high `Parallel Efficiency Score` from wave 1.
 

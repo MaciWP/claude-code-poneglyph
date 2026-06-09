@@ -5,7 +5,7 @@ wave: W2
 depends_on: [US1]
 tdd_mode: optional
 estimate: S
-status: draft
+status: closed
 ---
 
 # US9 — Barrido de refs a agentes muertos en skills auxiliares

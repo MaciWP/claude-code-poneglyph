@@ -35,7 +35,7 @@
     "reframe_direction": "COMBINAR poneglyph + dynamic workflows (NO reemplazo, NO tirar trabajo). Audit busca: qué se complementa, qué solapa, qué de poneglyph aporta valor sobre dynamic workflows built-in (Commandments, output-style, drillme, living-spec loop, etc.)"
   },
   "feature_closed": true,
-  "retro_status": "closed",
+  "retro_status": "approved",
   "us2_residual_closure": "US2 frontmatter quedo draft (agent no cerro); cerrado residualmente en Phase 5. Reincidencia del status-closure gap (feedback_status_close_verification.md)",
   "review_verdict": "APPROVED_WITH_WARNINGS",
   "review_ac_compliance": "8/8",

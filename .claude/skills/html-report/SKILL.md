@@ -92,7 +92,7 @@ When unsure, default to `report` (long-form loses no information; dashboard comp
 
 ### Step 3 — Design quality: frontend-design + taste corpus (AC5)
 
-**Explicitly invoke the builtin `frontend-design` skill** (`Skill('frontend-design')`, or — when this skill runs inside a delegated builder — instruct the builder to `Read` the frontend-design SKILL first). It produces distinctive, production-grade frontend that **avoids the generic AI aesthetic**.
+**Explicitly invoke the builtin `frontend-design` skill** (`Skill('frontend-design')`, or — when this skill runs inside a delegated Workflow unit — instruct that unit to `Read` the frontend-design SKILL first). It produces distinctive, production-grade frontend that **avoids the generic AI aesthetic**.
 
 Then **load the taste corpus** for the measurable bar: `references/taste-hard-rules.md` (spacing/type/color/depth/motion + WCAG) and `references/anti-slop.md` (what to never do). Use them to vet type hierarchy, spacing rhythm, color/contrast restraint, motion, and the absence of AI-slop tells. This combination — official skill + sourced hard rules — is what guarantees the output is polished, not template-flat.
 

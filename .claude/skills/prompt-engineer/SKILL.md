@@ -71,7 +71,7 @@ Before sending `Agent(subagent_type=…, prompt=…)`:
 
 ### Context 4 — Audit an inter-agent communication
 
-When a prompt flows between agents (planner → builder, builder → reviewer) or between skills, run the rubric against the handoff: is intent preserved? Are constraints carried forward? Is the deliverable specified in a way the receiving side can verify?
+When a prompt flows between agents (Lead → Workflow unit, or skill → skill, e.g. `build` → `critic`) or in a generator→validator handoff, run the rubric against the handoff: is intent preserved? Are constraints carried forward? Is the deliverable specified in a way the receiving side can verify?
 
 ## When to Use
 

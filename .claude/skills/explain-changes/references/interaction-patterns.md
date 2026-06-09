@@ -33,7 +33,7 @@ Never close with a generic "si quieres te explico mas" — be specific.
 | "sigue con [otro fichero/commit]" | Re-scope | Treat as new input, run full workflow on the new target |
 | "aplica el patron a [otro caso]" | Apply | Read the new target, identify if same pattern fits, walk through. If it does NOT fit, say so explicitly |
 | "ya entiendo" / "vale" / "gracias" | Stop | Stop. No closing summary. One-line acknowledgment max |
-| "haz el cambio" / "implementalo" | Out of scope | This skill is read-only. Recommend invoking the builder agent |
+| "haz el cambio" / "implementalo" | Out of scope | This skill is read-only. Recommend the `build` skill (Phase 3) |
 | "y este otro fichero?" + path | Re-scope | Same as "sigue con" |
 
 ## Focused Deep-Dive
@@ -120,10 +120,10 @@ If the user asks to MODIFY code, DECIDE between alternatives, AUDIT quality, etc
 
 | User wants | Redirect to |
 |---|---|
-| "cambia esto" | builder agent |
+| "cambia esto" | `build` skill (Phase 3) |
 | "esta bien hecho?" | `review-patterns` skill |
 | "deberiamos usar A o B?" | `decide` skill |
 | "encuentra el bug" | `Skill('diagnostic-patterns')` (Lead-invoked) |
-| "haz tests" | builder agent |
+| "haz tests" | `build` skill (Phase 3) |
 
 State the redirect briefly, then stop. Do not also try to do the redirected task.

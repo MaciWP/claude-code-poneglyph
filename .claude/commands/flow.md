@@ -289,7 +289,7 @@ Next:
 - Smoke `/flow --standard "add validation hook"` → 5 phases with 2 hard gates; produces all artefacts.
 - Smoke `/flow --resume 001-foo` → reads state.json + continues from `current_phase`.
 - `state.json` schema validates against `templates/state.template.json` (when US1 creates it).
-- `bun test ./.claude/hooks/` → 81/81 (this command is markdown — no hook test impact).
+- `bun test ./.claude/hooks/` → green (this command is markdown — no hook test impact).
 
 ## Commandments cubiertos
 

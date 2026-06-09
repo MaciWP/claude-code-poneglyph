@@ -74,6 +74,19 @@ The "Suggested skills to Read (for delegation)" column lists `.claude/skills/<na
 | **Tiered Build** | Lead `Skill('tech-plan')` Mode B contracts → inline (or `Workflow` ≥4) | complexity 45-60, 2-3 domains with shared interfaces |
 | **Team Parallel** | Team mode (experimental) | 3+ independent domains negotiating interfaces, complexity >60 |
 
+### Workflow wiring
+
+How the cut `builder`/`reviewer`/`scout` capabilities map onto the post-008 model, and where `Workflow` fan-out is the right primitive:
+
+| Capability (was) | Now | Fan-out trigger |
+|---|---|---|
+| `builder` (implement) | `build` skill inline (1-3 HUs) | ≥4 independent HUs → `Workflow` (per-unit `isolation: 'worktree'` on file overlap) |
+| `reviewer` (validate) | `critic` skill inline | robust / critical area → **independent review panel ≥4** via `Workflow` (each agent a distinct lens; ≥majority must confirm) |
+| `scout` (explore) | `Explore` (built-in, Haiku) | ≥4 independent exploration sweeps → `Workflow` |
+| generator→validator | `pipeline(items, find, verify)` inside one `Workflow` | intra-workflow Four-Eyes — NOT a new spawn decision (spawn-tree P7) |
+
+The **panel ≥4** pattern is what replaces the cut `reviewer` for high-stakes review (lesson from feature 002: author ≠ evaluator). `critic` references this section as its dispatch target. Worked example: `.claude/workflows/ultracode-audit.js` (find→verify pipeline + cross-debate panel over a shared digest).
+
 ## Parallelization & Batch Operations
 
 When delegating or reading, decide PARALLEL vs SEQUENTIAL per call, not per session. Parallelize everything independent; sequence only on real dependency.

@@ -171,4 +171,4 @@ Covers: Error Analysis, Root Cause Analysis, Logging, Debugging Techniques, Post
 ---
 
 **Version**: 2.0
-**For**: the Lead orchestrator (during error recovery) and the builder agent
+**For**: the Lead orchestrator (during error recovery) + Phase 3 `build` skill (inline error diagnosis). The legacy `builder` agent was cut in feature 008.

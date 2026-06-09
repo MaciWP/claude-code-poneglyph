@@ -3,7 +3,8 @@ spec: 008-agent-spawn-policy
 created: 2026-06-05
 approved: 2026-06-05
 mode: full
-status: approved
+status: closed
+closed: 2026-06-09
 phase: 2
 total_us: 10
 dag_complete: true

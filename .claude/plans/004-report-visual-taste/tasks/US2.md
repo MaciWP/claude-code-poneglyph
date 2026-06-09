@@ -5,7 +5,7 @@ wave: 1
 depends_on: []
 tdd_mode: optional
 estimate: 0.5 session
-status: draft
+status: closed
 ---
 
 | Campo | Valor |

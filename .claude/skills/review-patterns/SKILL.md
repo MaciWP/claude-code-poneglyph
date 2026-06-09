@@ -80,5 +80,5 @@ Both modes produce structured output. Quality mode uses `Code Quality Review: [C
 ---
 
 **Version**: 1.0
-**For**: reviewer, builder agents
+**For**: Phase 4 `critic` (Step 6 dispatch) + Phase 3 `build` skill (inline quality-mode). The legacy `reviewer`/`builder` agents were cut in feature 008.
 **Patterns**: Language-agnostic

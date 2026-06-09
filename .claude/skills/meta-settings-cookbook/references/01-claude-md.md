@@ -48,9 +48,11 @@ Loading: walks UP directory tree from cwd. `CLAUDE.local.md` appended after `CLA
 `@path/to/file` — expands file inline (max 5 hops deep). Use for splitting large CLAUDE.md:
 
 ```markdown
-@.claude/rules/coding-standards.md
-@.claude/rules/api-patterns.md
+@.claude/rules/<your-rule>.md
+@.claude/rules/<another-rule>.md
 ```
+
+> Illustrative paths — replace with your project's actual rule files. (These example names are not real poneglyph rules.)
 
 ## Gotchas
 

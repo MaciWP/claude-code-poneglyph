@@ -5,7 +5,7 @@ wave: W4
 depends_on: [US4, US5]
 tdd_mode: optional
 estimate: M
-status: draft
+status: closed
 approved:
 ---
 

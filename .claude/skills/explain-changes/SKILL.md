@@ -33,11 +33,11 @@ Every claim is grounded — in the codebase via Read/Grep/LSP, or in canonical d
 
 | Situation | Use instead |
 |---|---|
-| User already understands the change and asks "fix it" | Builder agent |
+| User already understands the change and asks "fix it" | `build` skill (Phase 3) |
 | User wants quality assessment of the change | `review-patterns` skill |
 | User wants to decide between approaches | `decide` skill |
 | Pure debugging of a runtime error | `Skill('diagnostic-patterns')` invoked by the Lead |
-| User wants to MODIFY the code | Builder agent (this skill is read-only) |
+| User wants to MODIFY the code | `build` skill (Phase 3) — this skill is read-only |
 
 ## Input Resolution
 
@@ -152,7 +152,7 @@ Detail per pattern (focused Q&A, re-scope, cancel, reformulation): `${CLAUDE_SKI
 | Citar StackOverflow / blog post como autoritativo | Only canonical sources (see verification-rules.md) |
 | Inventar URLs de documentacion | Verify URL via WebFetch before citing |
 | Reporte exhaustivo cuando el cambio es trivial | Calibrate depth to change complexity |
-| Modificar codigo "para arreglar lo que no entiende" | This skill is read-only — delegate to builder |
+| Modificar codigo "para arreglar lo que no entiende" | This skill is read-only — use the `build` skill (Phase 3) to make changes |
 | Regenerar el reporte completo en cada follow-up | Focused Q&A only re-runs the relevant verification |
 | Inventar el commit message si no esta disponible | Say "no commit message available" explicitly |
 

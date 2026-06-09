@@ -142,6 +142,40 @@ describe("detectInjections — os.system", () => {
   });
 });
 
+// Coverage for the 7 patterns previously untested (audit 011 / Cmd VI).
+describe("detectInjections — additional injection patterns", () => {
+  test("detects spawn() with variable arg as medium", () => {
+    expect(hasMatch(detectInjections("spawn(userCmd)"), "spawn", "medium")).toBe(true);
+  });
+
+  test("detects document.write() as medium", () => {
+    expect(hasMatch(detectInjections("document.write(payload)"), "document", "medium")).toBe(true);
+  });
+
+  test("detects Python exec(compile()) as high", () => {
+    expect(hasMatch(detectInjections("exec(compile(src, '<s>', 'exec'))"), "compile", "high")).toBe(true);
+  });
+
+  test("detects Python __import__() as high", () => {
+    expect(hasMatch(detectInjections("__import__(modName)"), "__import__", "high")).toBe(true);
+  });
+
+  test("detects subprocess shell=True as high", () => {
+    expect(hasMatch(detectInjections("subprocess.run(cmd, shell=True)"), "subprocess", "high")).toBe(true);
+  });
+
+  test("detects pickle.loads() as medium", () => {
+    expect(hasMatch(detectInjections("pickle.loads(data)"), "pickle", "medium")).toBe(true);
+  });
+
+  test("detects bare system() call as medium", () => {
+    const found = detectInjections("system(userCmd)").some(
+      (f) => f.patternName === "system() call" && f.severity === "medium",
+    );
+    expect(found).toBe(true);
+  });
+});
+
 describe("detectInjections — medium severity", () => {
   test("detects innerHTML assignment as medium", () => {
     expect(hasMatch(detectInjections("element.innerHTML = content"), "innerHTML", "medium")).toBe(true);

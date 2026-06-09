@@ -326,7 +326,7 @@ References updated across the repo (CLAUDE.md §When to delegate, orchestrator-p
 
 ## Verification (post-implementation of this skill)
 
-- `bun test ./.claude/hooks/` sigue 81/81 (this skill is markdown — no test impact).
+- `bun test ./.claude/hooks/` sigue green (this skill is markdown — no test impact).
 - Skill registered by harness — system-reminder shows `tech-plan` con `name: tech-plan` y description con "Use when:" + "Keywords -".
 - `Glob .claude/skills/planner-protocol*` → vacío (cut completed).
 - `Glob .claude/commands/planner.md` → vacío (wrapper cut).

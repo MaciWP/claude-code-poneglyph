@@ -1,7 +1,7 @@
 ---
 id: 007-report-template-v2
 created: 2026-06-03
-approved:
+approved: 2026-06-03
 mode: standard
 phase: 1
 status: closed

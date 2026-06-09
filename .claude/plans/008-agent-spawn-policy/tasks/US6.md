@@ -5,7 +5,7 @@ wave: W2
 depends_on: [US1]
 tdd_mode: optional
 estimate: M
-status: draft
+status: closed
 absorbs_decision: OQ4-panel-review-condicion-dura
 ---
 

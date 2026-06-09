@@ -35,9 +35,9 @@ Structure internally:
 
 ### Step 2: Launch 3 Perspectives in Parallel
 
-Delegate to 3 agents simultaneously. Each one receives the brief + their perspective:
+Adopt 3 independent perspectives in parallel — **inline** in the main session (1-3 units never spawn per the canonical spawn tree in `orchestrator-protocol`; the Lead runs each lens in one pass). Each receives the brief + its perspective:
 
-#### Pragmatist Perspective (builder)
+#### Pragmatist Perspective
 ```
 You are the PRAGMATIST in a strategic decision.
 
@@ -61,7 +61,7 @@ Respond in format:
 - ...
 ```
 
-#### Innovator Perspective (planner Mode B)
+#### Innovator Perspective
 ```
 You are the INNOVATOR in a strategic decision.
 
@@ -85,7 +85,7 @@ Respond in format:
 - ...
 ```
 
-#### Critic Perspective (reviewer)
+#### Critic Perspective
 ```
 You are the CRITIC in a strategic decision.
 
@@ -120,7 +120,7 @@ After receiving the 3 perspectives, synthesize:
 
 ### Step 4: Generate HTML
 
-Delegate to builder: "Generate a self-contained HTML file with the decision memo."
+Generate the HTML **inline** via the `html-report` skill: a self-contained file with the decision memo.
 
 The HTML must:
 - Use the html-report system template `.claude/skills/html-report/templates/decision.template.html` as base (single visual system — Cmd X; `memo.html` is retained as an offline fallback only)

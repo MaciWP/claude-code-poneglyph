@@ -5,7 +5,7 @@ wave: W2
 depends_on: [US2]
 tdd_mode: forced
 estimate: L
-status: draft
+status: closed
 approved:
 absorbs_decision: generador-determinista
 ---

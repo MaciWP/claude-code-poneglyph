@@ -5,7 +5,7 @@ wave: W3
 depends_on: [US3]
 tdd_mode: optional
 estimate: M
-status: draft
+status: closed
 approved:
 ---
 

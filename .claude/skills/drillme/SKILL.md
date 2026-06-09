@@ -249,7 +249,7 @@ Catalog stems from `decision-stress-test` philosophy (5 adversarial techniques +
 - Smoke: `/drillme` with no args + recent `spec.md` in conversation → loads Phase 1 bank + canonical catalog.
 - Auto-activation: prompt with "valida esto" or "challenge my decision" → skill activates.
 - Invoked from another skill (US2-US7) → fires when probabilistic invocation succeeds; the Lead invokes manually as fallback when not.
-- `bun test ./.claude/hooks/` sigue 81/81 (no toca código).
+- `bun test ./.claude/hooks/` sigue green (no toca código).
 
 ## Content map
 
