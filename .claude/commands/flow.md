@@ -17,7 +17,7 @@ End-to-end feature lifecycle: invokes the 6 phase skills (`scope`, `tech-plan`, 
 | `/flow <task>` | Auto-triage complexity → resolve mode (minimal/standard/full) → execute |
 | `/flow --minimal <task>` | Force minimal: Phase 3 direct (no spec/tasks/tests artefacts); Phase 4 light |
 | `/flow --standard <task>` | Force standard: all 5 phases with hard gates 1→2 and 2→3 |
-| `/flow --full <task>` | Force full: 5 phases with deep drillme + decision-stress-test in Phase 2 + reviewer agent in Phase 4 |
+| `/flow --full <task>` | Force full: 5 phases with deep drillme + decision-stress-test in Phase 2 + independent review panel (≥4 via Workflow) in Phase 4 |
 | `/flow --resume <slug>` | Read `.claude/plans/<slug>/state.json` and continue from `current_phase` |
 
 ## Lead workflow (executed by this command)
@@ -193,9 +193,9 @@ for HU in DAG-ordered-pending:
   on STOP-escalate → break loop + report
 ```
 
-Parallel HUs (independent leaves of the DAG) → may invoke multiple `build` calls in the same Lead message if their `files` are disjoint AND no shared state. Standard rule applies (≥5 files OR architectural → delegate to `builder` agent from inside `build` skill).
+Parallel HUs (independent leaves of the DAG) → may invoke multiple `build` calls in the same Lead message if their `files` are disjoint AND no shared state. Standard spawn rule applies: a single HU — even ≥5 files — runs **inline**; ≥4 independent HUs in a wave → `Workflow` (opt-in).
 
-> **Dynamic workflows engine (≥4 parallel HUs)** — when the DAG has **≥4 independent HUs** in a wave (the ≥4 agent-count rule), prefer the **Workflow tool** (GA since CC 2.1.154) over hand-spawned parallel `build` calls: it orchestrates the fan-out in the background, with `isolation: 'worktree'` per HU when files would collide, and `/workflows` to monitor. For 1-3 parallel HUs, the Lead runs `build` inline (spawning <4 agents is wasted cost). poneglyph first dogfooded this in feature 003. The Workflow tool requires explicit user opt-in (keyword "workflow" or direct request) — do NOT auto-launch it.
+> **Dynamic workflows engine (≥4 parallel HUs)** — when the DAG has **≥4 independent HUs** in a wave (the ≥4 agent-count rule), prefer the **Workflow tool** (GA since CC 2.1.154) over hand-spawned parallel `build` calls: it orchestrates the fan-out in the background, with `isolation: 'worktree'` per HU when files would collide, and `/workflows` to monitor. For 1-3 parallel HUs, the Lead runs `build` inline (spawning <4 agents is wasted cost). poneglyph first dogfooded this in feature 003. The Workflow tool requires explicit user opt-in (keyword "ultracode" or direct request; "workflow" no longer triggers since CC 2.1.160) — do NOT auto-launch it.
 
 ##### Phase 4 — critic
 
@@ -215,7 +215,7 @@ Invoke `Skill('retro')`. Produces `retro.md`. Captures promotions (pending appro
 
 After user reviews retro.md:
 
-- Approved promotions → Lead writes target file (default-allow) or delegates to `builder` if ≥5 files.
+- Approved promotions → Lead writes the target file inline (default-allow).
 - Approved living-spec diff → patch `spec.md` with note "v2 — delta from retro <slug>".
 - `state.json.retro_status = "approved"`, `feature_closed = true`.
 - `spec.md` + `tasks/index.md` frontmatter `status: closed`.
@@ -254,7 +254,7 @@ Next:
 |---|---|---|---|---|---|---|
 | minimal | skip | skip | skip | direct | light | skip or light |
 | standard | full | full | full | full | standard | standard |
-| full | full + 3 perspectives | full + decision-stress-test | full + property-based opt-in | full + builder agent delegation per criterion | full + reviewer agent (Opus) + security-review | full + Commandments forensics if violation |
+| full | full + 3 perspectives | full + decision-stress-test | full + property-based opt-in | full + inline build (Workflow if ≥4 HUs) | full + independent review panel (≥4 via Workflow) + security-review | full + Commandments forensics if violation |
 
 ## Edge cases
 

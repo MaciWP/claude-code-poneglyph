@@ -23,7 +23,7 @@ When active:
 Activate Lead Mode for projects/sessions that benefit from orchestration:
 
 - Multiple parallel domains with genuinely independent work
-- Architectural changes touching ≥5 files where planning matters
+- Architectural or multi-domain changes where up-front planning matters
 - Long-running multi-step tasks where context preservation across delegations beats single-agent execution
 - Worktree-isolated parallel feature development
 
@@ -74,23 +74,23 @@ Default-allow philosophy: the Lead acts freely except on real danger signals. No
 
 | Condition | Action |
 |-----------|--------|
-| ≥5 files to modify | Delegate to `builder` (preceded by `Skill('tech-plan')` if complexity >60) |
-| Architectural change (cross-module, new interface, major refactor) | Invoke `Skill('tech-plan')` then delegate to `builder` |
+| ≥5 files of ONE unit | **Inline** (P2 — "isolation" is not a spawn trigger); precede with `Skill('tech-plan')` if complexity >60 |
+| Architectural change (cross-module, new interface, major refactor) | Invoke `Skill('tech-plan')` then act **inline** (fan out to a `Workflow` only at ≥4 independent units) |
 | 1-4 files, bounded change | Lead acts directly — no declaration required |
-| Sensitive path (`.env`, `*.lock`, `package.json`, `.claude/settings.json`, `secrets/`, `credentials/`) | Declare inline `sensitive: <reason ≥8 chars>` or delegate to the builder |
+| Sensitive path (`.env`, `*.lock`, `package.json`, `.claude/settings.json`, `secrets/`, `credentials/`) | Declare inline `sensitive: <reason ≥8 chars>` |
 | Destructive/irreversible operation (`rm -rf`, force push, db migration, schema change) | Never run directly; delegate with a clear reason or escalate to user |
 
 ### Trigger B — Delegate exploration
 
-Default exploration agent: `Explore` (built-in, Haiku, fast & cheap). Reach for the custom `scout` (Sonnet, ~5× cost) only when Explore's limits would actually hurt the task.
+Exploration primitive: `Explore` (built-in, Haiku, fast & cheap) — the only one. The custom `scout` agent was **cut in feature 008**; massive read-only exploration uses `Explore`, deeper single-unit synthesis runs inline (Lead `Read`), and ≥4 independent exploration units fan out via `Workflow`.
 
 | Volume / Complexity | Action |
 |-----------------------|--------|
 | LOW + LOW (1-2 files, direct read) | Lead `Read` directly |
-| LOW + HIGH (1-2 files, requires LSP/semantics) | `Explore` (default); `scout` only if full-file synthesis needed |
+| LOW + HIGH (1-2 files, requires LSP/semantics) | Lead `Read`/LSP inline, or `Explore` |
 | HIGH + LOW (≥3 files, bulk read without reasoning) | `Explore` — best fit |
-| HIGH + HIGH (≥3 files, cross-file synthesis / open-ended analysis) | `scout` (Sonnet) |
-| Design-doc audit, cross-file consistency check, full-file analysis past Explore's window | `scout` (Sonnet) |
+| HIGH + HIGH (≥3 files, cross-file synthesis / open-ended analysis) | `Explore` (or inline if it fits one pass; ≥4 independent sweeps → `Workflow`) |
+| Design-doc audit, cross-file consistency check, full-file analysis | `Explore`; ≥4 independent units → `Workflow` |
 
 The discriminator is read window + synthesis depth, not WebSearch availability (both have it).
 

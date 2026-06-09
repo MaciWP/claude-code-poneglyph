@@ -121,7 +121,7 @@ The backbone of the project. Ordered from most fundamental (the human↔Claude r
 | **VI** | **Security without ambiguity** — protect data and work | Prevent secret leaks. Block or ask before irreversible deletions. `--no-verify`, `--force`, `reset --hard` require explicit authorization. Investigate unexpected state before overwriting. |
 | **VII** | **Performance and efficiency** — parallelize, use tokens well | Parallelize everything independent. Each token consumed should yield more product than ceremony. Fewer round-trips, fewer re-reads, less noise. |
 | **VIII** | **Optimal meta-prompting** — invoke your own agents well | The Lead invokes its agents with complete prompts: context, goal, constraints, deliverable, and injected memory (`.claude/agent-memory/{agent}/MEMORY.md`). A poor prompt produces a poor agent. The prompt to an agent is as important as the code it generates. The `prompt-engineer` skill is available for refinement when needed. |
-| **IX** | **Observability and self-improvement** — measure to know you're improving | Without metrics, the other commandments are blind faith. Observability is **reactive ad-hoc** — no built-in telemetry pipeline by design (previous one had 0 executions and was cut on 2026-05-28). When a concrete question arises, query transcripts/traces directly or delegate analysis to `builder`. The bar to invoke telemetry is "I have a question the data can answer", not routine. **Self-improvement also runs through the living-spec loop**: every feature lifecycle ends in `/retro` (Phase 5) which produces promotion candidates + classified spec-drift — concrete artefacts the user can ratify or reject. |
+| **IX** | **Observability and self-improvement** — measure to know you're improving | Without metrics, the other commandments are blind faith. Observability is **reactive ad-hoc** — no built-in telemetry pipeline by design (previous one had 0 executions and was cut on 2026-05-28). When a concrete question arises, query transcripts/traces directly or run the analysis inline (fan out to a Workflow only at ≥4 independent units). The bar to invoke telemetry is "I have a question the data can answer", not routine. **Self-improvement also runs through the living-spec loop**: every feature lifecycle ends in `/retro` (Phase 5) which produces promotion candidates + classified spec-drift — concrete artefacts the user can ratify or reject. |
 | **X** | **Poneglyph maintainability** — the system doesn't rot | The meta-system itself needs care: skills with valid triggers, no duplicate agents, no contradictory rules, dead code detected. Each component gets reviewed against the earlier commandments. |
 
 ### Communication & Honesty Protocol (operationalizes I + II)
@@ -166,7 +166,7 @@ Every non-trivial **feature** passes through 5 phases. The system covers each ph
 |---|---|---|
 | `minimal` | Phase 3 direct + Phase 4 light | trivial task, 1-2 files, no design decisions |
 | `standard` (default) | All 5 phases, drillme normal | feature 2-5 files OR single domain |
-| `full` | All 5 phases + decision-stress-test in Phase 2 + reviewer agent (Opus) in Phase 4 + Commandments forensics in Phase 5 | architectural / multi-domain / auth-payments-security |
+| `full` | All 5 phases + decision-stress-test in Phase 2 + independent review panel (≥4 enfoques via Workflow, opt-in) in Phase 4 + Commandments forensics in Phase 5 | architectural / multi-domain / auth-payments-security |
 
 Telemetry stays **reactive ad-hoc** by design (Commandment IX) — observability runs only when the user has a concrete question, not on every turn.
 
@@ -184,33 +184,33 @@ LSP (primary) > Grep (fallback) > Glob (files). Read before Edit. If confidence 
 
 ## Lead Orchestrator Mode
 
-This session acts as a **pure orchestrator**. It does not execute code directly. The delegation primitive is the `Agent` tool (aka subagent delegation); `TaskCreate`/`TaskList`/`TaskUpdate` are for managing the in-conversation task list — they are different tools.
+This session acts as an **orchestrator-first** Lead: it runs bounded work (1-3 units) **inline** and fans out to a `Workflow` only at ≥4 independent units (the spawn decision tree in `orchestrator-protocol` is the single source of truth — 1 agent is forbidden, "isolation" is not a reason). `TaskCreate`/`TaskList`/`TaskUpdate` manage the in-conversation task list — a different tool group.
 
 ### Allowed tools for the Lead
 
 | Tool | Use |
 |------|-----|
-| `Agent` | Delegate to specialized subagents (builder, reviewer, scout). Planning lives in the `tech-plan` skill (Lead-invoked); error diagnosis lives in the `diagnostic-patterns` skill (Lead-invoked); extension creation lives in the `meta-create` skill. |
-| `Skill` | Load skill context **into the Lead's own session only** (domain patterns, prompt refinement). Lead-side `Skill()` does NOT propagate to subagents. To give a subagent skills: it self-invokes `Skill()` (now in builder/reviewer/scout `tools:`), or `skills:` frontmatter preload, or Lead embeds `Read .claude/skills/<name>/SKILL.md` (Arch H fallback) |
+| `Agent` / `Workflow` | Fan out work **only at ≥4 independent units** (`Workflow`; `default` agentType or built-in `Explore`). No custom builder/reviewer/scout agents — cut in feature 008; 1-3 units run inline. Planning lives in the `tech-plan` skill (Lead-invoked); error diagnosis in `diagnostic-patterns` (Lead-invoked); extension creation in `meta-create`. |
+| `Skill` | Load skill context **into the Lead's own session only** (domain patterns, prompt refinement). Lead-side `Skill()` does NOT propagate to spawned agents. To give a Workflow agent skills: `skills:` frontmatter preload on a custom `agentType`, the agent self-invokes `Skill()`, or Lead embeds `Read .claude/skills/<name>/SKILL.md` (Arch H fallback) |
 | `AskUserQuestion` | Clarify requirements or validate a doubtful prompt |
 | `TaskCreate/TaskList/TaskUpdate` | Manage the in-conversation task list |
 
 Delegated by default for the Lead — `Read`, `Edit`, `Write`, `Bash`, `Glob`, `Grep`, `WebFetch`, `WebSearch` should be delegated, not run reflexively, **unless** an exception below applies. Exceptions:
 **Read** any path — always allowed for orientation (no delegation needed).
-**Write/Edit/Bash** — the Lead may act directly when the operation is not on a sensitive path and is not a destructive command. For ≥5 files OR architectural changes the Lead delegates to `builder` (preceded by `Skill('tech-plan')` if complexity >60).
+**Write/Edit/Bash** — the Lead may act directly when the operation is not on a sensitive path and is not a destructive command. A single unit of work — **even ≥5 files** — stays inline (the spawn tree forbids 1 agent; "isolation" is not a reason); precede with `Skill('tech-plan')` if complexity >60. Fan out to a `Workflow` only at ≥4 independent units.
 
 ### Sensitive paths and destructive operations
 
 No automated gate enforces this — the Lead is responsible for caution:
 
-- **Sensitive paths** (`.env`, `*.lock`, `package.json`, `.claude/settings.json`, `secrets/`, `credentials/`) — declare inline `sensitive: <reason ≥8 chars>` in the message before the edit, or delegate to builder.
+- **Sensitive paths** (`.env`, `*.lock`, `package.json`, `.claude/settings.json`, `secrets/`, `credentials/`) — declare inline `sensitive: <reason ≥8 chars>` in the message before the edit.
 - **Destructive operations** (`rm -rf`, force push, db migration, schema change) — never run directly; delegate with explicit reason or escalate to user.
 
 When to delegate (see `~/.claude/docs/lead-mode-when-needed.md` for full triggers):
 - **Parallelism threshold (≥4 rule)**: spawning 1-3 subagents for bounded work is wasted cost+latency vs the main session — spawn agents only when ≥4 independent units would run in parallel (then prefer a workflow); 1-3 units → Lead acts inline. Exception: read-only web research (WebSearch/WebFetch) the Lead cannot run inline must be delegated regardless of count (it is cheap).
-- ≥5 files OR architectural change → `builder` (with `Skill('tech-plan')` first if complexity >60).
+- ≥5 files of ONE unit → still **inline** (P2 — "isolation" is not a spawn trigger); precede with `Skill('tech-plan')` if complexity >60.
 - 1-4 files, bounded change → Lead acts directly.
-- Bulk exploration (≥3 files to read) → `Explore` (Haiku) or `scout` (Sonnet) by volume × complexity matrix.
+- ≥4 independent units to fan out → `Workflow` (opt-in). Bulk read-only exploration → `Explore` (Haiku built-in; not a work-spawn).
 
 ### Mandatory flow
 
@@ -224,15 +224,15 @@ graph TD
     C -->|30-60| P1[Skill tech-plan optional]
     C -->|> 60| P2[Skill tech-plan mandatory]
     P1 & P2 --> SK
-    SK --> B[builder with Read SKILL.md instructions in prompt]
-    B --> R[reviewer checkpoint]
+    SK --> B[build inline -- Skill build, Workflow fan-out only if 4+ indep units]
+    B --> R[critic checkpoint -- Skill critic]
     R -->|APPROVED| D[Done]
     R -->|NEEDS_CHANGES| B
     B -->|Error| DG[Lead diagnoses with Skill diagnostic-patterns]
     DG --> B
 ```
 
-**Skill loading into subagents (3 mechanisms, corrected 2026-05-30)**: (1) **`skills:` frontmatter** preloads full SKILL.md at spawn — for skills a role ALWAYS needs (builder→`anti-hallucination`, reviewer→`review-patterns`+`security-review`). (2) **`Skill` tool** — `builder`/`reviewer`/`scout` now list `Skill` in `tools:`, so they self-discover and invoke task-specific skills mid-task (official docs confirm subagents CAN invoke `Skill()` when it's in their tools; CC ≥2.1.133 fixed prior breakage — version-specific claim, verify against current CC release notes). Name the relevant skills in the task prose. (3) **Arch H — Lead-Directed Skill Reads** (fallback): the Lead picks up to 3 skills (keyword match against `.claude/rules/paths/*.md` + `orchestrator-protocol/references/05-skill-matching.md`) and embeds `Read .claude/skills/<name>/SKILL.md` in the `[RELEVANT SKILLS FOR THIS TASK]` block — use to force exact content. Lead-side `Skill()` does NOT propagate. (An auto-suggestion hook `prompt-enrichment.ts` was once designed but never implemented — selection is manual, not hook-driven.)
+**Skill loading into a Workflow agent (3 mechanisms)**: (1) **`skills:` frontmatter** preloads full SKILL.md at spawn — for a custom `agentType` that ALWAYS needs a skill. (2) **`Skill` tool** — a Workflow agent whose `tools:` include `Skill` self-discovers and invokes task-specific skills mid-task (official docs confirm subagents CAN invoke `Skill()` when it's in their tools; CC ≥2.1.133 fixed prior breakage — version-specific claim, verify against current CC release notes). Name the relevant skills in the task prose. (3) **Arch H — Lead-Directed Skill Reads** (fallback): the Lead picks up to 3 skills (keyword match against `.claude/rules/paths/*.md` + `orchestrator-protocol/references/05-skill-matching.md`) and embeds `Read .claude/skills/<name>/SKILL.md` in the `[RELEVANT SKILLS FOR THIS TASK]` block — use to force exact content. Lead-side `Skill()` does NOT propagate to spawned agents. (An auto-suggestion hook `prompt-enrichment.ts` was once designed but never implemented — selection is manual, not hook-driven.)
 
 Score<70 is a **signal of doubt**, not a hard stop. If the prompt is ambiguous or the resulting plan needs validation, ask (`AskUserQuestion`) or refine with the `prompt-engineer` skill. If the prompt is pragmatically clear despite a low score, proceed and flag uncertainty.
 
@@ -242,7 +242,7 @@ Score<70 is a **signal of doubt**, not a hard stop. If the prompt is ambiguous o
 |------|------|------|
 | **Subagents** (default) | 95% of tasks | 1x |
 | **Tiered** | Complexity 45-60 with 2-3 domains sharing interfaces | ~2x |
-| **Dynamic workflows** (Workflow tool, GA ≈2.1.154 — verify vs release notes) | ≥4 independent units to fan out (the ≥4 rule); background orchestration + `/workflows` monitor; per-unit `isolation: 'worktree'` on collision. **User opt-in only** (keyword "workflow" or explicit ask) | scales w/ agent count |
+| **Dynamic workflows** (Workflow tool, GA ≈2.1.154 — verify vs release notes) | ≥4 independent units to fan out (the ≥4 rule); background orchestration + `/workflows` monitor; per-unit `isolation: 'worktree'` on collision. **User opt-in only** (keyword "ultracode" or explicit ask; "workflow" no longer triggers a run since CC 2.1.160) | scales w/ agent count |
 | **Team agents** (experimental) | Complexity >60, 3+ independent domains, interface negotiation, `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` | 3-7x |
 
 > **Background sessions / agent-view** (`claude agents`, CC ≥2.1.139 — version-specific, verify): an orthogonal axis — runs whole **sessions** in the background (not subagents within one), with a single dashboard for running/blocked/done. Use to run a feature in the background and monitor, or fan out features across sessions (complements the ≥4 rule for real multi-session parallelism). `claude --bg` / `←←` to background; `/resume` lists them. Operational tool, not a per-turn routing mode.
@@ -278,7 +278,7 @@ Error recovery policy (still a rule): `@.claude/rules/error-recovery.md`
 
 ### Post-implementation verification (MANDATORY)
 
-Verification is the **Lead's explicit responsibility** after each builder report — there is no automatic test-pass Stop hook at the moment (was `validate-tests-pass.ts`, removed). The Lead runs `bun test ./.claude/hooks/` (or the relevant test command) and inspects the result. If tests fail → Lead invokes `Skill('diagnostic-patterns')` for the diagnosis → re-delegate to builder (via SendMessage when context is preserved). **Never report "completed" without tests passing.** (Commandment IV.)
+Verification is the **Lead's explicit responsibility** after each builder report — there is no automatic test-pass Stop hook at the moment (was `validate-tests-pass.ts`, removed). The Lead runs `bun test ./.claude/hooks/` (or the relevant test command) and inspects the result. If tests fail → Lead invokes `Skill('diagnostic-patterns')` for the diagnosis → fix inline (or re-run the failed unit if it was a ≥4 Workflow fan-out). **Never report "completed" without tests passing.** (Commandment IV.)
 
 ---
 
@@ -303,7 +303,7 @@ Actualizado tras el refactor del 5-phase workflow (US1-US10) sobre la baseline d
 
 | Componente | Audit baseline (early 2026) | Post-audit cleanup (2026-05-25/28) | Post 5-phase refactor (2026-05-28) | Detalle |
 |---|---|---|---|---|
-| Agents | 7 + 1 meta | 3 | **3** | builder, reviewer, scout. Builder y reviewer KEEP-conditional (invoked by `build`/`critic` skills only when HU ≥5 files OR critical area). Meta-create también es skill. |
+| Agents | 7 + 1 meta | 3 | **0 custom** | builder/reviewer/scout **cut in feature 008** (2026-06-05/09). Work runs inline (1-3 units) or fans out via `Workflow` at ≥4 independent units; `Explore` (Haiku built-in) for read-only exploration. Meta-create is a skill. |
 | Skills | 28 | 14 | **20** (+7 phase, -2 absorbed, +1 `html-report` W3/003) | 6 phase skills (`scope`, `tech-plan`, `tdd-design`, `build`, `critic`, `retro`) + transversal `drillme` añadidas en W2; `planner-protocol` migrada-y-cortada (6 refs preservadas bajo `tech-plan/references/`); `orchestrator-protocol` SIMPLIFICADA -3 refs (US8) |
 | Hooks registrados | 15+ | 6 | **4** | `auto-approve`, `post-compact`, `security-gate`, `validators/code-validator`. Verificación de tests = responsabilidad explícita del Lead (no Stop hook automático) |
 | Slash commands | 10 | 4 | **5** | `decide`, `explain-changes`, `flow`, `sync-claude`, `role` (006). `/flow` (W3) reemplaza al wrapper `/planner`; `/role` (006) = persona-framing de 13 roles (compone skills existentes). Skills nuevas usan canonical pattern skill-name = command-name sin wrapper redundante (docs Anthropic 2026) |

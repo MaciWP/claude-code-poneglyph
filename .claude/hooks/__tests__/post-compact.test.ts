@@ -2,16 +2,21 @@ import { describe, test, expect, afterEach } from "bun:test";
 import { LEAD_REMINDER, ANTI_HALLUCINATION, getSessionMode } from "../post-compact";
 
 describe("LEAD_REMINDER", () => {
-  test("names the three available subagents", () => {
-    expect(LEAD_REMINDER).toContain("builder");
-    expect(LEAD_REMINDER).toContain("reviewer");
-    expect(LEAD_REMINDER).toContain("scout");
+  test("does not name the cut custom agents (builder/reviewer/scout)", () => {
+    expect(LEAD_REMINDER).not.toContain("builder");
+    expect(LEAD_REMINDER).not.toContain("reviewer");
+    expect(LEAD_REMINDER).not.toContain("scout");
+  });
+  test("describes the canonical spawn tree (inline / Workflow / Explore)", () => {
+    expect(LEAD_REMINDER).toContain("inline");
+    expect(LEAD_REMINDER).toContain("Workflow");
+    expect(LEAD_REMINDER).toContain("Explore");
   });
   test("states the default-allow gate", () => {
     expect(LEAD_REMINDER).toContain("default-allow");
   });
-  test("mentions the delegation threshold", () => {
-    expect(LEAD_REMINDER).toContain(">=5 files");
+  test("mentions the spawn threshold (≥4 independent units, not ≥5 files → builder)", () => {
+    expect(LEAD_REMINDER).toContain("≥4 independent units");
   });
 });
 

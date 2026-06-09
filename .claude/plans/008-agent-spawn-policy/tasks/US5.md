@@ -5,7 +5,9 @@ wave: W2
 depends_on: [US1]
 tdd_mode: optional
 estimate: M
-status: draft
+status: closed
+closed: 2026-06-09
+implemented: 2026-06-09
 absorbs_decision: OQ1b-exploracion-Explore
 ---
 

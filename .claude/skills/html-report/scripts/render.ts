@@ -133,10 +133,6 @@ h3.blk{font-family:var(--sans);font-weight:600;font-size:var(--t-md);margin:1.2r
 .tbl th.num,.tbl td.num{text-align:right;font-variant-numeric:tabular-nums}
 .tbl tr.sev-blocker td:first-child{box-shadow:inset 3px 0 0 var(--blocker)}.tbl tr.sev-major td:first-child{box-shadow:inset 3px 0 0 var(--major)}.tbl tr.sev-minor td:first-child{box-shadow:inset 3px 0 0 var(--minor)}.tbl tr.sev-nit td:first-child{box-shadow:inset 3px 0 0 var(--nit)}
 .chart{display:flex;flex-direction:column;gap:.5rem;margin:.6rem 0;max-width:68ch}
-.cb-row{display:grid;grid-template-columns:8rem 1fr 3rem;gap:.6rem;align-items:center;font-size:var(--t-sm)}
-.cb-track{height:10px;background:var(--track);border-radius:999px;overflow:hidden}
-.cb-track i{display:block;height:100%}.cb-track i.h-good{background:var(--good)}.cb-track i.h-mid{background:var(--mid)}.cb-track i.h-warn{background:var(--warn)}.cb-track i.h-bad{background:var(--bad)}
-.cb-v{text-align:right;color:var(--ink-2)}
 .chart-block{display:inline-block;vertical-align:top;width:min(100%,380px);margin:0 1.6rem 1.4rem 0}
 .chart-block figcaption{font-family:var(--sans);font-weight:600;font-size:var(--t-sm);color:var(--ink);margin-bottom:.55rem;letter-spacing:-.01em}
 /* Tufte-style sidenote: margin on desktop, inline on mobile */

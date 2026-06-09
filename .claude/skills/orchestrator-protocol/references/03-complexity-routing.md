@@ -34,26 +34,26 @@ Each factor contributes a maximum of ~33 points (value=3 × 20% × 33.3). Total 
 
 | Score | Routing | Reason |
 |-------|---------|--------|
-| **< 15** | builder direct, skip scoring/skills | Trivial task (rename, typo, single-line) |
-| **15-30** | builder direct | Simple task, no planning needed |
+| **< 15** | inline, skip scoring/skills | Trivial task (rename, typo, single-line) |
+| **15-30** | inline | Simple task, no planning needed |
 | **30-60** | tech-plan optional | Consider plan if there is uncertainty |
 | **> 60** | tech-plan mandatory | Requires structured roadmap |
 
 ## Mode Selection Table
 
-| Score | Domains | Shared Interfaces | Mode | Cost |
+| Score | Units / Domains | Negotiate interfaces | Mode | Cost |
 |-------|---------|-------------------|------|------|
-| < 45 | Any | — | **subagents** | 1x |
-| 45-60 | 2-3 | Yes (shared types/APIs) | **tiered** | ~2x |
-| 45-60 | 2-3 | No (independent) | **subagents** | 1x |
-| > 60 | 3+ independent (4-gate pass) | — | **team** | 3-7x |
-| > 60 | 3+ (4-gate fail) | — | **subagents** | 1x |
+| Any | 1-3 units | — | **inline** | 1x |
+| Any | ≥4 independent units | No | **Workflow** (opt-in) | scales w/ #units |
+| 45-60 | 2-3 | Yes (shared types/APIs) | **tiered** (inline contracts) | ~2x |
+| > 60 | 3+ domains (4-gate pass) | Yes | **team** (experimental) | 3-7x |
+| > 60 | 3+ (4-gate fail) | — | **inline / Workflow** | 1x+ |
 
-Default is ALWAYS subagents.
+Default is ALWAYS inline (1-3 units); fan out only at ≥4 independent units.
 
 ## Tiered Mode
 
-Intermediate mode for 2-3 domains with shared interfaces and complexity 45-60. The `tech-plan` skill (Mode B) designs contracts before builders start in parallel — no separate architect agent.
+Intermediate mode for 2-3 domains with shared interfaces and complexity 45-60. The `tech-plan` skill (Mode B) designs contracts before the units are built — inline for 1-3, or a `Workflow` fan-out at ≥4 — no separate architect agent.
 
 ```mermaid
 graph TD
@@ -110,18 +110,18 @@ Each teammate receives a prompt with:
 | **Spawn** | Create one teammate per domain using the prompt template |
 | **Monitor** | Review task list for progress. Do not intervene unless stuck. |
 | **Interfaces** | Teammates negotiate contracts via task list (TaskCreate/TaskUpdate) |
-| **Integration** | After all teammates complete, Lead runs reviewer over the full changeset |
+| **Integration** | After all teammates complete, Lead runs `Skill('critic')` over the full changeset |
 | **Cleanup** | Verify no file conflicts between teammate outputs |
 
 ### Fallback Triggers
 
 | Trigger | Action |
 |---------|--------|
-| Teammate fails 2x | Extract domain tasks → run as builder subagent |
-| Multiple teammates fail | Abort team mode → full fallback to subagents |
-| File conflict between teammates | Lead arbitrates via reviewer. Losing domain re-executes. |
-| Env var missing but planner recommended team | Silent fallback to subagents. Log warning. |
-| Teammate stuck (no progress in task list) | Extract domain → builder subagent |
+| Teammate fails 2x | Fold domain tasks back → inline, or a `Workflow` unit |
+| Multiple teammates fail | Abort team mode → full fallback to inline / `Workflow` |
+| File conflict between teammates | Lead arbitrates (`Skill('critic')`). Losing domain re-executes. |
+| Env var missing but planner recommended team | Silent fallback to inline / `Workflow`. Log warning. |
+| Teammate stuck (no progress in task list) | Fold domain back → inline / `Workflow` unit |
 
 > Current limitation: Teammates are always `general-purpose` (issue anthropics/claude-code#24316). They cannot use custom `.claude/agents/`. However, each teammate loads `~/.claude/` automatically — Poneglyph rules, skills and hooks apply.
 
@@ -129,33 +129,32 @@ Each teammate receives a prompt with:
 
 | Condition | Worktree |
 |-----------|----------|
-| Score >60 + planner generates >1 builder | Mandatory |
-| 2+ builders in parallel (any score) | Mandatory |
+| ≥4 `Workflow` units with overlapping files | Mandatory |
+| 2+ parallel units touching the same paths | Mandatory |
 | Task marked experimental | Mandatory |
-| Score <30, single builder | Not needed |
+| Single inline unit (1-3) | Not needed |
 
 > Worktree rules do NOT apply in team mode. Each teammate runs in its own Claude Code process.
 
 ## Model Routing
 
-| Agent category | Complexity | Model |
+| Work category | Complexity | Model |
 |----------------|------------|-------|
-| Code (builder, reviewer) | < 30 | sonnet |
-| Code (builder, reviewer) | 30-50 | sonnet |
-| Code (builder, reviewer) | > 50 | opus |
-| Read-only (scout) | < 30 | haiku |
-| Read-only (scout) | 30-50 | haiku |
-| Read-only (scout) | > 50 | sonnet |
+| Inline build/review (Lead session) | any | session model (`effortLevel`) |
+| Workflow unit — implement/review | < 30 | sonnet |
+| Workflow unit — implement/review | 30-50 | sonnet |
+| Workflow unit — implement/review | > 50 | opus |
+| Read-only exploration (`Explore`) | any | haiku (built-in) |
 
 ## Effort Routing (Frontmatter — static)
 
 Effort scale: `low < medium < high < xhigh`
 
-| Agent | effort | Rationale |
+| Work | effort | Rationale |
 |-------|--------|-----------|
-| scout | `low` | Only reads files. No deep reasoning required. |
-| builder | ❌ inherit | Depends on task. Inherits session default. |
-| reviewer | ❌ inherit | Depends on review type. Inherits session default. |
+| `Explore` (read-only) | `low` (built-in) | Only reads files. No deep reasoning required. |
+| Inline build/review | session `effortLevel` | The Lead inherits the session effort. |
+| Workflow unit | per `agentType` frontmatter (or inherit) | Set on the custom agentType when one is defined. |
 
 > `effort` in frontmatter is static — no `effort` parameter in the Agent tool call (open issue anthropics/claude-code#25591).
 

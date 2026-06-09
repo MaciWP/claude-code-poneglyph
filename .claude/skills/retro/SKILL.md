@@ -268,7 +268,7 @@ The retro skill is the **last gate**. Any US{N}.md found not-closed at this poin
 
 **13b. Apply approved promotions and living-spec deltas**:
 
-- Approved promotions → Lead writes target file (default-allow) or delegates to `builder` if ≥5 files.
+- Approved promotions → Lead writes the target file inline (default-allow gate covers non-sensitive paths).
 - Approved living-spec diff → patch `spec.md` with note "v2 — delta from retro {NNN}-{slug}".
 
 **13c. Update counters**:
@@ -344,7 +344,7 @@ Feature lifecycle closure: <pending / done>.
 - **Edge 2** — `spec.md` original no longer exists (deleted or branch reset) → produce retro on what was delivered + flag "spec.md missing — retro based on tasks/ and review.md only" in retro.md.
 - **Edge 3** — Promotion candidate name collides with existing file in target scope → propose rename ("candidate-name-2") OR propose merge (diff against existing) — never overwrite silently.
 - **Edge 4** — `spec_drift: legitimate` AND user rejects the proposed diff → record rejection reason in retro.md; either revert the delta in code (action item) OR escalate to re-scope.
-- **Edge 5** — User approves a promotion mid-session → Lead writes the target file directly (Lead default-allow gate covers non-sensitive paths) or delegates to `builder` if ≥5 files / architectural; update retro.md.promotions_approved counter.
+- **Edge 5** — User approves a promotion mid-session → Lead writes the target file inline (Lead default-allow gate covers non-sensitive paths); update retro.md.promotions_approved counter.
 - **Edge 6** — Retro proposes a promotion that turns out to be a near-duplicate of an existing skill — flag in §Lessons ❌ ("missed existing skill X during scope/plan") + redirect promotion to "improve existing X" instead of "create new".
 
 ## Smell signals

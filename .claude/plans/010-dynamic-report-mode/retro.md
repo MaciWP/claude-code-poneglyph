@@ -5,11 +5,11 @@ phase: 5
 status: approved
 retro_level: full
 verdict_phase4: APPROVED_WITH_WARNINGS
-spec_drift: pending (US5.AC3 híbrido)
+spec_drift: resolved (US5.AC3 → hand-only, 2026-06-08)
 promotions_proposed: 2
-promotions_approved: 0
+promotions_approved: 1
 commandment_violations: 1
-living_spec_delta: pending
+living_spec_delta: applied (hand-only re-frame)
 action_items: 6
 ---
 
@@ -54,9 +54,9 @@ Construido un generador determinista (`scripts/`: contract/theme/render/componen
 | `feedback-measure-dont-estimate-contrast` | memory | Afirmé AA sin medir; la función WCAG es 6 líneas. "Cuando un AC es medible (contraste, tokens), MIDE antes de afirmar — no estimes" |
 | El generador (`scripts/`) | ya aplicado | No es promoción — es el feature, ya en el skill. Pendiente solo tu ratificación + las 2 decisiones |
 
-## Living-spec delta (pendiente decisión)
+## Living-spec delta (RESUELTO 2026-06-08)
 
-- **US5.AC3** (híbrido Plot): si aceptas hand-only → re-encuadrar a "charts a mano estilo-Plot; Observable Plot opt-in NO en el MVP" + borrar `plotInline`. Si quieres híbrido real → nueva HU para cablearlo.
+- **US5.AC3** (híbrido Plot): Oriol eligió **hand-only**. Re-encuadrado a "charts a mano estilo-Plot; Observable Plot opt-in fuera de scope"; `plotInline` eliminado (`charts.ts`). No queda dead code de Plot.
 
 ## Pregunta Cmd III (honesta, del pase independiente)
 
@@ -64,18 +64,18 @@ Construido un generador determinista (`scripts/`: contract/theme/render/componen
 
 ## Action items
 
-- [ ] **[Oriol]** Decidir híbrido Plot: hand-only (re-frame + borrar plotInline) vs cablear Plot real.
-- [ ] **[Oriol]** Validar AC6: ¿el dynamic se nota mejor que el glance? (demo abierto).
-- [ ] **[Lead, tras decisión]** Si hand-only: borrar `plotInline` (dead code) + re-frame US5.AC3.
-- [ ] **[Lead]** Limpiar CSS muerto `.cb-row/.cb-track` en `render.ts`.
-- [ ] **[Lead]** Guardar memoria `feedback-measure-dont-estimate-contrast`.
-- [ ] **[Lead|Oriol]** Commit selectivo de los ficheros de 010 cuando cierres.
+- [x] **[Oriol]** Decidir híbrido Plot → **hand-only** (2026-06-08).
+- [x] **[Oriol]** Validar AC6 → **validado** 2026-06-08 ("ha mejorado mucho").
+- [x] **[Lead]** Hand-only: `plotInline` (dead code) borrado + US5.AC3 re-encuadrado.
+- [x] **[Lead]** Limpiar CSS muerto `.cb-row/.cb-track/.cb-v` en `render.ts` (2026-06-09).
+- [x] **[Lead]** Guardar memoria → `measure-dont-estimate-measurable-acs`.
+- [x] **[Lead|Oriol]** 010 commiteado en `b5edddc`.
 
 ## Cierre del feature (verification gate)
 
 - [x] Tests 010 verdes (10/0) + hooks 100/100.
 - [x] review.md verdict AWW (honesto).
-- [ ] `feature_closed` → BLOQUEADO en las 2 decisiones de Oriol.
-- [ ] `spec.md`/`tasks/index.md` → flip a `closed` tras ratificación.
+- [x] `feature_closed` — las 2 decisiones de Oriol tomadas (hand-only + AC6 validado, 2026-06-08).
+- [x] `spec.md` → `status: closed`; dead code (plotInline + CSS .cb-*) eliminado.
 
-> NO cierro el lifecycle ni borro dead code hasta tu decisión (Plot-hybrid + AC6).
+> Lifecycle cerrado. Único drift residual del retro original (frontmatter/secciones "pending") des-staleado el 2026-06-09.

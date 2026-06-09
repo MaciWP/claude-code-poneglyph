@@ -26,10 +26,5 @@
       "inputPer1M": 0.25,
       "outputPer1M": 1.25
     }
-  },
-  "agentDefaults": {
-    "scout": "haiku",
-    "reviewer": "sonnet",
-    "builder": "opus"
   }
 }

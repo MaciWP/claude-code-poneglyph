@@ -2,8 +2,9 @@
  * charts.ts — html-report DYNAMIC mode (feature 010, US5).
  * Hand-rolled inline SVG charts (grammar-of-graphics defaults, palette via
  * theme tokens) with hover tooltip + no-JS fallback (aria-label + visible values).
- * Self-contained: zero runtime deps in the artefact. `plotInline()` is an OPT-IN
- * generation-time hook (Observable Plot via npx) that DEGRADES to the hand path.
+ * Self-contained: zero runtime deps in the artefact. Hand-only by design — the
+ * Observable Plot opt-in (`plotInline`) was removed at feature 010 close; the
+ * hand-rolled path is canonical (see US5.AC3 re-frame in review.md).
  */
 import type { Chart, ChartPoint } from "./contract.ts";
 

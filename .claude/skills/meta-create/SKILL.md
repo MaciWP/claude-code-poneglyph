@@ -3,8 +3,8 @@ name: meta-create
 description: |
   Creates Claude Code extensions: agents, skills, hooks, rules, MCP servers, and plugins.
   Auto-activates when the user requests creating any of these. Runs in the main session
-  (the Lead reads references/templates and writes the file directly); delegates to the
-  builder agent only if the change touches ≥5 files or is architecturally complex.
+  (the Lead reads references/templates and writes the file directly), inline even for ≥5 files;
+  fans out via Workflow only for ≥4 independent extension units.
   Use when: create agent, create skill, create hook, create rule, create MCP server, create plugin, scaffold extension.
   Keywords - create agent, new skill, add hook, create rule, MCP server, plugin, extension, meta, scaffold, new subagent, agent template, skill template, hook template
 disable-model-invocation: false
@@ -24,7 +24,7 @@ The Lead reads this `SKILL.md` when the user's prompt matches one of the activat
 2. Reads the relevant `references/<type>/` bundle for spec + gotchas + examples.
 3. Reads the template from `templates/<type>/` (for agent/skill) or `references/<type>/templates.md` (inline for hook/rule/mcp/plugin).
 4. Optionally fetches the official Claude Code doc URL (table below) to verify against drift.
-5. Writes the file(s) directly. **Delegates to `builder`** only if the work touches ≥5 files OR introduces architectural complexity (the standard delegation rule from `CLAUDE.md §When to delegate`).
+5. Writes the file(s) directly — **inline**, even for ≥5 files (the spawn tree forbids 1 agent; "isolation" is not a reason). Fans out via `Workflow` only for ≥4 independent extension units (`CLAUDE.md §When to delegate`).
 
 ## Extension Types
 
@@ -59,9 +59,9 @@ graph LR
   D --> E[Gather user details via AskUserQuestion if needed]
   E --> F[Read templates/<type>/]
   F --> G[Fill placeholders]
-  G --> H{≥5 files OR architectural?}
-  H -->|No| I[Lead writes directly]
-  H -->|Yes| J[Delegate to builder]
+  G --> H{≥4 independent extension units?}
+  H -->|No| I[Lead writes inline]
+  H -->|Yes| J[Fan out via Workflow]
   I --> K[Validate frontmatter / settings]
   J --> K
 ```
@@ -83,8 +83,8 @@ For hook/rule/mcp/plugin: templates are inline in `references/<type>/templates.m
 
 1. Read the chosen template.
 2. Replace `{{PLACEHOLDERS}}` with user-provided values.
-3. **For ≤4 files of bounded work**: Lead writes directly (default-allow gate permits it for non-sensitive paths).
-4. **For ≥5 files OR architectural complexity**: delegate to `builder` with the filled context — same delegation rule as `CLAUDE.md §When to delegate` (Trigger A).
+3. **For any single extension unit** (even ≥5 files): Lead writes inline (default-allow gate permits it for non-sensitive paths; the spawn tree forbids 1 agent).
+4. **For ≥4 independent extension units**: fan out via `Workflow` — same spawn rule as `CLAUDE.md §When to delegate` (Trigger A).
 5. For hooks: also generate the `settings.json` entry.
 
 ### Step 5 — Validate
@@ -126,11 +126,11 @@ Apply the `references/<type>/gotchas.md` or `frontmatter-spec.md` checklist befo
 
 ## Why this design
 
-Previously the system had 6 `meta-create-*` skills (~660 lines of system-prompt bloat per turn) plus an `extension-architect` agent that required explicit delegation. Both were over-engineered for an activity that happens ~weekly. The audit (PONEGLYPH-AUDIT.md) flagged this. After two iterations (US-012+US-020 → into-agent, then this US-013-style revision → into-skill), the final shape is: **one auto-activable skill, references loaded on demand, work executed in the main session, builder invoked only when the standard 5-file delegation threshold fires**.
+Previously the system had 6 `meta-create-*` skills (~660 lines of system-prompt bloat per turn) plus an `extension-architect` agent that required explicit delegation. Both were over-engineered for an activity that happens ~weekly. The audit (PONEGLYPH-AUDIT.md) flagged this. After two iterations (US-012+US-020 → into-agent, then this US-013-style revision → into-skill), the final shape is: **one auto-activable skill, references loaded on demand, work executed inline in the main session, fanning out via Workflow only at ≥4 independent extension units**.
 
 ## Related
 
 - `.claude/rules/paths/hooks.md` — hook-specific path rules
 - `.claude/rules/paths/orchestration.md` — agent/skill frontmatter quick-ref
 - `meta-settings-cookbook` skill — quick reference for CLAUDE.md and settings.json fields
-- `builder` agent — invoked from this skill when the change is ≥5 files or architecturally complex
+- `Workflow` — fan out only at ≥4 independent extension units (a single unit, even ≥5 files, runs inline)

@@ -7,14 +7,16 @@
     "1->2": true,
     "2->3": true
   },
-  "us_completed": ["US1", "US2"],
-  "us_pending": ["US3", "US4", "US5", "US6", "US7", "US8", "US9", "US10"],
+  "scope_note": "2026-06-09: minimal-coherent cut ratified by user (US7+US4+US5). US3/US6/US8/US9 DEFERRED; US10 full AC1-AC9 not run (partial scope). 008 stays open as partial-accepted.",
+  "deferred_live_refs": "Live builder/reviewer/scout/planner refs remain (out of cut) in: explain-changes/SKILL.md:155, prompt-engineer/SKILL.md:74, security-review/SKILL.md:182 (all US9), tech-plan/references/05-team-mode.md (US6). Lower-consumption surfaces; safe to defer.",
+  "us_completed": ["US1", "US2", "US7", "US4", "US5"],
+  "us_pending": ["US3", "US6", "US8", "US9", "US10"],
   "feature_closed": false,
   "review_verdict": null,
   "retro_status": null,
   "started_at": "2026-06-05",
-  "updated_at": "2026-06-05",
-  "baseline_bun_test": "100 pass / 0 fail",
+  "updated_at": "2026-06-09",
+  "baseline_bun_test": "101 pass / 0 fail",
   "us_history": [
     {
       "us": "US1",
@@ -35,6 +37,46 @@
         ".claude/agent-memory/{builder,reviewer,scout} (archived to plans/008/archive/)",
         ".claude/skills/build/SKILL.md",
         ".claude/skills/critic/SKILL.md"
+      ],
+      "execution": "inline",
+      "askuserquestion_count": 0
+    },
+    {
+      "us": "US7",
+      "completed_at": "2026-06-09",
+      "tests_passed": "101/0 (post-compact reminder + test rewritten; +1 test)",
+      "files_touched": [
+        ".claude/hooks/post-compact.ts (LEAD_REMINDER -> canonical tree)",
+        ".claude/hooks/__tests__/post-compact.test.ts (asserts updated)",
+        ".claude/config/cost-budget.json (agentDefaults block removed; 0 consumers)"
+      ],
+      "execution": "inline",
+      "askuserquestion_count": 0,
+      "note": "Active bug killed: reminder no longer injects 'delegate to builder' every compaction."
+    },
+    {
+      "us": "US4",
+      "completed_at": "2026-06-09",
+      "tests_passed": "n/a (markdown; grep-verified)",
+      "files_touched": [
+        "CLAUDE.md (13 edits: inventory 3->0, Trigger A, Agent/Skill rows, mermaid flow, IX, full-mode, verification)",
+        ".claude/commands/flow.md (4 edits)",
+        ".claude/skills/retro/SKILL.md (2 edits)",
+        ".claude/skills/meta-create/SKILL.md (6 edits)",
+        ".claude/docs/lead-mode-when-needed.md (3 edits incl. scout exploration matrix)"
+      ],
+      "execution": "inline",
+      "askuserquestion_count": 0,
+      "note": "CLAUDE.md is COPIED (not linked) to ~/.claude on Windows -> re-sync needed to propagate."
+    },
+    {
+      "us": "US5",
+      "completed_at": "2026-06-09",
+      "tests_passed": "101/0 (no regression)",
+      "files_touched": [
+        ".claude/rules/error-recovery.md (full rewrite: inline/Workflow/Team reframe)",
+        ".claude/skills/orchestrator-protocol/references/04-agent-selection.md (6 sections)",
+        ".claude/skills/orchestrator-protocol/references/03-complexity-routing.md (8 edits incl. Model Routing)"
       ],
       "execution": "inline",
       "askuserquestion_count": 0
