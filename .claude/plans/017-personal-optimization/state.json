@@ -7,8 +7,8 @@
     "1->2": true,
     "2->3": true
   },
-  "us_completed": ["US1", "US3", "US2", "US4", "US5", "US6", "US7"],
-  "us_pending": ["US8", "US9", "US10", "US11", "US12", "US13", "US14", "US15"],
+  "us_completed": ["US1", "US3", "US2", "US4", "US5", "US6", "US7", "US8"],
+  "us_pending": ["US9", "US10", "US11", "US12", "US13", "US14", "US15"],
   "us_history": [
     {
       "us": "US1",
@@ -98,6 +98,18 @@
       "execution": "inline",
       "askuserquestion_count": 0,
       "notes": "research file existed only on unmerged branch d951dcf — restored here to resolve CLAUDE.md:138 phantom; d951dcf also fixed auto-approve stdin (overlap with US4 at future merge)"
+    },
+    {
+      "us": "US8",
+      "completed_at": "2026-06-10",
+      "tests_passed": true,
+      "files_touched": [
+        ".claude/settings.json",
+        ".claude/docs/system-inventory.md"
+      ],
+      "execution": "inline",
+      "askuserquestion_count": 1,
+      "decisions": "env: drop TEAMS only; MCP: all 5 stay default-on; minimumVersion 2.1.160 set; fallbackModel does not exist in schema (recorded, skipped); dead allows fixed (Task removed, context7 pattern updated); no US4 hook to register (Stop-gate = NO)"
     }
   ],
   "feature_closed": false,

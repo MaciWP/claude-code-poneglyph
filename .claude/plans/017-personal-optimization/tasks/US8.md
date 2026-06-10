@@ -5,7 +5,9 @@ wave: W3
 depends_on: [US4]
 tdd_mode: optional
 estimate: S
-status: draft
+status: closed
+closed: 2026-06-10
+implemented: 2026-06-10
 absorbs_decision: verify field names against current schema before writing
 ---
 

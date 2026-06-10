@@ -119,7 +119,14 @@ Test: "does the agent need this in EVERY prompt?" — no → skill.
 | `audits/` | Ad-hoc audit outputs (005, 009, 2026-06-10 general analysis) | archive-like |
 | `config/` | `cost-budget.json` | live |
 | `ccstatusline/` | Statusline module wired via settings | live |
-| `data/`, `agent-memory/` | Telemetry remnants (pipeline cut 2026-05-28) / empty | **pending deletion — 017/US5** |
+| `data/`, `agent-memory/` | Telemetry remnants / empty dir | **deleted 2026-06-10 (017/US5)** |
+| `plans/_archive/` | Closed/abandoned plans (gitignored, on disk only) | archive since 017/US6 |
+
+## MCP servers (session-connected) — decision 2026-06-10 (017/US8)
+
+All five stay default-on (user-ratified): **context7** (plugin, settings.json `enabledPlugins`), **claude-in-chrome** (extension), **Atlassian**, **binOra Desarrollo**, **binOra Producción** (claude.ai connectors — managed in the claude.ai UI, not in settings). Context cost is mitigated by ToolSearch deferred loading. Revisit if a server's tool list bloats context again.
+
+Schema findings (017/US8, verified against schemastore 2026-06-10): `minimumVersion` EXISTS (version gate set to 2.1.160); `requiredMinimumVersion` and `fallbackModel` DO NOT EXIST — no fallback-model cascade is possible in settings.json (closest is `availableModels`, which restricts selection rather than degrading gracefully). Recorded per AC1; nothing invented.
 
 ## History
 
