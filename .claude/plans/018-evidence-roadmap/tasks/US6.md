@@ -5,7 +5,8 @@ wave: W-B
 depends_on: [US1, US2, US3, US4, US5]
 tdd_mode: optional
 estimate: M
-status: draft
+status: closed
+closed: 2026-06-10
 absorbs_decision: synthesis runs inline with zero agents (share-context principle)
 ---
 

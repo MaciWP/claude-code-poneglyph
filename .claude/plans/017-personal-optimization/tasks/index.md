@@ -2,7 +2,8 @@
 spec: 017-personal-optimization
 created: 2026-06-10
 mode: full
-status: draft
+status: closed
+closed: 2026-06-10
 phase: 2
 total_us: 15
 dag_complete: true

@@ -259,6 +259,7 @@ Next:
 - Spec-drift is flagged + classified, never silently absorbed (Cmd IX — observability).
 - Findings cite `file:line` exactly; no vague "somewhere in the auth module".
 - Independent review = panel ≥4 (Workflow) or inline-with-declared-bias — never a single spawned reviewer (P1).
+- Research/evidence artefacts: numeric claims must be quote-anchored to their source or marked `[Probable]`/UNVERIFIED; citation sampling must target claims NOT already refuter-verified during build (independence). Method: `.claude/docs/research-rigor.md` (promoted from feature 018 — precision inflation was its only audit-failure class).
 
 ## Adaptation intra-phase (Principio 2 — "no siempre más es más")
 

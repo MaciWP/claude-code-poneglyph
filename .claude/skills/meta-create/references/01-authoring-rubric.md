@@ -65,6 +65,7 @@ Source: [Anthropic — Skill authoring best practices](https://platform.claude.c
 | S4 | Dependencies listed explicitly; never assume a package is installed |
 | S5 | MCP tools referenced fully qualified (`ServerName:tool_name`) |
 | S6 | Plan-validate-execute for batch/destructive/high-stakes operations (verifiable intermediate outputs) |
+| S7 | Artifact that persists runtime/transcript data → its output path enters `.gitignore` in the SAME change (017 lesson: learning-inbox shipped committable) |
 
 ## Eval-first rule (MANDATORY before writing)
 
@@ -92,3 +93,4 @@ In poneglyph, the bundled `skill-creator` plugin already runs evals — use it f
 | Time-sensitive instructions in main body | move to "old patterns" |
 | Menu of N equivalent options | pick a default + escape hatch |
 | Skill written before any evaluation exists | apply the eval-first rule above |
+| Config field rolled out to N units without a 1-unit live smoke first | smoke ONE unit through the real invocation path, then roll out (017 lesson: disable-model-invocation would have broken /flow on 6 skills) |

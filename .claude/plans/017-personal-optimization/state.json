@@ -1,8 +1,8 @@
 {
   "spec_slug": "017-personal-optimization",
   "mode": "full",
-  "current_phase": 4,
-  "phases_completed": [1, 2, 2.5, 3],
+  "current_phase": "closed",
+  "phases_completed": [1, 2, 2.5, 3, 4, 5],
   "gates_approved": {
     "1->2": true,
     "2->3": true
@@ -215,9 +215,10 @@
       "notes": "verdict table: 15 KEEP / 1 UPDATE / 5 DELETE; index↔files 16/16 consistent, 0 broken links; no entry references dead components as live"
     }
   ],
-  "feature_closed": false,
+  "feature_closed": true,
   "review_verdict": "APPROVED_WITH_WARNINGS — 2 MAJOR fixed in-review; panel infra-failed (session limit), inline with declared bias; behavioral validation next session",
-  "retro_status": null,
+  "retro_status": "approved",
+  "last_update": "2026-06-10",
   "started_at": "2026-06-10",
   "updated_at": "2026-06-10"
 }

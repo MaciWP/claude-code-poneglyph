@@ -5,7 +5,8 @@ wave: W-A
 depends_on: []
 tdd_mode: optional
 estimate: M
-status: draft
+status: closed
+closed: 2026-06-10
 absorbs_decision: harness design constraints only; implementation is 019+
 ---
 

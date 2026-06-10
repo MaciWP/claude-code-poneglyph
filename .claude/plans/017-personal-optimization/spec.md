@@ -4,7 +4,9 @@ created: 2026-06-10
 approved: 2026-06-10
 mode: full
 phase: 1
-status: approved
+status: closed
+closed: 2026-06-10
+version: v2 — deltas from retro 017 (AC3/AC7 reworded to findings-based reality, US14 scope note; user-ratified)
 ---
 
 # Problema
@@ -22,12 +24,14 @@ The meta-system has accumulated debt that degrades Claude's real performance for
 
 - **AC1 (truth debt)**: Given the repo after build, when grepping for `builder|reviewer|scout` as live references, phantom hook claims, or `.claude/agents/**` globs, then 0 live instructions point at dead components, `error-recovery.md` matches the real hook registry, and the 7 version-pinned claims carry citations.
 - **AC2 (hooks)**: Given the 4 hooks, when running `bun test ./.claude/hooks/`, then the pruned essential suite is green, `auto-approve.ts` uses `readHookStdin()` (Windows bug fixed), and hook functions are exported/testable.
-- **AC3 (slim repo)**: Given the cleanup, when listing the repo, then the 4 root HTML files and `.claude/data/usage/*.html` are deleted, closed plans live in a gitignored archive with their `state.json` consistent (no `status: null`), and only the active plan remains in `.claude/plans/`.
+- **AC3 (slim repo)** *(v2 — delta from retro 017)*: Given the cleanup, when listing the repo, then the 4 root HTML files and `.claude/data/usage/*.html` are deleted, closed/abandoned plans live in a gitignored archive with truthful `state.json`, and `.claude/plans/` keeps only active plans plus justified retained-by-reference files (001 canonical auxiliary matrix, research files cited by live docs).
 - **AC4 (always-loaded diet)**: Given a fresh session, when counting always-loaded content, then CLAUDE.md ≤200 lines, with inventory/history/mode tables moved to on-demand locations, and no always-on rule contradicts another.
 - **AC5 (orchestration rethink)**: Given `orchestrator-protocol` + CLAUDE.md after build, when reading the delegation doctrine, then it states inline-first as the default for ALL build work, frames agents exclusively as a parallelization tool for independent read-heavy units, documents the known costs (tokens, summary degradation, context loss), and removes any remaining "delegated by default" framing for Lead tools.
 - **AC6 (style es-ES)**: Given `output-styles/poneglyph.md` + CLAUDE.md honesty anchors after build, when Claude responds in a real session, then prose is natural Spanish (es-ES), telegraphic compression and translated-English constructions are explicitly counter-exemplified in the style spec, anglicisms are limited to technical identifiers without a clear Spanish equivalent, and visual speed (tables, labels) is preserved.
-- **AC7 (config modernization)**: Given `settings.json` after build, when validated against the current schema, then it carries version gate + fallback models + the reviewed permission set, phase skills have `disable-model-invocation: true` where appropriate, and new hook patterns (additionalContext, post-session) are adopted where they add value.
+- **AC7 (config modernization)** *(v2 — delta from retro 017)*: Given `settings.json` after build, when validated against the current schema, then it carries the version gate + the reviewed permission set, with field-existence findings documented instead of invented config (`fallbackModel` does not exist in the schema; `disable-model-invocation: true` blocks explicit Skill-tool invocation — live-smoked and reverted), and new hook patterns (UserPromptSubmit injection, InstructionsLoaded observability) adopted where they add value.
 - **AC8 (skills health)**: Given the 21 skills, when audited against the official authoring checklist, then descriptions are third-person ≤1024 chars with clear triggers, `retro` (478) and `critic` (438) have content extracted to references before crossing 500 lines, and references stay one level deep.
+
+> *(v2 — delta from retro 017)*: project-onboard (US14) v1 scope was EXPANDED at build by explicit user decision — full personalized component menu (project skills, rules, CLAUDE.md, commands, MCP suggestions) instead of the planned minimum.
 
 # Out of scope (explícito)
 

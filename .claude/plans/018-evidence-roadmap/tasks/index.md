@@ -2,9 +2,10 @@
 spec: 018-evidence-roadmap
 created: 2026-06-10
 approved: 2026-06-10
+closed: 2026-06-10
 mode: full
-status: approved
-phase: 3
+status: closed
+phase: 5
 total_us: 7
 dag_complete: true
 ---

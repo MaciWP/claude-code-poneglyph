@@ -2,9 +2,10 @@
 id: 018-evidence-roadmap
 created: 2026-06-10
 approved: 2026-06-10
+closed: 2026-06-10
 mode: full
-phase: 2
-status: approved
+phase: 5
+status: closed
 ---
 
 # Problema
@@ -24,7 +25,7 @@ Post-017 design decisions (orchestration II, behavioral evals, context policy, p
 - **AC2 (coverage)**: Given the 5 workstreams, when Phase 3 closes, then each has `evidence/W{n}.md` + `decision-memo-W{n}.md`, and W5 (discovery) respected its timebox: 1 fan-out round + 1 verification round, no more.
 - **AC3 (verification)**: Given the decision-changing claims, when critic samples ≥3 citations per dossier against the primary source, then sampled URLs resolve and support the claim as stated — any failure → NEEDS_CHANGES.
 - **AC4 (synthesis)**: Given the 5 decision-memos, when US6 closes, then `roadmap-019.md` exists, every backlog entry references ≥1 Tier A/B finding, and the user ratifies it in retro.
-- **AC5 (seeds)**: Given the 3 conversation-only dossiers (2026-06-10), when US0 closes, then `evidence/seed-{anthropic,academic,industry}.md` exist verbatim with provenance headers.
+- **AC5 (seeds)**: Given the 3 conversation-only dossiers (2026-06-10) plus the graphify scout (added at gate-2→3 REFINE), when US0 closes, then `evidence/seed-{anthropic,academic,industry,graphify}.md` exist verbatim with provenance headers. <!-- v2 — delta from retro 018, approved 2026-06-10 -->
 
 # Out of scope (explícito)
 
