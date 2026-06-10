@@ -5,7 +5,8 @@ wave: W-A
 depends_on: [US0]
 tdd_mode: optional
 estimate: M
-status: draft
+status: closed
+closed: 2026-06-10
 absorbs_decision: METR-lite protocol is a proposal only; any implementation is 019+
 ---
 
