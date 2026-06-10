@@ -3,7 +3,7 @@
 ---
 date: 2026-06-10
 review_verdict: APPROVED_WITH_WARNINGS
-retro_status: pending-ratification
+retro_status: approved (2026-06-10 — roadmap APPROVE; P1-P4 all ratified: P1→docs/research-rigor.md + critic SIEMPRE rule; P2→docs/research-rigor.md; P3→memory feedback-refuter-not-optional; P4→deferred into roadmap 020.2 by design; living-spec delta applied)
 ---
 
 ## What worked
@@ -54,8 +54,8 @@ retro_status: pending-ratification
 
 ## Closure checklist (pending ratification)
 
-- [ ] Roadmap 019+ ratified (or pruned) by user
-- [ ] Promotions P1-P4 ratified/rejected
-- [ ] Living-spec delta applied
-- [ ] spec.md + tasks/index.md → `status: closed`
-- [ ] Lifecycle lesson for 021.2: this feature closes when its deliverables are ON MAIN + synced — not before (the 012 lesson, now evidence-backed)
+- [x] Roadmap 019+ ratified (APPROVE, 2026-06-10)
+- [x] Promotions P1-P4 ratified (all four; P4 deferred into 020.2 by design)
+- [x] Living-spec delta applied (spec.md AC5 v2)
+- [x] spec.md + tasks/index.md → `status: closed`
+- [ ] **OPEN until merge**: deliverables on MAIN + synced (the 012 lesson — current branch is `017-personal-optimization`; this checkbox closes at the 017/018 merge, and 021.2 makes it a permanent gate)
