@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Sistema de orquestación multi-agente para Claude Code",
   "scripts": {
-    "test": "bun test ./.claude/hooks/"
+    "test": "bun test ./.claude/hooks/ ./.claude/evals/ ./.claude/scripts/"
   },
   "repository": {
     "type": "git",

@@ -160,7 +160,7 @@ Coverage: 4/4 in the `[approach]` category — Phase 3 is implementation-focused
 
 ### Step 8 — Update state.json AND `tasks/US{N}.md` frontmatter
 
-Two updates per HU closure (both mandatory — Cmd IX observability + documental coherence):
+Two updates per HU closure (both mandatory — Cmd IX observability + documental coherence). One command does both, schema-validated: `bun .claude/scripts/flow-state.ts close-us US{N} --files "a.md,b.ts"` — prefer it over hand-rolled JSON/sed edits.
 
 **8a. Update `state.json`** after tests pass (or validations close):
 

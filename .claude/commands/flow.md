@@ -245,7 +245,7 @@ Closed/abandoned plans move to `.claude/plans/_archive/` (gitignored, untracked 
 ## SIEMPRE rules
 
 - Hard gates 1→2 and 2→3 are MANDATORY in standard/full modes — never skip via flag, never auto-approve.
-- `state.json` updates ON EVERY phase transition (Phase 1 complete → write; gate approved → write; HU completed → write).
+- `state.json` updates ON EVERY phase transition (Phase 1 complete → write; gate approved → write; HU completed → write). Use the typed helper instead of ad-hoc one-liners: `bun .claude/scripts/flow-state.ts close-us US{n} | approve-gate 1-2|2-3 | verdict <V> | close-feature`.
 - Triage is transparent — show the user the resolved mode + reason; user can override.
 - `--resume` reads state.json strictly; if corrupted, reconstruct from artefacts + warn (never silently guess).
 - In standard/full, the slug is generated ONCE at Phase 1 start; subsequent phases honor it.
