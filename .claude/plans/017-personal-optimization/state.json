@@ -7,8 +7,8 @@
     "1->2": true,
     "2->3": true
   },
-  "us_completed": ["US1"],
-  "us_pending": ["US3", "US2", "US4", "US5", "US6", "US7", "US8", "US9", "US10", "US11", "US12", "US13", "US14", "US15"],
+  "us_completed": ["US1", "US3"],
+  "us_pending": ["US2", "US4", "US5", "US6", "US7", "US8", "US9", "US10", "US11", "US12", "US13", "US14", "US15"],
   "us_history": [
     {
       "us": "US1",
