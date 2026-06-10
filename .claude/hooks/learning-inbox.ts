@@ -55,6 +55,13 @@ const SIGNALS: SignalDef[] = [
   ["workaround", /\b(workaround|apaño|fallback aplicado)\b/i, 0.4],
 ];
 
+// Self-match guard (feature 019 retro): the assistant's own review/retro prose
+// legitimately pairs "error"+"fixed" words and polluted the inbox two features
+// in a row. An error-resolution match whose context reads like review/verdict
+// meta-prose is discarded — it documents a learning cycle, it isn't one.
+const REVIEW_PROSE =
+  /\b(verdict|APPROVED|NEEDS_CHANGES|BLOCKED|review\.md|retro|in-review|learning-inbox|inbox)\b/i;
+
 // Snippet window around the match; 160 keeps entries one-line readable.
 const CONTEXT_RADIUS = 80;
 const CONTEXT_MAX = 160;
@@ -77,7 +84,9 @@ export function extractCandidates(payload: StopPayload): Candidate[] {
   for (const [type, pattern, confidence] of SIGNALS) {
     const m = text.match(pattern);
     if (m && m.index !== undefined) {
-      candidates.push({ type, confidence, context: snippet(text, m.index, m[0].length) });
+      const context = snippet(text, m.index, m[0].length);
+      if (type === "error-resolution" && REVIEW_PROSE.test(context)) continue;
+      candidates.push({ type, confidence, context });
     }
   }
   return candidates;

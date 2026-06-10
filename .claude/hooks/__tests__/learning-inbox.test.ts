@@ -30,6 +30,31 @@ describe("extractCandidates — payload with detectable signal (T11.1)", () => {
   });
 });
 
+describe("extractCandidates — self-match filter (019 retro: review prose is not a learning)", () => {
+  test("error-resolution match inside review/verdict prose is discarded", () => {
+    const payload = {
+      transcript_tail:
+        '"review_verdict": "APPROVED_WITH_WARNINGS — 2 MAJOR fixed in-review; panel infra-failed (session limit), inline with declared bias"',
+    };
+    expect(extractCandidates(payload).some((c) => c.type === "error-resolution")).toBe(false);
+  });
+
+  test("error-resolution match inside retro/inbox meta-prose is discarded", () => {
+    const payload = {
+      transcript_tail:
+        "Learning-inbox first real cycle: 1 entry consumed, 1 discarded as noise (error-resolution regex matched the assistant's own review prose) — the suite is passing",
+    };
+    expect(extractCandidates(payload).some((c) => c.type === "error-resolution")).toBe(false);
+  });
+
+  test("genuine error→fix outside review prose still detected", () => {
+    const payload = {
+      transcript_tail: "TypeError: x is undefined in auto-approve.ts ... added the null guard, tests passing",
+    };
+    expect(extractCandidates(payload).some((c) => c.type === "error-resolution")).toBe(true);
+  });
+});
+
 describe("appendToInbox — entry formatting (T11.1)", () => {
   test("appended entry is well-formed (type + confidence + source context)", () => {
     const inbox = join(tmp, "learned", "inbox.md");
