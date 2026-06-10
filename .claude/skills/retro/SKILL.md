@@ -60,8 +60,8 @@ In parallel:
 4. Read `tests.md` and/or `validations.md` (oracle).
 5. Read `review.md` — particularly `frontmatter.verdict` + `frontmatter.spec_drift` + findings count.
 6. Read `state.json` — confirm `current_phase: 4` complete.
-7. Read `.claude/plans/templates/retro.template.md` (output template).
-8. Read `CLAUDE.md` root section "The 10 Commandments" (for Step 9 audit).
+7. Read `.claude/plans/templates/retro.template.md` + `CLAUDE.md` §"The 10 Commandments" (for Step 9 audit).
+8. Read `.claude/learned/inbox.md` if present — auto-captured candidates (`learning-inbox` Stop hook), input for Step 8.
 
 ### Step 2 — Confirm prerequisites
 
@@ -139,7 +139,7 @@ Coverage: 3/4 canonical Socratic categories (`[approach]`/`[context]`/`[failure]
 
 ### Step 8 — Promotion candidates
 
-For each reusable pattern surfaced in Step 5/7, produce a row:
+For each reusable pattern surfaced in Step 5/7 — plus each entry in `.claude/learned/inbox.md` (auto-captured; weigh by its confidence score, discard noise honestly) — produce a row:
 
 | Candidate | Scope | Type | Why | Concrete proposal (path + sketch) |
 |---|---|---|---|---|
@@ -271,10 +271,10 @@ The retro skill is the **last gate**. Any US{N}.md found not-closed at this poin
 - Approved promotions → Lead writes the target file inline (default-allow gate covers non-sensitive paths).
 - Approved living-spec diff → patch `spec.md` with note "v2 — delta from retro {NNN}-{slug}".
 
-**13c. Update counters**:
+**13c. Update counters + clear the inbox**:
 
 - `state.json.retro_status = "approved"`, `feature_closed = true`.
-- `retro.md.promotions_approved` counter += N (per actually-applied).
+- `retro.md.promotions_approved` counter += N (per actually-applied); clear `.claude/learned/inbox.md` (entries became candidates or were honestly discarded — record the discard count in retro.md).
 
 **Important**: do NOT close lifecycle while promotions are still pending approval. Either close them in this session or carry as action items into the next session — but the feature itself CAN close once 13a verification passes (residuals fixed) + retro.md is produced.
 

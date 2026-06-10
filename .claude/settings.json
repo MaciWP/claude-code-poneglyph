@@ -79,6 +79,11 @@
             "type": "command",
             "command": "bun $HOME/.claude/hooks/security-gate.ts",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "bun $HOME/.claude/hooks/learning-inbox.ts",
+            "timeout": 10
           }
         ]
       }

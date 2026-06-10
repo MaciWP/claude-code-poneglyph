@@ -1,9 +1,10 @@
 ---
 spec: 018-evidence-roadmap
 created: 2026-06-10
+approved: 2026-06-10
 mode: full
-status: draft
-phase: 2
+status: approved
+phase: 3
 total_us: 7
 dag_complete: true
 ---
