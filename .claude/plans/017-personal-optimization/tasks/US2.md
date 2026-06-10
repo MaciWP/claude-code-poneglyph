@@ -5,7 +5,8 @@ wave: W1
 depends_on: [US1, US3]
 tdd_mode: optional
 estimate: M
-status: draft
+status: closed
+closed: 2026-06-10
 absorbs_decision: inventory moves to on-demand doc; agent-memory ref removed
 ---
 

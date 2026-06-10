@@ -89,12 +89,12 @@ When blocked, ask: (1) missing context, (2) approach change, (3) task split.
 
 PreToolUse and PostToolUse hooks may silently fail to fire (known Claude Code bug, open issue #6305). Design validation accordingly:
 
-| Hook type | Reliability | Use for |
-|-----------|-------------|---------|
-| `Stop` | Reliable | Quality gate — currently security validation (`security-gate.ts`). Test verification is performed manually by the Lead after the build step. |
-| `UserPromptSubmit` | Reliable | Memory injection, routing hints |
-| `SubagentStop` | Reliable | Agent scoring, memory insights |
-| `PreToolUse` | Unreliable | Best-effort only — never sole gate for critical checks |
-| `PostToolUse` | Unreliable | Best-effort only — never sole gate for critical checks |
+| Hook type | Reliability | Registered today | Use for |
+|-----------|-------------|------------------|---------|
+| `Stop` | Reliable | YES — `security-gate.ts` | Quality gate — security validation. Test verification is performed manually by the Lead after the build step. |
+| `UserPromptSubmit` | Reliable as event (gap early-session/post-compaction — issue #17277) | **NO — none registered** | Candidate surface for skill-activation injection (planned 017/US12) |
+| `SubagentStop` | Reliable as event | **NO — none registered** | Available for future use |
+| `PreToolUse` | Unreliable (#6305) | NO | Best-effort only — never sole gate for critical checks |
+| `PostToolUse` | Unreliable (#6305) | YES — `code-validator.ts` | Best-effort only — never sole gate for critical checks |
 
 `security-gate.ts` (Stop, async) is the current Stop hook. There is no automatic test-pass validator at the moment — the Lead is responsible for verifying tests after each build step. Never rely solely on PostToolUse for security enforcement.
