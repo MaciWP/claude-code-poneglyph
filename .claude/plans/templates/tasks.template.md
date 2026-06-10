@@ -12,6 +12,17 @@ absorbs_decision: <nombre>   # opcional — solo si la HU absorbe una decisión 
 
 # US{N} — <título>
 
+## Execution prompt (Phase 3 input)
+
+> The US is consumed by `build` (the Lead executes it inline). Write this block as a self-contained, high-quality prompt — Commandment VIII applies to the plan itself.
+
+**Task**: <one imperative sentence — the exact change>
+**Context**: <files, prior state, evidence the executor needs — paths verified>
+**Constraints**: <locked decisions, what NOT to touch, language/style rules>
+**Deliverable**: <exact artifacts/edits expected>
+**Verify**: <mechanical checks that prove done>
+**Ask first**: <AskUserQuestion moments, or "nothing — decisions locked">
+
 ## ⚡ Quick reference
 
 | Campo | Valor |
