@@ -129,11 +129,15 @@ Clasificación: US1 validation (skill md) · US2 validation (CLAUDE.md + rule + 
 ### Cross-validations
 - Párrafo Workflow de flow.md coherente con la doctrina US1 (fan-out de escritura = opt-in).
 
+## US4 — decisión Stop test-gate (AC4, registrada en build 2026-06-10)
+
+**Decisión: NO restaurar el gate Stop de tests.** El usuario ratificó en build que la verificación de tests sigue siendo manual (responsabilidad del Lead tras cada build step, como documenta error-recovery.md §Hook Reliability). Motivo literal: reducir tokens y burocracia que aporta poco — un gate mecánico por turno es la ceremonia que esta feature recorta. Consecuencia: US8 no recibe ningún hook de US4; el Mandamiento IV se cubre con el gate por HU del skill `build` (suite verde antes de cerrar).
+
 ## US8 — settings.json modernización
 
 ### Pre
 - Schema/docs actuales consultados; tabla de campos verificados construida ANTES de editar.
-- US4 cerrada (posible hook Stop-gate que registrar).
+- US4 cerrada (decisión Stop-gate: NO — nada que registrar; ver §US4).
 
 ### Post
 - settings.json modernizado: version gate + fallback (si verifican), env y permisos revisados, decisión MCP documentada.

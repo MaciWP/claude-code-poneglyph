@@ -24,20 +24,20 @@ export function getSessionMode(): string | null {
   return null;
 }
 
+export function buildOutput(): string {
+  const sections: string[] = [LEAD_REMINDER, ANTI_HALLUCINATION];
+
+  const modeSection = getSessionMode();
+  if (modeSection) {
+    sections.push(modeSection);
+  }
+
+  return sections.join("\n\n");
+}
+
 async function main(): Promise<void> {
   try {
-    const sections: string[] = [];
-
-    sections.push(LEAD_REMINDER);
-    sections.push(ANTI_HALLUCINATION);
-
-    const modeSection = getSessionMode();
-    if (modeSection) {
-      sections.push(modeSection);
-    }
-
-    const output = sections.join("\n\n");
-    console.log(output);
+    console.log(buildOutput());
   } catch {
     // best-effort — never block Claude Code
   }

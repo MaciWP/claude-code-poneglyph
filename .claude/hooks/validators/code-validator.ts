@@ -213,7 +213,7 @@ async function main(): Promise<void> {
   let content = rawContent;
   if (!content) {
     const file = Bun.file(filePath);
-    content = (await file.exists()) ? await file.text() : null;
+    content = (await file.exists()) ? await file.text() : undefined;
     if (!content) process.exit(EXIT_CODES.PASS);
   }
 

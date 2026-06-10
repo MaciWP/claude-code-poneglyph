@@ -20,7 +20,9 @@
  * No output (exit 0) to pass through to normal permission flow.
  */
 
-interface PermissionInput {
+import { readHookStdin } from "./lib/hook-stdin";
+
+export interface PermissionInput {
   tool_name?: string;
   tool_input?: Record<string, unknown>;
   session_id?: string;
@@ -65,24 +67,38 @@ export function shouldAutoApprove(
   return { approve: true };
 }
 
+// Best-effort parse of the stdin payload: empty or invalid input → null (no-op).
+export function safeParse(raw: string): PermissionInput | null {
+  if (!raw.trim()) return null;
+  try {
+    return JSON.parse(raw) as PermissionInput;
+  } catch {
+    return null;
+  }
+}
+
+// Pure decision for a parsed payload: allow-decision JSON, or null to pass
+// through to the normal permission flow (blocked or no input).
+export function decidePermission(
+  input: PermissionInput | null,
+): { permissionDecision: "allow" } | null {
+  if (!input) return null;
+  const tool = input.tool_name ?? "";
+  const { approve } = shouldAutoApprove(tool, input.tool_input ?? {});
+  return approve ? { permissionDecision: "allow" } : null;
+}
+
 if (import.meta.main) {
   try {
-    const raw = await Bun.stdin.text();
-    if (raw.trim()) {
-      const input: PermissionInput = JSON.parse(raw);
-      const tool = input.tool_name ?? "";
-      const toolInput = input.tool_input ?? {};
+    const input = safeParse(await readHookStdin());
+    const decision = decidePermission(input);
 
-      const { approve, reason } = shouldAutoApprove(tool, toolInput);
-
-      if (approve) {
-        process.stderr.write(`[auto-approve] allowing ${tool}\n`);
-        process.stdout.write(
-          JSON.stringify({ permissionDecision: "allow" }) + "\n",
-        );
-      } else {
-        process.stderr.write(`[auto-approve] blocking ${tool}: ${reason}\n`);
-      }
+    if (decision) {
+      process.stderr.write(`[auto-approve] allowing ${input?.tool_name ?? ""}\n`);
+      process.stdout.write(JSON.stringify(decision) + "\n");
+    } else if (input) {
+      const { reason } = shouldAutoApprove(input.tool_name ?? "", input.tool_input ?? {});
+      process.stderr.write(`[auto-approve] blocking ${input.tool_name ?? ""}: ${reason}\n`);
     }
   } catch {
     // Best-effort: never block on parse failure

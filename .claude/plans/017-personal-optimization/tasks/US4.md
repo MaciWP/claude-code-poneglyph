@@ -5,8 +5,10 @@ wave: W2
 depends_on: []
 tdd_mode: forced
 estimate: M
-status: draft
-absorbs_decision: Stop test-gate restoration ratified by user at build
+status: closed
+closed: 2026-06-10
+implemented: 2026-06-10
+absorbs_decision: Stop test-gate restoration ratified by user at build — decision NO (recorded in validations.md §US4)
 ---
 
 # US4 — Hooks: fix + testabilidad + poda

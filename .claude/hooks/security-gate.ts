@@ -22,6 +22,13 @@ export function hasTextExtension(filePath: string): boolean {
   return TEXT_EXTENSIONS.has(filePath.slice(dot).toLowerCase());
 }
 
+// Per-line secret check. Resets the stateful /g regex BEFORE testing — the
+// lastIndex gotcha would silently skip alternating lines otherwise.
+export function lineHasSecret(line: string): boolean {
+  SECRET_PATTERN.lastIndex = 0;
+  return SECRET_PATTERN.test(line) || SECRET_PATTERN_CI.test(line);
+}
+
 async function getModifiedFiles(): Promise<string[]> {
   const [stagedProc, untrackedProc] = [
     Bun.spawn(["git", "diff", "--name-only", "HEAD"], { stdout: "pipe", stderr: "pipe" }),
@@ -46,9 +53,7 @@ async function scanFile(filePath: string): Promise<string[]> {
     const content = await file.text();
     const lines = content.split("\n");
     for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      SECRET_PATTERN.lastIndex = 0; // reset BEFORE test — stateful /g gotcha
-      if (SECRET_PATTERN.test(line) || SECRET_PATTERN_CI.test(line)) {
+      if (lineHasSecret(lines[i])) {
         hits.push(`${filePath}:${i + 1}`);
       }
     }

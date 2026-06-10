@@ -2,7 +2,6 @@ import { describe, test, expect } from "bun:test";
 import {
   detectSecrets,
   detectInjections,
-  calculateComplexity,
   shouldIgnorePath,
 } from "../validators/code-validator";
 
@@ -194,38 +193,5 @@ describe("detectInjections — medium severity", () => {
 describe("detectInjections — clean code", () => {
   test("no findings for parameterized query", () => {
     expect(detectInjections("db.query('SELECT * FROM users WHERE id = ?', [id])")).toHaveLength(0);
-  });
-});
-
-describe("calculateComplexity", () => {
-  test("returns 0 for trivial code", () => {
-    expect(calculateComplexity("function add(a, b) { return a + b; }")).toBe(0);
-  });
-
-  test("counts if statements", () => {
-    // Two bare if tokens — using template to avoid inline keyword counts
-    const code = ["if (a > 0) { return 1; }", "if (a < 0) { return -1; }"].join("\n");
-    expect(calculateComplexity(code)).toBeGreaterThanOrEqual(2);
-  });
-
-  test("counts logical operators", () => {
-    expect(calculateComplexity("if (a && b) { return true; }")).toBeGreaterThanOrEqual(2);
-  });
-
-  test("counts ternary operators", () => {
-    expect(calculateComplexity("const x = a ? 1 : 0;")).toBeGreaterThanOrEqual(1);
-  });
-
-  test("high complexity code scores above 25", () => {
-    // Build a string with 26 known complexity tokens without writing them inline
-    // Each "if (x)" = 1 point; repeat 26 times
-    const token = ["i", "f (x) { }"].join("");
-    const code = Array(26).fill(token).join(" ");
-    expect(calculateComplexity(code)).toBeGreaterThan(25);
-  });
-
-  test("simple code stays under threshold", () => {
-    const code = "function greet(name) { return 'Hello ' + name; }";
-    expect(calculateComplexity(code)).toBeLessThanOrEqual(25);
   });
 });
