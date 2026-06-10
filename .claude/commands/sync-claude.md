@@ -96,15 +96,16 @@ bun .claude/commands/sync-claude.ts --unlink
 
 | Folder | Contents |
 |--------|----------|
-| `agents/` | Delegated agents |
 | `skills/` | Reusable skills |
 | `commands/` | Slash commands |
 | `rules/` | Behavior rules |
 | `docs/` | Technical documentation |
 | `hooks/` | Automations |
-| `knowledge/` | Knowledge base |
+| `workflows/` | Saved Workflow scripts |
 | `output-styles/` | Output style modes (e.g. Poneglyph) |
 | `CLAUDE.md` | Global instructions |
+
+> `agents/`, `orchestrator/` and `knowledge/` were removed from the sync list 2026-06-11 — the directories no longer exist (custom agents cut in feature 008).
 
 ## External Links (outside `~/.claude/`)
 

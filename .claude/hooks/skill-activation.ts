@@ -3,7 +3,7 @@
 /**
  * Skill Activation Hook (UserPromptSubmit)
  *
- * Deterministic layer under `skill-advisor`: matches the submitted prompt
+ * Deterministic skill-routing layer: matches the submitted prompt
  * against skill keywords read FROM DISK (no hardcoded list that rots) and,
  * on match, prints an explicit `Skill(<name>)` instruction to stdout —
  * UserPromptSubmit stdout is injected as context Claude can act on.

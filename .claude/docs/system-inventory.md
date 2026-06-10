@@ -1,6 +1,6 @@
 # System inventory & operational detail (evicted from CLAUDE.md — feature 017)
 
-On-demand reference. CLAUDE.md keeps only always-needed behavior; everything here is data, history or detail recoverable with a Read. Last full update: 2026-06-10 (feature 017 in flight — W2 deletions/archive will change the directory map).
+On-demand reference. CLAUDE.md keeps only always-needed behavior; everything here is data, history or detail recoverable with a Read. Last full update: 2026-06-11 (polish & prune pass — dead-weight deletions, plans archive executed, evals/scripts added).
 
 ## Sync working model (full detail)
 
@@ -102,9 +102,9 @@ Test: "does the agent need this in EVERY prompt?" — no → skill.
 
 | Component | Audit baseline (early 2026) | Post-cleanup (2026-05-28) | Current | Detail |
 |---|---|---|---|---|
-| Agents | 7 + 1 meta | 3 | **0 custom** | builder/reviewer/scout cut in feature 008; work runs inline (delegation doctrine), read-only fan-out via Workflow/`Explore` |
-| Skills | 28 | 14 | **21** | 6 phase skills + `drillme` + `skill-advisor` (012) + `html-report` (003); `planner-protocol` migrated-and-cut into `tech-plan/references/` |
-| Hooks | 15+ | 6 | **4** | `auto-approve`, `post-compact`, `security-gate`, `validators/code-validator` (feature 017 may add more — see plan) |
+| Agents | 7 + 1 meta | 3 | **0 custom** | builder/reviewer/scout cut in feature 008; work runs inline (delegation doctrine), read-only fan-out via Workflow/`Explore`. The ONE sanctioned single-agent dispatch is critic's fresh-context reviewer (P1 exception, feature 019) — ad-hoc, no agent file |
+| Skills | 28 | 14 | **22** | 6 phase skills + `drillme` + `html-report` (003) + `best-of-n` (019, pilot); `planner-protocol` migrated-and-cut into `tech-plan/references/`; `skill-advisor` cut — its turn-level routing now lives in `skill-activation.ts` + orchestrator-protocol skill matching |
+| Hooks | 15+ | 6 | **7 registered** | `auto-approve`, `post-compact`, `security-gate`, `validators/code-validator`, `skill-activation`, `instructions-loaded`, `learning-inbox` (017/US11-12; self-match filter 019) |
 | Slash commands | 10 | 4 | **5** | `decide`, `explain-changes`, `flow`, `sync-claude`, `role` |
 | Rules | 7 | 2 + paths/ | **2 + paths/** | `error-recovery.md`, `test-policy.md` + `paths/{hooks,orchestration}.md` |
 | Output-styles | 1 (caveman) | 1 | **1 (poneglyph)** | es-ES natural register since feature 017/US3 |
@@ -113,14 +113,17 @@ Test: "does the agent need this in EVERY prompt?" — no → skill.
 
 | Dir | Contents | Status |
 |---|---|---|
-| `skills/` (21), `commands/` (5), `rules/`, `hooks/`, `output-styles/`, `plans/` | Core system | documented above |
-| `docs/` | This file + `arch-h-lead-directed-skill-reads.md` + `lead-mode-when-needed.md` | on-demand references |
+| `skills/` (22), `commands/` (5), `rules/`, `hooks/`, `output-styles/`, `plans/` | Core system | documented above |
+| `docs/` | This file + `research-rigor.md` (`arch-h-*` and `lead-mode-*` deleted 2026-06-11 — superseded by `orchestrator-protocol/references/06` and the `CLAUDE_LEAD_MODE` note above) | on-demand references |
 | `workflows/` | `ultracode-audit.js` — saved Workflow script (worked example of find→verify pipeline) | live |
-| `audits/` | Ad-hoc audit outputs (005, 009, 2026-06-10 general analysis) | archive-like |
-| `config/` | `cost-budget.json` | live |
-| `ccstatusline/` | Statusline module wired via settings | live |
+| `audits/` | Ad-hoc audit outputs (005, 009) | archive-like |
+| `evals/` | Golden-prompt regression harness (019): deterministic graders + runner + 18 real-failure cases. Tracked, NOT synced. Run per meta-config change | live |
+| `scripts/` | `flow-state.ts` — typed state.json/frontmatter mutations for /flow. Tracked, NOT synced | live |
+| `learned/` | Runtime per-machine (gitignored) EXCEPT `best-of-n-log.md` (versioned pilot evidence, 019) | runtime |
+| `ccstatusline/` | Statusline module wired via settings (synced to `~/.config/ccstatusline/`) | live |
+| `config/` | `cost-budget.json` — phantom config nothing read | **deleted 2026-06-11** |
 | `data/`, `agent-memory/` | Telemetry remnants / empty dir | **deleted 2026-06-10 (017/US5)** |
-| `plans/_archive/` | Closed/abandoned plans (gitignored, on disk only) | archive since 017/US6 |
+| `plans/_archive/` | Closed/abandoned plans (gitignored, on disk only). 017 + 019 archived 2026-06-11; 001 + 018 stay tracked (live references: 001 auxiliary matrix ← 7 skills; 018 decision-memos ← best-of-n, research-rigor) | archive since 017/US6 |
 
 ## MCP servers (session-connected) — decision 2026-06-10 (017/US8)
 
@@ -128,7 +131,9 @@ All five stay default-on (user-ratified): **context7** (plugin, settings.json `e
 
 Schema findings (017/US8, verified against schemastore 2026-06-10): `minimumVersion` EXISTS (version gate set to 2.1.160); `requiredMinimumVersion` and `fallbackModel` DO NOT EXIST — no fallback-model cascade is possible in settings.json (closest is `availableModels`, which restricts selection rather than degrading gracefully). Recorded per AC1; nothing invented.
 
-Activation/observability hooks (017/US12, event verified in official hooks docs 2026-06-10): `skill-activation.ts` (UserPromptSubmit) injects explicit `Skill(<name>)` instructions on keyword match — deterministic layer under `skill-advisor`, best-effort per issue #17277. `instructions-loaded.ts` (InstructionsLoaded, async) logs every CLAUDE.md/rules load to `.claude/learned/instructions-loaded.log` — grep it to verify load layers instead of assuming.
+Activation/observability hooks (017/US12, event verified in official hooks docs 2026-06-10): `skill-activation.ts` (UserPromptSubmit) injects explicit `Skill(<name>)` instructions on keyword match — the deterministic activation layer, best-effort per issue #17277. `instructions-loaded.ts` (InstructionsLoaded, async) logs every CLAUDE.md/rules load to `.claude/learned/instructions-loaded.log` — grep it to verify load layers instead of assuming.
+
+`CLAUDE_LEAD_MODE` env var (set `"true"` in `settings.json`): consumed by `post-compact.ts:20-22` to re-inject the "Lead Orchestrator active" header after compaction. That is its only consumer (verified 2026-06-11; the old `docs/lead-mode-when-needed.md` describing an opt-in mechanism was deleted — the var is permanently on).
 
 ## History
 
@@ -136,5 +141,8 @@ Activation/observability hooks (017/US12, event verified in official hooks docs 
 - **Feature 006 (2026-06-08)**: always-on honesty layer + base role senior engineer-advisor + `/role` (13 roles).
 - **Feature 008 (2026-06-05/09)**: builder/reviewer/scout agents cut; spawn decision tree canonical in orchestrator-protocol. The W2 KEEP-cond decisions for builder/reviewer were superseded here; `review-patterns` KEEP still holds.
 - **Feature 012**: `skill-advisor` (turn-level propose→validate skill routing).
-- **Feature 017 (2026-06-10, in flight)**: inline-first delegation doctrine (evidence-based), es-ES natural style, this eviction, hygiene waves.
+- **Feature 017 (2026-06-10, closed)**: inline-first delegation doctrine (evidence-based), es-ES natural style, this eviction, hygiene waves.
+- **Feature 018 (2026-06-10, closed)**: evidence roadmap — 5 research waves, decision memos W1-W5, roadmap 019+.
+- **Feature 019 (2026-06-10, closed, archived)**: quality gates — critic fresh-context reviewer (panel → decisions only), evals harness, best-of-n pilot.
+- **Polish & prune (2026-06-11)**: dead-weight deletions (cost-budget, 2 docs, dead `skill-advisor` section in CLAUDE.md, 3 stale LINK_FOLDERS), plans archive policy executed, doctrine-sweep protocol (meta-create reference), failure→eval-case wiring in retro, flow-state helper.
 - Audit trail: `.claude/plans/002-claude-config-deep-audit/report.md` + audit 011.

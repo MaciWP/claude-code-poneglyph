@@ -12,15 +12,12 @@ import { $ } from "bun";
 // === CONFIGURATION ===
 
 const LINK_FOLDERS = [
-  "agents",
   "skills",
   "commands",
   "rules",
   "docs",
   "hooks",
   "workflows",
-  "orchestrator",
-  "knowledge",
   "output-styles",
 ];
 

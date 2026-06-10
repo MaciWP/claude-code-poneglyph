@@ -133,9 +133,9 @@ No automated gate enforces this — the Lead is responsible:
 - **Sensitive paths** (`.env`, `*.lock`, `package.json`, `.claude/settings.json`, `secrets/`, `credentials/`) — declare inline `sensitive: <reason ≥8 chars>` before the edit.
 - **Destructive operations** (`rm -rf`, force push, db migration, schema change) — never run directly; escalate to the user with explicit reason.
 
-### Skill routing — `skill-advisor` (turn-level keystone)
+### Skill routing — deterministic layers over auto-activation
 
-For any **non-trivial** task, invoke `skill-advisor` (propose→validate) to surface ≤3-5 relevant skills for human ratification BEFORE build. Declared here because native skill auto-activation **undertriggers by design** (verified: `.claude/plans/_research-skill-activation-2026-06-09.md`). Skip for trivial tasks. `/flow` invokes it at phase boundaries — that is the feature-level half; this is the turn-level half.
+Native skill auto-activation **undertriggers by design** (verified: `.claude/plans/_research-skill-activation-2026-06-09.md`). The working layers: the `skill-activation.ts` hook injects explicit `Skill(<name>)` on keyword match (honor its hints), and on non-trivial tasks the Lead matches skills via `orchestrator-protocol` `references/05-skill-matching.md` + path rules BEFORE build. Skip for trivial tasks.
 
 Prompt score <70 is a **signal of doubt**, not a hard stop: ask or refine with `prompt-engineer`; if pragmatically clear, proceed and flag uncertainty.
 
