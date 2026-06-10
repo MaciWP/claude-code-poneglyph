@@ -1,12 +1,11 @@
 ---
 globs:
-  - ".claude/agents/**"
   - ".claude/rules/**"
   - ".claude/skills/**"
 priority: 15
 ---
 
-<!-- Last verified: 2026-05-30 -->
+<!-- Last verified: 2026-06-10 (017/US7 — dead agents-dir glob removed; that dir no longer exists) -->
 
 ## Orchestration Context
 

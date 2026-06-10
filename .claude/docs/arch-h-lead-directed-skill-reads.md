@@ -6,6 +6,8 @@ Validated empirically on 2026-04-10 in the Poneglyph orchestration system. As of
 
 > **2026-05-29 correction (feature 005)**: the `prompt-enrichment.ts` `UserPromptSubmit` hook described below (§4 step 2, §9) was **designed but never implemented** — it is a phantom. The Arch H pattern itself (the Lead embeds `Read .claude/skills/<name>/SKILL.md` per task) is real and validated; only the *auto-suggestion* step is manual — the Lead selects skills by matching `.claude/rules/paths/*.md` + `references/05-skill-matching.md` itself. Read every `prompt-enrichment.ts` mention below as "the Lead does this manually". The native agent **`skills:` frontmatter field** (§1, §6) is the supported way to preload skills an agent ALWAYS needs.
 
+> **2026-06-10 correction (017/US7)**: two more truth fixes apply document-wide. (1) **Agent-era statements are historical**: the custom `builder`/`reviewer`/`scout` agents were cut in feature 008 and `.claude/agent-memory/` was deleted (017/US5) — read every present-tense mention of them below as past tense. (2) **The django/binora examples are external**: `django-api`, `django-architecture`, `django-query-optimizer`, `django-review-lessons`, `code-style-enforcer` and the `binora-*` references lived in the binora WORK repo, never in poneglyph — the empirical validation (§5, §8) ran there. They remain valid evidence for the pattern, but none of those paths resolve in this repo.
+
 ## 1. Problem statement
 
 Claude Code offers three plausible mechanisms for getting skill content into a subagent. All three have limitations:
@@ -14,7 +16,7 @@ Claude Code offers three plausible mechanisms for getting skill content into a s
 |---|---|---|
 | **Frontmatter `skills:` pre-injection** | Agent definition declares a static list; full `SKILL.md` bodies are pre-loaded at spawn via `<command-message>` wrappers. | **All-or-nothing.** A project-scoped agent must declare its skill list statically; the list cannot vary per task. Every delegation pays the full token cost. |
 | **Lead `Skill()` invocation** | Loads skill content into the main orchestrator's working context. | **Does not propagate to subagents.** Subagents spawn in a fresh context. Anything the Lead loaded via `Skill()` stays with the Lead. |
-| **Subagent dynamic `Skill()`** | The subagent calls `Skill()` from inside its own turn. | **Works when `Skill` is in the agent's `tools:` list** (corrected 2026-05-30 — official docs confirm subagents CAN invoke Skill(); CC ≥2.1.133 fixed prior breakage). `builder`/`reviewer`/`scout` now include `Skill`. Originally this doc claimed the tool was unavailable to default agents — that was the omission of `Skill` from `tools:`, not a harness limit. |
+| **Subagent dynamic `Skill()`** | The subagent calls `Skill()` from inside its own turn. | **Works when `Skill` is in the agent's `tools:` list** (corrected 2026-05-30 — official docs confirm subagents CAN invoke Skill(); broken until CC v2.1.133, fixed there — verified in `_research-skill-activation-2026-06-09.md` §mecanismos, changelog-cited). The cut `builder`/`reviewer`/`scout` agents included `Skill` before feature 008 removed them. Originally this doc claimed the tool was unavailable to default agents — that was the omission of `Skill` from `tools:`, not a harness limit. |
 
 **The gap**: there is no documented way to give a default subagent **task-specific** skill content without either (a) creating per-project custom agents with bespoke frontmatter or (b) pre-declaring every skill the agent might ever need.
 
@@ -24,7 +26,7 @@ With only frontmatter injection available, any non-trivial project hits the same
 
 - **Context bloat per delegation.** A project reviewer with 8 declared Django skills pays for all 8 even when reviewing a migration file where only 2 are relevant.
 - **Per-project agent duplication.** Each project ends up with its own `project-builder`, `project-reviewer`, `project-scout`, each a fork that diverges from the global baseline.
-- **Fragmented agent expertise.** Every per-project agent has its own `.claude/agent-memory/{agent}/MEMORY.md`. Insights learned in project A never reach the agent working on project B. There is no pooled, cross-project expertise.
+- **Fragmented agent expertise.** Every per-project agent had its own `.claude/agent-memory/{agent}/MEMORY.md` (historical — the custom agents were cut in feature 008; the dir was deleted in 017/US5). Insights learned in project A never reached the agent working on project B. There was no pooled, cross-project expertise.
 
 The frontmatter path scales poorly. You want task-specific skill loading on the global default agents themselves.
 
@@ -88,8 +90,8 @@ Arch H was not adopted on theory. It was tested.
 |---|---|---|
 | **Test 1 — Subagent tool allowlist (initial)** | Whether default reviewer had `Skill` in its tools. | Initially read as YES based on surface inspection. Later refuted. |
 | **Test 5 — Real introspection** | Actual tools available to default subagents at runtime. | Default subagents expose `Read`, `Grep`, `Glob`, `Bash` — **not** `Skill`. Invalidated any prompt that told a subagent to call `Skill()`. |
-| **Test 7 — First Arch H validation** | Whether a reviewer, told to `Read .claude/skills/django-api/SKILL.md` plus two others in its delegation prompt, would load and use the content. | Reviewer Read all three files as its first actions and cited `django-api` rules verbatim in the review output. Parity with frontmatter-based project agents, without the frontmatter. |
-| **Test P5 — Real-world review under Arch H** | Whether Arch H adds real value beyond baseline Django knowledge on a production file. | Reviewer Read 4 skills (`django-architecture`, `django-query-optimizer`, `django-review-lessons`, `code-style-enforcer`), then reviewed a 172-line Django model file. Output: 5 majors + 3 minors, each tied to a specific skill rule cited verbatim. The reviewer explicitly noted: *"Baseline Django knowledge alone would have flagged maybe 2 of 8 issues."* |
+| **Test 7 — First Arch H validation** | Whether a reviewer, told to `Read .claude/skills/django-api/SKILL.md` (external — binora work repo) plus two others in its delegation prompt, would load and use the content. | Reviewer Read all three files as its first actions and cited `django-api` rules verbatim in the review output. Parity with frontmatter-based project agents, without the frontmatter. |
+| **Test P5 — Real-world review under Arch H** | Whether Arch H adds real value beyond baseline Django knowledge on a production file. | Reviewer Read 4 skills (`django-architecture`, `django-query-optimizer`, `django-review-lessons`, `code-style-enforcer` — all external, binora work repo), then reviewed a 172-line Django model file. Output: 5 majors + 3 minors, each tied to a specific skill rule cited verbatim. The reviewer explicitly noted: *"Baseline Django knowledge alone would have flagged maybe 2 of 8 issues."* |
 
 Test P5 is the load-bearing evidence: skills loaded via Arch H measurably expanded what the reviewer caught, and the reviewer itself attributed the delta to the loaded content.
 
@@ -139,7 +141,7 @@ For skills mixing generic content with project-specific tacit knowledge, extend 
 
 The `SKILL.md` entry ends with a `Deep references (Read on demand)` table mapping `When → Read file`. The subagent always reads `SKILL.md` first (loaded by the delegation prompt), then Reads only the references that apply to the task at hand. This is Arch H recursively applied: the Lead directs the subagent to read the entry; the entry directs the subagent to read specific references.
 
-Concrete example: `.claude/skills/django-api/` ships a lean `SKILL.md` plus ~5 references for binora-specific patterns (frontend_permissions integration, drf-spectacular schema extensions, etc.). The base skill loads in every Django delegation; the references only load when the task matches.
+Concrete example (external — binora work repo, not poneglyph): `.claude/skills/django-api/` shipped a lean `SKILL.md` plus ~5 references for binora-specific patterns (frontend_permissions integration, drf-spectacular schema extensions, etc.). The base skill loaded in every Django delegation; the references only loaded when the task matched.
 
 ### Canonical solution: the Content Map
 
@@ -157,7 +159,7 @@ Canonical reference: `orchestrator-protocol/references/06-context-arch-h.md` §C
 
 ### Limitations — lazy pointer-following
 
-The Content Map mitigates but does not fully eliminate lazy reading. Empirically tested on 2026-04-10 with `django-query-optimizer` plus its `references/binora-hierarchy-patterns.md` and `references/binora-deviations.md`: subagents **do** follow the pointer table, but **lazily and need-driven**, not eagerly. They Read only what the task phrasing seems to justify.
+The Content Map mitigates but does not fully eliminate lazy reading. Empirically tested on 2026-04-10 with `django-query-optimizer` plus its `references/binora-hierarchy-patterns.md` and `references/binora-deviations.md` (external — binora work repo): subagents **did** follow the pointer table, but **lazily and need-driven**, not eagerly. They Read only what the task phrasing seemed to justify.
 
 The residual risk is **implicit relevance**. If neither the user prompt nor the Contents column surface a term the subagent can match to the task, a critical reference may be skipped. Concrete case: a reviewer given Django code using `GenericForeignKey` and a generic prompt of the form "check N+1" may stay with the main `SKILL.md` and never open `references/binora-hierarchy-patterns.md`, thereby missing that `select_related('parent')` on a `GenericForeignKey` is silently a no-op in Django — a serious footgun.
 
@@ -180,7 +182,7 @@ Canonical files in this repo:
 | Delegation template (Memory + Skill Injection) | `orchestrator-protocol/SKILL.md §Arch H Delegation Template` |
 | Canonical propagation model | `orchestrator-protocol/references/06-context-arch-h.md §Skill Propagation Model` |
 
-Example path rule (`.claude/rules/paths/django.md` frontmatter):
+Example path rule (external — `.claude/rules/paths/django.md` lived in the binora work repo; poneglyph's own path rules are `hooks.md` and `orchestration.md`):
 
 ```yaml
 globs:
@@ -205,4 +207,4 @@ State of the art in the broader Claude Code community as of 2026-04-10:
 - **Closest related**: GitHub issue `anthropics/claude-code#32910` confirms that Read-based skill discovery works mechanically, but does not name the pattern, discuss delegation-prompt injection, or contrast it with frontmatter.
 - **Related work inspected**: `jarrodwatts/claude-code-config`, `WorldFlowAI/everything-claude-code`, Mario Ottmann's Claude Code customization guide. None of them use Lead-directed Reads as an explicit alternative to frontmatter `skills:`.
 
-To our knowledge, Poneglyph is the first codebase to name Arch H, ship a hook-driven implementation, and validate it empirically against a real review task (Test P5).
+To our knowledge, Poneglyph is the first codebase to name Arch H and validate it empirically against a real review task (Test P5, run in the external binora work repo). The hook-driven implementation was never built — see the §0 phantom correction; skill selection is the Lead's manual step.

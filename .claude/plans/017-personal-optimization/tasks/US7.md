@@ -5,7 +5,9 @@ wave: W2
 depends_on: []
 tdd_mode: skip: doc-only change, no testable behavior
 estimate: S
-status: draft
+status: closed
+closed: 2026-06-10
+implemented: 2026-06-10
 ---
 
 # US7 — Barrido de verdad restante

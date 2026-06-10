@@ -1,6 +1,6 @@
 # Test Policy
 
-Defines whether TDD-first decomposition applies when planning changes to this repo. Read by `tech-plan` (§0.1) and honored by `builder` per node.
+Defines whether TDD-first decomposition applies when planning changes to this repo. Read by `tech-plan` (§0.1) and honored by the `build` skill per node.
 
 ## Levels
 
