@@ -7,8 +7,8 @@
     "1->2": true,
     "2->3": true
   },
-  "us_completed": ["US1", "US3", "US2", "US4", "US5", "US6", "US7", "US8", "US9", "US10", "US11"],
-  "us_pending": ["US12", "US13", "US14", "US15"],
+  "us_completed": ["US1", "US3", "US2", "US4", "US5", "US6", "US7", "US8", "US9", "US10", "US11", "US12"],
+  "us_pending": ["US13", "US14", "US15"],
   "us_history": [
     {
       "us": "US1",
@@ -157,6 +157,21 @@
       "execution": "inline",
       "askuserquestion_count": 0,
       "notes": "red Cannot-find-module verified before impl; end-to-end binary smoke produced well-formed entry + silent path; inbox format md (US default); sync re-run"
+    },
+    {
+      "us": "US12",
+      "completed_at": "2026-06-10",
+      "tests_passed": true,
+      "files_touched": [
+        ".claude/hooks/skill-activation.ts (new UserPromptSubmit hook)",
+        ".claude/hooks/instructions-loaded.ts (new InstructionsLoaded hook, async)",
+        ".claude/hooks/__tests__/skill-activation.test.ts (9 tests, red→green)",
+        ".claude/settings.json (2 registrations)",
+        ".claude/docs/system-inventory.md (note)"
+      ],
+      "execution": "inline",
+      "askuserquestion_count": 0,
+      "notes": "InstructionsLoaded event VERIFIED in official hooks docs (30-event list) — full scope (a)+(b); real-binary smoke: 'valida este plan' → Skill(drillme)+Skill(critic) injected, no-match silent; matching reads keywords from disk"
     }
   ],
   "feature_closed": false,
