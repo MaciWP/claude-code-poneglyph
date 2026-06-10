@@ -1,0 +1,118 @@
+import { describe, test, expect } from "bun:test";
+import {
+  bannedOpeners,
+  esEsDetect,
+  blufPosition,
+  labelPresence,
+  skillTriggerParse,
+} from "../graders";
+import { runOffline } from "../run";
+import { join } from "node:path";
+
+const FIXTURES = join(import.meta.dir, "fixtures");
+
+describe("bannedOpeners (T3.1-T3.3)", () => {
+  test("T3.1 fails on sycophantic opener and names the phrase", () => {
+    const r = bannedOpeners("¡Buena pregunta! Aquí va la respuesta sobre el hook.");
+    expect(r.pass).toBe(false);
+    expect(r.detail.toLowerCase()).toContain("buena pregunta");
+  });
+
+  test("T3.2 passes on direct BLUF answer", () => {
+    const r = bannedOpeners("El endpoint falla por un guard ausente. Fix: añadir la comprobación en auth.ts:23.");
+    expect(r.pass).toBe(true);
+  });
+
+  test("T3.3 literal-quote exception: phrase inside quotes is exempt", () => {
+    const r = bannedOpeners('La regla dice: nunca abrir con "buena pregunta" ni variantes.');
+    expect(r.pass).toBe(true);
+  });
+});
+
+describe("esEsDetect (T3.4-T3.5)", () => {
+  test("T3.4 passes on Spanish prose, fails on English prose", () => {
+    const es = esEsDetect("La validación falla porque el fichero no existe y la ruta está mal construida desde el principio.");
+    expect(es.pass).toBe(true);
+    const en = esEsDetect("The validation fails because the file does not exist and the path is wrongly constructed from the start.");
+    expect(en.pass).toBe(false);
+    expect(en.detail.length).toBeGreaterThan(0);
+  });
+
+  test("T3.5 fenced + inline code stripped before detection", () => {
+    const mixed = [
+      "La función corregida queda así y pasa la suite entera:",
+      "```typescript",
+      "export function loadSkills(dirs: string[]): Skill[] {",
+      "  // the loader walks every directory and parses the frontmatter",
+      "  return dirs.flatMap((d) => parseFrontmatterFiles(d));",
+      "}",
+      "```",
+      "Con esto el hook vuelve a registrar la skill y `loadSkills` devuelve la lista completa.",
+    ].join("\n");
+    expect(esEsDetect(mixed).pass).toBe(true);
+  });
+});
+
+describe("blufPosition (T3.6)", () => {
+  test("answer-first passes", () => {
+    const r = blufPosition("El config rompe en la línea 23: falta el guard. Abajo va el fix con su test.");
+    expect(r.pass).toBe(true);
+  });
+
+  test("preamble-first fails with position detail", () => {
+    const r = blufPosition(
+      "Primero voy a explicar el contexto del sistema para que se entienda el problema.\n\nDespués de revisar todo, la respuesta es que falta el guard en la línea 23.",
+    );
+    expect(r.pass).toBe(false);
+    expect(r.detail.length).toBeGreaterThan(0);
+  });
+});
+
+describe("labelPresence (T3.7)", () => {
+  test("label with payload passes", () => {
+    const r = labelPresence(
+      "El endpoint devuelve 200 [Probable — based on the handler signature; flips if middleware rewrites it].",
+      { expected: "payload-required" },
+    );
+    expect(r.pass).toBe(true);
+  });
+
+  test("bare label fails when payload required", () => {
+    const r = labelPresence("El endpoint devuelve 200 [Probable].", { expected: "payload-required" });
+    expect(r.pass).toBe(false);
+    expect(r.detail).toContain("payload");
+  });
+});
+
+describe("skillTriggerParse (T3.8-T3.9)", () => {
+  const skillEvent = JSON.stringify({
+    type: "assistant",
+    message: { content: [{ type: "tool_use", name: "Skill", input: { skill: "scope" } }] },
+  });
+  const textEvent = JSON.stringify({
+    type: "assistant",
+    message: { content: [{ type: "text", text: "hola" }] },
+  });
+
+  test("T3.8 detects Skill() invocation; fails when absent", () => {
+    expect(skillTriggerParse([textEvent, skillEvent].join("\n"), { expected: "scope" }).pass).toBe(true);
+    const miss = skillTriggerParse(textEvent, { expected: "scope" });
+    expect(miss.pass).toBe(false);
+    expect(miss.detail).toContain("scope");
+  });
+
+  test("T3.9 malformed JSONL line tolerated", () => {
+    const corrupt = ["{not json at all", skillEvent].join("\n");
+    expect(skillTriggerParse(corrupt, { expected: "scope" }).pass).toBe(true);
+  });
+});
+
+describe("runOffline (T3.10)", () => {
+  test("grades stored fixtures: 1 pass + 1 fail → aggregate reflects both", async () => {
+    const report = await runOffline(join(FIXTURES, "cases.jsonl"), FIXTURES);
+    expect(report.results.length).toBe(2);
+    expect(report.passed).toBe(1);
+    expect(report.failed).toBe(1);
+    expect(report.ok).toBe(false);
+  });
+});
