@@ -44,30 +44,31 @@ Each factor contributes a maximum of ~33 points (value=3 × 20% × 33.3). Total 
 | Score | Units / Domains | Negotiate interfaces | Mode | Cost |
 |-------|---------|-------------------|------|------|
 | Any | 1-3 units | — | **inline** | 1x |
-| Any | ≥4 independent units | No | **Workflow** (opt-in) | scales w/ #units |
+| Any | ≥4 independent READ-ONLY units | No | **Workflow** | scales w/ #units |
+| Any | ≥4 independent WRITE units | No | **inline sequential** (Workflow only with explicit user opt-in — "ultracode" / direct ask) | 1x |
 | 45-60 | 2-3 | Yes (shared types/APIs) | **tiered** (inline contracts) | ~2x |
 | > 60 | 3+ domains (4-gate pass) | Yes | **team** (experimental) | 3-7x |
-| > 60 | 3+ (4-gate fail) | — | **inline / Workflow** | 1x+ |
+| > 60 | 3+ (4-gate fail) | — | **inline / Workflow (read-only)** | 1x+ |
 
-Default is ALWAYS inline (1-3 units); fan out only at ≥4 independent units.
+Default is ALWAYS inline. Write work stays inline regardless of unit count unless the user explicitly opts in (delegation doctrine — SKILL.md P8: token multiplication, summary degradation, context loss).
 
 ## Tiered Mode
 
-Intermediate mode for 2-3 domains with shared interfaces and complexity 45-60. The `tech-plan` skill (Mode B) designs contracts before the units are built — inline for 1-3, or a `Workflow` fan-out at ≥4 — no separate architect agent.
+Intermediate mode for 2-3 domains with shared interfaces and complexity 45-60. The `tech-plan` skill (Mode B) designs contracts before the units are built — all inline; no separate architect agent.
 
 ```mermaid
 graph TD
-    P[Planner: Mode A roadmap + Mode B contracts]
-    P --> B1[Builder 1: domain A with contract]
-    P --> B2[Builder 2: domain B with contract]
-    B1 & B2 --> R[Reviewer: validates cross-domain integration]
+    P[tech-plan: Mode A roadmap + Mode B contracts]
+    P --> D1[Lead builds domain A inline, honoring contract]
+    D1 --> D2[Lead builds domain B inline, honoring contract]
+    D2 --> R[critic skill: validates cross-domain integration]
 ```
 
 | Step | Who | Action |
 |------|-----|--------|
-| 1 | Planner | Generates roadmap with `executionMode: "tiered"` and an inline Mode B section (interface contracts between domains X and Y) |
-| 2 | Lead → Builders (parallel) | Each receives its domain + planner's contracts from the Mode B section |
-| 3 | Lead → Reviewer | Validates cross-domain integration against contracts |
+| 1 | `tech-plan` skill | Generates roadmap with `executionMode: "tiered"` and an inline Mode B section (interface contracts between domains X and Y) |
+| 2 | Lead (inline, sequential) | Builds each domain honoring the Mode B contracts |
+| 3 | `critic` skill | Validates cross-domain integration against contracts |
 
 ## 4-Gate Criteria (Team Mode Only — ALL must pass)
 
@@ -140,10 +141,9 @@ Each teammate receives a prompt with:
 
 | Work category | Complexity | Model |
 |----------------|------------|-------|
-| Inline build/review (Lead session) | any | session model (`effortLevel`) |
-| Workflow unit — implement/review | < 30 | sonnet |
-| Workflow unit — implement/review | 30-50 | sonnet |
-| Workflow unit — implement/review | > 50 | opus |
+| Inline build/review (Lead session) — the default for ALL writes | any | session model (`effortLevel`) |
+| Workflow unit — read-only research/review lens | any | sonnet (default) |
+| Workflow unit — write (explicit opt-in only) | > 50 | opus |
 | Read-only exploration (`Explore`) | any | haiku (built-in) |
 
 ## Effort Routing (Frontmatter — static)

@@ -28,11 +28,13 @@ graph TD
 
 ## Skill Loading Limits
 
-| Agent | Base Skills (free) | Max Additional | Total Max | Notes |
-|-------|--------------------|----------------|-----------|-------|
-| builder | anti-hallucination | 5 | 6 | Base is free, does not count against max |
-| reviewer | review-patterns, security-review, anti-hallucination | 3 | 6 | Base skills are free |
-| scout | — | 1 | 1 | Minimal context |
+> The custom `builder`/`reviewer`/`scout` agents and their per-role baselines were **cut in feature 008** — work runs inline (delegation doctrine: SKILL.md §P8). Limits below govern the surfaces that still exist:
+
+| Surface | Preload (free) | Max via Arch H Read | Notes |
+|-------|--------------------|----------------|-----------|
+| Lead session | everything always-loaded | n/a — `Skill()` on demand | The default executor for all write work |
+| Workflow `agentType` (read-only fan-out) | `skills:` frontmatter (1-2) | 3 | Preload does not count against the Arch H max |
+| Built-in `Explore` | — | 0-1 | Minimal context by design (skips CLAUDE.md/git status — restate constraints in the prompt) |
 
 > Planning and error diagnosis are handled by the Lead invoking `Skill('tech-plan')` / `Skill('diagnostic-patterns')` directly — no dedicated subagent.
 
@@ -64,7 +66,7 @@ Ground-truth rules for what reaches subagents. Verified via direct testing on 20
 | Mechanism | Why not |
 |---|---|
 | Lead invokes `Skill()` before delegating | Loaded content stays in the Lead's context. Subagents spawn fresh. (Still true.) |
-| Subagent calls `Skill()` **without** `Skill` in its `tools:` | If the agent's `tools:` omits `Skill` (or `disallowedTools` includes it), the tool is unavailable. Per-agent config choice, NOT a harness limit. **NOTE (2026-05-30): `builder`/`reviewer`/`scout` now DO list `Skill`, so they CAN invoke it** — official docs confirm subagents discover/invoke project/user/plugin skills via the Skill tool (CC ≥2.1.133). |
+| Subagent calls `Skill()` **without** `Skill` in its `tools:` | If the agent's `tools:` omits `Skill` (or `disallowedTools` includes it), the tool is unavailable. Per-agent config choice, NOT a harness limit. Historical note (2026-05-30): the then-existing `builder`/`reviewer`/`scout` listed `Skill` and could invoke it — those agents were cut in feature 008. The mechanism stands for any Workflow `agentType` whose `tools:` include `Skill` (CC ≥2.1.133 — verified in `.claude/plans/_research-skill-activation-2026-06-09.md`). |
 
 ## Arch H Delegation Template
 
@@ -139,13 +141,13 @@ Any skill that has a `references/` subdirectory **MUST** include a canonical Con
 ## Anti-Claims (False — Never Repeat)
 
 1. *"Skill loaded by the Lead is automatically available to subagents."* — **False**. Lead-side `Skill()` context does not transit (unchanged).
-2. ~~*"Subagents can never invoke `Skill()` dynamically."*~~ — **This claim was itself wrong; corrected 2026-05-30.** Subagents CAN invoke `Skill()` when `Skill` is in their `tools:` (official docs; CC ≥2.1.133). `builder`/`reviewer`/`scout` now include it.
-3. *"A prompt telling the subagent to `invoke Skill('X')` always works."* — **Conditional**: works only if the subagent has `Skill` in `tools:` (now true for our 3). Otherwise use `Read .claude/skills/<name>/SKILL.md` (Arch H fallback).
+2. ~~*"Subagents can never invoke `Skill()` dynamically."*~~ — **This claim was itself wrong; corrected 2026-05-30.** Subagents CAN invoke `Skill()` when `Skill` is in their `tools:` (CC ≥2.1.133 — verified in `.claude/plans/_research-skill-activation-2026-06-09.md`).
+3. *"A prompt telling the subagent to `invoke Skill('X')` always works."* — **Conditional**: works only if the subagent has `Skill` in `tools:`. Otherwise use `Read .claude/skills/<name>/SKILL.md` (Arch H fallback).
 
 ## Orchestration Consequences
 
 - **Rules + CLAUDE.md are the real context carriers.** Invest in them. A well-written project rule reaches every subagent automatically.
-- **Three skill-loading mechanisms now (corrected 2026-05-30)**: (1) `skills:` frontmatter preload — fixed per-role needs (builder→`anti-hallucination`, etc.); (2) `Skill` tool self-invoke — `builder`/`reviewer`/`scout` now list it, so they load task-specific skills mid-task without Lead pre-selection; (3) Arch H Lead-directed `Read` — fallback to force exact content. `Read` is always in the allowlist so Arch H always works.
+- **Three skill-loading mechanisms (corrected 2026-05-30; agents cut in 008)**: (1) `skills:` frontmatter preload on a custom Workflow `agentType` — for skills EVERY unit of that type needs; (2) `Skill` tool self-invoke — any agentType whose `tools:` include `Skill` loads task-specific skills mid-task; (3) Arch H Lead-directed `Read` — fallback to force exact content. `Read` is always in the allowlist so Arch H always works.
 - **Project skills are a valid on-demand knowledge layer.** They work identically to global skills via Arch H Read — the subagent doesn't distinguish between global and project skills at Read time.
 - **Rule of thumb at project level: constraint = rule, knowledge = skill.**
 - **Path-scoped loader quirk**: in `.claude/rules/paths/*.md`, globs starting with `**` require at least one leading path segment. A raw `apps/...` pattern will NOT match `apps/foo.py`; use `**/apps/...` explicitly.

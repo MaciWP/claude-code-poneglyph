@@ -6,6 +6,8 @@ description: Signal→agent selection matrix, multi-agent patterns, anti-pattern
 
 # Agent Selection
 
+> **Delegation doctrine** (inline-first; agents = parallel READ-ONLY fan-out; write fan-out = explicit opt-in; the 3 costs): canonical in `SKILL.md` §Delegation doctrine + P8. This file selects WHICH primitive once fan-out is already justified by the tree.
+
 ## Exploration Decision Matrix (Volume × Complexity)
 
 Before any exploration, decide HOW to read the codebase. **The exploration primitive is `Explore`** (built-in, Haiku, fast & cheap, empirical score 83). The custom `scout` agent was **cut in feature 008** — deeper single-unit synthesis runs inline (Lead `Read`/LSP); ≥4 independent exploration sweeps fan out via `Workflow`.
@@ -47,7 +49,7 @@ The "Suggested skills to Read (for delegation)" column lists `.claude/skills/<na
 
 | Signal | Execution | Skill/Mode | Suggested skills to Read (Arch H) | Fallback |
 |--------|-----------|------------|-------------------------------------------|----------|
-| implement, create, fix, build | inline (`Skill('build')` in /flow); ≥4 HUs → `Workflow` | (by prompt) | (match domain via skill-matching) | — |
+| implement, create, fix, build | inline ALWAYS (`Skill('build')` in /flow) — write fan-out solo con opt-in explícito del usuario | (by prompt) | (match domain via skill-matching) | — |
 | refactor, extract, simplify, restructure | inline | review-patterns | review-patterns | — |
 | merge conflict, git conflict | inline | (prompt context) | — | — |
 | docs, sync, documentation | inline | (doc task) | — | — |
@@ -66,23 +68,23 @@ The "Suggested skills to Read (for delegation)" column lists `.claude/skills/<na
 | Pattern | Execution | When |
 |---------|-----------|------|
 | **Explore then Build** | `Explore` (read) → inline build | exploration provides context, Lead implements inline |
-| **Plan then Build** | Lead `Skill('tech-plan')` → inline build (≥4 HUs → `Workflow`) | complexity >60 |
+| **Plan then Build** | Lead `Skill('tech-plan')` → inline build (sequential; write fan-out = opt-in) | complexity >60 |
 | **Build then Review** | inline build → `Skill('critic')` | mandatory for multi-file changes |
 | **Diagnose then Fix** | Lead `Skill('diagnostic-patterns')` → fix inline | diagnosis before fix |
-| **Worktree Parallel** | ≥4 `Workflow` units with `isolation: 'worktree'` | parallel units with file overlap potential |
+| **Worktree Parallel** | ≥4 `Workflow` WRITE units with `isolation: 'worktree'` — explicit user opt-in only | user opted in (ultracode) AND files may overlap |
 | **Security Review** | `Skill('critic')` + `Skill('security-review')` | auth/security changes |
-| **Tiered Build** | Lead `Skill('tech-plan')` Mode B contracts → inline (or `Workflow` ≥4) | complexity 45-60, 2-3 domains with shared interfaces |
+| **Tiered Build** | Lead `Skill('tech-plan')` Mode B contracts → inline sequential | complexity 45-60, 2-3 domains with shared interfaces |
 | **Team Parallel** | Team mode (experimental) | 3+ independent domains negotiating interfaces, complexity >60 |
 
 ### Workflow wiring
 
-How the cut `builder`/`reviewer`/`scout` capabilities map onto the post-008 model, and where `Workflow` fan-out is the right primitive:
+How the capabilities of the custom agents (cut in feature 008) map onto the current model, and where `Workflow` fan-out is the right primitive:
 
-| Capability (was) | Now | Fan-out trigger |
+| Capability (historical agent) | Now | Fan-out trigger |
 |---|---|---|
-| `builder` (implement) | `build` skill inline (1-3 HUs) | ≥4 independent HUs → `Workflow` (per-unit `isolation: 'worktree'` on file overlap) |
-| `reviewer` (validate) | `critic` skill inline | robust / critical area → **independent review panel ≥4** via `Workflow` (each agent a distinct lens; ≥majority must confirm) |
-| `scout` (explore) | `Explore` (built-in, Haiku) | ≥4 independent exploration sweeps → `Workflow` |
+| implement (was `builder`) | `build` skill inline — ALL write work, any HU count | write fan-out ONLY with explicit user opt-in (ultracode) → `Workflow` + per-unit `isolation: 'worktree'` on file overlap |
+| validate (was `reviewer`) | `critic` skill inline | robust / critical area → **independent review panel ≥4** via `Workflow` (read-only lenses; ≥majority must confirm) |
+| explore (was `scout`) | `Explore` (built-in, Haiku) | ≥4 independent exploration sweeps → `Workflow` (read-only) |
 | generator→validator | `pipeline(items, find, verify)` inside one `Workflow` | intra-workflow Four-Eyes — NOT a new spawn decision (spawn-tree P7) |
 
 The **panel ≥4** pattern is what replaces the cut `reviewer` for high-stakes review (lesson from feature 002: author ≠ evaluator). `critic` references this section as its dispatch target. Worked example: `.claude/workflows/ultracode-audit.js` (find→verify pipeline + cross-debate panel over a shared digest).

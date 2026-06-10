@@ -7,8 +7,24 @@
     "1->2": true,
     "2->3": true
   },
-  "us_completed": [],
-  "us_pending": ["US1", "US3", "US2", "US4", "US5", "US6", "US7", "US8", "US9", "US10", "US11", "US12", "US13", "US14", "US15"],
+  "us_completed": ["US1"],
+  "us_pending": ["US3", "US2", "US4", "US5", "US6", "US7", "US8", "US9", "US10", "US11", "US12", "US13", "US14", "US15"],
+  "us_history": [
+    {
+      "us": "US1",
+      "completed_at": "2026-06-10",
+      "tests_passed": true,
+      "files_touched": [
+        ".claude/skills/orchestrator-protocol/SKILL.md",
+        ".claude/skills/orchestrator-protocol/references/03-complexity-routing.md",
+        ".claude/skills/orchestrator-protocol/references/04-agent-selection.md",
+        ".claude/skills/orchestrator-protocol/references/05-skill-matching.md",
+        ".claude/skills/orchestrator-protocol/references/06-context-arch-h.md"
+      ],
+      "execution": "inline",
+      "askuserquestion_count": 0
+    }
+  ],
   "feature_closed": false,
   "review_verdict": null,
   "retro_status": null,

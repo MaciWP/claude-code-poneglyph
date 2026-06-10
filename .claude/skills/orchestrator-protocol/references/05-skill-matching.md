@@ -64,16 +64,10 @@ If two skills compete for the same slot and one is more specific, discard the ge
 |---------|----------------|
 | `review-patterns` | `security-review` (when security is the primary concern) |
 
-## Skills Without Keywords (Always-Loaded Baseline)
+## Skills Without Keywords (Preload via agentType frontmatter)
 
-These are pre-loaded per agent role via frontmatter — they don't need keyword matching:
+> Historical: the custom `builder`/`reviewer`/`scout` agents carried always-loaded skill baselines — they were **cut in feature 008** (work runs inline; see the delegation doctrine in SKILL.md).
 
-| Agent | Always-loaded skills |
-|-------|---------------------|
-| builder | `anti-hallucination` |
-| reviewer | `review-patterns`, `security-review`, `anti-hallucination` |
-| scout | (none — minimal context) |
+Today the only preload surface is a custom Workflow `agentType` with `skills:` frontmatter — declare there the 1-2 skills EVERY unit of that type needs (e.g. `anti-hallucination` for any unit asserting facts about code). Preloaded skills do NOT count against the 3-skill Arch H limit.
 
-> The Lead loads `diagnostic-patterns` itself when diagnosing builder failures, and `tech-plan` when planning — no dedicated agents.
-
-Do NOT count these against the agent's max additional skill limit (they are free).
+> The Lead loads `diagnostic-patterns` itself when diagnosing failures, and `tech-plan` when planning — no dedicated agents.

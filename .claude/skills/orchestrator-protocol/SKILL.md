@@ -57,17 +57,29 @@ For architectural/comparison decisions → `Skill('decide')` first.
 
 > Prompt quality refinement, "what is a good prompt" rubric, ambiguity detection → use the `prompt-engineer` skill (Keywords: prompt, generar prompt, refine prompt, vague prompt, ambiguous). This is the canonical source — do not re-implement scoring here.
 
+#### Delegation doctrine — inline-first (evidence-based, 2026-06-10)
+
+**ALL build/write work runs INLINE in the Lead's session.** Agents exist for ONE purpose: parallelizing independent **read-only** units (research sweeps, exploration, review lenses). Evidence (user-validated across months of use, 2026-06-10, feature 017): delegated build work consistently cost more and produced worse results; the only delegation mode that proved valuable is the parallel read-only fan-out. The three known costs of delegating work:
+
+1. **Token multiplication** — each agent re-reads context the Lead already holds.
+2. **Summary degradation** — the agent's hand-back compresses away detail; quality is lost at the seam.
+3. **Context loss** — the agent never sees the conversation; intent and constraints arrive incomplete (Arch H mitigates, never eliminates).
+
+Write fan-out (≥4 independent WRITE units via Workflow) is **explicit user opt-in only** (keyword "ultracode" or a direct ask) — never auto-launched. This doctrine cites evidence, not fashion — revisable via retro if agent quality materially changes.
+
 #### Spawn decision tree — CANONICAL (único punto de verdad)
 
-> **This tree is the single source of truth for any decision to spawn an agent.** Every other skill, command, doc and `CLAUDE.md` references it — none redefines its own threshold. Two axes decide everything:
+> **This tree is the single source of truth for any decision to spawn an agent.** Every other skill, command, doc and `CLAUDE.md` references it — none redefines its own threshold:
 
 ```mermaid
 graph TD
   START["Trabajo para el Lead"] --> CNT{"Eje-1: ¿# unidades de trabajo<br/>independientes y paralelizables?"}
   CNT -->|"1 (incl. 1 tarea grande no paralelizable)"| INLINE
   CNT -->|"2-3"| INLINE["INLINE en main<br/>NUNCA 1 agente · 'isolation' no es excusa (/clear limpia)"]
-  CNT -->|"≥4"| NAT{"Eje-2: ¿las unidades<br/>NEGOCIAN interfaces entre sí?"}
-  NAT -->|"No → independientes"| WF["WORKFLOW (fan-out paralelo)<br/>worktree si colisión · research multi-search · panel review ≥4"]
+  CNT -->|"≥4"| RO{"Eje-2: ¿unidades read-only<br/>(research/exploración/review)?"}
+  RO -->|"Sí"| NAT{"Eje-3: ¿NEGOCIAN<br/>interfaces entre sí?"}
+  RO -->|"No → escritura"| OPTIN["INLINE secuencial<br/>salvo OPT-IN explícito del usuario<br/>(ultracode) → Workflow + worktree"]
+  NAT -->|"No → independientes"| WF["WORKFLOW (fan-out read-only)<br/>research multi-search · panel review ≥4"]
   NAT -->|"Sí → ≥3 dominios"| TEAM["TEAM mode (narrow · experimental)<br/>negocian vía task list (#24316 general-purpose)"]
 ```
 
@@ -75,11 +87,12 @@ graph TD
 |---|---|---|
 | **P1** | 1 agente = **PROHIBIDO** | Sin excepciones. No paraleliza; solo aísla contexto (que `/clear` limpia); encarece sin retorno. |
 | **P2** | "isolation" **no es excusa** | El main actúa y se ensucia antes que pagar 1 agente. **"≥5 files" NO es trigger de spawn → inline.** |
-| **P3** | Umbral **≥4 absoluto** | 1-3 unidades → inline. ≥4 → delegar (Workflow o Team según eje-2). |
+| **P3** | Umbral **≥4** + **read-only** | 1-3 unidades → inline. ≥4 read-only → Workflow. ≥4 de ESCRITURA → inline secuencial salvo opt-in explícito del usuario. |
 | **P4** | research/review **no** son excepción de 1-agente | Si se delegan → ≥4 en paralelo (search barato `Explore`/haiku; review = **panel de ≥4 enfoques**). Si <4 → inline. |
 | **P5** | Único árbol | Este árbol es el punto de verdad; el resto del sistema referencia, no redefine. |
 | **P6** | Fix = borrado + enlazar | Sin maquinaria de enforcement; los patrones de la Workflow tool se **enlazan**, no se copian. |
 | **P7** | spawn-decision ≠ intra-orchestration | ≥4 gobierna la DECISIÓN de spawnear. Agentes coordinándose **dentro** de un team/workflow ya spawneado (p.ej. Four-Eyes generator→validator) no son un nuevo spawn. |
+| **P8** | Escritura = inline-first | Build/write SIEMPRE inline por defecto; el fan-out de escritura degrada calidad (3 costes arriba) y solo se justifica con opt-in explícito. |
 
 **Exploración (lectura, NO spawn-de-trabajo)**: `Explore` (Haiku built-in del harness) es la primitiva de lectura — barata, read-only — para exploración masiva read-only que ensuciaría el contexto del Lead. **NO cuenta como "1 agente prohibido".** 1-2 files → Lead `Read` inline. Delegar TRABAJO sigue el árbol (≥4). Matriz completa: `references/04-agent-selection.md`.
 
@@ -114,15 +127,15 @@ Full Arch H template with all blocks, propagation model, skill discovery: `refer
 
 | Tool | Usage |
 |---|---|
-| `Workflow` (≥4 independent units) | Fan-out: implement / explore / review in parallel (`agentType` `default`, or built-ins like `Explore`); `isolation: 'worktree'` on file collision |
+| `Workflow` (≥4 independent **read-only** units) | Fan-out: research sweeps / exploration / review panel in parallel (`agentType` `default`, or built-ins like `Explore`). Write fan-out: explicit user opt-in only (`isolation: 'worktree'` on file collision) |
 | `Explore` | Explore codebase (massive read-only — Haiku built-in; not a work-spawn) |
 | `Skill('tech-plan')` | Plan complex tasks — Lead inline, no dedicated agent |
 | `Skill('diagnostic-patterns')` | Diagnose failures — Lead inline, no dedicated agent |
 | `Skill()` | Load context into the Lead's OWN session only |
 
-Direct action (the default for 1-3 units): Read always permitted. Edit/Write/Bash run inline — **≥5 files is still inline** (P2). On sensitive paths declare inline `sensitive: <reason ≥8 chars>`. Destructive patterns — escalate with explicit reason. No automated gate enforces this; the Lead is responsible.
+Direct action (the default for ALL write work): Read always permitted. Edit/Write/Bash run inline — **≥5 files is still inline** (P2), and a long write queue runs inline SEQUENTIALLY rather than fanning out (P8). On sensitive paths declare inline `sensitive: <reason ≥8 chars>`. Destructive patterns — escalate with explicit reason. No automated gate enforces this; the Lead is responsible.
 
-**Parallelize**: once the ≥4 agent-count threshold (Step 1, P3) is met, fan out via `Workflow` — independent units (no output→input dependency, disjoint files, no shared state). For 1-3 units the Lead acts inline — do not spawn just to parallelize. Multi-agent patterns + anti-patterns: `references/04-agent-selection.md`.
+**Parallelize**: parallelism inside the Lead's own session is free — batch independent tool calls (Reads, Greps, disjoint Writes) in one message. Agent fan-out via `Workflow` requires ≥4 independent READ-ONLY units (P3); for write waves, inline sequential is the default and Workflow needs explicit user opt-in (P8). Multi-agent patterns + anti-patterns: `references/04-agent-selection.md`.
 
 ### Step 5: Validate
 
