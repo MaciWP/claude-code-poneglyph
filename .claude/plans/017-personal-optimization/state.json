@@ -7,8 +7,8 @@
     "1->2": true,
     "2->3": true
   },
-  "us_completed": ["US1", "US3", "US2", "US4", "US5", "US6", "US7", "US8", "US9", "US10", "US11", "US12"],
-  "us_pending": ["US13", "US14", "US15"],
+  "us_completed": ["US1", "US3", "US2", "US4", "US5", "US6", "US7", "US8", "US9", "US10", "US11", "US12", "US13"],
+  "us_pending": ["US14", "US15"],
   "us_history": [
     {
       "us": "US1",
@@ -172,6 +172,19 @@
       "execution": "inline",
       "askuserquestion_count": 0,
       "notes": "InstructionsLoaded event VERIFIED in official hooks docs (30-event list) — full scope (a)+(b); real-binary smoke: 'valida este plan' → Skill(drillme)+Skill(critic) injected, no-match silent; matching reads keywords from disk"
+    },
+    {
+      "us": "US13",
+      "completed_at": "2026-06-10",
+      "tests_passed": true,
+      "files_touched": [
+        ".claude/skills/tech-plan/SKILL.md (Step 10 mandatory block + Step 12 rubric pass)",
+        ".claude/commands/flow.md (Phase 2 requirement)",
+        ".claude/skills/build/SKILL.md (block = primary instruction)"
+      ],
+      "execution": "inline",
+      "askuserquestion_count": 0,
+      "notes": "deterministic wiring (no auto-trigger reliance); rubric referenced at prompt-engineer/scoring-criteria.md, not duplicated; behavioral smoke deferred to next /flow feature"
     }
   ],
   "feature_closed": false,

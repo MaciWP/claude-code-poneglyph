@@ -162,7 +162,7 @@ On BLOCK → STOP; do not continue; leave state.json as snapshot.
 
 ##### Phase 2 — tech-plan
 
-Invoke `Skill('tech-plan')`. Reads `spec.md` + executes obligatory research (Context7 + WebFetch + Grep) + produces `tasks/index.md` + `tasks/US{N}.md`.
+Invoke `Skill('tech-plan')`. Reads `spec.md` + executes obligatory research (Context7 + WebFetch + Grep) + produces `tasks/index.md` + `tasks/US{N}.md`. Every US carries a MANDATORY "Execution prompt (Phase 3 input)" block, scored against the prompt-engineer rubric before gate 2→3 (the US is the prompt the Lead executes inline — Commandment VIII).
 
 In mode `full`: tech-plan auto-loads its full reference set including `decision-stress-test` invocation for alternatives.
 

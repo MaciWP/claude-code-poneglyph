@@ -67,7 +67,7 @@ Phase 3 is the only phase that touches production code. Every other phase is des
 | `/build US{id}` | Execute that exact HU. If already completed in `state.json` → ask user (re-run? abort?). |
 | `/build` (no arg) | First HU in `state.json.us_pending` whose `depends_on` are all in `state.json.us_completed`. If none → check if a previously failed HU is in `us_pending_blocked` and escalate. |
 
-Read the chosen `tasks/US{N}.md` completely + its associated `T{N}.X` tests or validation block.
+Read the chosen `tasks/US{N}.md` completely + its associated `T{N}.X` tests or validation block. When the US carries an "Execution prompt (Phase 3 input)" block, that block is the PRIMARY instruction — Task/Context/Constraints/Deliverable/Verify govern the implementation; the rest of the document elaborates it.
 
 ### Step 3 — Execute inline (the HU is one unit of work)
 

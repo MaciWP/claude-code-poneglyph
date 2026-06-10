@@ -174,6 +174,7 @@ Calculate `Parallel Efficiency Score` = parallel ops / total. If score <50% → 
 
 2. Por cada HU: `tasks/US{N}.md` from `templates/tasks.template.md`:
    - Frontmatter (us, title, wave, depends_on, tdd_mode, estimate, status: draft).
+   - **Execution prompt (Phase 3 input)** — MANDATORY block (Task / Context / Constraints / Deliverable / Verify / Ask-first). The Lead executes USs inline, so a US IS a prompt — Arch-H quality criteria apply (Commandment VIII).
    - Quick reference table (obligatoria — 9 campos canónicos).
    - User story (role/action/benefit).
    - Acceptance criteria (Given/When/Then, numerados).
@@ -193,6 +194,7 @@ For Full level with complexity >60, optionally invoke cross-validation: a second
 
 Before reporting close: run the checklist in `references/06-quality-gates.md`. Key checks:
 - All HUs have role/action/benefit + AC + depends_on + files + tdd_mode.
+- **Execution-prompt rubric pass**: score each US's "Execution prompt (Phase 3 input)" block against `.claude/skills/prompt-engineer/scoring-criteria.md` (do not duplicate the rubric — Read it). A block scoring <70 gets refined BEFORE gate 2→3; the score is a doubt signal, not a hard stop (CLAUDE.md §Skill routing).
 - DAG has no cycles (cycle = smell, refactor).
 - Parallel Efficiency Score >=50%.
 - Anti-hallucination applied (every claim about existing code verified).
