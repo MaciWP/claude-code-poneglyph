@@ -1,5 +1,13 @@
 # Pattern: Checkpoint/Resume Workflow
 
+## Contents
+
+- [When to Use](#when-to-use)
+- [Core Concept](#core-concept)
+- [ResumableWorkflow](#resumableworkflow)
+- [Storage Implementation Example](#storage-implementation-example)
+- [Key Points](#key-points)
+
 Persist progress of long-running workflows so they can resume from the last checkpoint after failure.
 
 ## When to Use

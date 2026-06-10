@@ -7,8 +7,8 @@
     "1->2": true,
     "2->3": true
   },
-  "us_completed": ["US1", "US3", "US2", "US4", "US5", "US6", "US7", "US8", "US9"],
-  "us_pending": ["US10", "US11", "US12", "US13", "US14", "US15"],
+  "us_completed": ["US1", "US3", "US2", "US4", "US5", "US6", "US7", "US8", "US9", "US10"],
+  "us_pending": ["US11", "US12", "US13", "US14", "US15"],
   "us_history": [
     {
       "us": "US1",
@@ -128,6 +128,21 @@
       "execution": "inline",
       "askuserquestion_count": 0,
       "decision": "AC1 closed via REVERT path: live smoke proved disable-model-invocation:true blocks explicit Skill-tool invocation (the exact path /flow uses) — field NOT applied to the 6 phase skills; finding recorded in validations.md §US9"
+    },
+    {
+      "us": "US10",
+      "completed_at": "2026-06-10",
+      "tests_passed": true,
+      "files_touched": [
+        ".claude/skills/meta-create/references/01-authoring-rubric.md (new, vendored official)",
+        ".claude/skills/meta-create/SKILL.md (rubric wired Steps 2/5 + Content Map)",
+        ".claude/skills/{html-report,critic,build,retro}/SKILL.md (descriptions trimmed to ≤1024)",
+        "51 reference files across skills (ToC batch insertion)",
+        ".claude/plans/017-personal-optimization/validations.md (audit table)"
+      ],
+      "execution": "inline",
+      "askuserquestion_count": 0,
+      "notes": "21/21 descriptions compliant; 2 justified R1 deviations (meta-create type-dirs, review-patterns mode indexes); phase-skill descriptions included in trim because US9 revert left them live in context"
     }
   ],
   "feature_closed": false,

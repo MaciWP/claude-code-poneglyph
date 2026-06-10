@@ -6,6 +6,14 @@ description: Three worked plugin examples (skills+hooks pack, skills+mcp+agents 
 
 # Worked Plugin Examples
 
+## Contents
+
+- [Example 1: Code Quality Plugin (Skills + Hooks)](#example-1-code-quality-plugin-skills-hooks)
+- [Example 2: Database Tools Plugin (Skills + MCP + Agents)](#example-2-database-tools-plugin-skills-mcp-agents)
+- [Responsibilities](#responsibilities)
+- [Constraints](#constraints)
+- [Example 3: Marketplace Distribution](#example-3-marketplace-distribution)
+
 Three complete end-to-end plugins showing the shape of finished files for common patterns.
 
 ## Example 1: Code Quality Plugin (Skills + Hooks)

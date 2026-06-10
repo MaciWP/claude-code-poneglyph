@@ -6,6 +6,13 @@ description: Task Classification 🔵🟡🔴 + Parallelization rules + Parallel
 
 # Task Classification + Parallelization — references/04
 
+## Contents
+
+- [Task Classification](#task-classification)
+- [Parallelization Rules](#parallelization-rules)
+- [Parallel Efficiency Score](#parallel-efficiency-score)
+- [Seed Wave Patterns](#seed-wave-patterns)
+
 ## Task Classification
 
 | Symbol | Type | Definition | Execution |

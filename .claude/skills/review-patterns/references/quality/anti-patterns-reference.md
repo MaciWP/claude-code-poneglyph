@@ -1,5 +1,10 @@
 # Anti-Patterns Reference
 
+## Contents
+
+- [Anti-Patterns Table](#anti-patterns-table)
+- [Detailed Descriptions](#detailed-descriptions)
+
 Common anti-patterns with detection and fixes, applicable to any language or framework.
 
 ## Anti-Patterns Table

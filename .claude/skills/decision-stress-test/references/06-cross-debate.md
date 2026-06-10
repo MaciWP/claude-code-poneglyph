@@ -6,6 +6,19 @@ description: Phase 2 protocol — perspectives debate with cited agreement/disag
 
 # Cross-Debate Protocol (Phase 2)
 
+## Contents
+
+- [Activation](#activation)
+- [Setup (Cycle 0)](#setup-cycle-0)
+- [Cycle Loop](#cycle-loop)
+- [Why Step-back Adapts Better Than Fixed Rounds](#why-step-back-adapts-better-than-fixed-rounds)
+- [Updated Position Output Format (per perspective, per round)](#updated-position-output-format-per-perspective-per-round)
+- [[Perspective Name] — Updated Position (Cycle N)](#perspective-name-updated-position-cycle-n)
+- [Phase 1.5 — Late Perspective](#phase-15-late-perspective)
+- [Anti-patterns Specific to Phase 2](#anti-patterns-specific-to-phase-2)
+- [Output Section in Final Report](#output-section-in-final-report)
+- [Debate Summary](#debate-summary)
+
 ## Activation
 - Stakes Low → SKIP entire Phase 2
 - Stakes Medium → run with step-back judge, max 3 cycles

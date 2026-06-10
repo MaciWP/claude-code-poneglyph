@@ -7,8 +7,8 @@ description: |
   honors TDD-mode (red->green when forced or tdd: forced on the node; impl + suite
   verify when tdd-skip or optional). Invokes AskUserQuestion on concrete doubts
   (never improvises). Updates state.json on closure, reports next HU. Executes
-  INLINE in the main session (the spawn decision tree forbids 1 agent; ≥5 files is
-  still inline); only ≥4 independent parallel units fan out via Workflow.
+  INLINE in the main session (1 agent forbidden; ≥5 files still inline);
+  only ≥4 independent parallel units fan out via Workflow.
   Closes intra-HU drillme (4 questions) before declaring done.
   Use when: tasks/ approved + Phase 2.5 oracle approved + HU pending in state.json,
   "build", "implementa", "ejecuta", "construye", "implement HU", "next HU",

@@ -6,6 +6,14 @@ description: Signal→agent selection matrix, multi-agent patterns, anti-pattern
 
 # Agent Selection
 
+## Contents
+
+- [Exploration Decision Matrix (Volume × Complexity)](#exploration-decision-matrix-volume-complexity)
+- [Selection Matrix](#selection-matrix)
+- [Multi-Agent Patterns](#multi-agent-patterns)
+- [Parallelization & Batch Operations](#parallelization-batch-operations)
+- [Anti-Patterns](#anti-patterns)
+
 > **Delegation doctrine** (inline-first; agents = parallel READ-ONLY fan-out; write fan-out = explicit opt-in; the 3 costs): canonical in `SKILL.md` §Delegation doctrine + P8. This file selects WHICH primitive once fan-out is already justified by the tree.
 
 ## Exploration Decision Matrix (Volume × Complexity)

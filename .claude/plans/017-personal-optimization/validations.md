@@ -187,6 +187,15 @@ Clasificación: US1 validation (skill md) · US2 validation (CLAUDE.md + rule + 
 ### Cross-validations
 - Descriptions corregidas siguen disparando: spot-check de 3 skills con sus keywords en un prompt de prueba (sesión siguiente).
 
+### Resultado del audit (build 2026-06-10)
+
+| Check (fila del rubric) | Resultado |
+|---|---|
+| Descriptions ≤1024c, 3ª persona, what+when+keywords (F3, D1-D4) | 21/21 — 4 recortadas: html-report 1344→~1000, critic 1119→~960, build 1040→~1010, retro 1041→~1020. Nota de scope: build/critic/retro son phase skills, pero el REVERT de US9 dejó sus descriptions vivas en contexto → el fix de forma les aplica |
+| References 1 nivel desde SKILL.md (R1) | 19/21 directas; 2 desviaciones justificadas: meta-create (subdirs por tipo = Pattern 2 oficial, enlazadas directo desde el Content Map) y review-patterns (mode files actúan de índice de dominio hacia quality/ y performance/) |
+| ToC en references >100 líneas (R2) | 51 ficheros corregidos en batch (script: inserta `## Contents` desde los H2 reales); 0 restantes |
+| Rubric vendorizado + cableado (AC3) | `meta-create/references/01-authoring-rubric.md` (fuente oficial citada, eval-first ≥3 escenarios vía skill-creator) + wiring en Steps 2/5 + Content Map de meta-create |
+
 ## US13 — prompt-engineer en el flow
 
 ### Pre

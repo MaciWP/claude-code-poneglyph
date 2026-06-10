@@ -6,6 +6,11 @@ description: Team Mode Planning + Cross-Validation (Four-Eyes principle) — dom
 
 # Team Mode + Cross-Validation — references/07
 
+## Contents
+
+- [Cross-Validation (Four-Eyes Principle)](#cross-validation-four-eyes-principle)
+- [Team Mode Planning](#team-mode-planning)
+
 > **Post-feature-008 mapping** — the named agents in this doc (`planner`/`builder`/`reviewer`/`scout`) were **cut**. Team mode now uses generic **scoped teammates** (experimental, `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`); map `builder` → `build` skill / impl unit, `reviewer` → Phase 4 `critic` / review panel (≥4), `scout` → `Explore` (Haiku built-in), `planner` → `tech-plan` skill. The patterns (Four-Eyes generator→validator, domain boundaries, recovery loop) **remain valid** — only the agent names died. The generator→validator pattern is exactly what a `Workflow` `pipeline(items, find, verify)` encodes.
 
 ## Cross-Validation (Four-Eyes Principle)

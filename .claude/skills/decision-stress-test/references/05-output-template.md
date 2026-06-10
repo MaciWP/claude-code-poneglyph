@@ -6,6 +6,48 @@ description: Literal output template, scaled by stakes, with 2 worked examples (
 
 # Output Template
 
+## Contents
+
+- [Literal Template](#literal-template)
+- [Stakes Tier](#stakes-tier)
+- [Initial Triage](#initial-triage)
+- [Framing Check](#framing-check)
+- [Phase 1: Perspectives](#phase-1-perspectives)
+- [Phase 2: Debate Summary    [Medium+]](#phase-2-debate-summary-medium)
+- [Phase 3: Synthesis](#phase-3-synthesis)
+- [Tradeoff Map](#tradeoff-map)
+- [Triangulated Findings](#triangulated-findings)
+- [Core Tension](#core-tension)
+- [Decision Guide](#decision-guide)
+- [Verdict](#verdict)
+- [Confidence Calibration](#confidence-calibration)
+- [Phase 4: Validation Report](#phase-4-validation-report)
+- [Phase 5: Final Recommendation with Per-Perspective Vote](#phase-5-final-recommendation-with-per-perspective-vote)
+- [Outstanding Questions for the User](#outstanding-questions-for-the-user)
+- [Scaling by Stakes](#scaling-by-stakes)
+- [Worked Example A — Low Stakes (5 perspectives, no debate)](#worked-example-a-low-stakes-5-perspectives-no-debate)
+- [Stakes Tier](#stakes-tier)
+- [Phase 1: Perspectives](#phase-1-perspectives)
+- [Phase 3: Synthesis](#phase-3-synthesis)
+- [Verdict](#verdict)
+- [Phase 4: Validation Report](#phase-4-validation-report)
+- [Phase 5: Final Recommendation with Per-Perspective Vote](#phase-5-final-recommendation-with-per-perspective-vote)
+- [Worked Example B — High Stakes (11 perspectives, 1 debate round)](#worked-example-b-high-stakes-11-perspectives-1-debate-round)
+- [Stakes Tier](#stakes-tier)
+- [Initial Triage](#initial-triage)
+- [Framing Check](#framing-check)
+- [Phase 1: Perspectives (abbreviated)](#phase-1-perspectives-abbreviated)
+- [Phase 2: Debate Summary](#phase-2-debate-summary)
+- [Phase 3: Synthesis](#phase-3-synthesis)
+- [Tradeoff Map](#tradeoff-map)
+- [Triangulated Findings](#triangulated-findings)
+- [Core Tension](#core-tension)
+- [Decision Guide](#decision-guide)
+- [Verdict](#verdict)
+- [Confidence Calibration](#confidence-calibration)
+- [Phase 4: Validation Report](#phase-4-validation-report)
+- [Phase 5: Final Recommendation with Per-Perspective Vote](#phase-5-final-recommendation-with-per-perspective-vote)
+
 The final stress-test output follows this structure. Sections marked `[High only]` are emitted only when stakes = High (or High with UX). Sections marked `[Medium+]` are emitted for Medium and High.
 
 ## Literal Template

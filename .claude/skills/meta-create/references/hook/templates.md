@@ -6,6 +6,15 @@ description: Six hook templates — command (observability/validator/transform),
 
 # Hook Templates
 
+## Contents
+
+- [Template: Command Hook (Observability)](#template-command-hook-observability)
+- [Template: Command Hook (Validator)](#template-command-hook-validator)
+- [Template: Command Hook (Transform)](#template-command-hook-transform)
+- [Template: HTTP Hook](#template-http-hook)
+- [Template: Prompt Hook](#template-prompt-hook)
+- [Template: Agent Hook](#template-agent-hook)
+
 Six canonical templates. Three command-hook shapes (observability, validator, transform) and one each for http, prompt and agent handlers.
 
 ## Template: Command Hook (Observability)

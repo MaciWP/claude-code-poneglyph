@@ -6,6 +6,12 @@ description: Minimal, full and marketplace plugin templates with placeholders.
 
 # Plugin Templates
 
+## Contents
+
+- [Template: Minimal Plugin (Skills Only)](#template-minimal-plugin-skills-only)
+- [Template: Full Plugin (All Components)](#template-full-plugin-all-components)
+- [Template: Marketplace Entry](#template-marketplace-entry)
+
 Three canonical templates: minimal (skills only), full (all components) and marketplace entry.
 
 ## Template: Minimal Plugin (Skills Only)

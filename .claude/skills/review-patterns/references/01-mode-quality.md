@@ -6,6 +6,21 @@ description: Quality mode — code smells, SOLID, complexity, refactoring patter
 
 # Quality Mode
 
+## Contents
+
+- [When to Use](#when-to-use)
+- [Review Process](#review-process)
+- [Quick Thresholds](#quick-thresholds)
+- [Red Flags (Quality)](#red-flags-quality)
+- [Output Format](#output-format)
+- [Code Quality Review: [Component]](#code-quality-review-component)
+- [When to Refactor (Decision Criteria)](#when-to-refactor-decision-criteria)
+- [Refactoring Anti-Patterns](#refactoring-anti-patterns)
+- [Checklists](#checklists)
+- [Reference Files](#reference-files)
+- [Gotchas](#gotchas)
+- [Refactoring Safety Classification](#refactoring-safety-classification)
+
 Code quality analysis and refactoring guidance. Patterns are language-agnostic.
 
 ## When to Use

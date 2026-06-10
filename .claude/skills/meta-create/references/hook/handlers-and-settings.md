@@ -6,6 +6,17 @@ description: Handler types, settings.json registration, matcher/if evaluation, e
 
 # Handlers, Settings.json & Matching
 
+## Contents
+
+- [Handler Types](#handler-types)
+- [Settings.json Entry Template](#settingsjson-entry-template)
+- [Matcher Evaluation Rules](#matcher-evaluation-rules)
+- [if Field (Permission Rule Syntax)](#if-field-permission-rule-syntax)
+- [MCP Tool Matching](#mcp-tool-matching)
+- [Exit Code Protocol](#exit-code-protocol)
+- [Stdout JSON Protocol](#stdout-json-protocol)
+- [Full Field Reference (settings.json)](#full-field-reference-settingsjson)
+
 ## Handler Types
 
 | Type | Fields | Blocking | Async Support | Use Case |

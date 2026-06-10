@@ -6,6 +6,14 @@ description: Argument resolution algorithm — maps the user-provided argument t
 
 # Input Resolution
 
+## Contents
+
+- [Resolution Order](#resolution-order)
+- [Exact Git Commands](#exact-git-commands)
+- [Edge Cases](#edge-cases)
+- [Resumen ejecutivo](#resumen-ejecutivo)
+- [Confidence Calibration](#confidence-calibration)
+
 Maps the argument received to a concrete target. The skill never proceeds with an ambiguous input — it always asks if it cannot decide.
 
 ## Resolution Order

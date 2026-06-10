@@ -1,5 +1,16 @@
 # StatusLine — ccstatusline (v2.2.19)
 
+## Contents
+
+- [Installation and configuration](#installation-and-configuration)
+- [Version-controlled config + sync-claude](#version-controlled-config-sync-claude)
+- [⚠️ Correct registry names (the README calls them differently)](#correct-registry-names-the-readme-calls-them-differently)
+- [Widgets by category](#widgets-by-category)
+- [Recommended layout (4 lines, left/right alignment)](#recommended-layout-4-lines-leftright-alignment)
+- [Gotchas / cross-OS](#gotchas-cross-os)
+- [Windows (PowerShell) — env.PATH caveat](#windows-powershell-envpath-caveat)
+- [Critical notes](#critical-notes)
+
 ## Installation and configuration
 
 ```bash

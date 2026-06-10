@@ -74,6 +74,8 @@ From the prompt's keywords or by asking the user. If ambiguous (e.g., "add a val
 
 Read the type-specific reference bundle (`references/<type>/`). These were the bodies of the previous 6 `meta-create-*` skills, now consolidated.
 
+For SKILLS additionally Read `references/01-authoring-rubric.md` (vendored official authoring guidance) — the rubric is MANDATORY: apply the **eval-first rule** (≥3 evaluation scenarios BEFORE writing the skill, via the bundled `skill-creator` evals) and validate every rubric row at Step 5.
+
 ### Step 3 — Pick template variant
 
 For agent/skill: pick the template variant (e.g., reader / builder / executor / researcher for an agent).
@@ -89,7 +91,7 @@ For hook/rule/mcp/plugin: templates are inline in `references/<type>/templates.m
 
 ### Step 5 — Validate
 
-Apply the `references/<type>/gotchas.md` or `frontmatter-spec.md` checklist before declaring success.
+Apply the `references/<type>/gotchas.md` or `frontmatter-spec.md` checklist before declaring success. For skills, ALSO pass the `references/01-authoring-rubric.md` checklist (description D1-D4, body B1-B9, references R1-R5, eval-first) — each deviation needs a written justification.
 
 ## Critical Reminders (cross-type)
 
@@ -117,6 +119,7 @@ Apply the `references/<type>/gotchas.md` or `frontmatter-spec.md` checklist befo
 
 | Topic | File | Read when |
 |---|---|---|
+| Skill authoring rubric (vendored official best practices + eval-first rule) | `references/01-authoring-rubric.md` | Creating or modifying ANY skill — mandatory checklist |
 | Agent: frontmatter, 4 templates, worked examples | `references/agent/{frontmatter-spec,templates-spec,examples}.md` | Creating an agent |
 | Skill: frontmatter, 5 types, placeholders, directory layout, worked examples | `references/skill/{frontmatter-spec,skill-types,template-placeholders,directory-structure,examples-library}.md` | Creating a skill |
 | Hook: events catalog (25+), handlers + settings.json, gotchas, examples, 6 templates inline | `references/hook/{events-catalog,handlers-and-settings,gotchas,examples,templates}.md` | Creating a hook |

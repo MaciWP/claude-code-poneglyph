@@ -1,5 +1,11 @@
 # Extract Function Patterns
 
+## Contents
+
+- [When to Extract](#when-to-extract)
+- [Pattern: Extract Calculation](#pattern-extract-calculation)
+- [Pattern: Extract Conditional](#pattern-extract-conditional)
+
 ## When to Extract
 
 - Function exceeds 20 lines

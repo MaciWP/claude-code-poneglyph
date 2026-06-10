@@ -6,6 +6,16 @@ description: Reputable sources by stack, canonical citation format, anti-pattern
 
 # Verification Rules
 
+## Contents
+
+- [Reputable Sources (Closed List)](#reputable-sources-closed-list)
+- [NOT Reputable (Never Cite)](#not-reputable-never-cite)
+- [Canonical Citation Format](#canonical-citation-format)
+- [Verification Procedure](#verification-procedure)
+- [Override: "100% certeza" Mode](#override-100-certeza-mode)
+- [Anti-Patterns](#anti-patterns)
+- [Confidence Calibration Table (inherits anti-hallucination)](#confidence-calibration-table-inherits-anti-hallucination)
+
 Citing matters. A wrong URL or a non-canonical source destroys the educational value of the report.
 
 ## Reputable Sources (Closed List)

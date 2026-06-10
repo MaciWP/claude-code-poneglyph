@@ -1,5 +1,11 @@
 # Error Diagnosis Function
 
+## Contents
+
+- [Data Structure](#data-structure)
+- [diagnoseError](#diagnoseerror)
+- [addSuggestions](#addsuggestions)
+
 Core function for analyzing errors and generating actionable suggestions.
 
 ## Data Structure

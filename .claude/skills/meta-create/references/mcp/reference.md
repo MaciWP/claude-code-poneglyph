@@ -6,6 +6,15 @@ description: Transport, scope, env-expansion, auth methods, CLI shortcuts and co
 
 # MCP Reference
 
+## Contents
+
+- [Transports](#transports)
+- [Scopes](#scopes)
+- [Environment Variable Expansion](#environment-variable-expansion)
+- [Authentication Methods](#authentication-methods)
+- [CLI Shortcuts](#cli-shortcuts)
+- [Config File Structure](#config-file-structure)
+
 ## Transports
 
 | Transport | Use Case | Config Fields |

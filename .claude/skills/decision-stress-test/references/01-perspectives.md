@@ -6,6 +6,25 @@ description: 11 core perspectives + 1 optional (User). Each with lens, when-to-a
 
 # Perspectives Catalogue
 
+## Contents
+
+- [Catalogue at a Glance](#catalogue-at-a-glance)
+- [Mandatory Output Format (all perspectives)](#mandatory-output-format-all-perspectives)
+- [[Perspective Name]](#perspective-name)
+- [1. Outsider](#1-outsider)
+- [2. Adversary / Critic](#2-adversary-critic)
+- [3. Performance Engineer](#3-performance-engineer)
+- [4. Security Analyst](#4-security-analyst)
+- [5. Maintainer](#5-maintainer)
+- [6. Simplifier](#6-simplifier)
+- [7. Operator / SRE](#7-operator-sre)
+- [8. Cost Optimizer](#8-cost-optimizer)
+- [9. Product](#9-product)
+- [10. Linus Torvalds](#10-linus-torvalds)
+- [11. Andrej Karpathy](#11-andrej-karpathy)
+- [12. User / Consumer (optional)](#12-user-consumer-optional)
+- [Spawning Mechanics](#spawning-mechanics)
+
 The 11 core perspectives stress-test a decision in parallel (scaled by stakes — see `03-stakes-calibration.md`). The 12th (User) activates only when the decision affects a public interface. Each perspective is a subagent spawned by the orchestrator with a tightly scoped prompt.
 
 ## Catalogue at a Glance

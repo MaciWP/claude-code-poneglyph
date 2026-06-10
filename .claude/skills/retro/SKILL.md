@@ -2,7 +2,7 @@
 name: retro
 description: |
   Post-feature retrospective (Phase 5 of the 5-phase workflow). Captures
-  technical lessons (worked / didn't work), surfaces process friction, proposes
+  technical lessons, surfaces process friction, proposes
   promotions to one of three scopes (global ~/.claude/ vs project .claude/ vs
   memory-only), closes the living-spec loop by consuming `review.md.spec_drift`
   classified by critic in Phase 4, and audits the 10 Commandments compliance.

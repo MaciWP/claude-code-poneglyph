@@ -6,6 +6,18 @@ description: 5 adversarial techniques applied as synthesis phase across all pers
 
 # 5 Adversarial Techniques (Synthesis Phase)
 
+## Contents
+
+- [Overview](#overview)
+- [1. Steel-Man First](#1-steel-man-first)
+- [2. Assumption Audit](#2-assumption-audit)
+- [3. Pre-Mortem](#3-pre-mortem)
+- [4. Inversion](#4-inversion)
+- [5. Second-Order Effects](#5-second-order-effects)
+- [High-Risk Areas (inherited from anti-hallucination)](#high-risk-areas-inherited-from-anti-hallucination)
+- [Output Checklist (synthesis phase)](#output-checklist-synthesis-phase)
+- [Gotchas](#gotchas)
+
 After Phase 1 (perspectives in parallel) and Phase 2 (cross-debate), the orchestrator synthesizes findings across all perspectives using these 5 techniques. They operate **across** perspectives, not within a single one.
 
 ## Overview

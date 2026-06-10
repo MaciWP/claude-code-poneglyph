@@ -67,12 +67,14 @@ Classification: US1-US6 **validation-mode** (files are exclusively `.md` researc
 - `evidence/W3.md` + `decision-memo-W3.md` exist.
 
 ### Structural assertions
-- W3.md: 3 angle sections (degradation benchmarks / mitigation comparisons / threshold provenance) + RIGOR 1-6.
+- W3.md: 4 angle sections (degradation benchmarks / mitigation comparisons / threshold provenance / code-graph layer) + RIGOR 1-6.
 - **Model-era flag on every benchmark claim**; if no Fable-5-era data: explicit "no recent measurement found" statement, no silent extrapolation.
 - Memo: numeric threshold ONLY if A/B-backed; otherwise qualitative triggers declared as such.
+- Memo: graphify verdict present (adopt-with-A/B-pilot / watchlist / discard) extending `seed-graphify.md`, never repeating it.
 
 ### Smoke
 - `grep -iE 'model (era|generation)|tested on' evidence/W3.md` non-empty.
+- `grep -i 'graphify' decision-memo-W3.md` non-empty.
 
 ### Cross-validations
 - Memo policy consistent with seed-anthropic compression ratios where cited.

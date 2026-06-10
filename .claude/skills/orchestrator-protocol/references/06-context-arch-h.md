@@ -6,6 +6,19 @@ description: Architecture levels, rules vs skills, skill loading limits, precede
 
 # Context Management + Arch H
 
+## Contents
+
+- [Architecture Levels](#architecture-levels)
+- [Rules vs Skills (Project Level)](#rules-vs-skills-project-level)
+- [Skill Loading Limits](#skill-loading-limits)
+- [Precedence Rules](#precedence-rules)
+- [Skill Propagation Model (Empirically Verified)](#skill-propagation-model-empirically-verified)
+- [Arch H Delegation Template](#arch-h-delegation-template)
+- [Skill Discovery (Global + Project)](#skill-discovery-global-project)
+- [Content Map Pattern (canonical for skills with subdirectories)](#content-map-pattern-canonical-for-skills-with-subdirectories)
+- [Anti-Claims (False — Never Repeat)](#anti-claims-false-never-repeat)
+- [Orchestration Consequences](#orchestration-consequences)
+
 ## Architecture Levels
 
 Two-level config model: global (Poneglyph) + project (specialization). Claude Code combines both at spawn.

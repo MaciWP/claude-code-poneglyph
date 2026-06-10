@@ -6,6 +6,20 @@ description: Placeholder reference for each template file — what to replace an
 
 # Template Placeholders
 
+## Contents
+
+- [Reference Template (templates/reference.md)](#reference-template-templatesreferencemd)
+- [Workflow Template (templates/workflow.md)](#workflow-template-templatesworkflowmd)
+- [Research / Reference Template (templates/research.md)](#research-reference-template-templatesresearchmd)
+- [Knowledge Base Template (templates/knowledge-base.md)](#knowledge-base-template-templatesknowledge-basemd)
+- [Overview](#overview)
+- [Patterns](#patterns)
+- [Anti-Patterns](#anti-patterns)
+- [References](#references)
+- [Encoded Preference Template (templates/encoded-preference.md)](#encoded-preference-template-templatesencoded-preferencemd)
+- [Rules](#rules)
+- [Exceptions](#exceptions)
+
 Each template under `templates/` uses `{{DOUBLE_BRACE}}` placeholders. Read this when filling a template to know exactly which placeholders exist and what values they expect.
 
 ## Reference Template (`templates/reference.md`)

@@ -6,6 +6,15 @@ description: 4 canonical categories of the Socratic Prompt Method — full templ
 
 # Canonical 4-category catalog
 
+## Contents
+
+- [1. [location] — Challenge location](#1-location-challenge-location)
+- [2. [approach] — Challenge approach](#2-approach-challenge-approach)
+- [3. [context] — Introduce context](#3-context-introduce-context)
+- [4. [failure] — Probe failure modes](#4-failure-probe-failure-modes)
+- [Coverage calibration](#coverage-calibration)
+- [Combining with complementary patterns](#combining-with-complementary-patterns)
+
 Source: [Socratic Prompt Method, Jaseci Labs 2026](https://blogs.jaseci.org/blog/2026/03/10/socratic-prompt-method/) + [Towards AI — The Socratic Prompt 2025](https://towardsai.net/p/machine-learning/the-socratic-prompt-how-to-make-a-language-model-stop-guessing-and-start-thinking).
 
 Each drillme should cover **at least 3 of these 4 categories**. Skipping a category is acceptable but must be declared honestly ("Skipping `[X]` — N/A in this context"). Inventing a synthetic question to pad coverage is an anti-pattern.

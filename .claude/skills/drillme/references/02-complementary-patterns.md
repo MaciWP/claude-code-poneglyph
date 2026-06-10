@@ -6,6 +6,14 @@ description: Three patterns that deepen Socratic questioning when canonical cate
 
 # Complementary patterns
 
+## Contents
+
+- [1. 5-whys](#1-5-whys)
+- [2. First principles](#2-first-principles)
+- [3. Inversion](#3-inversion)
+- [Combining patterns](#combining-patterns)
+- [When to escalate beyond drillme](#when-to-escalate-beyond-drillme)
+
 The canonical 4 categories (`[location]` / `[approach]` / `[context]` / `[failure]` — see `01-catalog-socratic.md`) are the WHAT. These three patterns are the HOW: techniques to dig deeper when a single canonical question doesn't crystallize the answer.
 
 ## 1. 5-whys

@@ -1,5 +1,11 @@
 # Extract Class Patterns
 
+## Contents
+
+- [When to Extract](#when-to-extract)
+- [Pattern: Data + Behavior Cohesion](#pattern-data-behavior-cohesion)
+- [Pattern: Extract Service](#pattern-extract-service)
+
 ## When to Extract
 
 - Group of functions operate on same data

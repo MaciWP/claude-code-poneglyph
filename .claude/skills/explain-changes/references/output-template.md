@@ -6,6 +6,25 @@ description: Literal "professor-mode" report template plus a condensed good exam
 
 # Output Template
 
+## Contents
+
+- [Literal Template](#literal-template)
+- [Resumen ejecutivo](#resumen-ejecutivo)
+- [Cadena logica](#cadena-logica)
+- [Cambios punto por punto](#cambios-punto-por-punto)
+- [Preguntas frecuentes pre-anticipadas](#preguntas-frecuentes-pre-anticipadas)
+- [Que sigue](#que-sigue)
+- [Good Example (Condensed)](#good-example-condensed)
+- [Resumen ejecutivo](#resumen-ejecutivo)
+- [Cadena logica](#cadena-logica)
+- [Cambios punto por punto](#cambios-punto-por-punto)
+- [Preguntas frecuentes pre-anticipadas](#preguntas-frecuentes-pre-anticipadas)
+- [Que sigue](#que-sigue)
+- [Bad Example (Annotated)](#bad-example-annotated)
+- [Resumen ejecutivo](#resumen-ejecutivo)
+- [Cambios punto por punto](#cambios-punto-por-punto)
+- [Que sigue](#que-sigue)
+
 Format every report with this structure. Sections are FIXED — do not rename, reorder, or omit. If a section is empty, write "No aplica" rather than removing it.
 
 ## Literal Template

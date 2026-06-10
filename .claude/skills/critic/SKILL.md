@@ -2,16 +2,14 @@
 name: critic
 description: |
   End-to-end review after all HUs completed (Phase 4 of the 5-phase workflow).
-  Validates the original problem from spec.md was actually solved (not just unit
-  tests passing per HU). Produces review.md with 5-section checklist
-  (Correctness/Quality/Security/Performance/Maintainability) + findings tagged
-  with severity (BLOCKER/MAJOR/MINOR/NIT) + verdict (APPROVED /
-  APPROVED_WITH_WARNINGS / NEEDS_CHANGES / BLOCKED). Invokes the
+  Validates the original problem from spec.md was actually solved.
+  Produces review.md with 5-section checklist
+  (Correctness/Quality/Security/Performance/Maintainability) + severity-tagged
+  findings + verdict (APPROVED/WITH_WARNINGS/NEEDS_CHANGES/BLOCKED). Invokes the
   `review-patterns` skill catalog (quality or performance mode per content),
   escalates to a ≥4-perspective independent review PANEL (Workflow, opt-in) when
-  complejidad >60 OR critical areas (auth/payments/security/data/secrets), and
-  triggers `security-review` for auth/payments/credentials. Detects spec-drift
-  for the living-spec loop (Phase 5).
+  complejidad >60 OR critical areas, and triggers `security-review` for
+  auth/payments/credentials. Detects spec-drift for the living-spec loop (Phase 5).
   Use when: feature complete, all HUs closed in state.json, review needed before
   retro, after /build closes Phase 3, "revisa", "critica", "valida", "review",
   "audita", "verdict", "approve".

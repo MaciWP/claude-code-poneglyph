@@ -6,6 +6,20 @@ description: Three worked examples of generated rules (error handling, API patte
 
 # Worked Examples
 
+## Contents
+
+- [Example 1: Error Handling Convention (Always-On)](#example-1-error-handling-convention-always-on)
+- [Patterns](#patterns)
+- [Anti-Patterns](#anti-patterns)
+- [Exceptions](#exceptions)
+- [Example 2: API Endpoint Patterns (Path-Scoped)](#example-2-api-endpoint-patterns-path-scoped)
+- [Patterns](#patterns)
+- [Status Code Guide](#status-code-guide)
+- [Anti-Patterns](#anti-patterns)
+- [Example 3: Test Conventions (Path-Scoped)](#example-3-test-conventions-path-scoped)
+- [Patterns](#patterns)
+- [Anti-Patterns](#anti-patterns)
+
 Three complete rules that show the shape of a finished file for each scope.
 
 ## Example 1: Error Handling Convention (Always-On)

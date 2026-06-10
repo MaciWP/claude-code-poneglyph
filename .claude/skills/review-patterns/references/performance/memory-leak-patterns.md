@@ -1,5 +1,12 @@
 # Memory Leak Patterns
 
+## Contents
+
+- [Growing Collections (Unbounded Cache)](#growing-collections-unbounded-cache)
+- [Event Listener Leak](#event-listener-leak)
+- [Large Object Serialization](#large-object-serialization)
+- [Memory Management Checklist](#memory-management-checklist)
+
 Detection and fix patterns for memory leaks, event listener leaks, and large object serialization issues.
 
 ## Growing Collections (Unbounded Cache)

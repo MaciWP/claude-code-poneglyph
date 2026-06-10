@@ -6,6 +6,12 @@ description: Three worked hook examples (format-on-edit PostToolUse, block-dange
 
 # Worked Hook Examples
 
+## Contents
+
+- [Example 1: Format Code on Edit](#example-1-format-code-on-edit)
+- [Example 2: Block Dangerous Commands](#example-2-block-dangerous-commands)
+- [Example 3: Log API Errors](#example-3-log-api-errors)
+
 Three complete end-to-end hooks showing the script + settings.json registration.
 
 ## Example 1: Format Code on Edit

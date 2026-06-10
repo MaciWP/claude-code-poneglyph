@@ -1,5 +1,10 @@
 # Complexity Metrics
 
+## Contents
+
+- [Cyclomatic Complexity](#cyclomatic-complexity)
+- [Cognitive Complexity](#cognitive-complexity)
+
 Cyclomatic and cognitive complexity measurement with examples.
 
 ## Cyclomatic Complexity

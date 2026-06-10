@@ -1,5 +1,18 @@
 # Common Issues
 
+## Contents
+
+- [Quick Smell Catalog](#quick-smell-catalog)
+- [1. Long Method (> 20 lines)](#1-long-method-20-lines)
+- [2. Long Parameter List (> 4 params)](#2-long-parameter-list-4-params)
+- [3. Large Class (> 200 lines)](#3-large-class-200-lines)
+- [4. Duplicated Code](#4-duplicated-code)
+- [5. Feature Envy](#5-feature-envy)
+- [6. Deep Nesting](#6-deep-nesting)
+- [7. Magic Numbers/Strings](#7-magic-numbersstrings)
+- [8. Parameter Object (Fix Pattern)](#8-parameter-object-fix-pattern)
+- [9. Value Object (Fix Pattern)](#9-value-object-fix-pattern)
+
 Code smell patterns with detection criteria and before/after examples.
 
 ## Quick Smell Catalog

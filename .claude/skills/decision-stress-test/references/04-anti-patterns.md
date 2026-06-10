@@ -6,6 +6,12 @@ description: 17 anti-patterns of adversarial reasoning and multi-perspective deb
 
 # Anti-Patterns
 
+## Contents
+
+- [The 17 Anti-Patterns](#the-17-anti-patterns)
+- [Detection Reference Table](#detection-reference-table)
+- [Self-Meta Check](#self-meta-check)
+
 The following anti-patterns degrade the value of the stress-test. Each has a detection signal and a correction. Self-Meta Check at the end of the workflow audits against this list.
 
 ## The 17 Anti-Patterns

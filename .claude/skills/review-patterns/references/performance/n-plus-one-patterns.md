@@ -1,5 +1,15 @@
 # N+1 and Sequential Operation Patterns
 
+## Contents
+
+- [N+1 Query Problem](#n1-query-problem)
+- [Synchronous Blocking](#synchronous-blocking)
+- [Unbatched Operations](#unbatched-operations)
+- [Sequential Await in Loop](#sequential-await-in-loop)
+- [Unbounded Response Size](#unbounded-response-size)
+- [Missing Indexes](#missing-indexes)
+- [Missing Connection Pool](#missing-connection-pool)
+
 Detailed patterns for detecting and fixing N+1 queries, synchronous blocking, unbatched operations, and sequential await anti-patterns.
 
 ## N+1 Query Problem

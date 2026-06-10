@@ -6,6 +6,13 @@ description: JSON templates for HTTP and stdio MCP servers with placeholders.
 
 # MCP Server Templates
 
+## Contents
+
+- [Template: HTTP Server (Remote API)](#template-http-server-remote-api)
+- [Template: HTTP Server with headersHelper](#template-http-server-with-headershelper)
+- [Template: stdio Server (Local Process)](#template-stdio-server-local-process)
+- [Template: stdio Server (Windows npx)](#template-stdio-server-windows-npx)
+
 Four canonical templates covering HTTP (static auth / dynamic auth) and stdio (Unix / Windows) transports.
 
 ## Template: HTTP Server (Remote API)

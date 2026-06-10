@@ -6,6 +6,14 @@ description: The 4 agent templates (reader, builder, executor, researcher) with 
 
 # Agent Template Specifications
 
+## Contents
+
+- [Available Templates](#available-templates)
+- [Template: Reader](#template-reader)
+- [Template: Builder](#template-builder)
+- [Template: Executor](#template-executor)
+- [Template: Researcher](#template-researcher)
+
 Four canonical agent types. Actual template files live in `${CLAUDE_SKILL_DIR}/templates/{type}.md`; this reference documents the frontmatter and placeholder set for each.
 
 ## Available Templates

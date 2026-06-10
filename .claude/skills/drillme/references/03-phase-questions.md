@@ -6,6 +6,18 @@ description: Phase-specific question banks for the poneglyph 5-phase workflow. L
 
 # Phase-specific question banks
 
+## Contents
+
+- [Phase 1 — Scope (scope-definer)](#phase-1-scope-scope-definer)
+- [Phase 2 — Plan (tech-planner)](#phase-2-plan-tech-planner)
+- [Phase 2.5 — TDD design (tdd-designer)](#phase-25-tdd-design-tdd-designer)
+- [Phase 3 — Build (story-executor, intra-HU)](#phase-3-build-story-executor-intra-hu)
+- [Phase 4 — Review (critic-reviewer)](#phase-4-review-critic-reviewer)
+- [Phase 5 — Retro (retro-learner)](#phase-5-retro-retro-learner)
+- [Loading rule for drillme](#loading-rule-for-drillme)
+- [Phase auto-detection priority](#phase-auto-detection-priority)
+- [When phase questions don't fit the actual context](#when-phase-questions-dont-fit-the-actual-context)
+
 When drillme detects an active 5-phase workflow context (see SKILL.md §Workflow Step 1), it loads the relevant phase bank **in addition to** the canonical 4 categories. Phase questions are tagged `[phase-N]` in the output so the user sees their origin.
 
 These question banks are the **canonical source**. Phase skills (`scope-definer`, `tech-planner`, `tdd-designer`, `story-executor`, `critic-reviewer`, `retro-learner`) reference them — they do NOT duplicate the content in their own SKILL.md.

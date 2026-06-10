@@ -6,6 +6,19 @@ description: Performance mode — bottlenecks, memory leaks, N+1, async patterns
 
 # Performance Mode
 
+## Contents
+
+- [When to Use](#when-to-use)
+- [Review Checklist](#review-checklist)
+- [Red Flags (Performance)](#red-flags-performance)
+- [Common Issues](#common-issues)
+- [Performance Metrics](#performance-metrics)
+- [Runtime-Specific Optimizations](#runtime-specific-optimizations)
+- [Output Format](#output-format)
+- [Performance Review: [Component]](#performance-review-component)
+- [Reference Files](#reference-files)
+- [Gotchas](#gotchas)
+
 Performance audit checklist. Language-agnostic patterns applicable to any stack.
 
 ## When to Use

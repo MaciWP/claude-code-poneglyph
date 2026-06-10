@@ -6,6 +6,12 @@ description: Three worked MCP server configurations (GitHub stdio, HTTP API, mem
 
 # MCP Server Examples
 
+## Contents
+
+- [Example 1: GitHub MCP (stdio, project scope)](#example-1-github-mcp-stdio-project-scope)
+- [Example 2: Custom API (http, local scope)](#example-2-custom-api-http-local-scope)
+- [Example 3: Memory Server (stdio, user scope)](#example-3-memory-server-stdio-user-scope)
+
 Three complete end-to-end configurations showing JSON + CLI + env vars for common patterns.
 
 ## Example 1: GitHub MCP (stdio, project scope)

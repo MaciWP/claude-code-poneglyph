@@ -6,6 +6,17 @@ description: Follow-up patterns after the first report — focused Q&A, re-scope
 
 # Interaction Patterns
 
+## Contents
+
+- [Closing Line (every report)](#closing-line-every-report)
+- [Pattern Catalog](#pattern-catalog)
+- [Focused Deep-Dive](#focused-deep-dive)
+- [Reformulation with Analogy](#reformulation-with-analogy)
+- [Re-Scope](#re-scope)
+- [Cancel / Stop](#cancel-stop)
+- [Apply Pattern to Other Case](#apply-pattern-to-other-case)
+- [Out-of-Scope Requests](#out-of-scope-requests)
+
 After the first report, the conversation enters Q&A mode. Behavior changes:
 
 - The full template is NOT regenerated unless the user explicitly asks for it.

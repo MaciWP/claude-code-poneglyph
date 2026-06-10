@@ -6,6 +6,19 @@ description: Complexity factors × weight table, formula, routing thresholds, mo
 
 # Complexity Routing
 
+## Contents
+
+- [Complexity Factors](#complexity-factors)
+- [Routing by Complexity](#routing-by-complexity)
+- [Mode Selection Table](#mode-selection-table)
+- [Tiered Mode](#tiered-mode)
+- [4-Gate Criteria (Team Mode Only — ALL must pass)](#4-gate-criteria-team-mode-only-all-must-pass)
+- [Team Mode Execution](#team-mode-execution)
+- [Worktree Decision](#worktree-decision)
+- [Model Routing](#model-routing)
+- [Effort Routing (Frontmatter — static)](#effort-routing-frontmatter-static)
+- [Calculation Examples](#calculation-examples)
+
 Calculate complexity before delegating to determine if invoking the `tech-plan` skill is required and which execution mode to use.
 
 ## Complexity Factors

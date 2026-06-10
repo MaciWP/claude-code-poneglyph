@@ -6,6 +6,17 @@ description: plugin.json schema, component paths, userConfig, env vars, installa
 
 # Plugin Manifest Specification
 
+## Contents
+
+- [Directory Structure (Standard Layout)](#directory-structure-standard-layout)
+- [Manifest Schema (plugin.json)](#manifest-schema-pluginjson)
+- [Component Path Fields](#component-path-fields)
+- [Environment Variables](#environment-variables)
+- [userConfig (User-Facing Settings)](#userconfig-user-facing-settings)
+- [Installation Scopes](#installation-scopes)
+- [Agent Security Restrictions in Plugins](#agent-security-restrictions-in-plugins)
+- [Hooks in Plugins](#hooks-in-plugins)
+
 Full reference for `plugin.json`, component resolution, environment variables, scopes and agent security restrictions.
 
 ## Directory Structure (Standard Layout)

@@ -6,6 +6,25 @@ description: Three worked agent examples (security-reviewer, test-runner, api-im
 
 # Worked Agent Examples
 
+## Contents
+
+- [Example 1: Security Reviewer (reader)](#example-1-security-reviewer-reader)
+- [Primary Responsibilities](#primary-responsibilities)
+- [Workflow](#workflow)
+- [Output Format](#output-format)
+- [Constraints](#constraints)
+- [Example 2: Test Runner (executor)](#example-2-test-runner-executor)
+- [Allowed Commands](#allowed-commands)
+- [Workflow](#workflow)
+- [Output Format](#output-format)
+- [Constraints](#constraints)
+- [Example 3: API Implementer (builder)](#example-3-api-implementer-builder)
+- [Primary Responsibilities](#primary-responsibilities)
+- [Workflow](#workflow)
+- [Output Format](#output-format)
+- [Constraints](#constraints)
+- [Directory Structure](#directory-structure)
+
 Three complete end-to-end agents showing frontmatter + system prompt for the main categories.
 
 ## Example 1: Security Reviewer (reader)

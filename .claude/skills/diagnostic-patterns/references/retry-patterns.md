@@ -1,5 +1,18 @@
 # Retry Patterns
 
+## Contents
+
+- [Error Classification](#error-classification)
+- [Decision Tree](#decision-tree)
+- [Transient Error Detection](#transient-error-detection)
+- [Pattern 1: Simple Retry with Limit](#pattern-1-simple-retry-with-limit)
+- [Pattern 2: Exponential Backoff with Jitter](#pattern-2-exponential-backoff-with-jitter)
+- [Pattern 3: Retry Only Transient Errors](#pattern-3-retry-only-transient-errors)
+- [Circuit Breaker](#circuit-breaker)
+- [Rate Limit Handling](#rate-limit-handling)
+- [Resilient Client (Combined Pattern)](#resilient-client-combined-pattern)
+- [Checklist](#checklist)
+
 Resilience patterns for handling transient failures. All patterns are language-agnostic.
 
 ## Error Classification

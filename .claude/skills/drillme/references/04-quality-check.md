@@ -6,6 +6,17 @@ description: How to evaluate answers to drillme questions — concretion criteri
 
 # Quality check for drillme answers
 
+## Contents
+
+- [Answer classification](#answer-classification)
+- [Iteration protocol](#iteration-protocol)
+- [Closing criterion](#closing-criterion)
+- [Smell signals during iteration](#smell-signals-during-iteration)
+- [Anti-patterns in answer evaluation](#anti-patterns-in-answer-evaluation)
+- [Format of iteration output](#format-of-iteration-output)
+- [Drillme iteration 2 — quality check](#drillme-iteration-2-quality-check)
+- [When to give up gracefully](#when-to-give-up-gracefully)
+
 When the user (or Lead) answers drillme questions and asks for iteration, each answer must pass a quality check before being marked closed. The check prevents "ceremonia": questions that get fake-closed with vague answers and the decision proceeds on hot air.
 
 ## Answer classification

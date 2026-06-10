@@ -6,6 +6,27 @@ description: Full worked examples for reference, workflow, and research skill ty
 
 # Worked Examples
 
+## Contents
+
+- [Example 1: API Conventions (Reference / knowledge-base)](#example-1-api-conventions-reference-knowledge-base)
+- [When to Use](#when-to-use)
+- [Patterns](#patterns)
+- [Checklist](#checklist)
+- [Anti-Patterns](#anti-patterns)
+- [References](#references)
+- [Example 2: Deploy (Workflow)](#example-2-deploy-workflow)
+- [Usage](#usage)
+- [Prerequisites](#prerequisites)
+- [Steps](#steps)
+- [Output — Success](#output-success)
+- [Error Handling](#error-handling)
+- [Rollback](#rollback)
+- [Example 3: Architecture Analysis (Research / reference)](#example-3-architecture-analysis-research-reference)
+- [Methodology](#methodology)
+- [Research Areas](#research-areas)
+- [Output Format](#output-format)
+- [Constraints](#constraints)
+
 Complete, minimally-trimmed examples of generated skills. Read this to see end-to-end what a finished skill looks like for each type.
 
 ## Example 1: API Conventions (Reference / knowledge-base)

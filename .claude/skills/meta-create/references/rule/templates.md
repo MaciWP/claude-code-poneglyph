@@ -6,6 +6,16 @@ description: Always-on and path-scoped rule templates with placeholders and opti
 
 # Rule Templates
 
+## Contents
+
+- [Template: Always-On Rule](#template-always-on-rule)
+- [Patterns](#patterns)
+- [Anti-Patterns](#anti-patterns)
+- [Template: Path-Scoped Rule](#template-path-scoped-rule)
+- [Patterns](#patterns)
+- [Anti-Patterns](#anti-patterns)
+- [Frontmatter Reference](#frontmatter-reference)
+
 Two canonical templates: always-on (no frontmatter) and path-scoped (`paths:` frontmatter required).
 
 ## Template: Always-On Rule

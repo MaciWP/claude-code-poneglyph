@@ -72,7 +72,7 @@ graph TD
 | US0 | Persist seed dossiers (anthropic/academic/industry) | W-0 | S | skip: artefact copy, verified by existence | — |
 | US1 | W1 Orchestration II: best-of-N, bg-sessions data, effort heuristics | W-A | M | optional (validation-mode) | METR-lite = proposal only, impl 019+ |
 | US2 | W2 Behavioral evals: config regression testing measured practice | W-A | M | optional (validation-mode) | harness design constraints only, impl 019+ |
-| US3 | W3 Context measured: degradation data + mitigation comparisons | W-A | M | optional (validation-mode) | flag model-era transferability per claim |
+| US3 | W3 Context measured: degradation data + mitigation comparisons + code-graph layer (graphify) | W-A | M | optional (validation-mode) | flag model-era transferability per claim; graphify verdict required (seed scouted 2026-06-10) |
 | US4 | W4 Platform: dotfile release patterns, memory evals, sandboxing data | W-A | M | optional (validation-mode) | sync v2 / harvest / security = direction, impl 019+ |
 | US5 | W5 Discovery: capabilities poneglyph lacks (timeboxed) | W-A | M | optional (validation-mode) | inclusion rubric fixed in US5 (Phase 2 resolution) |
 | US6 | Synthesis: roadmap-019.md + decision↔evidence table | W-B | M | optional (validation-mode) | inline, no agents (share-context principle) |
@@ -82,7 +82,7 @@ graph TD
 | Decisión | Dónde se toma | HUs afectadas | Criterio |
 |---|---|---|---|
 | Rigor method (tiers, ≥1 A/B, refuter, counter-evidence, UNVERIFIED) | spec §Modelo conceptual | US1-US6 | Every claim format-checked by validations.md |
-| Agent cap ≤4 per HU (2-3 finders + 1 refuter) | this index | US1-US5 | Cost control; matches Anthropic effort-scaling band for "direct comparisons" |
+| Agent cap ≤4 per HU (2-3 finders + 1 refuter); US3 exception: ≤5 (graphify angle added at gate REFINE) | this index | US1-US5 | Cost control; matches Anthropic effort-scaling band for "direct comparisons" |
 | Extend, don't repeat seeds | spec Out-of-scope | US1-US5 | Finder prompts MUST list seed coverage as known ground |
 | Date-stamp every claim | spec rigor method | US1-US6 | Evidence rots; 019+ consumers need recency signal |
 | W5 inclusion rubric | US5 | US5, US6 | Public artefacts + reported outcomes + maintained ≤6mo + single-user-CC applicable; capability needs ≥1 A/B or official CC doc, else watchlist |

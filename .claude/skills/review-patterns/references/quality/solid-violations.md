@@ -1,5 +1,13 @@
 # SOLID Violations
 
+## Contents
+
+- [1. Single Responsibility Violation](#1-single-responsibility-violation)
+- [2. Open/Closed Violation](#2-openclosed-violation)
+- [3. Liskov Substitution Violation](#3-liskov-substitution-violation)
+- [4. Interface Segregation Violation](#4-interface-segregation-violation)
+- [5. Dependency Inversion Violation](#5-dependency-inversion-violation)
+
 5 SOLID principle violations with detection, examples, and fixes.
 
 ## 1. Single Responsibility Violation

@@ -1,5 +1,10 @@
 # Diagnostic Service
 
+## Contents
+
+- [Data Structures](#data-structures)
+- [DiagnosticService](#diagnosticservice)
+
 Complete service pattern that orchestrates error diagnosis, stack analysis, root cause analysis, and report generation.
 
 ## Data Structures
