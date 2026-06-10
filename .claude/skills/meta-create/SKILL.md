@@ -91,7 +91,7 @@ For hook/rule/mcp/plugin: templates are inline in `references/<type>/templates.m
 
 ### Step 5 — Validate
 
-Apply the `references/<type>/gotchas.md` or `frontmatter-spec.md` checklist before declaring success. For skills, ALSO pass the `references/01-authoring-rubric.md` checklist (description D1-D4, body B1-B9, references R1-R5, eval-first) — each deviation needs a written justification. If the extension shapes runtime behavior (skill description, output-style, behavioral rule/hook), run the golden-prompt regression: `bun .claude/evals/run.ts` (protocol: `.claude/evals/README.md`).
+Apply the `references/<type>/gotchas.md` or `frontmatter-spec.md` checklist before declaring success. For skills, ALSO pass the `references/01-authoring-rubric.md` checklist (description D1-D4, body B1-B9, references R1-R5, eval-first) — each deviation needs a written justification. If the extension shapes runtime behavior (skill description, output-style, behavioral rule/hook), run the golden-prompt regression: `bun .claude/evals/run.ts` (protocol: `.claude/evals/README.md`). If the change alters a CANONICAL decision other files cite (defaults, thresholds, dispatch targets, component existence), run the doctrine sweep: `references/doctrine-sweep.md`.
 
 ## Critical Reminders (cross-type)
 
@@ -126,6 +126,7 @@ Apply the `references/<type>/gotchas.md` or `frontmatter-spec.md` checklist befo
 | Rule: rule system, gotchas, examples, templates inline | `references/rule/{rule-system,gotchas,examples,templates}.md` | Creating a rule |
 | MCP: reference spec, gotchas, examples, templates inline | `references/mcp/{reference,gotchas,examples,templates}.md` | Creating an MCP server |
 | Plugin: manifest spec, gotchas + CLI, examples, templates inline | `references/plugin/{manifest-spec,gotchas-and-cli,examples,templates}.md` | Creating a plugin |
+| Doctrine sweep: propagate a canonical-decision change to zero stale references | `references/doctrine-sweep.md` | Any edit that changes what OTHER files assert (defaults, thresholds, cuts/renames) |
 
 ## Why this design
 

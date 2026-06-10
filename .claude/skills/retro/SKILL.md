@@ -159,6 +159,7 @@ For each reusable pattern surfaced in Step 5/7 — plus each entry in `.claude/l
 - Each candidate MUST cite the concrete evidence from this feature that motivated it (a finding, a recurring drillme question, a lesson).
 - `anti-hallucination`: verify the proposed path does NOT collide with an existing file. If collision → propose rename or merge.
 - If `meta-create` auxiliary is invoked → the proposal sketch follows the official frontmatter spec for that extension type.
+- **Failure → eval case**: for each REAL documented failure surfaced in §Lessons ❌, also propose its golden-prompt case for `.claude/evals/cases.jsonl` (growth rule in `.claude/evals/README.md`: one new case per new real failure, deterministic grader, `source` cites this retro). The failure becomes a permanent regression check (Cmd IX).
 
 If zero promotion candidates emerge → declare honestly: "Zero promotions this cycle. Reasons: <list>." If this happens in 3+ consecutive retros → smell signal (Step 12).
 
