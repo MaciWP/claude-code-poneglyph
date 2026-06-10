@@ -1,14 +1,14 @@
 {
   "spec_slug": "017-personal-optimization",
   "mode": "full",
-  "current_phase": 3,
-  "phases_completed": [1, 2, 2.5],
+  "current_phase": 4,
+  "phases_completed": [1, 2, 2.5, 3],
   "gates_approved": {
     "1->2": true,
     "2->3": true
   },
-  "us_completed": ["US1", "US3", "US2", "US4", "US5", "US6", "US7", "US8", "US9", "US10", "US11", "US12", "US13", "US14"],
-  "us_pending": ["US15"],
+  "us_completed": ["US1", "US3", "US2", "US4", "US5", "US6", "US7", "US8", "US9", "US10", "US11", "US12", "US13", "US14", "US15"],
+  "us_pending": [],
   "us_history": [
     {
       "us": "US1",
@@ -200,6 +200,19 @@
       "askuserquestion_count": 1,
       "decisions": "user EXPANDED v1 scope beyond plan minimum: full personalized menu (project skills, rules, CLAUDE.md, commands, MCP suggestions) — orchestrated via meta-create/meta-settings-cookbook, not duplicated",
       "notes": "rubric pass: description 1016c, body 153 lines, refs 1-level with ToC; dry-run E1 produced 42-line CLAUDE.md; eval scenarios E1-E3 encoded in the skill's Verification; real-repo validation deferred to first use"
+    },
+    {
+      "us": "US15",
+      "completed_at": "2026-06-10",
+      "tests_passed": true,
+      "files_touched": [
+        "~/.claude/projects/.../memory/MEMORY.md (21→16 entries)",
+        "~/.claude/projects/.../memory/feedback-verify-load-layer.md (UPDATE: instructions-loaded.log pointer)",
+        "5 memory files deleted (user-approved): skill-propagation-research, feedback-delegate-default-questioned, stress-test-thesis-a-conditional, statusline-cross-platform-break, html-report-inspiration-research"
+      ],
+      "execution": "inline",
+      "askuserquestion_count": 1,
+      "notes": "verdict table: 15 KEEP / 1 UPDATE / 5 DELETE; index↔files 16/16 consistent, 0 broken links; no entry references dead components as live"
     }
   ],
   "feature_closed": false,
