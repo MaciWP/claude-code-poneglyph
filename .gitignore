@@ -74,6 +74,9 @@ tmpclaude-*-cwd
 # Archived plans (closed/abandoned features — out of accidental read reach)
 .claude/plans/_archive/
 
+# Learning inbox + load-layer log (may contain transcript snippets — never commit)
+.claude/learned/
+
 # Runtime data directories
 data/
 !data/sessions/.gitkeep

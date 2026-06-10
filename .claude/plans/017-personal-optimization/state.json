@@ -216,7 +216,7 @@
     }
   ],
   "feature_closed": false,
-  "review_verdict": null,
+  "review_verdict": "APPROVED_WITH_WARNINGS — 2 MAJOR fixed in-review; panel infra-failed (session limit), inline with declared bias; behavioral validation next session",
   "retro_status": null,
   "started_at": "2026-06-10",
   "updated_at": "2026-06-10"

@@ -91,10 +91,11 @@ PreToolUse and PostToolUse hooks may silently fail to fire (known Claude Code bu
 
 | Hook type | Reliability | Registered today | Use for |
 |-----------|-------------|------------------|---------|
-| `Stop` | Reliable | YES — `security-gate.ts` | Quality gate — security validation. Test verification is performed manually by the Lead after the build step. |
-| `UserPromptSubmit` | Reliable as event (gap early-session/post-compaction — issue #17277) | **NO — none registered** | Candidate surface for skill-activation injection (planned 017/US12) |
+| `Stop` | Reliable | YES — `security-gate.ts` + `learning-inbox.ts` (017/US11) | Quality gate — security warning + learning capture. Test verification is performed manually by the Lead after the build step. |
+| `UserPromptSubmit` | Reliable as event (gap early-session/post-compaction — issue #17277) | YES — `skill-activation.ts` (017/US12) | Injects explicit `Skill(<name>)` on keyword match — best-effort layer, never a sole gate |
+| `InstructionsLoaded` | Reliable as event | YES — `instructions-loaded.ts` (017/US12, async) | Logs every CLAUDE.md/rules load to `.claude/learned/instructions-loaded.log` (load-layer proof) |
 | `SubagentStop` | Reliable as event | **NO — none registered** | Available for future use |
 | `PreToolUse` | Unreliable (#6305) | NO | Best-effort only — never sole gate for critical checks |
 | `PostToolUse` | Unreliable (#6305) | YES — `code-validator.ts` | Best-effort only — never sole gate for critical checks |
 
-`security-gate.ts` (Stop, async) is the current Stop hook. There is no automatic test-pass validator at the moment — the Lead is responsible for verifying tests after each build step. Never rely solely on PostToolUse for security enforcement.
+There is no automatic test-pass validator — the Lead is responsible for verifying tests after each build step (Stop test-gate declined by user, 017/US4). Never rely solely on PostToolUse for security enforcement.
