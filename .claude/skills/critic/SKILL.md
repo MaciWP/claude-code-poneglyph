@@ -7,9 +7,11 @@ description: |
   (Correctness/Quality/Security/Performance/Maintainability) + severity-tagged
   findings + verdict (APPROVED/WITH_WARNINGS/NEEDS_CHANGES/BLOCKED). Invokes the
   `review-patterns` skill catalog (quality or performance mode per content),
-  escalates to a ≥4-perspective independent review PANEL (Workflow, opt-in) when
-  complejidad >60 OR critical areas, and triggers `security-review` for
-  auth/payments/credentials. Detects spec-drift for the living-spec loop (Phase 5).
+  dispatches ONE fresh-context read-only reviewer (correctness/requirements only)
+  at standard/full levels — the evidence-strong form for code review (018 W1
+  D1/D3) — and triggers `security-review` for auth/payments/credentials.
+  Deliberative panels are decision-review territory (`decision-stress-test`),
+  not code review. Detects spec-drift for the living-spec loop (Phase 5).
   Use when: feature complete, all HUs closed in state.json, review needed before
   retro, after /build closes Phase 3, "revisa", "critica", "valida", "review",
   "audita", "verdict", "approve".
@@ -75,9 +77,9 @@ In parallel:
 
 | Signal | Level | Scope |
 |---|---|---|
-| Feature trivial (1-2 HUs, no security/perf concern, mode minimal) | **light** | Base checks (tests + typecheck) + drillme Q1 only; skip review panel + review-patterns + security-review |
-| Feature standard (3-N HUs, no critical area) | **standard** | Full 5-section checklist; review-patterns quality mode; drillme 4/4 |
-| Feature architectural / touches auth/payments/secrets / complexity >60 | **full** | Standard + independent review PANEL (≥4 perspectives, Workflow opt-in) + security-review skill + review-patterns both modes (quality + performance) |
+| Feature trivial (1-2 HUs, no security/perf concern, mode minimal) | **light** | Base checks (tests + typecheck) + drillme Q1 only; skip fresh reviewer + review-patterns + security-review |
+| Feature standard (3-N HUs, no critical area) | **standard** | Full 5-section checklist; review-patterns quality mode; ONE fresh-context reviewer; drillme 4/4 |
+| Feature architectural / touches auth/payments/secrets / complexity >60 | **full** | Standard + security-review skill + review-patterns both modes (quality + performance); fresh reviewer prompt additionally carries the critical-area focus |
 
 CLI override: `/critic --light` / `--standard` / `--full`. Default = auto-detect from `spec.md.mode` + scanned content.
 
@@ -147,19 +149,19 @@ Apply the catalog's specific checks (cyclomatic complexity / N+1 patterns / leak
 
 **AC8 ratification**: `review-patterns` is KEPT (17+ unique refs not duplicated here). The skill is the catalog; this skill is the orchestrator.
 
-### Step 7 — Conditional invocations (level=full)
+### Step 7 — Independent review + conditional invocations
 
-**Independent review PANEL (≥4 perspectives) — replaces the former single `reviewer` agent**:
+**ONE fresh-context reviewer (default at standard/full) — replaces the ≥4 panel as code-review form (feature 019)**:
 
-Trigger when ANY:
-- Feature complexity >60 declared in `tasks/index.md` or `spec.md`.
-- Critical area touched: `auth/`, `payments/`, `secrets/`, `credentials/`, `crypto/`, `session/`, database migrations.
-- `--full` CLI flag.
-- The critic is reviewing work the **same session produced** (author≠evaluator bias — the lesson behind the panel; see `independent-reviewer-when-self-assessing` memory).
+Evidence basis (018): deliberative multi-agent panels are the measurably WEAK form for code review — the verifier gap and MAST's 23.5% verification-failure share (W1 D1/D3, seeds), deterministic checks 0% FP vs LLM-judge ~80% FP (W2 D1). The strong form is **runnable mechanical checks (Step 4) + ONE fresh-context reviewer**. User ratified the complete demotion 2026-06-10 (019 gate-entry).
 
-**How**: per the spawn decision tree (1 agent is forbidden), an independent review runs as a **panel of ≥4 fresh perspectives via `Workflow`** (user opt-in), each a distinct lens — e.g. `correctness`, `security`, `performance`, `maintainability` — prompted read-only ("review, do not edit; load `review-patterns`/`security-review`"). The panel's verdicts are aggregated (majority on architectural/security concerns). This gives MORE independence than one reviewer, without spawning a single agent. Canonical panel prompt + wiring: `orchestrator-protocol/references/04-agent-selection.md` §Workflow wiring.
+Trigger: every standard/full review on code (light skips it). The author≠evaluator concern (feature 002 lesson; `independent-reviewer-when-self-assessing` memory) applies to virtually every Phase 4 run — the critic reviews work its own session produced.
 
-> If the user does not opt into a Workflow, the critic performs the deeper review **inline** and declares residual author-bias honestly in `review.md` (same model family) — never silently skips the independence concern.
+**How**: dispatch ONE read-only `Agent` with fresh context (this is the explicit P1 spawn-tree exception — the one agent whose value IS the fresh context). Its prompt is constrained to **correctness and requirements ONLY**: trace each spec.md AC to the diff, verify the happy path, flag requirement gaps. Style, performance and maintainability are explicitly OUT of its prompt — those stay in the critic's inline checklist (Step 5) + `review-patterns` catalog (Step 6). The reviewer returns findings (file:line + severity); the critic merges them into review.md with attribution.
+
+> If no agent can run (offline, budget), the critic performs the deeper review **inline** and declares residual author-bias honestly in `review.md` — never silently skips the independence concern.
+
+**Deliberative panels (≥4 perspectives)**: reserved for DECISION review — architecture choices, library selection, trade-off challenges — via `decision-stress-test` (its evidence niche per 018 W1: cheap-to-grade decision tasks, not code). The critic does NOT launch panels for code.
 
 **`security-review` skill**:
 
@@ -215,7 +217,7 @@ findings_count:
   major: N
   minor: N
   nit: N
-review_panel_invoked: <yes (N perspectives) | no (inline) | n/a>
+fresh_reviewer_invoked: <yes | no (inline + declared bias) | n/a (light)>
 security_review_invoked: <yes|no>
 review_patterns_modes: [<quality?>, <performance?>]
 created: YYYY-MM-DD
@@ -241,7 +243,7 @@ Report:
 - review_level: <light|standard|full>
 - Findings: <blocker>/<major>/<minor>/<nit>
 - spec_drift: <none|legitimate|scope_creep|skipped_ac>
-- review panel invoked: <yes (N perspectives) | no (inline)>
+- fresh reviewer invoked: <yes | no (inline + declared bias)>
 - security-review invoked: <yes|no>
 
 Next:
@@ -258,16 +260,16 @@ Next:
 - Tests pass on the assembled branch BEFORE declaring APPROVED (Cmd IV).
 - Spec-drift is flagged + classified, never silently absorbed (Cmd IX — observability).
 - Findings cite `file:line` exactly; no vague "somewhere in the auth module".
-- Independent review = panel ≥4 (Workflow) or inline-with-declared-bias — never a single spawned reviewer (P1).
+- Independent review = ONE fresh-context read-only reviewer (correctness/requirements only — the explicit P1 exception, evidence W1 D1/D3) or inline-with-declared-bias fallback; never a deliberative panel for code (W2 D1: judge ensembles ~80% FP).
 - Research/evidence artefacts: numeric claims must be quote-anchored to their source or marked `[Probable]`/UNVERIFIED; citation sampling must target claims NOT already refuter-verified during build (independence). Method: `.claude/docs/research-rigor.md` (promoted from feature 018 — precision inflation was its only audit-failure class).
 
 ## Adaptation intra-phase (Principio 2 — "no siempre más es más")
 
 | Signal | Adaptation |
 |---|---|
-| Mode `light` (trivial feature, 1-2 HUs, no security/perf) | Base checks + drillme Q1 only; skip review panel + review-patterns + security-review |
+| Mode `light` (trivial feature, 1-2 HUs, no security/perf) | Base checks + drillme Q1 only; skip fresh reviewer + review-patterns + security-review |
 | Mode `standard` (default, 3-N HUs, no critical area) | Full 5-section + review-patterns quality + drillme 4/4 |
-| Mode `full` (architectural / auth / payments / complexity >60) | Standard + review panel ≥4 (Workflow opt-in) + security-review + review-patterns both modes |
+| Mode `full` (architectural / auth / payments / complexity >60) | Standard + security-review + review-patterns both modes; fresh reviewer carries critical-area focus |
 | Doc-only feature (markdown changes, no code) | Quality + Maintainability sections only; skip Performance + Security; drillme Q1 |
 | Bug fix with reproducible test | Correctness section + drillme Q3 (edge case); skip Performance unless bug was performance-related |
 
@@ -278,8 +280,8 @@ Declare adaptation in `review.md` frontmatter (`review_level` + reason).
 - **Edge 1** — HUs marcadas `completed` pero tests fallan en la rama ensamblada → STOP; escalate; do not generate review.md as APPROVED.
 - **Edge 2** — `spec.md` editada después de approved (timestamp post-approval) → revisar contra la versión actual + flag in review.md; the Phase 5 retro decides whether the edit is ratified.
 - **Edge 3** — `review-patterns` no existe (cortada por error) → fallback al checklist embebido + flag in Issues; this should never happen (AC8 KEEP).
-- **Edge 4** — Review panel (Workflow) not opted into by the user on a full-level review → critic reviews inline + declares residual author-bias in `review.md.review_panel_invoked: no (inline)`; do not block the verdict on Workflow availability.
-- **Edge 5** — Panel perspectives return conflicting verdicts → majority wins on architectural/security concerns; critic's inline judgment wins on operational/test concerns; if irreconcilable → escalate to user.
+- **Edge 4** — Fresh reviewer cannot run (no agent available, budget) → critic reviews inline + declares residual author-bias in `review.md.fresh_reviewer_invoked: no (inline + declared bias)`; do not block the verdict on agent availability.
+- **Edge 5** — Fresh reviewer's findings conflict with the critic's inline judgment → the reviewer wins on correctness/requirements (its constrained domain — fresh eyes, W1 D3); the critic wins on style/operational concerns; if irreconcilable → escalate to user.
 - **Edge 6** — Diff is empty (no commits since spec approved) → STOP; ask if Phase 3 was actually executed.
 
 ## Smell signals
@@ -288,7 +290,7 @@ Declare adaptation in `review.md` frontmatter (`review_level` + reason).
 - ⚠️ NEEDS_CHANGES on >3 consecutive critic runs of the same feature → spec.md or HUs are poorly defined; reopen Phase 1/2.
 - ⚠️ Findings cite line numbers that don't exist in the file → anti-hallucination skipped; redo with verification.
 - ⚠️ `spec_drift: legitimate` proposed in >50% of reviews → planning is not capturing emergent requirements; review the planning process in Phase 5.
-- ⚠️ Review panel invoked on every feature regardless of complexity → KEEP-conditional criterion ignored; cost-blind. Restrict to genuine complexity >60 OR critical area OR author≠evaluator concern.
+- ⚠️ A ≥4 deliberative panel launched for code review → doctrine regression (019 demotion, W1 D1/D3); panels belong to decision review via `decision-stress-test` only.
 
 ## Anti-patterns
 
@@ -298,14 +300,14 @@ Declare adaptation in `review.md` frontmatter (`review_level` + reason).
 | Severity inflation | All findings tagged BLOCKER | Re-classify by Cmd IV blocking criteria; BLOCKER = data loss/security/breaking change/hardcoded secret/fundamental design flaw |
 | Spec drift silently absorbed | `review.md` doesn't mention spec.md delta despite diff diverging | Add Spec-drift section with classification |
 | Skipping security on auth code | Diff touches auth but `security-review` not invoked | Re-run with security-review dispatched (mandatory gate) |
-| Review panel invoked for trivial features | `review_panel_invoked: yes` on light review | Reset to no; criterion is "complejidad >60 OR critical area OR author-bias", not "every feature" |
+| Panel launched for code review | Any ≥4-perspective Workflow fired from Phase 4 on a code diff | Replace with ONE fresh-context reviewer (correctness/requirements); panels = decisions only (`decision-stress-test`) |
 | Verdict APPROVED with failing tests | base checks (Step 4) red but verdict green | Re-verdict to NEEDS_CHANGES at minimum; tests-passing is a precondition |
 
 ## Deep references (Read on demand)
 
 | Topic | File | Contents |
 |---|---|---|
-| Decisions history + auxiliary skills matrix | `references/01-decisions-and-auxiliaries.md` | Why the reviewer agent was cut (panel ≥4 model), the AC8 review-patterns KEEP rationale, the full auxiliary-skills invocation matrix with fallbacks, and post-implementation verification of this skill. Read when invoking auxiliaries beyond review-patterns/security-review, or when questioning the panel model. |
+| Decisions history + auxiliary skills matrix | `references/01-decisions-and-auxiliaries.md` | Review-model evolution (reviewer agent → panel ≥4 → ONE fresh-context reviewer, feature 019), the AC8 review-patterns KEEP rationale, the full auxiliary-skills invocation matrix with fallbacks, and post-implementation verification of this skill. Read when invoking auxiliaries beyond review-patterns/security-review, or when questioning the review model. |
 | Embedded fallback template | `references/02-embedded-fallback.md` | The full review.md checklist template. Read ONLY if `.claude/plans/templates/review.template.md` is missing (Step 2 fallback). |
 
 Critical invariants kept in this body: `review-patterns` is MANDATORY in standard/full (Step 6); `security-review` is a MANDATORY gate on critical areas (Step 7); skill-to-skill auto-fire is probabilistic — the Lead dispatches manually on miss.
@@ -314,14 +316,14 @@ Critical invariants kept in this body: `review-patterns` is MANDATORY in standar
 
 | # | Cómo |
 |---|---|
-| I | Honest findings sin softening; BLOCKED if BLOCKER exists; residual author-bias declared when no panel |
+| I | Honest findings sin softening; BLOCKED if BLOCKER exists; residual author-bias declared when no fresh reviewer ran |
 | II | `anti-hallucination` before every finding — no invented file:line |
 | III | Severity inflation anti-pattern blocked; simple by default |
 | IV | APPROVED only if tests pass on assembled branch (blocking gate) |
 | V | Read spec.md + tasks/ + tests/validations BEFORE producing review.md |
 | VI | `security-review` mandatory dispatch on auth/payments/secrets — gate, not advisory |
-| VII | Base checks executed in parallel (Step 4); independent review = panel ≥4 (P1/P3) not a single spawn |
-| VIII | Panel prompts include AC trace + skills + read-only role (Arch H) |
+| VII | Base checks executed in parallel (Step 4); ONE fresh reviewer replaces the ≥4 panel — same independence, fraction of the cost (W1 D1/D3) |
+| VIII | Fresh-reviewer prompt is constrained (AC trace + correctness/requirements only + read-only role — Arch H) |
 | IX | Spec-drift detection + classification feeds living-spec loop in Phase 5 (observability) |
 
 ## Output format reminder
@@ -334,7 +336,7 @@ When this skill closes a review:
 - review_level: <light|standard|full> (<reason>)
 - Findings: blocker=N major=N minor=N nit=N
 - spec_drift: <none|legitimate|scope_creep|skipped_ac>
-- review panel (≥4 perspectives): <invoked (N) | inline | skipped> (<reason>)
+- fresh reviewer: <invoked | inline + declared bias | n/a light> (<reason>)
 - review-patterns modes: [<quality?>, <performance?>]
 - security-review: <invoked|skipped|n/a>
 - drillme: covered 3/4 canonical Socratic categories

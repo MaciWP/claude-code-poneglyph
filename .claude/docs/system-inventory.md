@@ -43,7 +43,7 @@ Canonical per-turn checklist: `orchestrator-protocol` skill §1.
 | Mode | When | Cost |
 |------|------|------|
 | **Inline** (default) | ALL build/write work, any size — delegation doctrine (orchestrator-protocol §P8) | 1x |
-| **Workflow read-only fan-out** | ≥4 independent read-only units (research sweeps, review panel ≥4) | scales w/ agent count |
+| **Workflow read-only fan-out** | ≥4 independent read-only units (research sweeps, decision-review panels) | scales w/ agent count |
 | **Workflow write fan-out** | explicit user opt-in only ("ultracode" / direct ask; "workflow" keyword no longer triggers since CC 2.1.160); per-unit `isolation: 'worktree'` on collision | scales |
 | **Tiered** | Complexity 45-60 with 2-3 domains sharing interfaces — contracts inline via tech-plan Mode B | ~2x |
 | **Team agents** (experimental) | Complexity >60, 3+ independent domains, interface negotiation, `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` | 3-7x |
@@ -66,7 +66,7 @@ Escalation: Quick → Standard on uncertainty → Full on multi-domain/architect
 |---|---|---|
 | `minimal` | Phase 3 direct + Phase 4 light | trivial task, 1-2 files, no design decisions |
 | `standard` (default) | All 5 phases, drillme normal | feature 2-5 files OR single domain |
-| `full` | All 5 phases + decision-stress-test in Phase 2 + independent review panel (≥4 via Workflow, opt-in) in Phase 4 + Commandments forensics in Phase 5 | architectural / multi-domain / auth-payments-security |
+| `full` | All 5 phases + decision-stress-test in Phase 2 + fresh-context reviewer (critical-area focus; panels = decisions only, feature 019) in Phase 4 + Commandments forensics in Phase 5 | architectural / multi-domain / auth-payments-security |
 
 ## Skill loading into a Workflow agent (3 mechanisms)
 

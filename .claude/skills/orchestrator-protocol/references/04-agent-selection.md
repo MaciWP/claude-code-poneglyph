@@ -62,7 +62,7 @@ The "Suggested skills to Read (for delegation)" column lists `.claude/skills/<na
 | merge conflict, git conflict | inline | (prompt context) | — | — |
 | docs, sync, documentation | inline | (doc task) | — | — |
 | bug documentation, knowledge base | inline | diagnostic-patterns | diagnostic-patterns | — |
-| review, validate, check (generic) | `Skill('critic')` inline; robust → panel ≥4 via `Workflow` | standard mode | review-patterns | — |
+| review, validate, check (generic) | `Skill('critic')` inline + ONE fresh-context read-only reviewer (P1 exception, 019) | standard mode | review-patterns | — |
 | security, audit, vulnerability, owasp | `Skill('critic')` + `Skill('security-review')` | security-review | security-review | — |
 | code quality, smells, SOLID, complexity | `Skill('critic')` / review-patterns (quality) | review-patterns (quality mode) | review-patterns | — |
 | performance, slow, bottleneck, N+1 | `Skill('critic')` / review-patterns (performance) | review-patterns (performance mode) | review-patterns | — |
@@ -91,11 +91,11 @@ How the capabilities of the custom agents (cut in feature 008) map onto the curr
 | Capability (historical agent) | Now | Fan-out trigger |
 |---|---|---|
 | implement (was `builder`) | `build` skill inline — ALL write work, any HU count | write fan-out ONLY with explicit user opt-in (ultracode) → `Workflow` + per-unit `isolation: 'worktree'` on file overlap |
-| validate (was `reviewer`) | `critic` skill inline | robust / critical area → **independent review panel ≥4** via `Workflow` (read-only lenses; ≥majority must confirm) |
+| validate (was `reviewer`) | `critic` skill inline | standard/full code review → **ONE fresh-context read-only reviewer** (correctness/requirements only — P1 exception, 018 W1 D1/D3); decision review → panel via `decision-stress-test` |
 | explore (was `scout`) | `Explore` (built-in, Haiku) | ≥4 independent exploration sweeps → `Workflow` (read-only) |
 | generator→validator | `pipeline(items, find, verify)` inside one `Workflow` | intra-workflow Four-Eyes — NOT a new spawn decision (spawn-tree P7) |
 
-The **panel ≥4** pattern is what replaces the cut `reviewer` for high-stakes review (lesson from feature 002: author ≠ evaluator). `critic` references this section as its dispatch target. Worked example: `.claude/workflows/ultracode-audit.js` (find→verify pipeline + cross-debate panel over a shared digest).
+For CODE review the dispatch target is **ONE fresh-context read-only reviewer** (feature 019 — panels measured as the weak form for code: verifier gap, LLM-judge ensembles ~80% FP; 018 W1 D1/D3 + W2 D1). The author≠evaluator lesson (feature 002) is preserved via fresh context, not lens count. Panels (≥4 perspectives) remain the form for DECISION review (`decision-stress-test`) and read-only research fan-out — worked example: `.claude/workflows/ultracode-audit.js` (find→verify pipeline + cross-debate panel over a shared digest).
 
 ## Parallelization & Batch Operations
 

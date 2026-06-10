@@ -79,16 +79,16 @@ graph TD
   CNT -->|"≥4"| RO{"Eje-2: ¿unidades read-only<br/>(research/exploración/review)?"}
   RO -->|"Sí"| NAT{"Eje-3: ¿NEGOCIAN<br/>interfaces entre sí?"}
   RO -->|"No → escritura"| OPTIN["INLINE secuencial<br/>salvo OPT-IN explícito del usuario<br/>(ultracode) → Workflow + worktree"]
-  NAT -->|"No → independientes"| WF["WORKFLOW (fan-out read-only)<br/>research multi-search · panel review ≥4"]
+  NAT -->|"No → independientes"| WF["WORKFLOW (fan-out read-only)<br/>research multi-search · panel de DECISIÓN ≥4"]
   NAT -->|"Sí → ≥3 dominios"| TEAM["TEAM mode (narrow · experimental)<br/>negocian vía task list (#24316 general-purpose)"]
 ```
 
 | # | Principio | Regla |
 |---|---|---|
-| **P1** | 1 agente = **PROHIBIDO** | Sin excepciones. No paraleliza; solo aísla contexto (que `/clear` limpia); encarece sin retorno. |
+| **P1** | 1 agente = **PROHIBIDO** | Única excepción: el **fresh-context reviewer** de critic Phase 4 (read-only, correctness/requirements — su valor ES el contexto fresco; evidencia 018 W1 D1/D3, feature 019). Fuera de eso: no paraleliza; solo aísla contexto (que `/clear` limpia); encarece sin retorno. |
 | **P2** | "isolation" **no es excusa** | El main actúa y se ensucia antes que pagar 1 agente. **"≥5 files" NO es trigger de spawn → inline.** |
 | **P3** | Umbral **≥4** + **read-only** | 1-3 unidades → inline. ≥4 read-only → Workflow. ≥4 de ESCRITURA → inline secuencial salvo opt-in explícito del usuario. |
-| **P4** | research/review **no** son excepción de 1-agente | Si se delegan → ≥4 en paralelo (search barato `Explore`/haiku; review = **panel de ≥4 enfoques**). Si <4 → inline. |
+| **P4** | research sí, code-review NO se delega en panel | Research delegada → ≥4 en paralelo (search barato `Explore`/haiku); si <4 → inline. Code review = checks mecánicos + **1 fresh-context reviewer** (P1-exception); panel ≥4 SOLO para decisiones (`decision-stress-test`) — evidencia 018 W1/W2 (feature 019). |
 | **P5** | Único árbol | Este árbol es el punto de verdad; el resto del sistema referencia, no redefine. |
 | **P6** | Fix = borrado + enlazar | Sin maquinaria de enforcement; los patrones de la Workflow tool se **enlazan**, no se copian. |
 | **P7** | spawn-decision ≠ intra-orchestration | ≥4 gobierna la DECISIÓN de spawnear. Agentes coordinándose **dentro** de un team/workflow ya spawneado (p.ej. Four-Eyes generator→validator) no son un nuevo spawn. |
@@ -98,7 +98,7 @@ graph TD
 
 **Ortogonal al árbol (no son spawn)**: sensitive paths (`.env`, `*.lock`, `package.json`, `.claude/settings.json`, `secrets/`, `credentials/`) → inline con `sensitive: <reason ≥8 chars>`. Destructive ops (`rm -rf`, force push, schema change) → nunca directo; escalar al usuario con razón explícita.
 
-**Cuándo Workflow vs Team** (eje-2) + patrón panel-review ≥4: `references/04-agent-selection.md` §Workflow wiring.
+**Cuándo Workflow vs Team** (eje-2) + dispatch del fresh-context reviewer: `references/04-agent-selection.md` §Workflow wiring.
 
 ### Step 2: Complexity
 
@@ -127,7 +127,7 @@ Full Arch H template with all blocks, propagation model, skill discovery: `refer
 
 | Tool | Usage |
 |---|---|
-| `Workflow` (≥4 independent **read-only** units) | Fan-out: research sweeps / exploration / review panel in parallel (`agentType` `default`, or built-ins like `Explore`). Write fan-out: explicit user opt-in only (`isolation: 'worktree'` on file collision) |
+| `Workflow` (≥4 independent **read-only** units) | Fan-out: research sweeps / exploration / decision-review panel in parallel (`agentType` `default`, or built-ins like `Explore`). Write fan-out: explicit user opt-in only (`isolation: 'worktree'` on file collision) |
 | `Explore` | Explore codebase (massive read-only — Haiku built-in; not a work-spawn) |
 | `Skill('tech-plan')` | Plan complex tasks — Lead inline, no dedicated agent |
 | `Skill('diagnostic-patterns')` | Diagnose failures — Lead inline, no dedicated agent |
@@ -142,7 +142,7 @@ Direct action (the default for ALL write work): Read always permitted. Edit/Writ
 | Change type | Validation |
 |---|---|
 | Single file, low complexity | Lead confirms tests passing inline |
-| Multi-file | `Skill('critic')` inline; robust independent review → **panel de ≥4 enfoques** vía Workflow (`references/04-agent-selection.md` §Workflow wiring) |
+| Multi-file | `Skill('critic')` inline + **1 fresh-context read-only reviewer** (P1-exception, feature 019; `references/04-agent-selection.md` §Workflow wiring) |
 | Security-related | `security-review` skill (mandatory dispatch — Cmd VI) |
 | Cross-domain feature | `Skill('critic')` (Phase 4 of the 5-phase workflow) |
 

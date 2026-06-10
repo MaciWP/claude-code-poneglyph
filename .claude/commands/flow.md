@@ -17,7 +17,7 @@ End-to-end feature lifecycle: invokes the 6 phase skills (`scope`, `tech-plan`, 
 | `/flow <task>` | Auto-triage complexity → resolve mode (minimal/standard/full) → execute |
 | `/flow --minimal <task>` | Force minimal: Phase 3 direct (no spec/tasks/tests artefacts); Phase 4 light |
 | `/flow --standard <task>` | Force standard: all 5 phases with hard gates 1→2 and 2→3 |
-| `/flow --full <task>` | Force full: 5 phases with deep drillme + decision-stress-test in Phase 2 + independent review panel (≥4 via Workflow) in Phase 4 |
+| `/flow --full <task>` | Force full: 5 phases with deep drillme + decision-stress-test in Phase 2 + fresh-context reviewer with critical-area focus in Phase 4 (panels = decision review only, feature 019) |
 | `/flow --resume <slug>` | Read `.claude/plans/<slug>/state.json` and continue from `current_phase` |
 
 ## Lead workflow (executed by this command)
@@ -258,7 +258,7 @@ Closed/abandoned plans move to `.claude/plans/_archive/` (gitignored, untracked 
 |---|---|---|---|---|---|---|
 | minimal | skip | skip | skip | direct | light | skip or light |
 | standard | full | full | full | full | standard | standard |
-| full | full + 3 perspectives | full + decision-stress-test | full + property-based opt-in | full + inline build (Workflow if ≥4 HUs) | full + independent review panel (≥4 via Workflow) + security-review | full + Commandments forensics if violation |
+| full | full + 3 perspectives | full + decision-stress-test | full + property-based opt-in | full + inline build (Workflow if ≥4 HUs) | full + fresh-context reviewer (critical-area focus) + security-review | full + Commandments forensics if violation |
 
 ## Edge cases
 
