@@ -5,7 +5,9 @@ wave: W2
 depends_on: []
 tdd_mode: skip: file moves + json edits, verified by AC
 estimate: M
-status: draft
+status: closed
+closed: 2026-06-10
+implemented: 2026-06-10
 absorbs_decision: archive lives in-repo gitignored (zero /flow surgery)
 ---
 

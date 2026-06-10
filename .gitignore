@@ -71,6 +71,9 @@ tmpclaude-*-cwd
 # Context registry (runtime data)
 .claude/.context-registry.json
 
+# Archived plans (closed/abandoned features — out of accidental read reach)
+.claude/plans/_archive/
+
 # Runtime data directories
 data/
 !data/sessions/.gitkeep

@@ -7,8 +7,8 @@
     "1->2": true,
     "2->3": true
   },
-  "us_completed": ["US1", "US3", "US2", "US4", "US5"],
-  "us_pending": ["US6", "US7", "US8", "US9", "US10", "US11", "US12", "US13", "US14", "US15"],
+  "us_completed": ["US1", "US3", "US2", "US4", "US5", "US6"],
+  "us_pending": ["US7", "US8", "US9", "US10", "US11", "US12", "US13", "US14", "US15"],
   "us_history": [
     {
       "us": "US1",
@@ -69,6 +69,20 @@
       "execution": "inline",
       "askuserquestion_count": 1,
       "notes": "root HTML already deleted pre-US5 (commit 1c2466a); AC1 verified satisfied"
+    },
+    {
+      "us": "US6",
+      "completed_at": "2026-06-10",
+      "tests_passed": true,
+      "files_touched": [
+        ".claude/plans/_archive/ (9 plans moved: 002,003,004,006,007,008,010,011,013)",
+        ".claude/audits/ (005, 009 relocated via git mv)",
+        ".gitignore",
+        ".claude/commands/flow.md"
+      ],
+      "execution": "inline",
+      "askuserquestion_count": 1,
+      "notes": "001 retained by reference (canonical matrix cited by 7 skills); 018 active, stays; existing state.json already truthful (plan baseline outdated); phantom ref CLAUDE.md:138 _research-skill-activation noted for US7"
     }
   ],
   "feature_closed": false,

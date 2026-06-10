@@ -238,6 +238,10 @@ Next:
   → /flow <new-task> for the next feature
 ```
 
+## Archive policy
+
+Closed/abandoned plans move to `.claude/plans/_archive/` (gitignored, untracked — preserved on disk, out of accidental read reach). Pure audits live under `.claude/audits/`. `plans/` holds only active features + `templates/` + files retained by live references (e.g. 001's canonical auxiliary matrix).
+
 ## SIEMPRE rules
 
 - Hard gates 1→2 and 2→3 are MANDATORY in standard/full modes — never skip via flag, never auto-approve.
