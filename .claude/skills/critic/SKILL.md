@@ -71,7 +71,7 @@ In parallel:
 | All HUs in `state.json.us_completed` | STOP — escalate to user; do not generate review.md prematurely |
 | Tests pass on the assembled branch (`bun test ./.claude/hooks/` or project equivalent) | Continue but mark `Correctness` section RED in review.md |
 | spec.md still describes what was delivered | Continue + flag spec-drift for living-spec loop (Step 8) |
-| `review.template.md` exists | If missing → use the embedded checklist (see §Embedded fallback) |
+| `review.template.md` exists | If missing → use the embedded checklist (Read `references/02-embedded-fallback.md`) |
 
 ### Step 3 — Determine review level (adaptation)
 
@@ -252,47 +252,6 @@ Next:
   → STOP — escalate (if BLOCKED)
 ```
 
-## Independent review model: panel ≥4 (reviewer agent CUT — feature 008)
-
-| Era | Decision |
-|---|---|
-| Original (feature 001, AC7) | `reviewer` agent (Opus, read-only) KEEP-conditional — 1 agent invoked for complexity >60 OR critical area |
-| **Now (feature 008)** | **`reviewer` agent CUT.** 1 agent is forbidden (spawn decision tree P1). Robust independent review = a **panel of ≥4 fresh perspectives** (Workflow, opt-in), which gives MORE independence than one Opus reviewer (diverse lenses, majority aggregation). When no Workflow opt-in → critic reviews inline + declares residual author-bias honestly. |
-
-**Effect**: `.claude/agents/reviewer.md` deleted; `agent-memory/reviewer/MEMORY.md` archived under `plans/008-agent-spawn-policy/archive/`. The independence lesson (author≠evaluator, feature 002) is preserved via the panel pattern — see `independent-reviewer-when-self-assessing` memory + `orchestrator-protocol/references/04-agent-selection.md` §Workflow wiring.
-
-## AC8 decision: `review-patterns` skill — KEEP
-
-| Aporte único | Cubierto por `critic`? |
-|---|---|
-| SOLID violations detail (5 principios) | NO — critic checklist is generic |
-| Complexity metrics (cyclomatic/cognitive) | NO |
-| Anti-patterns catalog | NO |
-| Extract function/class patterns | NO |
-| N+1 query patterns + variants | NO |
-| Memory leak patterns | NO |
-| Refactoring safety checklists | NO |
-
-**Verdict**: KEEP `review-patterns`. `critic` invokes it as catalog via `Read .claude/skills/review-patterns/references/<mode>.md` during Step 6. Zero content duplication.
-
-## Auxiliary skills invoked
-
-> Canonical matrix in `.claude/plans/001-poneglyph-5phase-workflow/tasks/index.md §Auxiliary skills matrix`. Row below is the literal subset that applies to this Phase 4 skill.
-
-| Auxiliary skill | When this skill invokes it | Fallback if skill->skill fails |
-|---|---|---|
-| `anti-hallucination` | Before reporting any finding — verify file/line/symbol actually exists in the diff (no invented findings) | Lead Reads/Greps the file before the finding is finalized |
-| `drillme` | Before declaring verdict (Step 9 — 4 questions across `[context]`/`[failure]`/`[approach]`) | Lead invokes `/drillme "Phase 4 review of <NNN-slug>"` manually before verdict |
-| `diagnostic-patterns` | When Step 4 base checks fail — 5-whys, stack-trace analysis, retry budget per error-recovery.md | Lead reads error output manually + applies retry policy |
-| `lsp-operations` | During Step 5 Correctness/Quality — `findReferences`/`callHierarchy` to verify blast radius of changed symbols | Lead uses Grep + Read manually as fallback |
-| `review-patterns` | Step 6 — MANDATORY catalog invocation in standard/full levels (quality or performance mode per diff content) | Lead Reads `references/01-mode-quality.md` or `02-mode-performance.md` manually |
-| `security-review` | Step 7 — MANDATORY dispatch when diff touches auth/payments/secrets/credentials/crypto (gate, not advisory; Cmd VI) | Lead invokes `/security-review` manually before declaring verdict if auto-fire missed |
-| `decision-stress-test` | ⚠️ Conditional — if Step 5 reveals an architectural decision that merits adversarial challenge (e.g., questionable abstraction or library choice) | Lead invokes `/decision-stress-test` manually if doubt warrants it |
-| `explain-changes` | ⚠️ Conditional — if a human needs a walkthrough of the diff for context | Lead invokes `/explain-changes` manually if requested |
-| `simplify` | ⚠️ Conditional — refactor opportunity surfaced but not mandatory | Lead may invoke `/simplify` post-review if findings warrant |
-
-> Skill-to-skill invocation is **probabilistic** per docs Anthropic + [issue #59968](https://github.com/anthropics/claude-code/issues/59968). Critical auxiliaries in Phase 4 are `review-patterns` (catalog) and `security-review` (gate — MANDATORY DISPATCH even if auto-fire succeeded). Other auxiliaries are best-effort; the fallback column documents manual recovery.
-
 ## SIEMPRE rules
 
 - Honest findings — no softening (Commandment I). If a BLOCKER exists, the verdict is BLOCKED, no exceptions.
@@ -343,55 +302,14 @@ Declare adaptation in `review.md` frontmatter (`review_level` + reason).
 | Review panel invoked for trivial features | `review_panel_invoked: yes` on light review | Reset to no; criterion is "complejidad >60 OR critical area OR author-bias", not "every feature" |
 | Verdict APPROVED with failing tests | base checks (Step 4) red but verdict green | Re-verdict to NEEDS_CHANGES at minimum; tests-passing is a precondition |
 
-## Embedded fallback (if `review.template.md` missing)
+## Deep references (Read on demand)
 
-```markdown
-# Review — {feature-name}
+| Topic | File | Contents |
+|---|---|---|
+| Decisions history + auxiliary skills matrix | `references/01-decisions-and-auxiliaries.md` | Why the reviewer agent was cut (panel ≥4 model), the AC8 review-patterns KEEP rationale, the full auxiliary-skills invocation matrix with fallbacks, and post-implementation verification of this skill. Read when invoking auxiliaries beyond review-patterns/security-review, or when questioning the panel model. |
+| Embedded fallback template | `references/02-embedded-fallback.md` | The full review.md checklist template. Read ONLY if `.claude/plans/templates/review.template.md` is missing (Step 2 fallback). |
 
-## Frontmatter
-spec / phase / review_level / verdict / spec_drift / findings_count / created
-
-## 1. Correctness
-- [ ] spec.md problem solved E2E
-- [ ] Each AC mapped to a closed HU
-- [ ] Tests pass on assembled branch
-- [ ] Happy path manual walkthrough OK
-- [ ] Known edge cases covered
-
-## 2. Quality
-- [ ] Coverage respects test-policy.md
-- [ ] Style matches project
-- [ ] No introduced duplication
-- [ ] No over-engineering per AC
-
-## 3. Security
-- [ ] No hardcoded secrets
-- [ ] Inputs validated at boundaries
-- [ ] No OWASP Top 10 vectors introduced
-- [ ] security-review invoked if critical area
-
-## 4. Performance
-- [ ] No O(n²) where O(n) reachable
-- [ ] No I/O in loops (N+1)
-- [ ] Parallelism opportunities flagged
-- [ ] Memory profile reasonable
-
-## 5. Maintainability
-- [ ] Comments only where "why" is non-obvious
-- [ ] No TODOs without issue link
-- [ ] New abstractions justified
-- [ ] Naming consistent
-
-## Findings
-| ID | Severity | File:line | Section | Recommendation |
-|---|---|---|---|---|
-
-## Verdict
-<APPROVED | APPROVED_WITH_WARNINGS | NEEDS_CHANGES | BLOCKED>
-
-## Spec-drift
-<none | legitimate | scope_creep | skipped_ac> + description
-```
+Critical invariants kept in this body: `review-patterns` is MANDATORY in standard/full (Step 6); `security-review` is a MANDATORY gate on critical areas (Step 7); skill-to-skill auto-fire is probabilistic — the Lead dispatches manually on miss.
 
 ## Commandments cubiertos
 
@@ -406,14 +324,6 @@ spec / phase / review_level / verdict / spec_drift / findings_count / created
 | VII | Base checks executed in parallel (Step 4); independent review = panel ≥4 (P1/P3) not a single spawn |
 | VIII | Panel prompts include AC trace + skills + read-only role (Arch H) |
 | IX | Spec-drift detection + classification feeds living-spec loop in Phase 5 (observability) |
-
-## Verification (post-implementation of this skill)
-
-- Smoke: invoke `/critic` on a feature with all HUs closed → produces `review.md` with 5 sections + verdict.
-- Verify `review.md` frontmatter declares `review_level` + reason.
-- Verify findings cite `file:line` (no vague references).
-- Verify `review_panel_invoked` flag matches the level + complexity decision.
-- `bun test ./.claude/hooks/` → green (this skill is markdown — no hook test impact).
 
 ## Output format reminder
 

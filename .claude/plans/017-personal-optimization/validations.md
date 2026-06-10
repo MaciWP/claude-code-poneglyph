@@ -153,6 +153,8 @@ Clasificación: US1 validation (skill md) · US2 validation (CLAUDE.md + rule + 
 
 ## US9 — Phase skills: activación + references
 
+> **Hallazgo registrado (build 2026-06-10) — REVERT del campo.** Smoke en `tdd-design`: con `disable-model-invocation: true`, la invocación explícita vía Skill tool falla con `Skill tdd-design cannot be used with Skill tool due to disable-model-invocation` (verificado en vivo; el campo se resuelve desde disco en el momento de la llamada). Como `/flow` invoca las phase skills exactamente por ese camino, aplicar el campo a las 6 rompería el orquestador. Decisión: NO se aplica; solo queda la vía slash-command de usuario si se activara. El coste de contexto de las 6 descriptions se mitiga por otra vía (US10 descriptions audit). AC1 cerrado por su ruta de revert.
+
 ### Pre
 - Campo `disable-model-invocation` verificado en docs; smoke en UNA skill antes del rollout.
 
