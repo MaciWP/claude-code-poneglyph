@@ -58,4 +58,4 @@ retro_status: approved (2026-06-10 — roadmap APPROVE; P1-P4 all ratified: P1�
 - [x] Promotions P1-P4 ratified (all four; P4 deferred into 020.2 by design)
 - [x] Living-spec delta applied (spec.md AC5 v2)
 - [x] spec.md + tasks/index.md → `status: closed`
-- [ ] **OPEN until merge**: deliverables on MAIN + synced (the 012 lesson — current branch is `017-personal-optimization`; this checkbox closes at the 017/018 merge, and 021.2 makes it a permanent gate)
+- [x] Deliverables on MAIN + synced (2026-06-11 — fast-forward `0b52ea1..6def450` covering 017/018/019 + polish pass; `sync-claude --execute` run same day; 021.2 still proposes making this a permanent gate)
