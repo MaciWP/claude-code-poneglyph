@@ -41,7 +41,7 @@ Sycophancy is the silent killer of engineering decisions. Hallucination is its l
 
 ## Initial Triage
 
-If the input is ambiguous, the **invoker** (Lead, planner, reviewer) asks 1-4 `AskUserQuestion` calls before Phase 1. Subagents cannot ask the user directly — they include questions in their output, which the invoker consolidates.
+If the input is ambiguous, the **invoker** (the Lead) asks 1-4 `AskUserQuestion` calls before Phase 1. Subagents cannot ask the user directly — they include questions in their output, which the invoker consolidates.
 
 | Question | When to ask |
 |---|---|

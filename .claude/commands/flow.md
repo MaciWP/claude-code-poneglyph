@@ -251,6 +251,7 @@ Closed/abandoned plans move to `.claude/plans/_archive/` (gitignored, untracked 
 - In standard/full, the slug is generated ONCE at Phase 1 start; subsequent phases honor it.
 - Phase 4 verdict BLOCKED stops `/flow`; user decides whether to reopen or abandon.
 - **Proactive multi-round questioning** (006): at hard gates + during scope/drillme, ask in rounds while genuine doubt remains — including lateral / improvement questions — instead of stopping at one round; converge and say so when no real doubt is left. Calibrated, anti-ceremony (Commandment III). Iteration mechanics via the `drillme` skill; principle in CLAUDE.md §Communication & Honesty Protocol.
+- **Drillme wiring (020)**: `/flow` invokes the exhaustive `drillme` at three points — (1) inside **Phase 1 scope** to close spec gaps, (2) before **hard gate 1→2**, and (3) before **hard gate 2→3** — so the user approves a gap-closed artefact. Drillme is gap-gated: it sweeps until saturation where gaps exist and yields **0 questions when the phase output is already unambiguous** (no ceremony). Skill→skill invocation is probabilistic; if it doesn't auto-fire, the Lead invokes `/drillme "<phase/gate context for NNN-slug>"` manually before the gate.
 
 ## Adaptation per mode
 

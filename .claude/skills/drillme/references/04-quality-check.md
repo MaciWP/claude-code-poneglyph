@@ -64,17 +64,34 @@ When the user requests iteration after first drillme:
 6. For each Off-topic → re-ask the original.
 7. For each Contradictory → reopen the earlier closed question with the contradiction surfaced.
 
-Cap: max 3 iteration rounds. After round 3, if questions remain Evasive/Empty → drillme cannot conclude here. Escalate.
+**No fixed round cap.** Drillme iterates as long as each round still closes gaps. The brake is qualitative, not numeric (see Closing criterion).
+
+### Epistemic vs aleatoric doubt (which gaps to keep pressing)
+
+Before re-asking, classify the gap, not just the answer:
+
+- **Epistemic** (reducible by asking): the user knows or can find out. Press once for concretion.
+- **Aleatoric** (irreducible here): neither the user nor anyone in the room can know it now (depends on data not yet gathered, a future event, an external party). Mark `[OPEN]` with "needs X to resolve" — do **not** machine-gun it. Pressing an aleatoric gap produces filler, not signal.
+
+This is the honest version of the Empty/I-don't-know split above: lazy-unknown is epistemic (press); honest-unknown is often aleatoric (mark `[OPEN]`).
+
+## Bake the answers (do not let them float)
+
+Every Concrete answer is **written into the active artefact**, not just acknowledged in chat (pattern: `/speckit.clarify`):
+
+- Inside /flow → into `spec.md` / `tasks/` / the decision doc (a "Decisiones" or "Clarifications" section).
+- Standalone (no artefact) → report inline as a `question → answer` table; create a scratch section only if the user wants persistence.
+
+An answer that is not baked is a gap that will reopen next session.
 
 ## Closing criterion
 
-Drillme is "closed" for this session when:
+Drillme closes when **one** of these holds — there is no percentage or round target:
 
-- **≥80% of questions are Concrete** (closed honestly).
-- The remaining ≤20% are marked `[OPEN]` with explicit "needs X to resolve".
-- No question is silently dropped or fake-closed with evasion.
+- **Saturation**: no remaining question would change the decision. Declare "zero open gaps" + the baked answers.
+- **Soft brake (degradation)**: answers degrade (repeated evasions, rubber-stamping, goalposts shifting) or the user fatigues. Stop honestly and report the `[OPEN]` items. Forcing answers past this point produces filler, not signal.
 
-If <80% Concrete after 3 iterations → drillme honest output: "Inconcluso — N preguntas abiertas. Decision is premature without resolving them."
+In both cases: no gap is silently dropped or fake-closed with evasion. Open gaps are listed as `[OPEN]` with what each needs to resolve.
 
 ## Smell signals during iteration
 
@@ -116,7 +133,7 @@ If <80% Concrete after 3 iterations → drillme honest output: "Inconcluso — N
 
 ## When to give up gracefully
 
-Drillme is guidance, not a forced march. If after 3 iterations the user is fatigued and answers are degrading in quality → stop and report:
+Drillme is guidance, not a forced march. When the user fatigues and answers degrade in quality (the soft brake) → stop and report, regardless of how many rounds it took:
 
 > "Drillme concluded with N/M questions Concrete. Remaining items: [list]. Recommended: pause this decision until [research/consultation/data] resolves the gaps."
 

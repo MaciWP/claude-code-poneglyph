@@ -197,7 +197,7 @@ Before producing the verdict:
 4. `[approach]` **Coverage matches policy?** Does test coverage match what `test-policy.md` expects (forced/adaptive/optional)?
 ```
 
-Coverage: 3/4 canonical Socratic categories (`[location]` covered upstream — code locations were nailed in Phase 2/3). Honest — Phase 4 focuses on E2E + drift + coverage.
+Coverage: 3/4 canonical Socratic categories (`[location]` covered upstream — code locations were nailed in Phase 2/3). Honest — Phase 4 focuses on E2E + drift + coverage. These are the **floor**, not a cap: drillme is gap-gated, so it sweeps any extra gap the review surfaces and stays proportional (fewer on a clean, unambiguous feature).
 
 > Skill-to-skill invocation is **probabilistic**. If `drillme` does not auto-fire, the Lead invokes `/drillme "Phase 4 review of <NNN-slug>"` manually before declaring the verdict.
 

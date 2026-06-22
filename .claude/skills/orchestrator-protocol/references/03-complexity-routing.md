@@ -105,39 +105,11 @@ Opt-out: `PONEGLYPH_DISABLE_TEAM_MODE=1` forces subagents regardless.
 | Complexity > 60 | Calculated above |
 | 3+ independent domains | No shared files between domains |
 
-### Teammate Prompt Template
+### Teammate prompts, coordination & fallback
 
-Each teammate receives a prompt with:
+Team mode is experimental and rarely used (4-gate + opt-in). The teammate prompt template, domain-boundary definition, coordination protocol and recovery/fallback table are canonical in `tech-plan/references/05-team-mode.md` — not duplicated here. Routing-level summary: spawn one teammate per domain; they negotiate contracts via the shared task list; the Lead runs `Skill('critic')` over the full changeset; any stuck/failed teammate folds back to inline or a `Workflow` unit.
 
-| Field | Content |
-|-------|---------|
-| **Domain** | "Your domain is [X]. You only touch files in [paths]." |
-| **Tasks** | Roadmap subtasks assigned to this domain |
-| **Interfaces** | Contracts to expose/consume with other domains |
-| **Constraint** | "DO NOT modify files outside your domain" |
-| **Coordination** | "Use the task list to coordinate with other teammates" |
-
-### Coordination Protocol
-
-| Phase | Lead Action |
-|-------|-------------|
-| **Spawn** | Create one teammate per domain using the prompt template |
-| **Monitor** | Review task list for progress. Do not intervene unless stuck. |
-| **Interfaces** | Teammates negotiate contracts via task list (TaskCreate/TaskUpdate) |
-| **Integration** | After all teammates complete, Lead runs `Skill('critic')` over the full changeset |
-| **Cleanup** | Verify no file conflicts between teammate outputs |
-
-### Fallback Triggers
-
-| Trigger | Action |
-|---------|--------|
-| Teammate fails 2x | Fold domain tasks back → inline, or a `Workflow` unit |
-| Multiple teammates fail | Abort team mode → full fallback to inline / `Workflow` |
-| File conflict between teammates | Lead arbitrates (`Skill('critic')`). Losing domain re-executes. |
-| Env var missing but planner recommended team | Silent fallback to inline / `Workflow`. Log warning. |
-| Teammate stuck (no progress in task list) | Fold domain back → inline / `Workflow` unit |
-
-> Current limitation: Teammates are always `general-purpose` (issue anthropics/claude-code#24316). They cannot use custom `.claude/agents/`. However, each teammate loads `~/.claude/` automatically — Poneglyph rules, skills and hooks apply.
+> Current limitation: teammates are always `general-purpose` (issue anthropics/claude-code#24316); each still loads `~/.claude/` automatically (Poneglyph rules/skills/hooks apply). Activation flag: `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`.
 
 ## Worktree Decision
 

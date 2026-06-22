@@ -1,7 +1,8 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "respectGitignore": true,
-  "minimumVersion": "2.1.160",
+  "minimumVersion": "2.1.166",
+  "fallbackModel": ["claude-sonnet-4-6", "claude-haiku-4-5-20251001"],
   "env": {
     "BASH_DEFAULT_TIMEOUT_MS": "300000",
     "ENABLE_LSP_TOOL": "1",

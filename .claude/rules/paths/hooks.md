@@ -4,7 +4,7 @@ globs:
 priority: 15
 ---
 
-<!-- Last verified: 2026-05-30 -->
+<!-- Last verified: 2026-06-19 -->
 
 ## Hooks Context
 
@@ -30,6 +30,9 @@ priority: 15
 | PermissionRequest | Claude requests permission | auto-approve |
 | PostCompact | After compaction | post-compact |
 | UserPromptSubmit | On prompt submit | — (none registered) |
+| MessageDisplay | Assistant text about to render | — (none registered; can transform/hide assistant message text, CC ≥2.1.152) |
+
+> **Stop / SubagentStop feedback** (CC ≥2.1.163): both can return `hookSpecificOutput.additionalContext` to feed Claude and keep the turn going without being flagged a hook error — an alternative to the warn-only `systemMessage` the Stop gate uses today.
 
 ### `if` field for conditional filtering
 

@@ -34,7 +34,7 @@ Common prompt errors and how to avoid them.
 
 | Error | Problem | Fix |
 |-------|----------|-----|
-| `claude-3-opus` | Wrong model | `claude-opus-4-5-20251101` |
+| `claude-3-opus` | Wrong model | `claude-opus-4-8` |
 | `rm -rf` on Windows | Unix command | `Remove-Item -Recurse` |
 | `cat file.txt` | Unix command | `type file.txt` or Read tool |
 | Path with `/` | Unix separator | Use `\` on Windows |

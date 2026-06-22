@@ -1,14 +1,20 @@
 import { describe, test, expect } from "bun:test";
-import { lineHasSecret, hasTextExtension } from "../security-gate";
+import { lineHasSecret, hasTextExtension, isOrchestrationPath } from "../security-gate";
 
 // Fake values built at runtime so no literal secret lives in this file.
 const LONG = "x".repeat(20);
 
 describe("hasTextExtension", () => {
-  test("accepts scannable text extensions", () => {
-    for (const f of ["a.ts", "a.js", "a.json", "a.md", "a.env", "a.yaml", "a.yml"]) {
+  test("accepts scannable text extensions (where real secrets live)", () => {
+    for (const f of ["a.ts", "a.js", "a.json", "a.env", "a.yaml", "a.yml"]) {
       expect(hasTextExtension(f)).toBe(true);
     }
+  });
+  test("does NOT scan .md — docs/examples/reports carry illustrative secrets, not real ones", () => {
+    expect(hasTextExtension("README.md")).toBe(false);
+    expect(hasTextExtension(".claude/skills/django-architecture/references/service-patterns.md")).toBe(false);
+    expect(hasTextExtension("reports/review-pr-body.md")).toBe(false);
+    expect(hasTextExtension("README.MD")).toBe(false); // case-insensitive too
   });
   test("rejects binary / non-text extensions", () => {
     for (const f of ["a.png", "a.exe", "a.lock", "a.zip"]) {
@@ -20,8 +26,8 @@ describe("hasTextExtension", () => {
     expect(hasTextExtension("LICENSE")).toBe(false);
   });
   test("is case-insensitive on the extension", () => {
-    expect(hasTextExtension("README.MD")).toBe(true);
     expect(hasTextExtension("config.JSON")).toBe(true);
+    expect(hasTextExtension("App.TS")).toBe(true);
   });
 });
 
@@ -46,6 +52,31 @@ describe("SECRET_PATTERN_CI — lowercase credentials", () => {
   });
   test("does NOT flag a short password", () => {
     expect(lineHasSecret("password = short")).toBe(false);
+  });
+});
+
+describe("isOrchestrationPath — exclude the .claude/ orchestration tree", () => {
+  test("excludes hooks (the self-matching false-positive case)", () => {
+    expect(isOrchestrationPath(".claude/hooks/security-gate.ts")).toBe(true);
+    expect(isOrchestrationPath(".claude/hooks/__tests__/security-gate.test.ts")).toBe(true);
+  });
+  test("excludes skills, references, examples, templates (any extension)", () => {
+    expect(isOrchestrationPath(".claude/skills/django-architecture/references/service-patterns.md")).toBe(true);
+    expect(isOrchestrationPath(".claude/skills/binora-multi-tenant-guardian/examples/auth_token_mixin_pattern.md")).toBe(true);
+    expect(isOrchestrationPath(".claude/skills/foo/templates/config.yaml")).toBe(true);
+  });
+  test("excludes settings (documented tradeoff — tool config, not business code)", () => {
+    expect(isOrchestrationPath(".claude/settings.json")).toBe(true);
+  });
+  test("does NOT exclude business code — detection there is untouched", () => {
+    expect(isOrchestrationPath("src/auth/middleware.ts")).toBe(false);
+    expect(isOrchestrationPath("binora/settings.py")).toBe(false);
+    expect(isOrchestrationPath(".env")).toBe(false);
+    expect(isOrchestrationPath("config.yaml")).toBe(false);
+  });
+  test("does NOT exclude a 'claude' dir that isn't .claude", () => {
+    expect(isOrchestrationPath("src/claude/client.ts")).toBe(false);
+    expect(isOrchestrationPath("claude.ts")).toBe(false);
   });
 });
 

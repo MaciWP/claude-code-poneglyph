@@ -12,14 +12,32 @@ export const SECRET_PATTERN =
 export const SECRET_PATTERN_CI =
   /(?:password|passwd|secret|api_key|apikey|access_token|accesstoken|private_key|privatekey)\s*[=:]\s*.{8,}/i;
 
+// Markdown is documentation/illustration by nature: how-tos, skill references,
+// and PR reports routinely contain `SECRET_KEY=...` / `password: ...` as EXAMPLES.
+// SECRET_PATTERN_CI matches that prose en masse, so a stateless Stop hook re-surfaces
+// the same false positives every turn — training the user to ignore the gate, which
+// is exactly when a REAL leak gets missed. Real secrets live in .env / code / config,
+// not in .md. So .md is intentionally NOT scanned; detection in the rest stays intact.
 const TEXT_EXTENSIONS = new Set([
-  ".ts", ".js", ".json", ".md", ".env", ".yaml", ".yml",
+  ".ts", ".js", ".json", ".env", ".yaml", ".yml",
 ]);
 
 export function hasTextExtension(filePath: string): boolean {
   const dot = filePath.lastIndexOf(".");
   if (dot === -1) return false;
   return TEXT_EXTENSIONS.has(filePath.slice(dot).toLowerCase());
+}
+
+// The .claude/ tree is Claude Code orchestration config — hooks, skills, commands,
+// rules, settings — i.e. meta-system plumbing, NOT the project's business code where
+// a real secret leak matters. By nature it CONTAINS secret-shaped literals: this very
+// detector's SECRET_PATTERN, its tests (`API_KEY = "..."`), security how-tos, auth
+// skills. Scanning it produces self-matching false positives every turn. The gate
+// watches YOUR code; .claude/ is the tool, not the codebase. (.md anywhere is already
+// excluded by hasTextExtension.) Tradeoff: a literal secret in .claude/settings.json
+// is not caught — acceptable, that's tool config (secrets belong in env/gitignore).
+export function isOrchestrationPath(filePath: string): boolean {
+  return /(?:^|\/)\.claude\//.test(filePath);
 }
 
 // Per-line secret check. Resets the stateful /g regex BEFORE testing — the
@@ -40,7 +58,9 @@ async function getModifiedFiles(): Promise<string[]> {
   ]);
   await Promise.all([stagedProc.exited, untrackedProc.exited]);
   const all = new Set([...stagedOut.split("\n"), ...untrackedOut.split("\n")]);
-  return [...all].map((f) => f.trim()).filter((f) => f.length > 0 && hasTextExtension(f));
+  return [...all]
+    .map((f) => f.trim())
+    .filter((f) => f.length > 0 && hasTextExtension(f) && !isOrchestrationPath(f));
 }
 
 // Returns a list of "path:line" hits (empty if none). Pure — no stderr side effects,

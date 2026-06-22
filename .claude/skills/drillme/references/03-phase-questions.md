@@ -18,7 +18,7 @@ description: Phase-specific question banks for the poneglyph 5-phase workflow. L
 - [Phase auto-detection priority](#phase-auto-detection-priority)
 - [When phase questions don't fit the actual context](#when-phase-questions-dont-fit-the-actual-context)
 
-When drillme detects an active 5-phase workflow context (see SKILL.md §Workflow Step 1), it loads the relevant phase bank **in addition to** the canonical 4 categories. Phase questions are tagged `[phase-N]` in the output so the user sees their origin.
+When drillme detects an active 5-phase workflow context (see SKILL.md §The recipe — Step 1), it loads the relevant phase bank **in addition to** the canonical 4 categories. Phase questions are tagged `[phase-N]` in the output so the user sees their origin.
 
 These question banks are the **canonical source**. Phase skills (`scope-definer`, `tech-planner`, `tdd-designer`, `story-executor`, `critic-reviewer`, `retro-learner`) reference them — they do NOT duplicate the content in their own SKILL.md.
 
@@ -160,3 +160,7 @@ Smell signal: if drillme loaded a phase bank but the questions feel irrelevant t
 > "Detected Phase X from `<artefact>` but the questions don't fit your stated concern. Want me to drill on `<their concern>` instead?"
 
 Don't force phase questions where they don't apply. Honesty > coverage.
+
+## Phase banks are a floor, not a ceiling
+
+These banks are the **minimum** sweep per phase, not the maximum. Under the exhaustive model (SKILL.md), drillme also sweeps the lateral / improvement categories from `01-catalog-socratic.md` (partial failures, retries, security surface, migration, observability, cost…) whenever a gap there would change the decision. The phase bank guarantees the phase-critical questions are asked; the lateral sweep catches the gaps the requester didn't mention. Both are gap-gated — no padding.

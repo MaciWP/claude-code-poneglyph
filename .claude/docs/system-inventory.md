@@ -98,6 +98,10 @@ Full template and propagation model: `orchestrator-protocol/references/06-contex
 
 Test: "does the agent need this in EVERY prompt?" — no → skill.
 
+## When to use a command vs a skill (same layer, different trigger)
+
+**Default to a skill.** Reach for a command only for (a) a script entrypoint (`sync-claude.ts`) or (b) a pure prompt-macro that orchestrates skills with `$ARGUMENTS`/`allowed-tools` (`flow`, `role`). Command = user invokes `/x [args]` explicitly; skill = model auto-invokes on keyword/description match (no `$ARGUMENTS`). A command may invoke skills; a skill never needs `$ARGUMENTS`. Live commands: `flow`, `role`, `sync-claude` — everything else is a skill.
+
 ## Component inventory
 
 | Component | Audit baseline (early 2026) | Post-cleanup (2026-05-28) | Current | Detail |
@@ -105,9 +109,13 @@ Test: "does the agent need this in EVERY prompt?" — no → skill.
 | Agents | 7 + 1 meta | 3 | **0 custom** | builder/reviewer/scout cut in feature 008; work runs inline (delegation doctrine), read-only fan-out via Workflow/`Explore`. The ONE sanctioned single-agent dispatch is critic's fresh-context reviewer (P1 exception, feature 019) — ad-hoc, no agent file |
 | Skills | 28 | 14 | **22** | 6 phase skills + `drillme` + `html-report` (003) + `best-of-n` (019, pilot); `planner-protocol` migrated-and-cut into `tech-plan/references/`; `skill-advisor` cut — its turn-level routing now lives in `skill-activation.ts` + orchestrator-protocol skill matching |
 | Hooks | 15+ | 6 | **7 registered** | `auto-approve`, `post-compact`, `security-gate`, `validators/code-validator`, `skill-activation`, `instructions-loaded`, `learning-inbox` (017/US11-12; self-match filter 019) |
-| Slash commands | 10 | 4 | **5** | `decide`, `explain-changes`, `flow`, `sync-claude`, `role` |
+| Slash commands | 10 | 4 | **3** | `flow`, `sync-claude`, `role` (decide/explain-changes were thin command wrappers → pruned; they remain as skills) |
 | Rules | 7 | 2 + paths/ | **2 + paths/** | `error-recovery.md`, `test-policy.md` + `paths/{hooks,orchestration}.md` |
 | Output-styles | 1 (caveman) | 1 | **1 (poneglyph)** | es-ES natural register since feature 017/US3 |
+
+## Security posture (personal setup — deliberate)
+
+`defaultMode: auto` with `skipDangerousModePermissionPrompt` + `skipAutoPermissionPrompt: true` is a **deliberately relaxed** permission flow, appropriate for a single-user personal config (NOT a SaaS — CLAUDE.md §NOT). The safety net is layered: (1) `permissions.deny` (secrets, `rm -rf /`, `curl|bash`); (2) `autoMode.hard_deny` (`rm -rf .claude`, force push…); (3) the `auto-approve.ts` hook block-list (`rm`, `git push`/`reset --hard`/`clean`/`branch -D`/`rebase -i`); (4) CC 2.1.183 native blocking of destructive git/IaC in auto mode. `auto-approve.ts` and `autoMode.hard_deny` are kept in sync **manually** — edit one, update the other (the hook header documents this).
 
 ## Directory map (.claude/)
 

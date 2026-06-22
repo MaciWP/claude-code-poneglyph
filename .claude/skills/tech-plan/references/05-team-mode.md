@@ -51,12 +51,14 @@ sequenceDiagram
 
 ### Agent Combinations
 
-| Task | Generator | Validator |
+> Generator/Validator below are **roles**, not custom agents (those were cut — see L14). Map: generator = impl teammate / `build` skill; validator = review teammate / `critic`. The pattern = a `Workflow` `pipeline(items, find, verify)`.
+
+| Task | Generator (role) | Validator (role) |
 |------|-----------|-----------|
-| New architecture | `planner` (Mode B) | `reviewer` |
-| Complex refactoring | `builder` | `reviewer` |
-| Feature with security | `builder` | `reviewer` |
-| Critical tests | `builder` | `reviewer` |
+| New architecture | `tech-plan` (Mode B) | `critic` |
+| Complex refactoring | `build` | `critic` |
+| Feature with security | `build` | `critic` (+ `security-review`) |
+| Critical tests | `build` | `critic` |
 
 ---
 
@@ -68,13 +70,13 @@ When the Lead requests a plan with `execution_mode = team` (complexity > 60, 3+ 
 
 Select agents based on task analysis:
 
-| Agent | Condition | Required |
+| Role (skill) | Condition | Required |
 |-------|-----------|----------|
-| `scout` | Codebase exploration | ALWAYS |
-| `builder` | Code implementation | ALWAYS |
-| `reviewer` | Quality validation | ALWAYS |
-| `planner` (Mode B) | Complexity > 40 OR cross-domain interfaces — emits RFC + contracts inline | CONDITIONAL |
-| `reviewer` (security) | Keywords: auth, token, password, jwt, encryption | CONDITIONAL |
+| `Explore` (exploration) | Codebase exploration | ALWAYS |
+| `build` (implementation) | Code implementation | ALWAYS |
+| `critic` (validation) | Quality validation | ALWAYS |
+| `tech-plan` (Mode B) | Complexity > 40 OR cross-domain interfaces — emits RFC + contracts inline | CONDITIONAL |
+| `security-review` | Keywords: auth, token, password, jwt, encryption | CONDITIONAL |
 
 ### Domain Boundary Definition
 
@@ -111,20 +113,20 @@ Coordination: Use task list to signal completion and coordinate with other teamm
 | Scenario | Action | Max retries |
 |----------|--------|-------------|
 | Teammate test failure | Analyze error, fix, re-run | 2 |
-| NEEDS_CHANGES from reviewer | Apply feedback, re-submit | 3 then escalate |
-| Teammate stuck (no progress) | Extract domain → run as builder subagent | 0 |
-| File conflict between teammates | Lead arbitrates via reviewer, loser re-executes | 1 |
-| Multiple teammates fail | Abort team mode → fallback to subagents | 0 |
-| Architecture mismatch | Planner (Mode B) redesigns contracts, re-delegate | 1 |
+| NEEDS_CHANGES from `critic` | Apply feedback, re-submit | 3 then escalate |
+| Teammate stuck (no progress) | Fold domain back to inline `build` | 0 |
+| File conflict between teammates | Lead arbitrates via `critic`, loser re-executes | 1 |
+| Multiple teammates fail | Abort team mode → fallback to subagents/inline | 0 |
+| Architecture mismatch | `tech-plan` (Mode B) redesigns contracts, re-delegate | 1 |
 
 ### Correction Loop
 
 ```
-1. builder/teammate implements
-2. reviewer evaluates
+1. impl teammate (`build` role) implements
+2. review teammate (`critic` role) evaluates
 3. If NEEDS_CHANGES:
-   a. builder fixes according to feedback
-   b. reviewer re-evaluates
+   a. impl teammate fixes according to feedback
+   b. review teammate re-evaluates
    c. Max 3 iterations before escalating to Lead with full history
 4. If APPROVED: mark task complete
 ```

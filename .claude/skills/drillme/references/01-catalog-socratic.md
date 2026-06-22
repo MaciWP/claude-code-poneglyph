@@ -129,14 +129,19 @@ Edge case robustness. Surfaces what breaks, what's worst-case, what we'd regret 
 | Vague doom | "This might break" without trigger condition | Concrete trigger + early warning + blast radius |
 | Failure mode without mitigation | Critical contra with no recovery path | Pair every Critical/Major failure with mitigation |
 
-## Coverage calibration
+## Coverage checklist (gap-driven, not count-driven)
 
-| Context complexity | Recommended coverage |
+There is no "N questions for complexity tier X" table. Coverage is driven by gaps, not by a target count: **sweep every category; for each, if a gap exists that would change the decision, ask; if it genuinely doesn't apply, declare "N/A — reason".** On trivial input no gaps surface → zero questions (the hybrid gate in SKILL.md). On an ambiguous decision many surface → ask until closed.
+
+Sweep these aspect categories:
+
+| Group | Categories |
 |---|---|
-| Trivial (1-line change, mechanical) | Skip drillme entirely; if invoked, 1-2 questions in `[approach]` + `[failure]` |
-| Low (1-file, known pattern) | 2-3 questions, prioritize `[approach]` + `[failure]` |
-| Medium (multi-file, project pattern) | 3-4 questions covering 3/4 categories |
-| High (architectural, multi-domain) | 4-7 questions covering 4/4 + complementary patterns |
+| **Canonical 4** | `[location]` · `[approach]` · `[context]` · `[failure]` |
+| **Lateral / improvement** (what the user did NOT mention) | partial failures · retries / idempotency · timeouts & downtime · input validation · authz / security surface · performance & scale · observability · migration / rollback / backward-compat · UX / DX · cost & effort · data & state lifecycle · concurrency |
+| **Phase bank** (inside /flow) | the detected phase's questions from `03-phase-questions.md` |
+
+The lateral group is where drillme earns its keep: it surfaces the gaps the requester didn't think to mention. Still gap-gated — a category with no real gap is declared N/A, never padded with a synthetic question.
 
 ## Combining with complementary patterns
 

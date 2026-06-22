@@ -178,4 +178,4 @@ If after applying 1-2 complementary patterns the decision still doesn't crystall
 2. **External research**: maybe the decision needs Context7/WebFetch + data the user doesn't have.
 3. **Defer**: not all decisions need to be made now. Document open questions; revisit later.
 
-Drillme is the lightweight tool. It works well 80% of the time. The 20% where it doesn't is honest signal to escalate.
+Drillme closes gaps by asking the user. When the blocker is a genuine disagreement or the decision still won't crystallize after a full sweep, that is honest signal to escalate to a multi-voice debate (`decision-stress-test`), not to keep re-asking.

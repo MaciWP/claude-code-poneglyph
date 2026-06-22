@@ -9,7 +9,7 @@ description: |
   (never improvises). Updates state.json on closure, reports next HU. Executes
   INLINE in the main session (1 agent forbidden; ≥5 files still inline);
   only ≥4 independent parallel units fan out via Workflow.
-  Closes intra-HU drillme (4 questions) before declaring done.
+  Closes a proportional intra-HU drillme (gap-gated, not a fixed count) before declaring done.
   Use when: tasks/ approved + Phase 2.5 oracle approved + HU pending in state.json,
   "build", "implementa", "ejecuta", "construye", "implement HU", "next HU",
   after /tdd-design closes Phase 2.5, before /critic in Phase 4.
@@ -145,7 +145,9 @@ Triggers for `AskUserQuestion`:
 
 NEVER guess. NEVER add features beyond the AC. If 2+ `AskUserQuestion` fires in a single HU → smell signal: the HU was poorly defined; flag in Issues for retro (Phase 5).
 
-### Step 7 — Drillme intra-HU (4 questions)
+### Step 7 — Drillme intra-HU (baseline 4, proportional)
+
+These 4 are the **floor** for an HU with real implementation choices, not a hard cap: drillme is gap-gated (SKILL.md), so it sweeps any additional `[approach]`/`[failure]` gap the HU surfaces and produces **fewer (or zero)** on an unambiguous HU. Proportional to information gain, never a fixed count.
 
 Before declaring HU complete:
 

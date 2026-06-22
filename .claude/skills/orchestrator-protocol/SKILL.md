@@ -9,9 +9,10 @@ description: |
   lifecycle across multiple turns (5 phases with artefacts in plans/);
   this skill governs each individual Lead turn within (or outside) that flow.
 
-  Use proactively when: starting a new session as Lead orchestrator.
-  Invoke at session start; re-invoke after compaction or when protocol
-  guidance is needed.
+  Use ON DEMAND when orchestration guidance is needed (complex routing,
+  spawn decisions, skill matching). The operational core (inline-first,
+  spawn thresholds, verification baseline) is always-loaded in CLAUDE.md;
+  this skill is the expanded reference, not an always-on load.
   Keywords - orchestrate, delegate, complexity, routing, agent, skill, checklist
 disable-model-invocation: false
 effort: high
@@ -34,7 +35,7 @@ Before asserting anything exists, verify with tools. Never assume.
 
 **Rule**: confidence < 70% → ask with `AskUserQuestion`, don't guess.
 
-Tool hierarchy, confidence levels, validation pipeline: `references/01-verification.md`.
+Tool hierarchy, confidence levels, validation pipeline: the `anti-hallucination` skill (canonical).
 
 ---
 
@@ -67,9 +68,9 @@ For architectural/comparison decisions → `Skill('decide')` first.
 
 Write fan-out (≥4 independent WRITE units via Workflow) is **explicit user opt-in only** (keyword "ultracode" or a direct ask) — never auto-launched. This doctrine cites evidence, not fashion — revisable via retro if agent quality materially changes.
 
-#### Spawn decision tree — CANONICAL (único punto de verdad)
+#### Spawn decision tree — expanded reference
 
-> **This tree is the single source of truth for any decision to spawn an agent.** Every other skill, command, doc and `CLAUDE.md` references it — none redefines its own threshold:
+> **The operational core is always-loaded in `CLAUDE.md` §Lead Orchestrator Mode** (inline-first, 1-agent forbidden, ≥4 read-only → Workflow). This is the full diagram + principles; other skills link here for the detail, not for the always-on rule:
 
 ```mermaid
 graph TD
@@ -89,7 +90,7 @@ graph TD
 | **P2** | "isolation" **no es excusa** | El main actúa y se ensucia antes que pagar 1 agente. **"≥5 files" NO es trigger de spawn → inline.** |
 | **P3** | Umbral **≥4** + **read-only** | 1-3 unidades → inline. ≥4 read-only → Workflow. ≥4 de ESCRITURA → inline secuencial salvo opt-in explícito del usuario. |
 | **P4** | research sí, code-review NO se delega en panel | Research delegada → ≥4 en paralelo (search barato `Explore`/haiku); si <4 → inline. Code review = checks mecánicos + **1 fresh-context reviewer** (P1-exception); panel ≥4 SOLO para decisiones (`decision-stress-test`) — evidencia 018 W1/W2 (feature 019). |
-| **P5** | Único árbol | Este árbol es el punto de verdad; el resto del sistema referencia, no redefine. |
+| **P5** | Core en CLAUDE.md, detalle aquí | El núcleo operacional vive always-loaded en CLAUDE.md; este árbol es la referencia expandida. El resto enlaza aquí para el detalle, no redefine umbrales. |
 | **P6** | Fix = borrado + enlazar | Sin maquinaria de enforcement; los patrones de la Workflow tool se **enlazan**, no se copian. |
 | **P7** | spawn-decision ≠ intra-orchestration | ≥4 gobierna la DECISIÓN de spawnear. Agentes coordinándose **dentro** de un team/workflow ya spawneado (p.ej. Four-Eyes generator→validator) no son un nuevo spawn. |
 | **P8** | Escritura = inline-first | Build/write SIEMPRE inline por defecto; el fan-out de escritura degrada calidad (3 costes arriba) y solo se justifica con opt-in explícito. |
@@ -156,7 +157,7 @@ Retry budget, stuck detection, recovery → `error-recovery.md` rule (project ro
 
 | Topic | File |
 |---|---|
-| Verification, anti-hallucination, confidence levels, validation pipeline | `references/01-verification.md` |
+| Verification, confidence levels, validation pipeline | the `anti-hallucination` skill (canonical; `references/01-verification.md` is a pointer) |
 | Complexity factors × weight, mode selection, worktree, effort/model routing | `references/03-complexity-routing.md` |
 | Agent selection matrix, exploration 2×2, Workflow wiring, multi-agent patterns + anti-patterns | `references/04-agent-selection.md` |
 | Keywords→skills mapping, priority scoring, synergy/conflict rules | `references/05-skill-matching.md` |
