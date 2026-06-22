@@ -6,7 +6,7 @@ description: |
   Keywords - stress-test, challenge this decision, devils-advocate, contrarian analysis, steel-man, pre-mortem, before-deciding, before-committing, antes-de-decidir, cuestiona esta decisión, stress-testea
 disable-model-invocation: false
 argument-hint: "<decision or proposal to stress-test>"
-effort: high
+effort: xhigh
 ---
 
 # Decision Stress-Test

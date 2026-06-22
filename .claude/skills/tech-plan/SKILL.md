@@ -14,7 +14,6 @@ description: |
   parallel waves, gap analysis, classification, planificar, plan-tecnico, phase-2, fase-2
 disable-model-invocation: false
 argument-hint: "[--quick|--standard|--full]"
-effort: high
 ---
 
 # Tech-Plan (Phase 2)

@@ -9,7 +9,6 @@ description: |
   Keywords - create agent, new skill, add hook, create rule, MCP server, plugin, extension, meta, scaffold, new subagent, agent template, skill template, hook template
 disable-model-invocation: false
 argument-hint: "[type] [name]"
-effort: medium
 ---
 
 # Extension Create

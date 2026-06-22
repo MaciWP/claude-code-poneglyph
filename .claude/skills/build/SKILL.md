@@ -17,7 +17,6 @@ description: |
   red-green, TDD, HU, story, story-executor, fase-3, phase-3, next-HU
 disable-model-invocation: false
 argument-hint: "[US{id}]"
-effort: medium
 ---
 
 # Build (Phase 3)
@@ -211,7 +210,7 @@ Before reporting HU completed:
 - Project full suite: `bun test ./.claude/hooks/` (or equivalent) → no regressions in unrelated code.
 - Type check (if project has type checker): `tsc --noEmit` / `mypy` / `cargo check` / `go vet`.
 - Lint (if configured).
-- **Docs-sync (same HU)**: if the HU created/changed a component (hook, skill, command, setting), the docs that DESCRIBE it (registry tables like `error-recovery.md §Hook Reliability`, `system-inventory.md`) update in the SAME HU — truth-debt regenerates otherwise (lesson: 017 Phase 4 MAJOR).
+- **Docs-sync (same HU)**: if the HU created/changed a component (hook, skill, command, setting), the docs that DESCRIBE it (registry tables like `rules/paths/hooks.md §Available Hook Events + reliability`, `system-inventory.md`) update in the SAME HU — truth-debt regenerates otherwise (lesson: 017 Phase 4 MAJOR).
 - If ANY of the above fails → invoke `diagnostic-patterns` skill, retry per `error-recovery.md` budget. After 2 retries → escalate to user.
 
 **Never report "completed" without tests passing** (Commandment IV).

@@ -6,7 +6,6 @@ description: |
   Keywords - code quality, SOLID, DRY, refactoring, complexity, performance, memory, N+1, bottleneck, leak, slow, latency, code smell, duplication, extract, simplify, decompose, clean code, maintainability, optimization, profiling
 disable-model-invocation: false
 argument-hint: "[file-path or module]"
-effort: medium
 ---
 
 # Review Patterns

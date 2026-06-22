@@ -1,11 +1,10 @@
 ---
-globs:
-  - ".claude/rules/**"
+paths:
   - ".claude/skills/**"
-priority: 15
+  - ".claude/agents/**"
 ---
 
-<!-- Last verified: 2026-06-10 (017/US7 — dead agents-dir glob removed; that dir no longer exists) -->
+<!-- Last verified: 2026-06-22 (021 — globs→paths fix: CC honors `paths` not `globs`, so this rule was eager-loaded every session; now lazy-scoped to skill/agent authoring. agents-dir glob kept future-proof — harmless when the dir is absent, matches when meta-create adds one in any repo) -->
 
 ## Orchestration Context
 
@@ -27,4 +26,4 @@ priority: 15
 | `paths` | YAML list of globs — skill applies only to these paths |
 | `context` | `fork` = isolated context |
 
-> Error recovery + SendMessage pattern: see `error-recovery.md §SendMessage Recovery`.
+> Error recovery + SendMessage pattern: see `orchestrator-protocol/references/07-error-recovery.md §SendMessage Recovery`.

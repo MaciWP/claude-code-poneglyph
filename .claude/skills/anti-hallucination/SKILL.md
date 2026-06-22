@@ -6,7 +6,6 @@ description: |
   Keywords - validate, verify, check, exists, hallucination, confidence, claim, assert, file exists, import path, function signature
 disable-model-invocation: false
 argument-hint: "[claim to validate]"
-effort: low
 ---
 
 # Anti-Hallucination Patterns

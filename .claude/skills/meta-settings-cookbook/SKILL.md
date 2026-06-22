@@ -6,7 +6,6 @@ description: |
   Keywords - CLAUDE.md, settings, config, permissions, output style, env vars, setup
 disable-model-invocation: false
 argument-hint: "[config-type]"
-effort: low
 ---
 
 # Quick Config

@@ -12,7 +12,6 @@ description: |
   requirements, success criteria, what-why, before-implementing, fase-1, phase-1
 disable-model-invocation: false
 argument-hint: "<brief or question>"
-effort: medium
 ---
 
 # Scope (Phase 1)

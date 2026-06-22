@@ -6,7 +6,6 @@ description: |
   Keywords - explain, explicar, learn, understand, walkthrough, diff, changes, what does this do, why this change, onboarding, code review educational, ensename
 disable-model-invocation: false
 argument-hint: "[file | commit-hash | branch | --pending (default)]"
-effort: high
 ---
 
 # explain-changes

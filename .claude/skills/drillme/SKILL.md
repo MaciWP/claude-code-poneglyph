@@ -17,7 +17,6 @@ description: |
   pregúntame, no dejar gaps, inversion, doubt, stuck, ambiguous
 disable-model-invocation: false
 argument-hint: "[contexto o pregunta]"
-effort: medium
 ---
 
 # Drillme — Exhaustive Socratic Check

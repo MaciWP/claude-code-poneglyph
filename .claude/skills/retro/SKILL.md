@@ -19,7 +19,6 @@ description: |
   fase-5, phase-5
 disable-model-invocation: false
 argument-hint: "[--light|--standard|--full]"
-effort: medium
 ---
 
 # Retro (Phase 5)

@@ -15,7 +15,6 @@ description: |
   validation-mode, red-green, property-based, phase-2.5, fase-2.5
 disable-model-invocation: false
 argument-hint: "[--tdd|--validation|--auto]"
-effort: medium
 ---
 
 # TDD-Design (Phase 2.5)

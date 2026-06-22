@@ -17,7 +17,6 @@ description: |
   proyecto, capa de proyecto, project layer, setup claude, CLAUDE.md
   proyecto, test-policy, new repo, repo nuevo, personalizar claude
 argument-hint: "[repo path — defaults to cwd] [--merge if .claude/ exists]"
-effort: high
 ---
 
 # Project Onboard
@@ -59,6 +58,7 @@ Run the checklist in `references/01-analysis-and-menu.md` §Analysis. Detect at 
 | Test reality | what the tests actually cover → test-policy level proposal |
 | Existing `.claude/` | if present → merge mode: read everything first, propose deltas only |
 | External services | DBs, issue trackers, APIs in configs → MCP suggestion candidates |
+| Codebase scale + code ratio | count of source files vs docs/config; large + code-dominant → knowledge-graph tooling candidate (see Step 2) |
 
 NEVER invent a command — every command cited must be verbatim from a config file or CI workflow (Cmd II). If no test command exists, say so honestly.
 
@@ -75,6 +75,7 @@ Map findings → component candidates using `references/01-analysis-and-menu.md`
 | Project skills | Recurring domain knowledge a generic model gets wrong (query patterns, API conventions, domain gotchas) |
 | Project commands | Repeated multi-step workflows visible in scripts/CI |
 | MCP suggestions | External services detected (suggestion only — connectors configure outside the repo) |
+| Knowledge-graph tooling ([Graphify](https://github.com/safishamsi/graphify)) | ONLY for large, code-dominant, unfamiliar codebases where orientation cost dominates (hundreds of source files, navigation-by-grep). NOT for small repos or markdown/config-heavy ones — there the token savings ≈ 0 and the PreToolUse hook adds unreliable overhead. Suggestion only (installs per-repo outside poneglyph's global layer). Rationale: `plans/022-graph-tooling/decision-memo.md` |
 | `.claude/settings.json` (project) | Project-specific permissions/hooks genuinely needed |
 
 The user ratifies the set BEFORE any generation. Components not ratified are not generated — no orphan files.

@@ -1,38 +1,29 @@
+---
+paths:
+  - ".claude/plans/**"
+---
+
+<!-- Path-scoped (021): tech-plan/tdd-design/build Read this file explicitly when they run, so it never needs eager always-load. Lazy-trigger on planning artefacts is belt-and-suspenders; the skills' explicit Read is the real delivery. -->
+
 # Test Policy
 
-Defines whether TDD-first decomposition applies when planning changes to this repo. Read by `tech-plan` (§0.1) and honored by the `build` skill per node.
+Whether TDD-first decomposition applies when planning changes. Read explicitly by `tech-plan` (§0.1), `tdd-design`, and honored by `build` per node.
 
 ## Levels
 
 | Level | Meaning | Planner behavior |
 |---|---|---|
-| `business-critical` | Tests cover business logic; regressions cost real value | TDD-first MANDATORY: test node before impl node in DAG. Skip requires explicit `tdd-skip: <reason ≥10 chars>` on the node |
-| `mixed` | Repo has both business and auxiliary tests | Per-file: changes under business paths → TDD-first; auxiliary paths → optional. Planner declares the rationale per node |
-| `auxiliary` | Tests are infrastructure/hooks/helpers; no business logic | TDD-first OPTIONAL. Tests run post-impl as verification (status quo). Individual nodes can opt in with `tdd: forced` |
+| `business-critical` | Tests cover business logic; regressions cost real value | TDD-first MANDATORY: test node before impl node in DAG. Skip requires `tdd-skip: <reason ≥10 chars>` on the node |
+| `mixed` | Both business and auxiliary tests | Per-file: business paths → TDD-first; auxiliary paths → optional. Planner declares rationale per node |
+| `auxiliary` | Infrastructure/hooks/helpers; no business logic | TDD-first OPTIONAL. Tests run post-impl as verification. Nodes opt in with `tdd: forced` |
 
 ## Project declaration
 
-This project's policy: **`auxiliary`**.
-
-Reason: poneglyph is a meta-system (orchestration config); tests in `.claude/hooks/__tests__/` cover security gates and validators, not business logic. Mandatory TDD would generate ceremony without proportional value.
+This project's policy: **`auxiliary`** — poneglyph is orchestration config; tests cover security gates and validators (`.claude/hooks/__tests__/`), not business logic. Mandatory TDD would be ceremony without proportional value. (Mirrored as a one-liner in `CLAUDE.md` → "Test policy (this repo)".)
 
 ## Override in plan
 
-A plan node may override the project policy when local context demands it:
+A plan node may override the project policy:
 
-- `tdd: forced` — force test-first on this node despite `auxiliary` policy. Use when adding a new hook with non-trivial logic that warrants a red→green discipline.
-- `tdd-skip: <reason>` — skip TDD-first on this node despite `business-critical` policy. Reason must be concrete (≥10 chars) and explain why test-first is not appropriate:
-  - `tdd-skip: doc-only change, no testable behavior`
-  - `tdd-skip: exploratory spike before contract is stable`
-  - `tdd-skip: config tweak, validated by existing integration tests`
-
-## Why this exists
-
-Goal: atomize tasks and clarify scope by forcing the planner to articulate expected behavior (the test) before implementation. The escape hatch keeps the rule honest — when test-first is ceremony, document why and move on. Without the escape, a uniform rule across all projects breaks pragmatism (proven by 0% business-test ratio in poneglyph itself).
-
-## Related
-
-- `.claude/skills/tech-plan/SKILL.md` §0.1 — applicability check
-- `.claude/skills/tech-plan/references/06-quality-gates.md` — TDD-mode quality gates
-- `.claude/skills/build/SKILL.md` — TDD-mode handling (red→green); absorbed from the cut `builder` agent (feature 008)
-- `CLAUDE.md` Mental model phases 2/3 + "Test policy (this repo)" section
+- `tdd: forced` — force test-first despite `auxiliary` (e.g. a new hook with non-trivial logic warranting red→green).
+- `tdd-skip: <reason ≥10 chars>` — skip test-first despite `business-critical`. Reason must be concrete: `doc-only change, no testable behavior` · `exploratory spike before contract is stable` · `config tweak, validated by existing integration tests`.

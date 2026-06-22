@@ -19,7 +19,7 @@ description: |
   regression, security, performance, verdict, blocker, finding, fase-4, phase-4
 disable-model-invocation: false
 argument-hint: "[--light|--standard|--full]"
-effort: high
+effort: xhigh
 ---
 
 # Critic (Phase 4)

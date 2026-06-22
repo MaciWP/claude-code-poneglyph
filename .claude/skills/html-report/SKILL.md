@@ -6,7 +6,6 @@ description: |
   Keywords - html, report, visual, present, dashboard, render, presentación, visualizar, informe-visual, pásalo-a-html, self-contained, gauge, scoring, findings, audit-html, retro-html, review-html, critique, audit, design-review, anti-slop, taste, wcag, contrast
 disable-model-invocation: false
 argument-hint: "<markdown file or 'report'|'dashboard' + content, or 'critique' + target>"
-effort: high
 ---
 
 # html-report

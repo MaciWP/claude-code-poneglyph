@@ -15,7 +15,6 @@ description: |
   this skill is the expanded reference, not an always-on load.
   Keywords - orchestrate, delegate, complexity, routing, agent, skill, checklist
 disable-model-invocation: false
-effort: high
 ---
 
 # Lead Orchestration Protocol (turn-level)
@@ -133,6 +132,7 @@ Full Arch H template with all blocks, propagation model, skill discovery: `refer
 | `Skill('tech-plan')` | Plan complex tasks — Lead inline, no dedicated agent |
 | `Skill('diagnostic-patterns')` | Diagnose failures — Lead inline, no dedicated agent |
 | `Skill()` | Load context into the Lead's OWN session only |
+| `/goal` / `/loop` (native autonomous iteration) | Drive a gated build→critic to a verifiable stop, or recurring read-only audit/research. Doctrine-safe usage (external oracle + evidence in transcript, never cross a hard gate unattended): `references/09-loops-playbook.md` |
 
 Direct action (the default for ALL write work): Read always permitted. Edit/Write/Bash run inline — **≥5 files is still inline** (P2), and a long write queue runs inline SEQUENTIALLY rather than fanning out (P8). On sensitive paths declare inline `sensitive: <reason ≥8 chars>`. Destructive patterns — escalate with explicit reason. No automated gate enforces this; the Lead is responsible.
 
@@ -149,7 +149,7 @@ Direct action (the default for ALL write work): Read always permitted. Edit/Writ
 
 **NEVER report "completed" without confirmation that tests pass.** Test verification is the Lead's explicit responsibility — there is no automatic Stop hook for it.
 
-Retry budget, stuck detection, recovery → `error-recovery.md` rule (project root). Output style baseline + escape triggers → `output-styles/poneglyph.md`.
+Retry budget, stuck detection, escalation rung → `error-recovery.md` rule (project root, always-loaded). Procedural recovery detail (SendMessage, diagnosis steps, recovery template, worktree cleanup) → `references/07-error-recovery.md` (on-demand). Output style baseline + escape triggers → `output-styles/poneglyph.md`.
 
 ---
 
@@ -162,13 +162,15 @@ Retry budget, stuck detection, recovery → `error-recovery.md` rule (project ro
 | Agent selection matrix, exploration 2×2, Workflow wiring, multi-agent patterns + anti-patterns | `references/04-agent-selection.md` |
 | Keywords→skills mapping, priority scoring, synergy/conflict rules | `references/05-skill-matching.md` |
 | Architecture levels, rules vs skills, full Arch H template, propagation model | `references/06-context-arch-h.md` |
+| Procedural error recovery (SendMessage, diagnosis steps, recovery template, worktree cleanup) | `references/07-error-recovery.md` |
+| `/goal` + `/loop` doctrine-safe usage, DAME→poneglyph map, recipes, video adopt/reject map | `references/09-loops-playbook.md` |
 
 ### Removed references (simplified 2026-05-28 — US8 AC7 SIMPLIFICAR)
 
 | Former ref | Current canonical source |
 |---|---|
 | `02-prompt-scoring.md` | `prompt-engineer` skill (covers prompt quality + scoring) |
-| `07-delegation-recovery.md` | `.claude/rules/error-recovery.md` (retry budget, stuck detection, worktree cleanup) |
+| `07-delegation-recovery.md` | split (021): always-loaded triggers in `.claude/rules/error-recovery.md`; procedural detail back in `references/07-error-recovery.md` |
 | `08-output-style.md` | `output-styles/poneglyph.md` (terse-first rules, escape triggers) |
 
 ## Related

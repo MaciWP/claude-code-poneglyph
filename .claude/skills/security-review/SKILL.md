@@ -6,7 +6,7 @@ description: |
   Keywords - security, owasp, vulnerability, injection, xss, csrf, audit
 disable-model-invocation: false
 argument-hint: "[file-path or module]"
-effort: high
+effort: xhigh
 paths:
   - "**/auth/**"
   - "**/api/**"

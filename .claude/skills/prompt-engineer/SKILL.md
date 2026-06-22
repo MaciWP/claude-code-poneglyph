@@ -11,7 +11,6 @@ when_to_use: |
   - Auditing prompts that flow between agents or skills (delegation chains, multi-agent patterns) for quality and completeness.
 argument-hint: "[prompt text or task description]"
 disable-model-invocation: false
-effort: medium
 ---
 
 # Prompt Engineer

@@ -14,15 +14,32 @@ import { $ } from "bun";
 const LINK_FOLDERS = [
   "skills",
   "commands",
-  "rules",
   "docs",
   "hooks",
   "workflows",
   "output-styles",
 ];
 
+// `rules` is NOT a whole-folder link (see LINK_FOLDERS): it is expanded per-entry so that
+// project-specific rules can be excluded from the global ~/.claude/rules (user layer).
+// Top-level rule FILES link individually; subdirectories (e.g. `paths/`) link as directories.
+const RULES_FOLDER = "rules";
+
+// Rules specific to the poneglyph PROJECT — they must NOT propagate to the global
+// ~/.claude/rules (user layer), or they would wrongly apply to every repo on the machine.
+// They stay in the repo's project layer (./.claude/rules/), where the skills Read them by
+// their canonical path per-project, and where poneglyph itself loads them as a project rule
+// when cwd = poneglyph. `test-policy.md` declares "this repo = auxiliary" — true for poneglyph,
+// false as a global default. (021 — companion to the globs→paths fix in the rule files.)
+const PROJECT_ONLY_RULES = new Set(["test-policy.md"]);
+
 const LINK_FILES = [
   { src: "CLAUDE.md", dest: "CLAUDE.md" },
+  // Default prompt for a bare `/loop`. ONE generic file linked to ~/.claude/loop.md:
+  // poneglyph is the source of the global config, so this same file is both
+  // poneglyph's project loop and the user-level default for every other repo.
+  // Another repo overrides locally with its own .claude/loop.md.
+  { src: ".claude/loop.md", dest: "loop.md" },
 ];
 
 // settings.json is NOT symlinked: it is GENERATED per-machine as a real file by
@@ -426,6 +443,56 @@ function generateSettings(
 
 // === LINK DETECTION ===
 
+// Pure: given the top-level entries of the rules source dir, compute which per-entry links
+// should exist under `rulesDest`. Files link individually (so project-only rules can be
+// excluded); subdirectories link as directories. Status is filled in by the caller.
+// Kept pure (entries passed in, no fs) so it is unit-testable.
+export function expandRulesLinks(
+  rulesSource: string,
+  rulesDest: string,
+  entries: { name: string; isDirectory: boolean }[],
+  projectOnly: Set<string>,
+): { source: string; dest: string; type: "directory" | "file" }[] {
+  const out: { source: string; dest: string; type: "directory" | "file" }[] =
+    [];
+  for (const e of entries) {
+    if (e.name.startsWith(".")) continue; // skip .DS_Store and other dotfiles
+    if (e.isDirectory) {
+      out.push({
+        source: path.join(rulesSource, e.name),
+        dest: path.join(rulesDest, e.name),
+        type: "directory",
+      });
+    } else {
+      if (projectOnly.has(e.name)) continue; // project-only rule → stays out of the global layer
+      out.push({
+        source: path.join(rulesSource, e.name),
+        dest: path.join(rulesDest, e.name),
+        type: "file",
+      });
+    }
+  }
+  return out;
+}
+
+function computeLinkStatus(source: string, dest: string): LinkInfo["status"] {
+  if (!fs.existsSync(dest) && !isSymlink(dest)) return "new";
+  if (isSymlink(dest)) {
+    const target = getSymlinkTarget(dest);
+    const resolvedTarget = target
+      ? path.resolve(path.dirname(dest), target)
+      : null;
+    if (
+      normalizePath(target || "") === normalizePath(source) ||
+      normalizePath(resolvedTarget || "") === normalizePath(source)
+    ) {
+      return "already-linked";
+    }
+    return "conflict";
+  }
+  return "exists";
+}
+
 function detectLinks(projectRoot: string, homeDir: string): LinkInfo[] {
   const links: LinkInfo[] = [];
   const srcBase = path.join(projectRoot, ".claude");
@@ -524,6 +591,23 @@ function detectLinks(projectRoot: string, homeDir: string): LinkInfo[] {
     links.push({ source, dest, type: "directory", status });
   }
 
+  // `rules` expanded per-entry so PROJECT_ONLY_RULES never reach the global ~/.claude/rules.
+  const rulesSource = path.join(srcBase, RULES_FOLDER);
+  const rulesDest = path.join(destBase, RULES_FOLDER);
+  if (fs.existsSync(rulesSource)) {
+    const entries = fs
+      .readdirSync(rulesSource, { withFileTypes: true })
+      .map((d) => ({ name: d.name, isDirectory: d.isDirectory() }));
+    for (const r of expandRulesLinks(
+      rulesSource,
+      rulesDest,
+      entries,
+      PROJECT_ONLY_RULES,
+    )) {
+      links.push({ ...r, status: computeLinkStatus(r.source, r.dest) });
+    }
+  }
+
   return links;
 }
 
@@ -619,16 +703,32 @@ async function createSymlinks(
 
   console.log(`\n🔗 Link method: ${method}\n`);
 
+  // BLINDAJE (021): pre-021 the whole `rules` folder was one dir-symlink. In the per-entry model
+  // ~/.claude/rules must be a REAL directory, or `mkdirSync(dirname(dest))` below would resolve
+  // through the leftover symlink and create per-file links INSIDE the repo source (corruption).
+  // Replace any leftover dir-symlink with a real directory before creating rule links.
+  const rulesDest = path.join(destBase, RULES_FOLDER);
+  if (isSymlink(rulesDest)) {
+    fs.unlinkSync(rulesDest);
+    fs.mkdirSync(rulesDest, { recursive: true });
+    console.log(
+      `📁 Normalized ${rulesDest} (dir-symlink → real dir for per-file rules)`,
+    );
+  }
+
   for (const link of links) {
     if (link.status === "already-linked") {
       console.log(`⏭️  Skipping ${path.basename(link.dest)} (already linked)`);
       continue;
     }
 
-    // Backup if exists
+    // Backup if exists. Guard on actual presence: the rules-dir normalization above can remove
+    // a leftover dir-symlink whose children were detected as "exists" (they resolved THROUGH it);
+    // once it is gone those dests no longer exist, so a blind rename would crash (ENOENT).
     if (
       (link.status === "exists" || link.status === "conflict") &&
-      config.backup
+      config.backup &&
+      (fs.existsSync(link.dest) || isSymlink(link.dest))
     ) {
       if (!fs.existsSync(backupDir)) {
         fs.mkdirSync(backupDir, { recursive: true });
@@ -1175,4 +1275,6 @@ Requirements per OS:
   );
 }
 
-main().catch(console.error);
+if (import.meta.main) {
+  main().catch(console.error);
+}

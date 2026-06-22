@@ -14,7 +14,6 @@ description: |
   intentos, variantes, hard task, test-selected, sampling
 disable-model-invocation: false
 argument-hint: "\"<task prompt>\" [--n 2|3]"
-effort: medium
 ---
 
 # best-of-n (pilot)
