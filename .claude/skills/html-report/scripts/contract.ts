@@ -27,6 +27,12 @@ export interface Callout {
   body: string;             // may contain inline HTML
 }
 
+export interface Comment {
+  md: string;               // Markdown source — interpreted by comments.ts (mdToHtml); fenced code is copy-pasteable
+  title?: string;           // optional header (e.g. a location like "process.py:131")
+  copy?: boolean;           // add a button that copies the RAW md (e.g. paste a review comment into GitHub)
+}
+
 export interface TableColumn {
   key: string;
   label: string;
@@ -72,7 +78,8 @@ export interface Section {
   title: string;
   /** ordered content blocks; rendered in array order */
   blocks?: Array<
-    | { type: "prose"; html: string }
+    | { type: "prose"; html?: string; md?: string }   // html = trusted HTML; md = Markdown (comments.ts)
+    | { type: "comment"; data: Comment }              // Markdown block; fenced code copy-pasteable
     | { type: "callout"; data: Callout }
     | { type: "table"; data: Table }
     | { type: "chart"; data: Chart }

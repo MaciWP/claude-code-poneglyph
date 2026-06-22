@@ -14,6 +14,7 @@ import type { ReportData, Section, Kpi, Callout } from "./contract.ts";
 import { themeCss } from "./theme.ts";
 import { chart, chartCss } from "./charts.ts";
 import { tableFilterable, filterScript, filterCss } from "./components.ts";
+import { mdToHtml, copyable, copyCss, copyScript } from "./comments.ts";
 
 const esc = (s: string): string =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -46,7 +47,10 @@ function sectionHtml(s: Section): string {
   const blocks = (s.blocks || [])
     .map((b, i) => {
       switch (b.type) {
-        case "prose": return `<div class="prose">${b.html}</div>`;
+        case "prose": return `<div class="prose">${b.md ? mdToHtml(b.md) : (b.html || "")}</div>`;
+        case "comment": return b.data.copy
+          ? copyable(`<div class="prose">${mdToHtml(b.data.md)}</div>`, b.data.md, b.data.title)
+          : `<div class="prose">${b.data.title ? `<h3 class="blk">${esc(b.data.title)}</h3>` : ""}${mdToHtml(b.data.md)}</div>`;
         case "kpis": return kpiRow(b.data);
         case "callout": return callout(b.data);
         case "table": return tableFilterable(b.data, `tbl-${s.id}-${i}`);
@@ -76,7 +80,7 @@ export function render(data: ReportData): string {
 <title>${esc(m.title)}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<style>${themeCss()}${filterCss}${chartCss}
+<style>${themeCss()}${filterCss}${chartCss}${copyCss}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{font-size:16px;scroll-behavior:smooth}
 body{font-family:var(--sans);background:var(--bg);color:var(--ink);line-height:1.6;font-size:var(--t-base);-webkit-font-smoothing:antialiased;padding:clamp(1.5rem,4vw,3rem) clamp(1rem,4vw,2rem) 4rem}
@@ -184,6 +188,7 @@ footer{grid-column:1/-1;margin-top:2.5rem;padding-top:1.2rem;border-top:1px soli
   }
 })();
 ${filterScript}
+${copyScript}
 </script>
 </body>
 </html>`;

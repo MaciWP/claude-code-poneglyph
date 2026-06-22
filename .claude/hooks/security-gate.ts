@@ -47,7 +47,7 @@ export function lineHasSecret(line: string): boolean {
   return SECRET_PATTERN.test(line) || SECRET_PATTERN_CI.test(line);
 }
 
-async function getModifiedFiles(): Promise<string[]> {
+export async function getModifiedFiles(): Promise<string[]> {
   const [stagedProc, untrackedProc] = [
     Bun.spawn(["git", "diff", "--name-only", "HEAD"], { stdout: "pipe", stderr: "pipe" }),
     Bun.spawn(["git", "ls-files", "--others", "--exclude-standard"], { stdout: "pipe", stderr: "pipe" }),
@@ -65,7 +65,7 @@ async function getModifiedFiles(): Promise<string[]> {
 
 // Returns a list of "path:line" hits (empty if none). Pure — no stderr side effects,
 // so main() can aggregate hits into a single visible systemMessage.
-async function scanFile(filePath: string): Promise<string[]> {
+export async function scanFile(filePath: string): Promise<string[]> {
   const hits: string[] = [];
   try {
     const file = Bun.file(filePath);
