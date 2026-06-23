@@ -1,17 +1,14 @@
 ---
 name: scope
 description: |
-  Define product-level scope BEFORE any technical work (Phase 1 of the 5-phase workflow).
-  Generates spec.md via an intensive Q&A questionnaire + 5-question drillme (root problem,
-  severity, stakeholders, MVP, out-of-scope). In `full` mode optionally spawns 3 product
-  perspectives in parallel (Outsider, User, Product) using the decision-stress-test
-  perspective catalog. Closes with hard gate 1->2 requiring human approval.
-  Use when: vague request, new feature, undefined alcance, "necesito X", "quiero hacer Y",
-  "el problema es Z", before any planning or implementation, missing what/why before how.
+  Define el alcance a nivel de producto ANTES de cualquier trabajo técnico (Fase 1 del workflow de 5 fases). Genera spec.md mediante un cuestionario Q&A intensivo + drillme de 5 preguntas (problema raíz, severidad, stakeholders, MVP, out-of-scope). En modo full puede lanzar 3 perspectivas de producto en paralelo. Cierra con el hard gate 1→2 que requiere aprobación humana.
+  Úsala cuando: petición vaga, feature nuevo, alcance indefinido, "necesito X", "quiero hacer Y", "el problema es Z", antes de planificar o implementar, falta el qué/por qué antes del cómo.
   Keywords - scope, idea, problema, alcance, quiero, necesito, define, product,
   requirements, success criteria, what-why, before-implementing, fase-1, phase-1
 disable-model-invocation: false
 argument-hint: "<brief or question>"
+when_to_use: |
+  "necesito X", "quiero hacer Y", "el problema es Z", "define el alcance", "new feature", "define scope", "what/why before building"
 ---
 
 # Scope (Phase 1)

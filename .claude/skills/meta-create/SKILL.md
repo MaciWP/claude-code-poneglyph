@@ -1,14 +1,13 @@
 ---
 name: meta-create
 description: |
-  Creates Claude Code extensions: agents, skills, hooks, rules, MCP servers, and plugins.
-  Auto-activates when the user requests creating any of these. Runs in the main session
-  (the Lead reads references/templates and writes the file directly), inline even for ≥5 files;
-  fans out via Workflow only for ≥4 independent extension units.
-  Use when: create agent, create skill, create hook, create rule, create MCP server, create plugin, scaffold extension.
+  Crea extensiones de Claude Code: agents, skills, hooks, rules, MCP servers y plugins. Corre en la sesión principal (el Lead lee references/templates y escribe el fichero), inline incluso para ≥5 ficheros; hace fan-out vía Workflow solo para ≥4 unidades de extensión independientes.
+  Úsala cuando: crear un agente, crear una skill, añadir un hook, crear una rule, crear un MCP server, crear un plugin, "scaffold extension".
   Keywords - create agent, new skill, add hook, create rule, MCP server, plugin, extension, meta, scaffold, new subagent, agent template, skill template, hook template
 disable-model-invocation: false
 argument-hint: "[type] [name]"
+when_to_use: |
+  "crea una skill", "añade un hook", "nueva regla", "crea un agente", "create agent", "new skill", "scaffold extension", "MCP server"
 ---
 
 # Extension Create
@@ -95,6 +94,7 @@ Apply the `references/<type>/gotchas.md` or `frontmatter-spec.md` checklist befo
 ## Critical Reminders (cross-type)
 
 1. **`description` 3-line format is load-bearing** — agents and skills MUST include `Use proactively when:` and `Keywords -` lines or auto-matching fails.
+   - **Skills (feature 023): `description` + `when_to_use` go in es-ES** (the activation surface, matched against Oriol's Spanish prompts). Technical identifiers stay original; `Keywords -` label stays literal; body stays English. Pattern: `references/skill/frontmatter-spec.md §Description Format`.
 2. **`disallowedTools` is camelCase** — never `disallowed_tools`.
 3. **Never use `#!/usr/bin/env bash`** in hooks on Windows — Claude Code's reduced PATH breaks `env`. Use `#!/bin/bash` (absolute) or prefer `.ts` with `#!/usr/bin/env bun`.
 4. **Stop / SubagentStop hooks need `stop_hook_active` guard** — without it, `exit 2` creates an infinite loop.

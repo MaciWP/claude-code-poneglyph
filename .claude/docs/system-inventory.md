@@ -16,6 +16,24 @@ bun .claude/commands/sync-claude.ts --execute --backup --force
 - Settings load at session start → a fresh sync takes effect on the NEXT session.
 - **Windows**: `CLAUDE.md` is **copied**, not linked (junctions can't link files) → re-run the sync after editing it or the global copy goes stale. On macOS it is a symlink (verified 2026-06-10).
 
+## Entry points → how each routes to the workflow & skills
+
+Poneglyph has ONE workflow (the 5 phases + Lead turn flow); what differs is how you enter it. Skill activation is **layered** and the entry point decides which layers fire:
+
+| Entry point | What it is | Phase routing | Skill activation |
+|---|---|---|---|
+| **Plain prompt** (`haz X`) | Normal turn | Lead triages complexity → invokes phase skills / `/flow` as needed | `skill-activation.ts` injects `Skill()` on keyword match **+** Lead self-matches via `orchestrator-protocol §05` on non-trivial work |
+| **`/flow <task>`** | The **router** — feature lifecycle orchestrator | Deterministic: triages mode → runs phases 1-5 with hard gates, **invoking each phase skill explicitly** | Wired by `/flow` itself (phase→skill is hard-coded in the command); hook skips `/flow` (no double-routing) |
+| **`/goal <condition>`** | Built-in **persistence loop** (Stop hook) — keeps the Lead working until the condition holds. NOT a router | None by itself — the Lead routes each turn via the always-loaded CLAUDE.md core | Hook skips it (like every slash command). `/goal` runs as the **Lead**, not a fresh-context agent: it already has the always-loaded routing core and can invoke any `Skill()` itself — it needs no injected hint. Whether the Lead *actually* loads the relevant skill on a work turn is a discretionary call (no enforcement); for guaranteed skill use, wrap the work in `/flow` |
+| **`/role <name>`** | Persona-framing over existing skills | Composes skills for the role; Lead still triages | Hook skips it (role self-composes); Lead matches within the persona |
+
+**The honest answer to "siempre activar las skills":** activation is layered:
+1. **Routing core is always-loaded** (CLAUDE.md §Lead Orchestrator Mode + §Skill routing + §5-phase model). The Lead therefore triages and routes on EVERY turn — including every `/goal` loop turn — without any hook. This is the real "always-on" layer.
+2. **`/flow` → deterministic phase→skill wiring** (each phase invokes its skill explicitly). The strongest guarantee, for feature-shaped work.
+3. **Keyword hook → on-demand skill acceleration** — best-effort, plain prompts only (skips slash commands); surfaces a specific skill (`security-review`, `tdd-design`…) earlier than the Lead might. NOT a guarantee (Spanish/novel phrasings miss; and the Lead may ignore the hint).
+
+**The real gap (named honestly):** skill *use* by the Lead is discretionary — the hook only nudges, CLAUDE.md only says "match skills before build", and the Lead can (and does) skip both on a given turn. On conversational/meta turns skipping is correct (loading a skill would be ceremony); the concern is genuine work turns. **The only deterministic enforcement of skill use is `/flow`** (each phase invokes its skill explicitly). So: for a real feature, wrap it in `/flow` even from inside a `/goal` loop. Don't try to force skill use via hooks/always-loaded — that's the regression pattern (memory: [always-loaded-vs-ondemand-cost]).
+
 ## Lead turn flow (was "Mandatory flow" mermaid)
 
 ```mermaid

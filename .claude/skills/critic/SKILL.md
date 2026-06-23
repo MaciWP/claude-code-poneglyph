@@ -1,25 +1,15 @@
 ---
 name: critic
 description: |
-  End-to-end review after all HUs completed (Phase 4 of the 5-phase workflow).
-  Validates the original problem from spec.md was actually solved.
-  Produces review.md with 5-section checklist
-  (Correctness/Quality/Security/Performance/Maintainability) + severity-tagged
-  findings + verdict (APPROVED/WITH_WARNINGS/NEEDS_CHANGES/BLOCKED). Invokes the
-  `review-patterns` skill catalog (quality or performance mode per content),
-  dispatches ONE fresh-context read-only reviewer (correctness/requirements only)
-  at standard/full levels — the evidence-strong form for code review (018 W1
-  D1/D3) — and triggers `security-review` for auth/payments/credentials.
-  Deliberative panels are decision-review territory (`decision-stress-test`),
-  not code review. Detects spec-drift for the living-spec loop (Phase 5).
-  Use when: feature complete, all HUs closed in state.json, review needed before
-  retro, after /build closes Phase 3, "revisa", "critica", "valida", "review",
-  "audita", "verdict", "approve".
+  Revisión end-to-end tras completar todas las HUs (Fase 4 del workflow de 5 fases). Valida que el problema original de spec.md se resolvió de verdad. Produce review.md con checklist de 5 secciones (Correctness/Quality/Security/Performance/Maintainability) + findings con severidad + veredicto (APPROVED/WITH_WARNINGS/NEEDS_CHANGES/BLOCKED). Despacha UN reviewer de contexto fresco (read-only) y dispara security-review en auth/pagos/credenciales.
+  Úsala cuando: feature completo, todas las HUs cerradas en state.json, revisión antes de retro, tras /build, "revisa", "critica", "valida", "audita", "veredicto".
   Keywords - critic, phase-4-review, valida, revisa, audita, e2e, happy-path, quality,
   regression, security, performance, verdict, blocker, finding, fase-4, phase-4
 disable-model-invocation: false
 argument-hint: "[--light|--standard|--full]"
 effort: xhigh
+when_to_use: |
+  "revisa el feature", "audita esto", "valida end-to-end", "veredicto", "review the feature", "is this correct", "final review"
 ---
 
 # Critic (Phase 4)

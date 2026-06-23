@@ -1,19 +1,14 @@
 ---
 name: escalate
 description: |
-  Escalation step when a problem is NOT getting solved — you are stuck, looping on
-  the same error, or a goal-loop keeps returning the same "not met" reason. Runs at
-  effort: xhigh (the project's deliberate "low by default, escalate only when it pays"
-  model) and forces a DIFFERENT attack than the one already failing. It does NOT
-  re-implement diagnosis — it orchestrates `diagnostic-patterns` + `drillme` with deep
-  reasoning, then hands back to STOP→AskUserQuestion if still unsolved.
-  Use when: stuck, same error twice, 2+ diagnoses without a fix, a goal-loop not
-  converging, "no se soluciona", "estoy atascado", "desatasca esto", "llevamos rato
-  con esto", repeated failed attempts.
+  Paso de escalada cuando un problema NO se resuelve — estás atascado, en bucle con el mismo error, o un goal-loop devuelve el mismo "no cumplido". Corre a effort xhigh y fuerza un ataque DISTINTO al que ya falla. No re-implementa diagnóstico: orquesta diagnostic-patterns + drillme con razonamiento profundo, y devuelve a STOP→AskUserQuestion si sigue sin resolverse.
+  Úsala cuando: atascado, mismo error dos veces, 2+ diagnósticos sin fix, un goal-loop que no converge, "no se soluciona", "estoy atascado", "desatasca esto", "llevamos rato con esto".
   Keywords - escalate, stuck, atascado, desatascar, no se soluciona, loop, bucle,
   same error, no progress, deep reasoning, xhigh, last resort, unblock
 disable-model-invocation: false
 effort: xhigh
+when_to_use: |
+  "estoy atascado", "no se soluciona", "desatasca esto", "llevamos rato con esto", "stuck", "same error again", "no progress"
 ---
 
 # Escalate — stuck-buster (xhigh)

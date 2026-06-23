@@ -1,11 +1,13 @@
 ---
 name: decide
 description: |
-  Decision Mode — makes strategic decisions using 3 agent perspectives (Pragmatist, Innovator, Critic) and generates a visual HTML memo.
-  Use when: architectural decisions, tech stack choices, approach evaluation, strategic trade-offs.
+  Ayuda a decidir entre alternativas técnicas: compara opciones, expone trade-offs y recomienda con criterio.
+  Úsala cuando: hay que elegir entre arquitecturas/librerías/enfoques, "qué opción elijo", "qué librería uso", "compara alternativas", "trade-offs", antes de comprometerse con una decisión técnica.
   Keywords - decide, decision, choose, evaluate, compare, trade-off, pros-cons, architecture-decision
 disable-model-invocation: true
 argument-hint: "<question or brief>"
+when_to_use: |
+  "qué opción elijo", "compara alternativas", "trade-offs", "qué librería uso", "which library", "evaluate options", "decision"
 ---
 
 # Decision Mode

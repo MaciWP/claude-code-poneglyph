@@ -1,20 +1,12 @@
 ---
 name: orchestrator-protocol
 description: |
-  Turn-level Lead orchestration protocol: verification principles, 5-step
-  per-turn checklist (Triage / Complexity / Context / Delegate / Validate),
-  the canonical spawn decision tree, skill matching, and delegation context
-  template (Arch H).
-  Complementary to the `/flow` command — `/flow` orchestrates a FEATURE
-  lifecycle across multiple turns (5 phases with artefacts in plans/);
-  this skill governs each individual Lead turn within (or outside) that flow.
-
-  Use ON DEMAND when orchestration guidance is needed (complex routing,
-  spawn decisions, skill matching). The operational core (inline-first,
-  spawn thresholds, verification baseline) is always-loaded in CLAUDE.md;
-  this skill is the expanded reference, not an always-on load.
+  Protocolo de orquestación del Lead a nivel de turno: principios de verificación, checklist de 5 pasos (Triage / Complexity / Context / Delegate / Validate), el árbol de decisión de spawn, skill matching y la plantilla de contexto de delegación (Arch H). Complementaria al command /flow (que orquesta el ciclo de FEATURE multi-turno).
+  Úsala cuando: se necesita guía de orquestación (routing complejo, decisiones de spawn, skill matching), "cómo orquesto esto", "delego o inline", "qué skills uso", "complejidad del turno".
   Keywords - orchestrate, delegate, complexity, routing, agent, skill, checklist
 disable-model-invocation: false
+when_to_use: |
+  "cómo orquesto esto", "delego o inline", "qué skills uso", "complejidad del turno", "spawn agents", "routing", "delegation decision"
 ---
 
 # Lead Orchestration Protocol (turn-level)
@@ -52,6 +44,8 @@ Execute steps 1-5 IN ORDER before responding. No exceptions.
 | Feature-scope task (multi-phase work) | Suggest `/flow <task>` to the user |
 
 For architectural/comparison decisions → `Skill('decide')` first.
+
+> **Inside a `/goal` loop**: `/goal` is a persistence loop, not a router — it does NOT activate skills per turn. But the routing core (this skill's §1 triage + the skill-routing layer) is already **always-loaded in CLAUDE.md**, so the Lead routes regardless. Re-run the triage **every turn**, not just the first. For feature-shaped work, **wrap it in `/flow` rather than improvising** — deterministic phase→skill wiring beats best-effort matching (memory: skill-wiring-over-autotrigger). Inside `/flow`, each phase MUST run via its `Skill()` (scope/tech-plan/tdd-design/build/critic/retro) — invoking it loads the procedure; the work still runs inline (not delegation). For autonomous goals (no human-in-loop requested), route directly without pausing to "suggest"; the goal directive already authorizes proceeding. When unsure which skills apply, run `skill-advisor` (propose→ratify shortlist).
 
 **Multi-round questioning** (006): when a prompt is ambiguous or a plan needs alignment, ask in rounds while genuine doubt remains — include lateral / improvement questions — rather than stopping at one round; converge and say so when no real doubt is left (calibrated, Commandment III). Use `drillme` for iteration mechanics. Principle: CLAUDE.md §Communication & Honesty Protocol.
 

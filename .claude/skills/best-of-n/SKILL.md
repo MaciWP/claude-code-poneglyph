@@ -1,19 +1,15 @@
 ---
 name: best-of-n
 description: |
-  Best-of-N verified pattern (PILOT, feature 019): run 2-3 headless
-  `claude -p --worktree` variants on ONE hard+testable task, select by running
-  the project test suite in each worktree (human diff-review as tiebreak),
-  clean up worktrees, and log the outcome to .claude/learned/best-of-n-log.md.
-  Eligibility is a GATE: only hard tasks (high expected single-attempt failure)
-  WITH a runnable check. Manual invocation per task — never a default mode.
-  Use when: hard task with a runnable test suite, single attempt likely to fail,
-  "best of n", "varios intentos", "intentos paralelos", "genera variantes",
-  user explicitly asks for parallel attempts on a hard problem.
+  Patrón best-of-N verificado (piloto, feature 019): corre 2-3 variantes headless (`claude -p --worktree`) sobre UNA tarea difícil y testeable, selecciona por la suite de tests del proyecto, limpia los worktrees y registra el resultado.
+  La elegibilidad es un GATE: solo tareas difíciles (alta probabilidad de fallo en un intento) CON check ejecutable. Invocación manual por tarea, nunca por defecto.
+  Úsala cuando: tarea difícil con suite ejecutable, un solo intento probablemente falle, "best-of-n", "varios intentos", "intentos paralelos", "genera variantes".
   Keywords - best-of-n, variants, attempts, worktree, parallel attempts,
   intentos, variantes, hard task, test-selected, sampling
 disable-model-invocation: false
 argument-hint: "\"<task prompt>\" [--n 2|3]"
+when_to_use: |
+  "varios intentos", "genera variantes", "intentos paralelos", "best of n", "try several solutions", "parallel attempts on a hard task"
 ---
 
 # best-of-n (pilot)

@@ -1,22 +1,14 @@
 ---
 name: build
 description: |
-  Implement ONE approved HU (Phase 3 of the 5-phase workflow).
-  Reads tasks/USX.md + tests.md/validations.md + state.json, identifies the next
-  HU (or specific via /build US{id}), Globs/Greps ejemplos del proyecto for style,
-  honors TDD-mode (red->green when forced or tdd: forced on the node; impl + suite
-  verify when tdd-skip or optional). Invokes AskUserQuestion on concrete doubts
-  (never improvises). Updates state.json on closure, reports next HU. Executes
-  INLINE in the main session (1 agent forbidden; ≥5 files still inline);
-  only ≥4 independent parallel units fan out via Workflow.
-  Closes a proportional intra-HU drillme (gap-gated, not a fixed count) before declaring done.
-  Use when: tasks/ approved + Phase 2.5 oracle approved + HU pending in state.json,
-  "build", "implementa", "ejecuta", "construye", "implement HU", "next HU",
-  after /tdd-design closes Phase 2.5, before /critic in Phase 4.
+  Implementa UNA HU aprobada (Fase 3 del workflow de 5 fases). Lee tasks/USX.md + tests.md/validations.md + state.json, identifica la siguiente HU (o una concreta vía /build US{id}), busca ejemplos del proyecto para el estilo, honra el TDD-mode (red→green si forced; impl + verificación de suite si optional). Invoca AskUserQuestion ante dudas concretas (nunca improvisa). Actualiza state.json al cerrar. Corre INLINE en la sesión principal.
+  Úsala cuando: tasks/ aprobado + oracle de Fase 2.5 aprobado + HU pendiente en state.json, "build", "implementa", "ejecuta", "construye", "siguiente HU", tras /tdd-design y antes de /critic.
   Keywords - build, implement, implementa, ejecuta, construye, develop, code, write,
   red-green, TDD, HU, story, story-executor, fase-3, phase-3, next-HU
 disable-model-invocation: false
 argument-hint: "[US{id}]"
+when_to_use: |
+  "implementa la HU", "construye esto", "ejecuta la tarea", "siguiente HU", "implement the story", "build it", "next HU"
 ---
 
 # Build (Phase 3)

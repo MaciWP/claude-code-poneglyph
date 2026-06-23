@@ -22,6 +22,17 @@ writeFileSync(
     "# drillme",
   ].join("\n"),
 );
+for (const [name, kw] of [
+  ["review-patterns", "refactor, solid, performance, slow, endpoint"],
+  ["tdd-design", "tests, tdd, oracle, test-design"],
+  ["skill-advisor", "skill-advisor, skills, shortlist, propón skills, which skills"],
+] as const) {
+  mkdirSync(join(fixtures, name), { recursive: true });
+  writeFileSync(
+    join(fixtures, name, "SKILL.md"),
+    ["---", `name: ${name}`, "description: |", `  ${name} fixture.`, `  Keywords - ${kw}`, "---", "", `# ${name}`].join("\n"),
+  );
+}
 const skills = loadSkills([fixtures]);
 
 describe("matchSkills + buildInjection — prompt with match (T12.1)", () => {
@@ -57,6 +68,45 @@ describe("processPayload — malformed payload is silent (T12.3)", () => {
 
   test("slash-command prompt is skipped (user already chose)", () => {
     expect(processPayload(JSON.stringify({ prompt: "/drillme algo" }), skills)).toBe("");
+  });
+
+  test("/flow is skipped — it self-routes its phase skills", () => {
+    expect(processPayload(JSON.stringify({ prompt: "/flow valida este plan" }), skills)).toBe("");
+  });
+});
+
+describe("processPayload — shortlist + skill-advisor (feature 023)", () => {
+  test("T2.1 non-trivial prompt → shortlist con motivo + skill-advisor", () => {
+    const out = processPayload(JSON.stringify({ prompt: "refactoriza el módulo de pagos aplicando SOLID" }), skills);
+    expect(out).toContain("Skill(review-patterns)");
+    expect(out).toContain("matched");
+    expect(out).toContain("Skill(skill-advisor)");
+  });
+
+  test("T2.2 '/goal <task>' se procesa (no se salta)", () => {
+    const out = processPayload(JSON.stringify({ prompt: "/goal escribe tests para el parser" }), skills);
+    expect(out).toContain("Skill(skill-advisor)");
+    expect(out).not.toBe("");
+  });
+
+  test("T2.2b '/goal' tarea de trabajo sin match → skill-advisor sí o sí", () => {
+    const out = processPayload(JSON.stringify({ prompt: "/goal añade un botón al formulario de login" }), skills);
+    expect(out).toContain("Skill(skill-advisor)");
+  });
+
+  test("T2.3 '/flow' y '/role' siguen saltándose", () => {
+    expect(processPayload(JSON.stringify({ prompt: "/flow valida este plan" }), skills)).toBe("");
+    expect(processPayload(JSON.stringify({ prompt: "/role security" }), skills)).toBe("");
+  });
+
+  test("T2.4 prompt trivial → vacío (sin ruido)", () => {
+    expect(processPayload(JSON.stringify({ prompt: "gracias" }), skills)).toBe("");
+  });
+
+  test("T2.5 presupuesto de líneas respetado (≤6)", () => {
+    const out = processPayload(JSON.stringify({ prompt: "refactor solid performance slow endpoint tests tdd" }), skills);
+    expect(out.split("\n").length).toBeLessThanOrEqual(6);
+    expect(out).toContain("Skill(skill-advisor)");
   });
 });
 

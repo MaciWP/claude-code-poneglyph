@@ -1,11 +1,13 @@
 ---
 name: meta-settings-cookbook
 description: |
-  Quick-reference templates for small Claude Code configurations: CLAUDE.md, settings.json, output styles, env vars, permissions.
-  Use proactively when: setting up project config, creating CLAUDE.md, configuring settings, adding permissions, creating output styles.
+  Plantillas de referencia rápida para configuraciones pequeñas de Claude Code: CLAUDE.md, settings.json, output styles, variables de entorno, permisos.
+  Úsala cuando: montar config de proyecto, crear CLAUDE.md, configurar settings, añadir permisos, crear output styles, "permisos", "settings.json", "env vars".
   Keywords - CLAUDE.md, settings, config, permissions, output style, env vars, setup
 disable-model-invocation: false
 argument-hint: "[config-type]"
+when_to_use: |
+  "configura CLAUDE.md", "permisos", "settings.json", "output style", "env vars", "configure permissions"
 ---
 
 # Quick Config

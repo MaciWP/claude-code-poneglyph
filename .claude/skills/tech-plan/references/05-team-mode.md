@@ -12,6 +12,8 @@ description: Team Mode Planning + Cross-Validation (Four-Eyes principle) — dom
 - [Team Mode Planning](#team-mode-planning)
 
 > **Post-feature-008 mapping** — the named agents in this doc (`planner`/`builder`/`reviewer`/`scout`) were **cut**. Team mode now uses generic **scoped teammates** (experimental, `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`); map `builder` → `build` skill / impl unit, `reviewer` → Phase 4 `critic` / review panel (≥4), `scout` → `Explore` (Haiku built-in), `planner` → `tech-plan` skill. The patterns (Four-Eyes generator→validator, domain boundaries, recovery loop) **remain valid** — only the agent names died. The generator→validator pattern is exactly what a `Workflow` `pipeline(items, find, verify)` encodes.
+>
+> **Spawn model (CC 2.1.178)** — there is **no setup step**: `TeamCreate`/`TeamDelete` were removed; with the flag set, every session has one **implicit team**. Spawn a teammate directly via the `Agent` tool's `name` parameter (the old `team_name` param is accepted but ignored). Permission rules can scope spawns with `Tool(param:value)` syntax, e.g. `Agent(model:opus)`.
 
 ## Cross-Validation (Four-Eyes Principle)
 

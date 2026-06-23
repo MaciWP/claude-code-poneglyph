@@ -1,22 +1,16 @@
 ---
 name: drillme
 description: |
-  Exhaustive Socratic interrogation — sweeps a decision/plan/output/doubt for gaps
-  and asks as many questions as it takes to close every one, in funnel rounds, baking
-  the answers into the active artefact. Hybrid activation: it runs wherever there is a
-  gap worth closing (information gain), and produces ZERO questions where nothing is
-  ambiguous (no ceremony on trivial work). Stops at saturation (no remaining question
-  would change the decision) or on answer degradation — never at a fixed count.
-  Use when: any non-trivial decision/plan/output, a gap or doubt blocks progress,
-  something could be specified better, before closing a phase or hard gate,
-  "drill", "drillme", "socratic", "clarify", "clarificar", "especificar mejor",
-  "no dejar gaps", "pregúntame todo", "interrógame", "valida", "cuestiona", "challenge".
+  Interrogatorio socrático exhaustivo: barre una decisión/plan/output/duda en busca de gaps y pregunta lo que haga falta para cerrarlos, en rondas embudo, integrando las respuestas en el artefacto activo. Activación híbrida: corre donde hay un gap que cerrar y produce CERO preguntas donde nada es ambiguo (sin ceremonia). Para en saturación, nunca en un número fijo.
+  Úsala cuando: cualquier decisión/plan/output no trivial, un gap o duda bloquea, antes de cerrar una fase o gate, "drill", "drillme", "clarifica", "especificar mejor", "no dejar gaps", "pregúntame todo", "interrógame", "valida", "cuestiona".
   Keywords - drill, drillme, socratic, 5-whys, first-principles, clarify, clarificar,
   gaps, gap, especificar mejor, define requirements, ambiguity, ambigüedad, dudas,
   valida, cuestiona, challenge, interrogate, antes-de-cerrar, antes-de-decidir,
   pregúntame, no dejar gaps, inversion, doubt, stuck, ambiguous
 disable-model-invocation: false
 argument-hint: "[contexto o pregunta]"
+when_to_use: |
+  "pregúntame lo que falte", "interrógame", "cierra gaps", "no dejes dudas", "clarify the decision", "drill this", "challenge the plan"
 ---
 
 # Drillme — Exhaustive Socratic Check

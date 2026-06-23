@@ -18,12 +18,13 @@ Default persona: a **senior full-stack engineer and technical advisor** — proa
 
 Two strict registers — never mix them:
 
-- **English — ALWAYS** for everything written into the repo: code, identifiers, tests, rules, skills, hooks, commands, output-styles, commits, docs, `CLAUDE.md`, and any instruction/prompt/template stored in a file.
+- **English — ALWAYS** for everything written into the repo: code, identifiers, tests, rules, skills (bodies), hooks, commands, output-styles, commits, docs, `CLAUDE.md`, and any instruction/prompt/template stored in a file. (Exception: skill **activation surface** — see below.)
 - **Spanish (es-ES) — communication with Oriol only**: the prose Claude speaks at runtime, in **natural Spanish from Spain** — complete sentences, no telegraphic compression, no translated-English calques (spec with examples: `output-styles/poneglyph.md`).
 
 Technical identifiers (names, commands, paths) stay in their original form regardless of register.
 
-> **By-design exception**: `output-styles/poneglyph.md` keeps its Spanish *examples* — they ARE the specification of the house style.
+> **By-design exception 1**: `output-styles/poneglyph.md` keeps its Spanish *examples* — they ARE the specification of the house style.
+> **By-design exception 2 (feature 023)**: the skill **activation surface** — the `description` and `when_to_use` frontmatter fields — is written in **es-ES**, because it is matched against Oriol's Spanish prompts and this is a personal Spanish-only config (§NOT). Technical identifiers (skill names, `hook`, `TDD`, `commit`, file paths) stay in their original form; the `Keywords -` label stays literal (the `skill-activation` hook parses it). The skill **body** (executor instructions) stays English. Enforced for new skills by `meta-create`.
 
 ### NOT
 
@@ -139,4 +140,4 @@ After each build step the Lead runs the relevant test command (`bun test ./.clau
 
 ## Glossary
 
-`sensitive: <reason>` (≥8 chars, sensitive-path declaration) · Arch H (Lead-directed skill Reads) · Confidence labels `[Seguro]`/`[Probable]`/`[Suposición]` · `/role <name>` (persona-framing, 13 roles). System inventory, directory map, execution modes, sync detail, history: `.claude/docs/system-inventory.md`.
+`sensitive: <reason>` (≥8 chars, sensitive-path declaration) · Arch H (Lead-directed skill Reads) · Confidence labels `[Seguro]`/`[Probable]`/`[Suposición]` · `/role <name>` (persona-framing, 13 roles). Entry points (`/flow` router · `/goal` persistence loop · `/role` persona · plain prompt) → routing & skill-activation map, system inventory, directory map, execution modes, sync detail, history: `.claude/docs/system-inventory.md`.

@@ -1,19 +1,14 @@
 ---
 name: tech-plan
 description: |
-  Technical plan from an approved spec.md (Phase 2 of the 5-phase workflow). Decomposes
-  scope into atomic user stories (HUs) with explicit DAG of dependencies, after obligatory
-  research (Context7 + WebFetch + project Grep). Produces tasks/index.md + N tasks/US{N}.md.
-  Honors test-policy.md to declare TDD-mode per node. Invokes tdd-design (Phase 2.5)
-  on close. Replaces the legacy planner-protocol skill (migrated 2026-05-28: 6 references
-  preserved here under references/, 2 cut as obsolete).
-  Use when: approved spec.md exists and technical decomposition needed, "tareas",
-  "roadmap", "descomponer", "HU", "atomizar", "DAG", or `/tech-plan` invoked.
-  Avoid the bare keyword "plan" — it collides with Claude Code's plan mode toggle.
+  Plan técnico a partir de un spec.md aprobado (Fase 2 del workflow de 5 fases). Descompone el alcance en historias de usuario (HUs) atómicas con un DAG explícito de dependencias, tras investigación obligatoria (Context7 + WebFetch + Grep del proyecto). Produce tasks/index.md + N tasks/US{N}.md. Honra test-policy.md por nodo. Invoca tdd-design (Fase 2.5) al cerrar.
+  Úsala cuando: existe spec.md aprobado y hace falta descomposición técnica, "tareas", "roadmap", "descomponer", "HU", "atomizar", "DAG", o /tech-plan. Evita la keyword suelta "plan" (colisiona con el modo plan de Claude Code).
   Keywords - tech-plan, tareas, roadmap, descomponer, HU, atomizar, DAG, dependencies,
   parallel waves, gap analysis, classification, planificar, plan-tecnico, phase-2, fase-2
 disable-model-invocation: false
 argument-hint: "[--quick|--standard|--full]"
+when_to_use: |
+  "descompón en tareas", "haz el roadmap", "atomiza en HUs", "plan técnico", "break into tasks", "technical plan", "build the DAG"
 ---
 
 # Tech-Plan (Phase 2)

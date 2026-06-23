@@ -1,8 +1,8 @@
 ---
 name: security-review
 description: |
-  OWASP Top 10 security audit for auth, input handling, and vulnerability detection.
-  Use when: CORS, rate limiting, input sanitization, secrets in code, token storage, OWASP compliance, pre-deployment check, auth review.
+  Revisión de seguridad de los cambios pendientes: secretos hardcodeados, validación de inputs en boundaries, vectores OWASP Top 10, superficie de amenaza.
+  Úsala cuando: el cambio toca auth/pagos/secretos/credenciales/crypto/sesión, "revisa la seguridad", "esto es seguro", "vulnerabilidad", "auth", "jwt", "secrets".
   Keywords - security, owasp, vulnerability, injection, xss, csrf, audit
 disable-model-invocation: false
 argument-hint: "[file-path or module]"
@@ -13,6 +13,8 @@ paths:
   - "**/middleware/**"
   - "**/*security*"
   - "**/*.env*"
+when_to_use: |
+  "revisa la seguridad", "esto es seguro", "vulnerabilidad", "auth/jwt/secrets", "security review", "is this secure", "threat surface"
 ---
 
 # Security Review Checklist

@@ -1,11 +1,13 @@
 ---
 name: review-patterns
 description: |
-  Code review patterns with two modes: quality (SOLID/DRY/smells/complexity/refactoring) and performance (bottlenecks, memory leaks, N+1, async).
-  Use when: refactoring, technical debt, code review, SOLID violations, code smells, duplication, slow endpoint, memory issues, N+1 queries, profiling, bottlenecks, async patterns.
+  Patrones de revisión de código en dos modos: calidad (SOLID/DRY/code smells/complejidad/refactor) y rendimiento (cuellos de botella, fugas de memoria, N+1, async).
+  Úsala cuando: refactor, deuda técnica, code review, violaciones SOLID, code smells, duplicación, endpoint lento, problemas de memoria, queries N+1, profiling, "refactoriza", "huele mal este código", "está lento".
   Keywords - code quality, SOLID, DRY, refactoring, complexity, performance, memory, N+1, bottleneck, leak, slow, latency, code smell, duplication, extract, simplify, decompose, clean code, maintainability, optimization, profiling
 disable-model-invocation: false
 argument-hint: "[file-path or module]"
+when_to_use: |
+  "refactoriza", "huele mal este código", "está lento", "deuda técnica", "code smell", "SOLID", "refactor", "performance bottleneck"
 ---
 
 # Review Patterns

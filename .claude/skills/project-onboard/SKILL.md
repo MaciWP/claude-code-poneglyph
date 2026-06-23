@@ -1,22 +1,14 @@
 ---
 name: project-onboard
 description: |
-  Bootstraps and personalizes the `.claude/` project layer of ANY work repo:
-  analyzes the codebase (stack, test runner, lint/build commands, conventions,
-  domain boundaries) and proposes a ratifiable component set — lean project
-  CLAUDE.md (≤100 lines), rules/test-policy.md with the right level,
-  project-specific skills, commands, path-scoped rules, MCP suggestions and
-  the discovered verification command wired in. Everything is a proposal the
-  user ratifies before writing (Commandment I). Works on repos with zero
-  .claude/ and in merge mode on repos that already have one.
-  Use when: starting work in a new repo, "configura claude para este
-  proyecto", "onboard this repo", "bootstrap .claude", "crea la capa de
-  proyecto", a work repo lacks CLAUDE.md/test-policy, or the project layer
-  is stale and needs regeneration.
+  Bootstrapea y personaliza la capa `.claude/` de CUALQUIER repo de trabajo: analiza el codebase (stack, test runner, comandos de lint/build, convenciones, dominios) y propone un set de componentes ratificable — CLAUDE.md de proyecto conciso, rules/test-policy.md con el nivel correcto, skills/commands específicos, rules por path, sugerencias MCP y el comando de verificación cableado. Todo es propuesta que el usuario ratifica.
+  Úsala cuando: empezar a trabajar en un repo nuevo, "configura claude para este proyecto", "onboard este repo", "bootstrap .claude", "crea la capa de proyecto".
   Keywords - onboard, onboarding, project-onboard, bootstrap, configura
   proyecto, capa de proyecto, project layer, setup claude, CLAUDE.md
   proyecto, test-policy, new repo, repo nuevo, personalizar claude
 argument-hint: "[repo path — defaults to cwd] [--merge if .claude/ exists]"
+when_to_use: |
+  "configura claude para este proyecto", "onboard este repo", "bootstrap .claude", "capa de proyecto", "setup claude for this repo"
 ---
 
 # Project Onboard

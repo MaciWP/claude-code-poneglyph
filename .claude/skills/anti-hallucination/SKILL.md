@@ -1,11 +1,13 @@
 ---
 name: anti-hallucination
 description: |
-  Validation patterns to prevent AI hallucinations about files, functions, and facts.
-  Use when: before claiming file exists, verify function signature, check API endpoint, validate import path, confidence below threshold, suggesting code changes without reading first.
+  Patrones de validación para prevenir alucinaciones sobre ficheros, funciones y hechos.
+  Úsala cuando: antes de afirmar que un fichero/función/endpoint/import existe, verificar una firma, comprobar una API, cuando la confianza esté por debajo del umbral, o antes de proponer cambios sin haber leído primero.
   Keywords - validate, verify, check, exists, hallucination, confidence, claim, assert, file exists, import path, function signature
 disable-model-invocation: false
 argument-hint: "[claim to validate]"
+when_to_use: |
+  "verifica antes de afirmar", "comprueba que existe", "esto existe", "no inventes", "validate the claim", "does X exist", "confidence below threshold"
 ---
 
 # Anti-Hallucination Patterns

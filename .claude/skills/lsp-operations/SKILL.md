@@ -1,10 +1,12 @@
 ---
 name: lsp-operations
 description: |
-  LSP operations reference for semantic code navigation and type-aware exploration.
-  Use when: find where function is defined, who calls this method, what type does this return, navigate to implementation, list all symbols in file, explore call hierarchy.
+  Referencia de operaciones LSP para navegación semántica de código y exploración con tipos.
+  Úsala cuando: encontrar dónde se define una función, quién llama a un método, qué tipo devuelve, navegar a la implementación, listar símbolos de un fichero, "dónde se define", "quién llama a esto", "find references", "go to definition".
   Keywords - definition, references, hover, symbols, implementation, calls, lsp, go to, find usages, who calls, type info
 disable-model-invocation: false
+when_to_use: |
+  "dónde se define", "quién llama a esto", "navega el código", "find references", "go to definition", "who calls this"
 ---
 
 # LSP Operations Skill

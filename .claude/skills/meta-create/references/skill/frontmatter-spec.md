@@ -17,7 +17,7 @@ Full spec for every field allowed in skill frontmatter. Read this when authoring
 | `type` | string | Yes | `knowledge-base` \| `encoded-preference` \| `workflow` \| `reference` \| `capability-uplift` |
 | `disable-model-invocation` | boolean | No | `true` = manual only (workflow), `false` = auto-trigger by keywords |
 | `argument-hint` | string | No | Args shown in autocomplete (e.g., `"[file-path or module]"`) |
-| `effort` | string | No | `low` (quick reference) \| `medium` (moderate analysis) \| `high` (deep audit) |
+| `effort` | string | No | `low` (quick reference) \| `medium` (moderate analysis) \| `high` (deep audit) \| `xhigh` (deepest reasoning — review/decision/escalation skills). Project doctrine: low by default, pin a higher value ONLY when the skill genuinely needs it (critic/decision-stress-test/escalate/security-review pin `xhigh`); otherwise omit and inherit the session effort. Never pin a value BELOW what the skill needs. |
 | `activation.keywords` | list | No | YAML list of keywords for auto-matching |
 | `for_agents` | list | No | Agents that benefit most from this skill |
 | `version` | string | No | Semantic version (default "1.0") |
@@ -43,16 +43,20 @@ A builder working on Django can self-invoke a `django-patterns` skill. A reviewe
 
 ## Description Format
 
-The `description` field should follow this three-line pattern:
+> **Language (feature 023, ratified 2026-06-23)**: the `description` and `when_to_use` fields — the skill **activation surface** — are written in **es-ES** (they are matched against Oriol's Spanish prompts; personal Spanish-only config). Technical identifiers (skill names, `hook`, `TDD`, `commit`, paths) stay in their original form; the `Keywords -` label stays literal (the `skill-activation` hook parses it); keywords themselves may be ES+EN. The skill **body** stays English. See CLAUDE.md §Language exception 2.
+
+The `description` field follows this pattern (es-ES prose, third person):
 
 ```yaml
 description: |
-  {One-line purpose statement}.
-  Use when: {trigger conditions}.
-  Keywords - {keyword1, keyword2, ...}
+  {Propósito en una línea, es-ES, tercera persona — "Propone…", "Genera…"}.
+  Úsala cuando: {condiciones de disparo en es-ES}.
+  Keywords - {keyword1, keyword2, ...}   # label literal; keywords ES+EN
+when_to_use: |
+  "frase-gatillo en español", "otra frase ES", "english technical phrase"
 ```
 
-This format is load-bearing: the global skill index extracts the "Use when:" and "Keywords -" lines for auto-matching.
+`description` + `when_to_use` combined ≤ 1.536 chars (Claude Code listing cap). Put load-bearing keywords EARLY. The pattern is load-bearing for auto-matching: the model selects on this prose alone.
 
 ## Validation Rules for Skill Name
 

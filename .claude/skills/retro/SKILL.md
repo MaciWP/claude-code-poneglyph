@@ -1,24 +1,15 @@
 ---
 name: retro
 description: |
-  Post-feature retrospective (Phase 5 of the 5-phase workflow). Captures
-  technical lessons, surfaces process friction, proposes
-  promotions to one of three scopes (global ~/.claude/ vs project .claude/ vs
-  memory-only), closes the living-spec loop by consuming `review.md.spec_drift`
-  classified by critic in Phase 4, and audits the 10 Commandments compliance.
-  Does NOT auto-edit spec.md for living-spec deltas — produces a diff proposal
-  for human approval. Closes the feature lifecycle by flipping spec.md +
-  tasks/index.md frontmatter to `status: closed`. Promotions also require
-  human approval before any file is written.
-  Use when: review.md APPROVED or APPROVED_WITH_WARNINGS, feature complete,
-  before declaring lifecycle done, after /critic in Phase 4, "retro",
-  "retrospectiva", "aprender", "qué hemos aprendido", "learn", "promote",
-  "promover", "living-spec".
+  Retrospectiva post-feature (Fase 5 del workflow de 5 fases). Captura lecciones técnicas, saca a la luz la fricción de proceso, propone promotions a uno de tres scopes (global ~/.claude/ vs proyecto .claude/ vs memoria), cierra el living-spec loop consumiendo el spec_drift clasificado por critic, y audita el cumplimiento de los 10 Commandments. NO auto-edita spec.md: produce un diff para aprobación humana. Cierra el lifecycle del feature.
+  Úsala cuando: review.md APPROVED o APPROVED_WITH_WARNINGS, feature completo, antes de declarar el lifecycle cerrado, tras /critic, "retro", "retrospectiva", "qué hemos aprendido", "promover".
   Keywords - retro, retrospectiva, aprender, learn, lecciones, lessons,
   promover, promotion, promote, living-spec, delta, commandments, closure,
   fase-5, phase-5
 disable-model-invocation: false
 argument-hint: "[--light|--standard|--full]"
+when_to_use: |
+  "retrospectiva", "qué hemos aprendido", "promueve aprendizajes", "retro", "lessons learned", "what to promote"
 ---
 
 # Retro (Phase 5)

@@ -1,8 +1,8 @@
 ---
 name: prompt-engineer
 description: |
-  Skill for prompt quality in four contexts: refining vague USER prompts, GENERATING new prompts when the user asks for one as output, reviewing PROMPTS-TO-AGENTS before Agent() delegation (Commandment VIII — optimal meta-prompting), and auditing inter-agent/skill communication for quality.
-  Use proactively when: refining a vague/ambiguous user prompt, generating a prompt on request, reviewing a prompt-to-agent before Agent() delegation, or auditing inter-agent/skill communication.
+  Skill para la calidad de prompts en cuatro contextos: refinar prompts vagos del USUARIO, GENERAR prompts nuevos cuando el usuario pide uno como output, revisar PROMPTS-A-AGENTES antes de delegar con Agent() (Commandment VIII), y auditar la comunicación inter-agente/skill.
+  Úsala cuando: refinar un prompt vago/ambiguo, generar un prompt a petición, revisar un prompt-a-agente antes de Agent(), "genera un prompt", "mejora este prompt", "redacta el prompt de".
   Keywords - prompt, prompts, generar prompt, genera prompt, crea prompt, redacta prompt, escribe prompt, mejorar prompt, refine prompt, vague prompt, ambiguous, delegate agent, invoke agent, agent prompt, subagent prompt, meta-prompting, prompt engineering, write a prompt, create a prompt
 when_to_use: |
   - The user submits a vague or ambiguous prompt and refinement would lift quality (score < 70 on the rubric, missing success criteria, multiple interpretations).

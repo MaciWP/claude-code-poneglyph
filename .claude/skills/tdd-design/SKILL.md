@@ -1,20 +1,14 @@
 ---
 name: tdd-design
 description: |
-  Test/validation design BEFORE implementation (Phase 2.5 of the 5-phase workflow).
-  Reads approved tasks/ (HUs) and produces ONE of two artefacts per HU based on
-  the nature of its files: tests.md (TDD-mode) when the HU produces executable code,
-  or validations.md (validation-mode) when the HU produces markdown/skills/docs/
-  configs. Honors .claude/rules/test-policy.md to declare TDD-mode (forced/adaptive/
-  optional). Closes with hard gate 2->3 alongside tasks/. Mixed HUs go to whichever
-  mode fits per-HU.
-  Use when: approved tasks/ ready and oracle design pending, "TDD", "tests",
-  "test design", "specifica tests", "validations", "valida HU", "oracle design",
-  after tech-plan closes Phase 2, before Phase 3 (build).
+  Diseño de tests/validaciones ANTES de implementar (Fase 2.5 del workflow de 5 fases). Lee las tasks/ aprobadas y produce UNO de dos artefactos por HU según la naturaleza de sus ficheros: tests.md (TDD-mode) cuando la HU produce código ejecutable, o validations.md (validation-mode) cuando produce markdown/skills/docs/configs. Honra test-policy.md. Cierra con el hard gate 2→3.
+  Úsala cuando: tasks/ aprobado y oracle pendiente, "TDD", "tests", "diseña los tests", "especifica el oracle", "validaciones", tras /tech-plan y antes de /build.
   Keywords - TDD, tests, test-design, specifica-tests, oracle, validations,
   validation-mode, red-green, property-based, phase-2.5, fase-2.5
 disable-model-invocation: false
 argument-hint: "[--tdd|--validation|--auto]"
+when_to_use: |
+  "diseña los tests", "especifica el oracle", "qué valido de esta HU", "validaciones", "test design", "TDD", "what to assert"
 ---
 
 # TDD-Design (Phase 2.5)

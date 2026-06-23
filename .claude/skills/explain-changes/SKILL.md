@@ -1,11 +1,13 @@
 ---
 name: explain-changes
 description: |
-  Educational skill that explains code changes in depth — files, commits, branches, or working-tree pending edits — with verification against official documentation. Returns structured "professor-mode" reports with numbered points, logical chain of changes, and pre-anticipated Q&A.
-  Use when: user asks to understand changes, learn from a diff/commit/PR, onboard onto unfamiliar code, audit recent edits, "explicame que hace este cambio", "ensename que cambio".
+  Skill educativa que explica cambios de código en profundidad — ficheros, commits, ramas o ediciones pendientes del working-tree — verificando contra documentación oficial. Devuelve informes en "modo profesor" con puntos numerados, cadena lógica de cambios y Q&A anticipado.
+  Úsala cuando: hay que entender cambios, aprender de un diff/commit/PR, onboarding sobre código no familiar, auditar ediciones recientes, "explícame este cambio", "enséñame qué cambió", "qué hace este diff".
   Keywords - explain, explicar, learn, understand, walkthrough, diff, changes, what does this do, why this change, onboarding, code review educational, ensename
 disable-model-invocation: false
 argument-hint: "[file | commit-hash | branch | --pending (default)]"
+when_to_use: |
+  "explícame este cambio", "qué hace este diff", "enséñame", "explain this change", "walk me through", "onboarding"
 ---
 
 # explain-changes

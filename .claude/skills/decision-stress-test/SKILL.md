@@ -1,12 +1,14 @@
 ---
 name: decision-stress-test
 description: |
-  Stress-tests technical decisions before commitment via 5-12 perspectives in parallel (Outsider, Adversary, Simplifier, Maintainer, Linus, Cost Optimizer, Performance, Operator, Karpathy, Security, Product, User) with cross-debate rounds, plus 5 adversarial techniques (Steel-Man, Assumption Audit, Pre-Mortem, Inversion, Second-Order Effects), calibrated by stakes, with anti-hallucination verification on every finding.
-  Use when: about to commit to architecture/library/framework choice, want to challenge a proposed solution, suspect agreement bias from Claude, need structured pros/cons before deciding.
+  Somete a estrés una decisión técnica antes de comprometerse, mediante 5-12 perspectivas en paralelo (Outsider, Adversary, Simplifier, Maintainer, Linus, Cost, Performance, Operator, Karpathy, Security, Product, User) con rondas de cross-debate, más 5 técnicas adversariales (Steel-Man, Assumption Audit, Pre-Mortem, Inversion, Second-Order), calibrado por stakes, con verificación anti-alucinación en cada finding.
+  Úsala cuando: a punto de comprometer una elección de arquitectura/librería, quieres cuestionar una solución propuesta, sospechas sesgo de complacencia, "cuestiona esta decisión", "abogado del diablo", "pre-mortem", "estoy seguro de esto".
   Keywords - stress-test, challenge this decision, devils-advocate, contrarian analysis, steel-man, pre-mortem, before-deciding, before-committing, antes-de-decidir, cuestiona esta decisión, stress-testea
 disable-model-invocation: false
 argument-hint: "<decision or proposal to stress-test>"
 effort: xhigh
+when_to_use: |
+  "cuestiona esta decisión", "stress-test esto", "abogado del diablo", "pre-mortem", "estoy seguro de esto", "challenge this decision", "devil's advocate"
 ---
 
 # Decision Stress-Test

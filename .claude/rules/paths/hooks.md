@@ -26,7 +26,7 @@ Reliability matters because PreToolUse/PostToolUse may silently fail to fire (op
 | PreToolUse | Before tool | Unreliable (#6305) | — (none registered) — best-effort only |
 | PostToolUse | After tool | Unreliable (#6305) | `code-validator.ts` — best-effort only |
 | Stop | End of turn | Reliable | `security-gate.ts` + `learning-inbox.ts` — quality gate (security warn + learning capture) |
-| UserPromptSubmit | On prompt submit | Reliable as event (gap early-session/post-compaction, #17277) | `skill-activation.ts` — injects `Skill(<name>)` on keyword match; best-effort layer |
+| UserPromptSubmit | On prompt submit | Reliable as event (gap early-session/post-compaction, #17277) | `skill-activation.ts` — injects `Skill(<name>)` on keyword match; best-effort layer. Skips ALL slash commands (incl. `/goal` — it runs as the Lead, which has the always-loaded routing core and can invoke `Skill()` itself; no injected hint needed) |
 | InstructionsLoaded | On instruction load | Reliable as event | `instructions-loaded.ts` (async) — logs every CLAUDE.md/rules load (load-layer proof) |
 | SubagentStop | End of subagent | Reliable as event | — (none registered) |
 | StopFailure | API error (rate limit, auth) | — | — |

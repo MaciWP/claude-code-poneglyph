@@ -1,11 +1,13 @@
 ---
 name: html-report
 description: |
-  Turns poneglyph markdown outputs (report.md / retro.md / review.md / any audit/scoring/findings content) into a self-contained, dark/light HTML document — editorial aesthetic, offline-capable. Renders as a long-form report (sticky TOC) or a dashboard, composing a fixed 9-component inventory over an inlined token block. Also runs a critique/audit mode reviewing HTML/CSS for AI-slop tells and WCAG violations. Uses the builtin `frontend-design` skill + a vetted taste corpus (references/).
-  Use when: present a report visually, render markdown to HTML, generate a dashboard, critique/audit an HTML or design for AI-slop tells or contrast, "visualiza esto", "pásalo a HTML", "haz un informe visual", "critica este HTML", "audita el diseño".
+  Convierte outputs markdown de poneglyph (report.md / retro.md / review.md / cualquier contenido de auditoría/scoring/findings) en un documento HTML autocontenido, dark/light, offline — estética editorial. Renderiza como informe long-form (TOC sticky) o dashboard. También tiene modo crítica/auditoría que revisa HTML/CSS por tells de AI-slop y violaciones WCAG.
+  Úsala cuando: presentar un informe visualmente, renderizar markdown a HTML, generar un dashboard, criticar/auditar un HTML o diseño, "visualiza esto", "pásalo a HTML", "haz un informe visual", "critica este HTML".
   Keywords - html, report, visual, present, dashboard, render, presentación, visualizar, informe-visual, pásalo-a-html, self-contained, gauge, scoring, findings, audit-html, retro-html, review-html, critique, audit, design-review, anti-slop, taste, wcag, contrast
 disable-model-invocation: false
 argument-hint: "<markdown file or 'report'|'dashboard' + content, or 'critique' + target>"
+when_to_use: |
+  "pásalo a HTML", "informe visual", "dashboard", "visualiza esto", "render to HTML", "critica este diseño", "audita el HTML"
 ---
 
 # html-report
