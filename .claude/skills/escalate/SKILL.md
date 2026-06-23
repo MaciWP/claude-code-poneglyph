@@ -38,6 +38,7 @@ Do NOT fire on a first failure — that's ordinary `diagnostic-patterns` territo
 3. **Switch technique, don't repeat.** Load and apply a method you have NOT used yet:
    - `Skill('diagnostic-patterns')` — 5 Whys, stack-trace classification, retry/recovery
    - `Skill('drillme')` — inversion / first-principles to surface a wrong assumption
+   - `Skill('skill-advisor')` — when the untried lever might be a skill you haven't reached for: propose→ratify a shortlist and apply the one not yet used (the change-of-attack IS often a change-of-tool)
    - Re-read the primary source (file/spec/docs) rather than reasoning from memory
 4. **One deep xhigh pass.** This skill already runs at xhigh; spend it on the new attack, not a louder version of the old one.
 5. **Hand back.** If solved → report the root cause + fix. If still unsolved after the xhigh pass → STOP → `AskUserQuestion` with: what was tried, why each failed, and the 2-3 viable next options (`error-recovery.md` §Stuck Detection).

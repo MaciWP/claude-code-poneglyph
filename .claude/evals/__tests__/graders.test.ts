@@ -5,6 +5,8 @@ import {
   blufPosition,
   labelPresence,
   skillTriggerParse,
+  calqueDetect,
+  graders,
 } from "../graders";
 import { runOffline } from "../run";
 import { join } from "node:path";
@@ -82,6 +84,21 @@ describe("labelPresence (T3.7)", () => {
     expect(r.pass).toBe(false);
     expect(r.detail).toContain("payload");
   });
+
+  test("label wrapped in inline backticks is found (spec writes labels in backticks)", () => {
+    const r = labelPresence(
+      "No puedo saberlo sin comprobarlo `[Suposición — verificar en el handler de auth]`.",
+      { expected: "payload-required" },
+    );
+    expect(r.pass).toBe(true);
+  });
+
+  test("a label illustrated inside a fenced code block does NOT count as a real label", () => {
+    const r = labelPresence("```\n[Probable — ejemplo dentro de código]\n```\nTexto sin label real.", {
+      expected: "payload-required",
+    });
+    expect(r.pass).toBe(false);
+  });
 });
 
 describe("skillTriggerParse (T3.8-T3.9)", () => {
@@ -104,6 +121,33 @@ describe("skillTriggerParse (T3.8-T3.9)", () => {
   test("T3.9 malformed JSONL line tolerated", () => {
     const corrupt = ["{not json at all", skillEvent].join("\n");
     expect(skillTriggerParse(corrupt, { expected: "scope" }).pass).toBe(true);
+  });
+});
+
+describe("calqueDetect (T2.1-T2.5)", () => {
+  test("T2.1 fails on calque and names it", () => {
+    const r = calqueDetect("Esto hace sentido porque el hook ya existe.");
+    expect(r.pass).toBe(false);
+    expect(r.detail.toLowerCase()).toContain("hace sentido");
+  });
+
+  test("T2.2 passes on clean es-ES prose", () => {
+    const r = calqueDetect("Tiene lógica porque el hook ya existe. Actualizo la configuración.");
+    expect(r.pass).toBe(true);
+  });
+
+  test("T2.3 literal-quote exception: calque inside quotes is exempt", () => {
+    const r = calqueDetect('El usuario escribió "voy a proceder a borrarlo" pero no lo hizo.');
+    expect(r.pass).toBe(true);
+  });
+
+  test("T2.4 fenced-code exception: calque inside a code block is exempt", () => {
+    const r = calqueDetect("```\n// es debido a que\n```\nTexto limpio sin calques.");
+    expect(r.pass).toBe(true);
+  });
+
+  test("T2.5 registered in graders map", () => {
+    expect(typeof graders["calqueDetect"]).toBe("function");
   });
 });
 

@@ -25,6 +25,14 @@ export function stripCode(text: string): string {
   return text.replace(/```[\s\S]*?```/g, " ").replace(/`[^`\n]*`/g, " ");
 }
 
+/** Remove fenced code blocks ONLY — keep inline `code`. Used by labelPresence, because
+ * the house style writes confidence labels in inline backticks (`[Suposición — …]`), so
+ * stripping inline code would hide a perfectly valid label (false negative). Fenced blocks
+ * are still stripped: a label illustrated inside a ```fence``` is an example, not a real one. */
+export function stripFenced(text: string): string {
+  return text.replace(/```[\s\S]*?```/g, " ");
+}
+
 /** Remove double-quoted and «» segments (literal quotes are exempt from style rules). */
 function stripQuoted(text: string): string {
   return text.replace(/"[^"\n]*"/g, " ").replace(/«[^»\n]*»/g, " ").replace(/“[^”\n]*”/g, " ");
@@ -52,6 +60,29 @@ export const bannedOpeners: Grader = (transcript) => {
     }
   }
   return { pass: true, detail: "no banned openers" };
+};
+
+// Translated-English calques from output-styles/poneglyph.md §Language (the spec's own
+// counter-examples). Multi-word anchors → low false-positive rate; single words like
+// "déjame" alone are legitimate Spanish and are NOT listed. Failure origin: 017 retro
+// (translated-English style debt). Code/quotes are stripped first (literal-quote exempt).
+const CALQUES = [
+  "voy a proceder a",
+  "hace sentido",
+  "haría sentido",
+  "déjame verificar",
+  "déjame comprobar",
+  "es debido a que",
+];
+
+export const calqueDetect: Grader = (transcript) => {
+  const prose = stripQuoted(stripCode(transcript)).toLowerCase();
+  for (const phrase of CALQUES) {
+    if (prose.includes(phrase)) {
+      return { pass: false, detail: `calque present: "${phrase}"` };
+    }
+  }
+  return { pass: true, detail: "no calques" };
 };
 
 // Minimal stopword lists — enough signal to separate es-ES prose from English prose.
@@ -96,7 +127,7 @@ export const blufPosition: Grader = (transcript) => {
 const LABEL_RE = /\[(Seguro|Probable|Suposición)(\s*—\s*[^\]]+)?\]/gu;
 
 export const labelPresence: Grader = (transcript, caseSpec) => {
-  const prose = stripCode(transcript);
+  const prose = stripFenced(transcript);
   const matches = [...prose.matchAll(LABEL_RE)];
   if (matches.length === 0) {
     return { pass: false, detail: "no confidence label found" };
@@ -137,4 +168,5 @@ export const graders: Record<string, Grader> = {
   blufPosition,
   labelPresence,
   skillTriggerParse,
+  calqueDetect,
 };

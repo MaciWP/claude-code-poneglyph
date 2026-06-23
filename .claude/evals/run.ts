@@ -76,8 +76,16 @@ export async function runLive(casesPath: string): Promise<Report> {
   for (const c of cases) {
     const trials = c.trials && c.trials > 1 ? Math.min(c.trials, 3) : 1;
     const transcripts: string[] = [];
+    // Style/honesty/register graders score the PROSE response — they don't need the
+    // agentic tool loop, which makes each case a multi-minute session (4 timeouts in 024).
+    // Force a single prose turn for them. skillTriggerParse is the exception: it asserts a
+    // real Skill() tool_use, so it MUST keep tools enabled.
+    const proseOnly = c.grader !== "skillTriggerParse";
+    const proseFlags = proseOnly
+      ? ["--append-system-prompt", "Responde directamente en prosa. NO uses herramientas ni leas ficheros; responde desde tu conocimiento.", "--allowedTools", ""]
+      : [];
     for (let i = 0; i < trials; i++) {
-      const proc = Bun.spawn(["claude", "-p", c.prompt ?? "", "--output-format", "stream-json", "--verbose"], {
+      const proc = Bun.spawn(["claude", "-p", c.prompt ?? "", "--output-format", "stream-json", "--verbose", ...proseFlags], {
         stdout: "pipe",
         stderr: "pipe",
       });
