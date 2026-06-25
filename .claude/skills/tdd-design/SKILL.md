@@ -61,6 +61,10 @@ CLI override: `--tdd` / `--validation` / `--auto` (default = auto-detect by `fil
 4. Read each `tasks/US{N}.md` (frontmatter + `files` field + AC).
 5. Read `.claude/rules/test-policy.md`. If absent → treat as `auxiliary` + warn user.
 6. Read `.claude/plans/templates/tests.template.md` and `validations.template.md` (verify exist via Glob).
+7. **Discover the project's test conventions** (TDD-mode only — the oracle must reuse existing test infrastructure, never reinvent it):
+   - Inventory shared fixtures/factories/helpers: `Glob **/conftest.py`, `**/factory*.py`, `**/factories.py`, `**/fixtures/**`, test setup/helper files (`*.fixture.*`, `setup-tests.*`, `testUtils*`). List what already exists.
+   - Load any project test-conventions skill if present (e.g. `django-testing-patterns`, `*-testing-*`, `*-test-standards`) — **its rules override these generic ones**; this generic skill defers to the project's encoded best-practices.
+   - Note the fixture catalog + naming so Step 4 references existing fixtures by name (`pytest --fixtures` lists them). Never design a test whose setup re-creates data an existing fixture/factory already provides.
 
 ### Step 2 — Declare TDD-mode resolution
 
@@ -107,6 +111,8 @@ Declare classification in output: per-HU one-liner like `US3: TDD-mode (creates 
 ```
 
 Each TDD-mode HU receives ≥1 happy path + ≥1 edge case. If HU has invariants (parsers, pure transforms), suggest property-based opt-in (T{N}.3 with `invariant` + `generator`) — evidence +23-37% effectiveness over plain TDD (arxiv 2506.18315).
+
+**Reuse project test infrastructure (from Step 1.7)**: the `Pre-condition`/setup of each test must reference EXISTING fixtures/factories/helpers by name (the discovered catalog), not imply new ad-hoc data. Only specify a new fixture when none covers the case — and say so explicitly (`new fixture needed: <name> — no existing fixture provides <X>`) so Phase 3 `build` adds it at the correct shared level (closest conftest / shared helper), not duplicated inline. This carries into `build`: the project's test-conventions skill governs how the test code is actually written.
 
 **validation-mode HU** — produce in `validations.md`:
 
@@ -184,15 +190,17 @@ The skill does NOT proceed to Phase 3.
 - Honest "untestable" declaration for HUs without natural oracle; never invent synthetic tests.
 - Honor `.claude/rules/test-policy.md` for TDD-mode declaration; warn if absent.
 - Mention non-atomic HUs as smell signals (>30% untestable → reopen Phase 2).
+- Reuse the project's existing test infrastructure (fixtures, factories, helpers from Step 1.7); never design a setup that duplicates data an existing fixture provides. Defer to the project's test-conventions skill where one exists.
 
 ## Auxiliary skills invoked
 
-> Canonical matrix in `.claude/plans/001-poneglyph-5phase-workflow/tasks/index.md §Auxiliary skills matrix`. Row below is the literal subset that applies to this Phase 2.5 skill.
+> Canonical matrix in `.claude/docs/auxiliary-skills-matrix.md`. Row below is the literal subset that applies to this Phase 2.5 skill.
 
 | Auxiliary skill | When this skill invokes it | Fallback if skill->skill fails |
 |---|---|---|
 | `anti-hallucination` | Before referencing any function/module/path in a test or validation — must exist or be in the HU's planned `files` | Lead applies Glob/Grep/LSP manually before the test/validation is finalized |
 | `drillme` | Before closing Phase 2.5 — applies 3 phase-specific questions + canonical Socratic catalog | Lead invokes `/drillme "Phase 2.5 oracle design for <NNN-slug>"` manually before approving hard gate 2->3 |
+| Project test-conventions skill (e.g. `django-testing-patterns`) | TDD-mode Step 1.7 — load it to inherit the project's fixture philosophy, factory usage, and anti-duplication rules; its specifics override this generic skill | Lead Globs `**/conftest.py`/`**/factory*.py` and reads the existing test suite manually to mirror its conventions |
 
 > Skill-to-skill invocation is **probabilistic** per docs Anthropic + [issue #59968](https://github.com/anthropics/claude-code/issues/59968). Phase 2.5 is the most focused phase — only 2 auxiliaries truly apply. Other auxiliaries (e.g., `decision-stress-test`) belong to other phases and would be ceremony here.
 
@@ -233,6 +241,7 @@ Declare adaptation in output frontmatter notes: "Mode auxiliary minimal — happ
 | Synthetic oracle | Test invented that doesn't trace to any AC | Every test must trace to an AC; if not, remove |
 | Skip without reason | `tdd-skip` on HU without ≥10 char concrete reason | Reject; ask user for concrete reason or remove skip |
 | Coverage padding | Adding T{N}.3 property-based for an HU with no real invariants | Honest 2/2 tests > artificial 3/2 |
+| Duplicate fixture | Test setup re-creates data an existing fixture/factory already provides (Step 1.7 catalog ignored) | Reference the existing fixture by name; only declare a new one when none covers the case, at the correct shared level |
 
 ## Commandments cubiertos
 

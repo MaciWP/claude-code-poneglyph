@@ -149,7 +149,7 @@ Test: "does the agent need this in EVERY prompt?" — no → skill.
 | `ccstatusline/` | Statusline module wired via settings (synced to `~/.config/ccstatusline/`) | live |
 | `config/` | `cost-budget.json` — phantom config nothing read | **deleted 2026-06-11** |
 | `data/`, `agent-memory/` | Telemetry remnants / empty dir | **deleted 2026-06-10 (017/US5)** |
-| `plans/_archive/` | Closed/abandoned plans (gitignored, on disk only). 017 + 019 archived 2026-06-11; 001 + 018 stay tracked (live references: 001 auxiliary matrix ← 7 skills; 018 decision-memos ← best-of-n, research-rigor) | archive since 017/US6 |
+| `plans/_archive/` | Closed/abandoned plans (gitignored, on disk only). 017 + 019 archived 2026-06-11; 020 + 023 archived 2026-06-23; **001 + 018 + 021 + 022 archived 2026-06-24** after relocating their last live-referenced files (MIGRAR-Y-CUT): 001 auxiliary matrix → `docs/auxiliary-skills-matrix.md`; 018 decision-memo-W1 → `skills/best-of-n/references/`; 021 decision-memo → `skills/orchestrator-protocol/references/09-loops-analysis-source.md`; 022 decision-memo → `skills/project-onboard/references/graph-tooling-decision.md`. `_archive/` now has **zero functional dependents** — only historical prose cites archived plans by name. Active `plans/` holds only in-flight features + `templates/` + the two `_research-*` files | archive since 017/US6 |
 
 ## MCP servers (session-connected) — decision 2026-06-10 (017/US8)
 
@@ -163,7 +163,7 @@ Activation/observability hooks (017/US12, event verified in official hooks docs 
 
 ## History
 
-- **5-phase workflow refactor (W1-W5, 2026-05-28)**: W1 plan structure + 8 templates · W2 7 new skills (6 phase + drillme; planner-protocol MIGRATE-AND-CUT) · W3 `/flow` + orchestrator-protocol SIMPLIFY · W4 CLAUDE.md update · W5 dogfooding + retro. Detail: `.claude/plans/001-poneglyph-5phase-workflow/`.
+- **5-phase workflow refactor (W1-W5, 2026-05-28)**: W1 plan structure + 8 templates · W2 7 new skills (6 phase + drillme; planner-protocol MIGRATE-AND-CUT) · W3 `/flow` + orchestrator-protocol SIMPLIFY · W4 CLAUDE.md update · W5 dogfooding + retro. Detail archived under `.claude/plans/_archive/001-poneglyph-5phase-workflow/` (historical; the live auxiliary matrix now lives at `docs/auxiliary-skills-matrix.md`).
 - **Feature 006 (2026-06-08)**: always-on honesty layer + base role senior engineer-advisor + `/role` (13 roles).
 - **Feature 008 (2026-06-05/09)**: builder/reviewer/scout agents cut; spawn decision tree canonical in orchestrator-protocol. The W2 KEEP-cond decisions for builder/reviewer were superseded here; `review-patterns` KEEP still holds.
 - **Feature 012**: `skill-advisor` (turn-level propose→validate skill routing).
@@ -171,4 +171,4 @@ Activation/observability hooks (017/US12, event verified in official hooks docs 
 - **Feature 018 (2026-06-10, closed)**: evidence roadmap — 5 research waves, decision memos W1-W5, roadmap 019+.
 - **Feature 019 (2026-06-10, closed, archived)**: quality gates — critic fresh-context reviewer (panel → decisions only), evals harness, best-of-n pilot.
 - **Polish & prune (2026-06-11)**: dead-weight deletions (cost-budget, 2 docs, dead `skill-advisor` section in CLAUDE.md, 3 stale LINK_FOLDERS), plans archive policy executed, doctrine-sweep protocol (meta-create reference), failure→eval-case wiring in retro, flow-state helper.
-- Audit trail: `.claude/plans/002-claude-config-deep-audit/report.md` + audit 011.
+- Audit trail: the 002 config audit (archived; sample render preserved at `.claude/skills/html-report/examples/sample-audit-report.md`) + audit 011.

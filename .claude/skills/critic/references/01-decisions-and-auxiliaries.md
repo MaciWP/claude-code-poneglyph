@@ -29,7 +29,7 @@ Extracted verbatim from `SKILL.md` (017/US9 — mechanical move, no content rede
 
 ## Auxiliary skills invoked
 
-> Canonical matrix in `.claude/plans/001-poneglyph-5phase-workflow/tasks/index.md §Auxiliary skills matrix`. Row below is the literal subset that applies to this Phase 4 skill.
+> Canonical matrix in `.claude/docs/auxiliary-skills-matrix.md`. Row below is the literal subset that applies to this Phase 4 skill.
 
 | Auxiliary skill | When this skill invokes it | Fallback if skill->skill fails |
 |---|---|---|

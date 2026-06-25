@@ -276,3 +276,12 @@ Full detection signals and corrections in `${CLAUDE_SKILL_DIR}/references/04-ant
 | `review-patterns` | Different scope: `review-patterns` reviews implementation; `decision-stress-test` reviews the decision before implementation |
 | `security-review` | Different scope: `security-review` audits existing code; `decision-stress-test` includes Security as one perspective among 11 when stakes are High |
 | `prompt-engineer` | If the user's input to this skill is too vague to triage, the invoker may use `prompt-engineer` to refine before spawning perspectives |
+
+## Commandments cubiertos
+
+| # | Cómo |
+|---|---|
+| I | Adversarial perspectives counter sycophancy — the decision is challenged, not validated |
+| II | Per-finding anti-hallucination Verification Gate; no speculative objections |
+| V | Stress-tests the decision (understand) before commitment, not the implementation |
+| VII | Perspective count is stakes-calibrated (5-12) — no fixed over-spend on low-stakes calls |

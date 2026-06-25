@@ -29,4 +29,4 @@ Objective · numbered tasks · constraints (tiers, quote-anchors, UNVERIFIED, co
 
 ## Provenance
 
-Feature 018-evidence-roadmap (5 workstreams, 21 agents, verdict APPROVED_WITH_WARNINGS). Detail: `.claude/plans/018-evidence-roadmap/{spec,review,retro}.md`.
+Feature 018-evidence-roadmap (5 workstreams, 21 agents, verdict APPROVED_WITH_WARNINGS). Detail archived under `.claude/plans/_archive/018-evidence-roadmap/{spec,review,retro}.md` (historical — read only for provenance).

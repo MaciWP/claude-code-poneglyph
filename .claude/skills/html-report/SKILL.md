@@ -68,7 +68,7 @@ graph TD
 
 ### Step 1 — Read the input
 
-- If the argument is a **path** (e.g. `.claude/plans/002-…/report.md`, a `retro.md`, a `review.md`): Read it fully — frontmatter + every section. Frontmatter carries the headline numbers (`mean_score`, `findings_count`, `corpus_size`, `review_verdict`, `commit_sha`, `mode`, dates) that feed the metadata-header (C8) and gauge (C1).
+- If the argument is a **path** (e.g. `examples/sample-audit-report.md`, a `retro.md`, a `review.md`): Read it fully — frontmatter + every section. Frontmatter carries the headline numbers (`mean_score`, `findings_count`, `corpus_size`, `review_verdict`, `commit_sha`, `mode`, dates) that feed the metadata-header (C8) and gauge (C1).
 - If the argument is **`report` / `dashboard` + inline content**: treat the inline content as the body; ask for any missing headline numbers only if genuinely absent.
 - If the argument is **`critique` + a target** (an HTML path or pasted CSS): skip generation — load `references/critique-mode.md` and review the target.
 - Map every markdown block to a component **before** rendering — no orphan content. See §"report.md walkthrough" below for the canonical block→component table; the same logic applies to `retro.md` / `review.md`.
@@ -89,7 +89,7 @@ When unsure, default to `report` (long-form loses no information; dashboard comp
 >
 > **Diagrams / charts — hybrid SVG-first**: compose inline SVG by hand for simple flows/comparisons/charts (self-contained, 0 JS, like the gauge/sevbar); `mermaid.js` runtime is an **opt-in declared exception** for complex graphs only (no `mmdc` in this env). Patterns + decision rule: `references/visuals-svg-first.md`.
 >
-> **shadcn components + interactivity** (badges/alert/separator/progress/skeleton/empty-state + tabs/tooltips CSS-only + command JS-opt-in + `:focus-visible` ring): canonical reference render at `.claude/plans/007-report-template-v2/smoke-components-shadcn.html`. Baking into `components.html` + wiring into glance/decision is a tracked future evolution (state.json `scope-extra`).
+> **shadcn components + interactivity** (badges/alert/separator/progress/skeleton/empty-state + tabs/tooltips CSS-only + command JS-opt-in + `:focus-visible` ring): patterns live in `templates/components.html`. Baking the full set into `components.html` + wiring into glance/decision is a tracked future evolution.
 
 ### Step 3 — Design quality: frontend-design + taste corpus (AC5)
 
@@ -112,7 +112,7 @@ Then **load the taste corpus** for the measurable bar: `references/taste-hard-ru
 ### Step 5 — Pre-flight gate, then write the self-contained `.html`
 
 - **5a — Pre-flight gate**: run `references/pre-flight-checklist.md` against the composed output. Any failed item → fix before writing (gate semantics).
-- **5b — Write**: output path next to the source (e.g. `…/002-claude-config-deep-audit/report.html`) or in cwd if the input was inline. One file. All CSS in one inlined `<style>`. Charts = inline SVG (gauge) + CSS flex (severity-bar) + CSS width (progress-bars). No CDN, no JS framework. **One Google Fonts `<link>` is allowed** (the v1.2.0 client-grade decision — Geist + Newsreader + Geist Mono); do NOT delete it. For pure-offline, omit the `<link>` and let the system-stack fallback render. Use the `Write` tool. Do not split into multiple files.
+- **5b — Write**: output path next to the source (e.g. a `report.md` input → `report.html` alongside it) or in cwd if the input was inline. One file. All CSS in one inlined `<style>`. Charts = inline SVG (gauge) + CSS flex (severity-bar) + CSS width (progress-bars). No CDN, no JS framework. **One Google Fonts `<link>` is allowed** (the v1.2.0 client-grade decision — Geist + Newsreader + Geist Mono); do NOT delete it. For pure-offline, omit the `<link>` and let the system-stack fallback render. Use the `Write` tool. Do not split into multiple files.
 
 ### Step 6 — Optionally open it
 
@@ -154,9 +154,9 @@ When asked to **critique/audit** an HTML/CSS or a render: load `references/criti
 
 ## Verification (smoke test)
 
-The canonical smoke test: render the real audit at `.claude/plans/002-claude-config-deep-audit/report.md`.
+The canonical smoke test: render the real audit at `.claude/skills/html-report/examples/sample-audit-report.md`.
 
-1. Render it with the `report` template → `…/002-claude-config-deep-audit/report.html`.
+1. Render it with the `report` template → `examples/sample-audit-report.html` (next to the input).
 2. **Open with network disabled** — everything except webfonts must render (Geist/Newsreader degrade to the system stack); the single Google Fonts `<link>` is the only network dependency.
 3. Verify against the frontmatter (`mean_score: 7.57`, `findings_count: 10`, `corpus_size: 17`, `review_verdict: APPROVED_WITH_WARNINGS`, `commit_sha: c2eb838`, `mode: full`):
    - Gauge (C1) shows `7.57 / 10`, `score--good`, arc offset 79.39.
@@ -210,4 +210,4 @@ Para informes **interactivos self-contained** (ver/presentar/compartir, PC+móvi
 
 ---
 
-**Version**: 1.3.0 — dynamic mode (generador determinista en `scripts/`: contract/theme/render/components/charts; JS self-contained con fallback sin-JS; charts híbridos Plot-opt-in; corrige el env-fact obsoleto de visuals-svg-first). · 1.2.0 — dashboard template redesigned (v7/v8): v5 serif-italic masthead + KPI-card body + **color = información** (score health on Mean/Median/Min, counts neutral), shadcn/Raycast language, **dark-first**, fonts Geist + Newsreader + Geist Mono (Google Fonts `<link>`; render no longer pure-offline by design — accepted for client-grade). Section heads = Geist semibold + number chip + hairline. Motion = single page fade. Taste corpus + critique mode (1.1.0) retained. Canonical reference render: `.claude/plans/002-claude-config-deep-audit/report.html`.
+**Version**: 1.3.0 — dynamic mode (generador determinista en `scripts/`: contract/theme/render/components/charts; JS self-contained con fallback sin-JS; charts híbridos Plot-opt-in; corrige el env-fact obsoleto de visuals-svg-first). · 1.2.0 — dashboard template redesigned (v7/v8): v5 serif-italic masthead + KPI-card body + **color = información** (score health on Mean/Median/Min, counts neutral), shadcn/Raycast language, **dark-first**, fonts Geist + Newsreader + Geist Mono (Google Fonts `<link>`; render no longer pure-offline by design — accepted for client-grade). Section heads = Geist semibold + number chip + hairline. Motion = single page fade. Taste corpus + critique mode (1.1.0) retained. Canonical smoke-test input: `examples/sample-audit-report.md`.

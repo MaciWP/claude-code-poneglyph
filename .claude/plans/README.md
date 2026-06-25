@@ -47,6 +47,14 @@
 
 Directories with `status: draft` and no updates for **>30 days** may be purged manually. There is no auto-purge. Before deleting: verify no other feature depends on this one via `Grep` in `.claude/plans/`.
 
+## Archived plans (`_archive/`) — reading rule
+
+Closed features with no live references move to `_archive/` (gitignored — preserved on disk, out of git and out of fresh clones). As of 2026-06-24 `_archive/` has **zero functional dependents**: nothing in `.claude/` reads a file from it. (The one real dependency — html-report's smoke-test input — was relocated to `skills/html-report/examples/sample-audit-report.md`; the rest were already-dead pointers, now fixed. Only historical prose in retros/decision-notes cites archived plans *by name*, which degrades-not-breaks.)
+
+**Reading rule**: treat `_archive/` as historical. **Exclude it from exploratory `Grep`/`Glob`** (`grep … | grep -v _archive`, as `doctrine-sweep` already does). Read a file under `_archive/` only when (a) an explicit reference points at a concrete file there, or (b) the user asks for provenance/archaeology. This is a **soft** convention: gitignore keeps `_archive/` out of git and out of context, but does NOT block `Read`/`Grep`. The only residual risk is accidentally surfacing stale info — low-impact now that nothing functional lives there, so a soft rule is sufficient (a hard PreToolUse block would be over-engineering and would also break legitimate by-reference reads).
+
+**Why not delete `_archive/` outright?** Gitignored → ~0 recurring token cost (not in clones, not in context). Deleting saves nothing and loses the decision trail → net-negative. Rationale: memory `feedback-always-loaded-vs-ondemand-cost`.
+
 ## Template override (project-local)
 
 Templates in this directory are global defaults (via `~/.claude/` symlink). A project-local override takes precedence:

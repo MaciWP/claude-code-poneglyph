@@ -78,6 +78,19 @@ Both modes produce structured output. Quality mode uses `Code Quality Review: [C
 | Post-refactoring checklist | `${CLAUDE_SKILL_DIR}/checklists/post-refactoring.md` | Checklist to verify after completing a refactor. |
 | Review output template | `${CLAUDE_SKILL_DIR}/templates/review-template.md` | Full review output format with all sections. |
 
+## Commandments cubiertos
+
+| # | Cómo |
+|---|---|
+| III | Drives toward simple-by-default code (SOLID/DRY, decompose complexity, kill premature abstraction) |
+| IV | Quality findings feed the `critic` gate — review is verification, not opinion |
+| VII | Performance mode targets real bottlenecks (N+1, memory leaks, blocking async) with evidence |
+
+## Related
+
+- `critic` — Phase 4 owner that dispatches this skill (quality + performance lenses).
+- `lsp-operations` — navigate the call graph while reviewing.
+
 ---
 
 **Version**: 1.0

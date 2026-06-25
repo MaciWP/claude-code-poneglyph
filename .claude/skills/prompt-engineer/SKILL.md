@@ -78,3 +78,16 @@ When a prompt flows between agents (Lead → Workflow unit, or skill → skill, 
 - User asks Claude to write, draft, create, generate, or redact a prompt as output (Context 2).
 - Lead is about to delegate via `Agent()` and the prompt should be reviewed first (Context 3).
 - A multi-agent chain shows drift, ambiguity, or lost context between hops (Context 4).
+
+## Commandments cubiertos
+
+| # | Cómo |
+|---|---|
+| II | Refinement surfaces unverified premises in a vague prompt before they propagate |
+| VII | Catching a weak delegation prompt early avoids 2-5K-token round-trips with subagents |
+| VIII | The core skill — every agent prompt carries context, goal, constraints, deliverable, verification |
+
+## Related
+
+- `orchestrator-protocol` — the Arch H delegation template this skill scores (Context 3).
+- `scope` / `drillme` — upstream clarifiers when a user brief is too vague to refine into a prompt.

@@ -34,9 +34,11 @@ Structure internally:
 - **Context**: Relevant information provided
 - **Constraints**: Limitations mentioned
 
-### Step 2: Launch 3 Perspectives in Parallel
+**Classify before scanning** (`references/01-decision-frameworks.md` §1): is this a reversible two-way-door (Type 2) or an irreversible one-way-door (Type 1)? Apply the test: *if wrong, can we undo it at acceptable cost?* If **Type 1** (irreversible / high-stakes) → stop and recommend `decision-stress-test` instead; `decide` is the lightweight tool for reversible calls. If **Type 2** → proceed.
 
-Adopt 3 independent perspectives in parallel — **inline** in the main session (1-3 units never spawn per the canonical spawn tree in `orchestrator-protocol`; the Lead runs each lens in one pass). Each receives the brief + its perspective:
+### Step 2: Adopt 3 Perspectives Inline
+
+Adopt 3 independent perspectives — **inline** in the main session, NOT as spawned agents. The canonical spawn tree in `orchestrator-protocol` forbids spawning for 1-3 units; the Lead runs each lens itself in a single pass, writing all three positions in one turn. Each lens receives the brief + its perspective:
 
 #### Pragmatist Perspective
 ```
@@ -113,11 +115,12 @@ Respond in format:
 
 ### Step 3: Synthesize
 
-After receiving the 3 perspectives, synthesize:
-1. **Final recommendation**: Which is the best option considering all 3 perspectives?
-2. **Confidence level**: high (3/3 agree), medium (2/3 agree), low (no agreement)
-3. **Tensions**: Where perspectives disagree and why
-4. **Next steps**: Concrete actions
+After receiving the 3 perspectives, synthesize the recommendation ADR-style (Nygard — `references/01-decision-frameworks.md` §2) so the reasoning and trade-offs are captured, not just the pick:
+1. **Decision** (final recommendation): which option, in active voice ("We will…")?
+2. **Context**: the forces/constraints that motivate it.
+3. **Consequences**: what becomes easier AND harder — list both.
+4. **Confidence level**: high (3/3 agree), medium (2/3 agree), low (no agreement).
+5. **Tensions & next steps**: where perspectives disagree and the concrete actions. If the Critic over-demands rigor on a clearly reversible call, name the over-rigor anti-pattern (§3) — the reversal cost is low; bias toward deciding.
 
 ### Step 4: Generate HTML
 
@@ -135,7 +138,22 @@ Give the user a brief summary of the decision and the path to the generated HTML
 
 ## Notes
 
-- Perspectives are launched in PARALLEL (3 Agent calls in one message)
-- Each perspective receives the accumulated expertise of the base agent if it exists
+- The 3 perspectives are adopted INLINE by the Lead in one pass — not 3 Agent calls. A reversible, low/medium-stakes decision does not justify spawning (`orchestrator-protocol` spawn tree: 1-3 units never spawn). Escalate to `decision-stress-test` when the stakes warrant a multi-agent adversarial panel.
 - The HTML is self-contained (inline CSS, no external dependencies)
 - Dark/light mode support via prefers-color-scheme
+
+## Commandments cubiertos
+
+| # | Cómo |
+|---|---|
+| III | 3-perspective scan kept lightweight (~500-800 tokens) — no over-engineering a reversible call |
+| V | The brief forces context (central question, constraints) before recommending |
+| VII | Perspectives run inline in one pass — no spawn overhead for 1-3 units |
+| VIII | Each perspective is a structured prompt (position / pros / cons / risks) |
+
+## Related
+
+- `references/01-decision-frameworks.md` — the verified canon (Bezos Type 1/2 doors + Nygard ADR structure) behind Steps 1 and 3.
+- `decision-stress-test` — the heavy sibling for irreversible/high-stakes calls (5-12 adversarial perspectives). Pattern: `decide` to **select** → `decision-stress-test` to **commit**.
+- `html-report` — renders the decision memo (`templates/decision.template.html`).
+- `orchestrator-protocol` — the spawn decision tree that mandates inline execution for 1-3 units.

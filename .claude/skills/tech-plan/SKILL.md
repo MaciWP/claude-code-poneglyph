@@ -222,7 +222,7 @@ The skill does NOT proceed to Phase 3. Only the user approves.
 
 ## Auxiliary skills invoked
 
-> Canonical matrix in `.claude/plans/001-poneglyph-5phase-workflow/tasks/index.md §Auxiliary skills matrix`. Row below is the literal subset that applies to this Phase 2 skill.
+> Canonical matrix in `.claude/docs/auxiliary-skills-matrix.md`. Row below is the literal subset that applies to this Phase 2 skill.
 
 | Auxiliary skill | When this skill invokes it | Fallback if skill->skill fails |
 |---|---|---|

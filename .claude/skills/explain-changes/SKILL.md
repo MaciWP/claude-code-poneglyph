@@ -167,6 +167,20 @@ Detail per pattern (focused Q&A, re-scope, cancel, reformulation): `${CLAUDE_SKI
 | Verification rules | `${CLAUDE_SKILL_DIR}/references/verification-rules.md` | Reputable-source table per stack (Django, DRF, Python, Postgres, TypeScript, React, Anthropic, OWASP), canonical citation format, anti-patterns, and the "100% certeza" override that forces WebFetch. Read in step 4 when verifying any non-trivial framework behavior. |
 | Interaction patterns | `${CLAUDE_SKILL_DIR}/references/interaction-patterns.md` | Follow-up patterns: focused Q&A, re-scope, apply-to-other-case, cancel, reformulation with analogies. Read after emitting the first report when the user asks a follow-up question. |
 
+## Commandments cubiertos
+
+| # | Cómo |
+|---|---|
+| I | Honest about gaps — "no commit message available" instead of inventing one |
+| II | Verifies framework behavior against reputable sources (WebFetch) before explaining it |
+| V | Read-only by design — understands the change, never modifies code (that is `build`) |
+| IX | Teaching mode turns a diff into transferable understanding (onboarding, self-improvement) |
+
+## Related
+
+- `build` (Phase 3) — the write path; this skill explains, it never edits.
+- `anti-hallucination` / `lsp-operations` — the verification and navigation layers used during investigation.
+
 ---
 
 **Version**: 1.0.0

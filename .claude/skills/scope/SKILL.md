@@ -13,7 +13,7 @@ when_to_use: |
 
 # Scope (Phase 1)
 
-Defines the **product-level scope** before any technical decision. The deliverable is a `spec.md` that survives a 5-question Socratic drillme and locks in: root problem, expected outcomes, success criteria (Given/When/Then), explicit out-of-scope, constraints, stakeholders. **No technology choices here** — those belong to Phase 2 (`plan` skill).
+Defines the **product-level scope** before any technical decision. The deliverable is a `spec.md` that survives a 5-question Socratic drillme and locks in: root problem, expected outcomes, success criteria (Given/When/Then), explicit out-of-scope, constraints, stakeholders. **No technology choices here** — those belong to Phase 2 (`tech-plan` skill).
 
 ## Underlying principle
 
@@ -96,8 +96,8 @@ Activate when the Lead declares complexity >60 OR the user requests `--full`. Sp
 | Perspective | Source | Adaptation for Phase 1 |
 |---|---|---|
 | **Outsider** | `.claude/skills/decision-stress-test/prompts/outsider-agent.md` | Naive questions about the *problem framing*, not a technical decision. "Why this at all? Why now? Who actually has this problem?" — Input only, no tools. |
-| **Product** | inline prompt from `references/01-perspectives.md` §9 | Value vs cost: roadmap fit, what NOT built because of this, what unlocks measurably. Tools: Read (docs/, roadmap), WebSearch. |
-| **User** | inline prompt from `references/01-perspectives.md` §12 | Public-surface DX/UX implications: predictability, error story, migration path for existing consumers. Tools: Read, Grep. |
+| **Product** | inline prompt from `.claude/skills/decision-stress-test/references/01-perspectives.md` §9 | Value vs cost: roadmap fit, what NOT built because of this, what unlocks measurably. Tools: Read (docs/, roadmap), WebSearch. |
+| **User** | inline prompt from `.claude/skills/decision-stress-test/references/01-perspectives.md` §12 | Public-surface DX/UX implications: predictability, error story, migration path for existing consumers. Tools: Read, Grep. |
 
 Each emits the standard perspective format (Position / Confidence / Pros / Contras with severity / Context needed / Questions). Output goes into the `spec.md` as a dedicated section "Voces externas (modo full)" preserving attribution.
 
@@ -192,7 +192,7 @@ Adaptación se declara honestamente en el output (`# Open questions` section o n
 
 ## Auxiliary skills invoked
 
-> Canonical matrix in `.claude/plans/001-poneglyph-5phase-workflow/tasks/index.md §Auxiliary skills matrix`. Row below is the literal subset that applies to this Phase 1 skill.
+> Canonical matrix in `.claude/docs/auxiliary-skills-matrix.md`. Row below is the literal subset that applies to this Phase 1 skill.
 
 | Auxiliary skill | When this skill invokes it | Fallback if skill->skill fails |
 |---|---|---|
@@ -201,13 +201,13 @@ Adaptación se declara honestamente en el output (`# Open questions` section o n
 | `prompt-engineer` | When the user's initial brief is too vague (multiple interpretations, missing success criteria) and refinement is warranted before the questionnaire | Lead applies the 5-criteria rubric inline; refines manually |
 | `decision-stress-test` | Mode `full` only — reuses Outsider/Product/User perspective templates from `references/01-perspectives.md` (NOT invoking the full stress-test pipeline, only the prompt catalog) | Lead spawns the 3 perspectives directly with `Agent(subagent_type=general-purpose, prompt=<adapted from catalog>)` |
 
-> Skill-to-skill invocation is **probabilistic** per docs Anthropic + [issue #59968](https://github.com/anthropics/claude-code/issues/59968). Each row's fallback documents the Lead's manual recovery path. The downstream `plan` skill (Phase 2) is NOT invoked here — it waits on the human hard gate 1->2.
+> Skill-to-skill invocation is **probabilistic** per docs Anthropic + [issue #59968](https://github.com/anthropics/claude-code/issues/59968). Each row's fallback documents the Lead's manual recovery path. The downstream `tech-plan` skill (Phase 2) is NOT invoked here — it waits on the human hard gate 1->2.
 
 ## Consumer downstream
 
 | Phase skill | Consumes from this skill |
 |---|---|
-| `plan` (Phase 2) | The approved `spec.md` (after hard gate 1->2 closed by human). Wait — do not auto-invoke. |
+| `tech-plan` (Phase 2) | The approved `spec.md` (after hard gate 1->2 closed by human). Wait — do not auto-invoke. |
 
 ## Verification (post-implementation of this skill)
 
@@ -232,6 +232,6 @@ Phase 1 closed for {NNN}-{slug}:
 - voces externas: <N perspectives ran | skipped>
 - open questions: <N | none>
 
-⏸️ Hard gate 1->2 — pendiente tu aprobación antes de Phase 2 (tech-planner).
+⏸️ Hard gate 1->2 — pendiente tu aprobación antes de Phase 2 (tech-plan).
    Responde: APPROVE para continuar | REFINE para iterar | BLOCK para detener.
 ```

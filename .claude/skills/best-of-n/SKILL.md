@@ -78,5 +78,5 @@ git branch -D <bon-branch>        # if a branch was created
 ## Related
 
 - `.claude/learned/best-of-n-log.md` — outcome log (append per use).
-- `.claude/plans/018-evidence-roadmap/decision-memo-W1.md` D1 — evidence basis.
+- `.claude/skills/best-of-n/references/018-evidence-basis-W1.md` D1 — evidence basis (relocated from archived plan 018).
 - `orchestrator-protocol` — this pattern is N headless processes, not subagents; the spawn decision tree does not apply.

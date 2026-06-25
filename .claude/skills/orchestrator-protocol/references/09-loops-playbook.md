@@ -2,7 +2,7 @@
 
 How to use Claude Code's native autonomous-iteration primitives **without breaking poneglyph doctrine**. This is the reference; the rule of thumb lives in `SKILL.md` Step 4.
 
-> **Origin**: analysis of a "stop prompting, design loops" video (`plans/021-loops-analysis/decision-memo.md`). The video's *concept* is sound and partly already ours; its *headline mode* (unattended 24/7 self-judging loops) is not. This playbook adopts the compatible part and documents why the rest is rejected.
+> **Origin**: analysis of a "stop prompting, design loops" video (`references/09-loops-analysis-source.md`). The video's *concept* is sound and partly already ours; its *headline mode* (unattended 24/7 self-judging loops) is not. This playbook adopts the compatible part and documents why the rest is rejected.
 
 ## The two native primitives (verified against official docs)
 
@@ -101,6 +101,6 @@ Effort is **not changeable dynamically mid-session** (the user sets `/effort`; t
 ## Related
 - `.claude/loop.md` — single generic doctrine-safe default for bare `/loop`, synced to `~/.claude/loop.md` (poneglyph is the global source, so one file serves project + global; other repos override locally)
 - `escalate` skill — xhigh stuck-buster for a loop that stops converging
-- `plans/021-loops-analysis/decision-memo.md` — the analysis this playbook operationalizes
+- `references/09-loops-analysis-source.md` — the analysis this playbook operationalizes
 - `/flow` command — the gated lifecycle a goal-loop (R1) advances
 - `critic` skill — the external auditor / stop oracle

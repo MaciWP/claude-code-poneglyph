@@ -209,6 +209,20 @@ Ask user even if confidence is high when multiple valid approaches exist (JWT vs
 
 If Stage 2 returns multiple matches, ask user which one. If Stage 3 also fails, ask user to provide the path — never assume.
 
+## Commandments cubiertos
+
+| # | Cómo |
+|---|---|
+| I | Below the confidence threshold → ask, never assume (the whole skill is "ask when in doubt") |
+| II | Verify a file/function/import/endpoint exists (LSP > Grep > Glob) before asserting it does |
+| V | Forces context-gathering (Read before Edit) before acting on code |
+| VI | Destructive-keyword triggers force verification regardless of confidence |
+
+## Related
+
+- `lsp-operations` — the semantic verification layer this skill prefers over text search.
+- `diagnostic-patterns` — when a verified assertion still produces wrong behavior, diagnose there.
+
 ---
 
 **Version**: 1.0.0

@@ -80,6 +80,7 @@ Before any Edit/Write:
 1. `Glob` patrón similar al output esperado (`.claude/skills/*/SKILL.md` for new skills, `.claude/hooks/*.ts` for new hooks, etc.).
 2. `Read` 1-3 ejemplos cercanos en estilo y dominio.
 3. `Grep` referencias a las funciones/módulos/patrones que la HU usará (`anti-hallucination`).
+4. **When the HU writes tests**: Glob the existing test infrastructure (`**/conftest.py`, `**/factory*.py`, `**/fixtures/**`, shared test helpers) and load the project's test-conventions skill if present (e.g. `django-testing-patterns`). Reuse existing fixtures/factories by name — **never duplicate data an existing fixture provides**; add a new fixture only at the correct shared level (closest conftest / shared helper), per the oracle's "new fixture needed" flag from Phase 2.5.
 
 Anti-hallucination auxiliary fires here automatically; if it doesn't, the Lead runs Glob/Grep/LSP manually before claiming any path exists.
 
@@ -239,7 +240,7 @@ If all HUs closed → flag `state.json.current_phase: 4` and report "Phase 3 com
 
 ## Auxiliary skills invoked
 
-> Canonical matrix in `.claude/plans/001-poneglyph-5phase-workflow/tasks/index.md §Auxiliary skills matrix`. Row below is the literal subset that applies to this Phase 3 skill.
+> Canonical matrix in `.claude/docs/auxiliary-skills-matrix.md`. Row below is the literal subset that applies to this Phase 3 skill.
 
 | Auxiliary skill | When this skill invokes it | Fallback if skill->skill fails |
 |---|---|---|

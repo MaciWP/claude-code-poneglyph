@@ -67,7 +67,7 @@ Map findings → component candidates using `references/01-analysis-and-menu.md`
 | Project skills | Recurring domain knowledge a generic model gets wrong (query patterns, API conventions, domain gotchas) |
 | Project commands | Repeated multi-step workflows visible in scripts/CI |
 | MCP suggestions | External services detected (suggestion only — connectors configure outside the repo) |
-| Knowledge-graph tooling ([Graphify](https://github.com/safishamsi/graphify)) | ONLY for large, code-dominant, unfamiliar codebases where orientation cost dominates (hundreds of source files, navigation-by-grep). NOT for small repos or markdown/config-heavy ones — there the token savings ≈ 0 and the PreToolUse hook adds unreliable overhead. Suggestion only (installs per-repo outside poneglyph's global layer). Rationale: `plans/022-graph-tooling/decision-memo.md` |
+| Knowledge-graph tooling ([Graphify](https://github.com/safishamsi/graphify)) | ONLY for large, code-dominant, unfamiliar codebases where orientation cost dominates (hundreds of source files, navigation-by-grep). NOT for small repos or markdown/config-heavy ones — there the token savings ≈ 0 and the PreToolUse hook adds unreliable overhead. Suggestion only (installs per-repo outside poneglyph's global layer). Rationale: `references/graph-tooling-decision.md` |
 | `.claude/settings.json` (project) | Project-specific permissions/hooks genuinely needed |
 
 The user ratifies the set BEFORE any generation. Components not ratified are not generated — no orphan files.

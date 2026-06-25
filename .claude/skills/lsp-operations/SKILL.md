@@ -250,6 +250,19 @@ Use `Glob` to discover project files before applying LSP operations. Each projec
 | `findReferences` on a common name returns too many results | Generic names like `id`, `name`, `data` match everywhere | Narrow scope with file path or combine with Grep filter |
 | `hover` on re-exported symbols may show the re-export, not the original definition | LSP resolves to the nearest declaration, which may be a re-export | Chain with `goToDefinition` to reach the actual implementation |
 
+## Commandments cubiertos
+
+| # | Cómo |
+|---|---|
+| II | Semantic resolution (definition/references/types) beats text-grep guesses for factual claims about code |
+| V | Navigate and understand the call graph before acting on it |
+| VII | One LSP call replaces many speculative greps — fewer tokens, precise answers |
+
+## Related
+
+- `anti-hallucination` — the verification doctrine (LSP > Grep > Glob) this skill operationalizes.
+- `review-patterns` / `diagnostic-patterns` — consumers that navigate code via these operations.
+
 ---
 
 **Version**: 1.0.0

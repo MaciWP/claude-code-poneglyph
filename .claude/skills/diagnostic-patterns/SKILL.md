@@ -169,6 +169,21 @@ Covers: Error Analysis, Root Cause Analysis, Logging, Debugging Techniques, Post
 |--------|-------|--------|-------|
 | `scripts/analyze-error.ts` | error message (args) | JSON `{ matched, pattern?, bestFix?, confidence? }` | `bun .claude/skills/diagnostic-patterns/scripts/analyze-error.ts <error message>` |
 
+## Commandments cubiertos
+
+| # | Cómo |
+|---|---|
+| II | Root cause from evidence (5 Whys, stack-trace classification) — not a guessed fix |
+| V | Understand the failure before changing code |
+| VII | Resilience patterns (retry/backoff/jitter, circuit breaker, saga) keep systems efficient under fault |
+| IX | Diagnosis is reactive ad-hoc observability — read the trace that answers the question |
+
+## Related
+
+- `escalate` — orchestrates this skill at xhigh when the same error repeats.
+- `anti-hallucination` — verify the failing symbol/path exists before diagnosing.
+- `.claude/rules/error-recovery.md` — retry budgets and stuck-detection thresholds.
+
 ---
 
 **Version**: 2.0
