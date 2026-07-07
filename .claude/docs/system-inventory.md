@@ -10,9 +10,9 @@ The intended normal case is working in **another** project while poneglyph runs 
 bun .claude/commands/sync-claude.ts --execute --backup --force
 ```
 
-- Links `skills/commands/rules/docs/hooks/output-styles` into `~/.claude/` (junctions on Windows — no admin; symlinks on macOS/Linux) and regenerates `~/.claude/settings.json` = `settings.json` (committed base) deep-merged with `settings.machine.json` (gitignored, per-machine).
+- Links `skills/commands/rules/docs/hooks/output-styles/workflows` into `~/.claude/` (rules link per-entry, with `test-policy.md` excluded from the global layer — 021 decision) (junctions on Windows — no admin; symlinks on macOS/Linux) and regenerates `~/.claude/settings.json` = `settings.json` (committed base) deep-merged with `settings.machine.json` (gitignored, per-machine).
 - **macOS**: also create `.claude/settings.machine.json` carrying that machine's `env.PATH` — the GUI app launches with a minimal PATH, so linking alone leaves hooks/statusline broken; the PATH overlay fixes it (separate cause from linking).
-- **Duplicates only inside this repo**: the global (`~/.claude/skills`, link → repo) and the project (`./.claude/skills`, real) are the same files via two paths. Harmless for skills/commands (dedupe by name); but hooks (`security-gate`, `code-validator`) are declared in BOTH levels, so a maintenance session in this repo may **double-fire** them. Other projects never see this.
+- **Duplicates only inside this repo**: the global (`~/.claude/skills`, link → repo) and the project (`./.claude/skills`, real) are the same files via two paths. Harmless for skills/commands (dedupe by name); but ALL registered hooks are declared in BOTH levels, so a maintenance session in this repo may **double-fire** any of them. Other projects never see this.
 - Settings load at session start → a fresh sync takes effect on the NEXT session.
 - **Windows**: `CLAUDE.md` is **copied**, not linked (junctions can't link files) → re-run the sync after editing it or the global copy goes stale. On macOS it is a symlink (verified 2026-06-10).
 
@@ -125,7 +125,7 @@ Test: "does the agent need this in EVERY prompt?" — no → skill.
 | Component | Audit baseline (early 2026) | Post-cleanup (2026-05-28) | Current | Detail |
 |---|---|---|---|---|
 | Agents | 7 + 1 meta | 3 | **0 custom** | builder/reviewer/scout cut in feature 008; work runs inline (delegation doctrine), read-only fan-out via Workflow/`Explore`. The ONE sanctioned single-agent dispatch is critic's fresh-context reviewer (P1 exception, feature 019) — ad-hoc, no agent file |
-| Skills | 28 | 14 | **22** | 6 phase skills + `drillme` + `html-report` (003) + `best-of-n` (019, pilot); `planner-protocol` migrated-and-cut into `tech-plan/references/`; `skill-advisor` cut — its turn-level routing now lives in `skill-activation.ts` + orchestrator-protocol skill matching |
+| Skills | 28 | 14 | **24** | 6 phase skills + `drillme` + `html-report` (003) + `best-of-n` (019, pilot); `planner-protocol` migrated-and-cut into `tech-plan/references/`; `skill-advisor` cut in 017, **restored in 023** as the ratifiable shortlist backstop and wired at /flow phase boundaries in 024 |
 | Hooks | 15+ | 6 | **7 registered** | `auto-approve`, `post-compact`, `security-gate`, `validators/code-validator`, `skill-activation`, `instructions-loaded`, `learning-inbox` (017/US11-12; self-match filter 019) |
 | Slash commands | 10 | 4 | **3** | `flow`, `sync-claude`, `role` (decide/explain-changes were thin command wrappers → pruned; they remain as skills) |
 | Rules | 7 | 2 + paths/ | **2 + paths/** | `error-recovery.md`, `test-policy.md` + `paths/{hooks,orchestration}.md` |
@@ -139,11 +139,11 @@ Test: "does the agent need this in EVERY prompt?" — no → skill.
 
 | Dir | Contents | Status |
 |---|---|---|
-| `skills/` (22), `commands/` (5), `rules/`, `hooks/`, `output-styles/`, `plans/` | Core system | documented above |
-| `docs/` | This file + `research-rigor.md` (`arch-h-*` and `lead-mode-*` deleted 2026-06-11 — superseded by `orchestrator-protocol/references/06` and the `CLAUDE_LEAD_MODE` note above) | on-demand references |
+| `skills/` (24), `commands/` (3 slash + sync script), `rules/`, `hooks/`, `output-styles/`, `plans/` | Core system | documented above |
+| `docs/` | This file + `research-rigor.md` + `auxiliary-skills-matrix.md` (relocated here 2026-06-24) (`arch-h-*` and `lead-mode-*` deleted 2026-06-11 — superseded by `orchestrator-protocol/references/06` and the `CLAUDE_LEAD_MODE` note above) | on-demand references |
 | `workflows/` | `ultracode-audit.js` — saved Workflow script (worked example of find→verify pipeline) | live |
 | `audits/` | Ad-hoc audit outputs (005, 009) | archive-like |
-| `evals/` | Golden-prompt regression harness (019): deterministic graders + runner + 18 real-failure cases. Tracked, NOT synced. Run per meta-config change | live |
+| `evals/` | Golden-prompt regression harness (019): deterministic graders + runner + real-failure cases (19 as of 2026-07-02 — recount `cases.jsonl` rather than trusting this number). Tracked, NOT synced. Run per meta-config change | live |
 | `scripts/` | `flow-state.ts` — typed state.json/frontmatter mutations for /flow. Tracked, NOT synced | live |
 | `learned/` | Runtime per-machine (gitignored) EXCEPT `best-of-n-log.md` (versioned pilot evidence, 019) | runtime |
 | `ccstatusline/` | Statusline module wired via settings (synced to `~/.config/ccstatusline/`) | live |
@@ -153,13 +153,13 @@ Test: "does the agent need this in EVERY prompt?" — no → skill.
 
 ## MCP servers (session-connected) — decision 2026-06-10 (017/US8)
 
-All five stay default-on (user-ratified): **context7** (plugin, settings.json `enabledPlugins`), **claude-in-chrome** (extension), **Atlassian**, **binOra Desarrollo**, **binOra Producción** (claude.ai connectors — managed in the claude.ai UI, not in settings). Context cost is mitigated by ToolSearch deferred loading. Revisit if a server's tool list bloats context again.
+All five stay default-on (user-ratified): **context7** (plugin, settings.json `enabledPlugins`), **claude-in-chrome** (extension), **Atlassian**, **binOra - Demo**, **binOra - Producción Bjumper** (claude.ai connectors — managed in the claude.ai UI, not in settings). Context cost is mitigated by ToolSearch deferred loading. Revisit if a server's tool list bloats context again.
 
-Schema findings (017/US8, verified against schemastore 2026-06-10): `minimumVersion` EXISTS (version gate set to 2.1.160); `requiredMinimumVersion` and `fallbackModel` DO NOT EXIST — no fallback-model cascade is possible in settings.json (closest is `availableModels`, which restricts selection rather than degrading gracefully). Recorded per AC1; nothing invented.
+Schema findings (refreshed 2026-07-02 against the live settings.json + CC changelog): `minimumVersion` EXISTS and gates the version; `fallbackModel` EXISTS since CC 2.1.166 and IS configured in settings.json (cascade of 2); `requiredMinimumVersion`/`requiredMaximumVersion` exist as managed settings since CC 2.1.163 (whether they supersede `minimumVersion` is unverified — check on the next version bump).
 
 Activation/observability hooks (017/US12, event verified in official hooks docs 2026-06-10): `skill-activation.ts` (UserPromptSubmit) injects explicit `Skill(<name>)` instructions on keyword match — the deterministic activation layer, best-effort per issue #17277. `instructions-loaded.ts` (InstructionsLoaded, async) logs every CLAUDE.md/rules load to `.claude/learned/instructions-loaded.log` — grep it to verify load layers instead of assuming.
 
-`CLAUDE_LEAD_MODE` env var (set `"true"` in `settings.json`): consumed by `post-compact.ts:20-22` to re-inject the "Lead Orchestrator active" header after compaction. That is its only consumer (verified 2026-06-11; the old `docs/lead-mode-when-needed.md` describing an opt-in mechanism was deleted — the var is permanently on).
+`CLAUDE_LEAD_MODE` env var (set `"true"` in `settings.json`): consumed by `post-compact.ts` (`getSessionMode`) to re-inject the "Lead Orchestrator active" header after compaction. That is its only consumer (verified 2026-06-11; the old `docs/lead-mode-when-needed.md` describing an opt-in mechanism was deleted — the var is permanently on).
 
 ## History
 

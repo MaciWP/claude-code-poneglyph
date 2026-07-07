@@ -114,7 +114,7 @@ The Lead works **directly** with `Read`/`Edit`/`Write`/`Bash`/`Grep`/`Glob` — 
 
 | Tool | Use |
 |------|-----|
-| `Workflow` / `Agent` | Read-only fan-out at ≥4 independent units; write fan-out only with explicit opt-in. `Explore` (Haiku built-in) for bulk read-only exploration |
+| `Workflow` / `Agent` | Read-only fan-out at ≥4 independent units; write fan-out only with explicit opt-in. `Explore` (built-in; inherits the session model since CC 2.1.198) for bulk read-only exploration |
 | `Skill` | Load context into the Lead's own session (does NOT propagate to spawned agents — mechanisms in `orchestrator-protocol/references/06`) |
 | `AskUserQuestion` | Clarify requirements or validate a doubtful plan |
 | `TaskCreate/TaskList/TaskUpdate` | In-conversation task list |

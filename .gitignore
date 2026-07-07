@@ -13,9 +13,6 @@ build/
 data/sessions/*.jsonl
 storage/
 
-# Keep the sessions directory structure
-!data/sessions/.gitkeep
-
 # OS files
 .DS_Store
 Thumbs.db
@@ -47,10 +44,6 @@ npm-debug.log*
 # generated ~/.claude/settings.json. Each machine keeps its own; never committed.
 .claude/settings.machine.json
 
-# Agent memory (auto-generated per session, FIFO-pruned; builder/MEMORY.md is tracked intentionally)
-.claude/agent-memory/*/MEMORY.md
-!.claude/agent-memory/builder/MEMORY.md
-
 # Test coverage
 coverage/
 
@@ -81,7 +74,6 @@ tmpclaude-*-cwd
 
 # Runtime data directories
 data/
-!data/sessions/.gitkeep
 
 # Test results (Playwright/runner artifacts)
 test-results/
@@ -92,8 +84,6 @@ nul
 # Generated reports
 *.html
 poneglyph-analysis.md
-# Exception: usage dashboard template (source, not generated)
-!.claude/scripts/dashboard-template.html
 # Exception: the whole html-report skill templates dir is SOURCE (approved designs,
 # the templates meant to be used), never generated renders. Whole-dir exception so new
 # templates are versioned without re-arming the *.html rule (it ate deliverables 2x).

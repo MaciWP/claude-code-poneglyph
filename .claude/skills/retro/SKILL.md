@@ -269,6 +269,15 @@ The retro skill is the **last gate**. Any US{N}.md found not-closed at this poin
 
 **Important**: do NOT close lifecycle while promotions are still pending approval. Either close them in this session or carry as action items into the next session — but the feature itself CAN close once 13a verification passes (residuals fixed) + retro.md is produced.
 
+**Ratification ownership (plan 025 — back-half gate)**: `retro_status` is a two-state field with a named owner.
+
+| `retro_status` | Meaning | Owner of the transition |
+|---|---|---|
+| `"pending"` | retro.md produced, awaiting human ratification of promotions/living-spec deltas. **The lifecycle is INCOMPLETE** — `feature_closed` stays `false` and the plan still surfaces in `flow-state.ts status` + the post-compact open-plans reminder | **The user** ratifies (AskUserQuestion in Step 14); the Lead never self-approves |
+| `"approved"` | User ratified; promotions/deltas applied; `feature_closed = true` set via `flow-state.ts close-feature` | Lead applies AFTER the user's explicit ratification |
+
+A retro left at `pending` is the documented back-half abandonment failure mode (audit 2026-06-30): it is not "done", it is *awaiting you*. The `status` report and the reminder exist to make that visible instead of silent.
+
 ### Step 14 — Report + approval request
 
 Report using the block in §Output format reminder (end of this skill) — same content, single source — and request approval for promotions / living-spec diff / violation actions.

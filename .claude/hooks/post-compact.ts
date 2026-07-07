@@ -1,5 +1,39 @@
 #!/usr/bin/env bun
 
+import { readdirSync, readFileSync, existsSync } from "node:fs";
+import { join } from "node:path";
+
+// Open-plans reminder (US2, plan 025). Inline scan — deliberately does NOT import
+// .claude/scripts/flow-state.ts: this hook is symlinked into ~/.claude/ (synced)
+// but scripts/ is NOT synced, so the import would break there. ~8 duplicated lines
+// beat a cross-tier coupling (Commandment III). Best-effort: never throws.
+export function openPlansReminder(plansRoot = ".claude/plans"): string | null {
+  let entries: ReturnType<typeof readdirSync>;
+  try {
+    entries = readdirSync(plansRoot, { withFileTypes: true });
+  } catch {
+    return null; // no plans dir (other project / not poneglyph) → no reminder
+  }
+  const open: string[] = [];
+  for (const d of entries) {
+    if (!d.isDirectory() || !/^\d{3}-/.test(d.name)) continue;
+    const sp = join(plansRoot, d.name, "state.json");
+    if (!existsSync(sp)) continue;
+    try {
+      const st = JSON.parse(readFileSync(sp, "utf8")) as { feature_closed?: boolean; current_phase?: unknown };
+      if (st.feature_closed === false) open.push(`- ${d.name} (phase ${st.current_phase ?? "?"})`);
+    } catch {
+      /* illegible state.json — skip, best-effort */
+    }
+  }
+  if (open.length === 0) return null;
+  return [
+    "## Planes /flow abiertos (recordatorio, no bloqueante)",
+    "Hay lifecycles a medias. Ciérralos (critic/retro) o revisa con `bun .claude/scripts/flow-state.ts status`:",
+    ...open,
+  ].join("\n");
+}
+
 export const LEAD_REMINDER = [
   "## Lead Orchestrator Mode (re-injected after compaction)",
   "This session operates as Lead Orchestrator — orchestrator-first, but bounded work (1-3 units) runs inline; do not over-delegate.",
@@ -24,12 +58,17 @@ export function getSessionMode(): string | null {
   return null;
 }
 
-export function buildOutput(): string {
+export function buildOutput(plansRoot = ".claude/plans"): string {
   const sections: string[] = [LEAD_REMINDER, ANTI_HALLUCINATION];
 
   const modeSection = getSessionMode();
   if (modeSection) {
     sections.push(modeSection);
+  }
+
+  const plansSection = openPlansReminder(plansRoot);
+  if (plansSection) {
+    sections.push(plansSection);
   }
 
   return sections.join("\n\n");

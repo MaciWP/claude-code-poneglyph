@@ -5,10 +5,7 @@ description: |
   Úsala cuando: refinar un prompt vago/ambiguo, generar un prompt a petición, revisar un prompt-a-agente antes de Agent(), "genera un prompt", "mejora este prompt", "redacta el prompt de".
   Keywords - prompt, prompts, generar prompt, genera prompt, crea prompt, redacta prompt, escribe prompt, mejorar prompt, refine prompt, vague prompt, ambiguous, delegate agent, invoke agent, agent prompt, subagent prompt, meta-prompting, prompt engineering, write a prompt, create a prompt
 when_to_use: |
-  - The user submits a vague or ambiguous prompt and refinement would lift quality (score < 70 on the rubric, missing success criteria, multiple interpretations).
-  - The user asks Claude to generate, write, draft, or create a prompt as output ("genera un prompt para X", "create a prompt for Y", "write me a prompt that…", "redacta el prompt de Z").
-  - The Lead is about to invoke `Agent(subagent_type=…)` and the delegation prompt should be reviewed/strengthened against the Arch H template before sending.
-  - Auditing prompts that flow between agents or skills (delegation chains, multi-agent patterns) for quality and completeness.
+  "genera un prompt para X", "redacta el prompt de Z", "mejora este prompt", "refina este prompt", "este prompt es vago", "revisa el prompt antes de delegar", "audita la comunicación entre agentes"; cuando un prompt del usuario es ambiguo (score < 70 en la rúbrica, sin criterios de éxito, múltiples interpretaciones); antes de invocar `Agent(subagent_type=…)` para reforzar el prompt de delegación contra la plantilla Arch H (Commandment VIII).
 argument-hint: "[prompt text or task description]"
 disable-model-invocation: false
 ---

@@ -33,7 +33,41 @@ for (const [name, kw] of [
     ["---", `name: ${name}`, "description: |", `  ${name} fixture.`, `  Keywords - ${kw}`, "---", "", `# ${name}`].join("\n"),
   );
 }
+// Multi-line Keywords block (SK-01): continuation lines indented inside
+// `description: |`, terminated by the next top-level frontmatter key.
+mkdirSync(join(fixtures, "wrapped-kw"), { recursive: true });
+writeFileSync(
+  join(fixtures, "wrapped-kw", "SKILL.md"),
+  [
+    "---",
+    "name: wrapped-kw",
+    "description: |",
+    "  Fixture with wrapped keywords.",
+    "  Keywords - primero, segundo,",
+    "  continuación, tercera-línea, wrapped-match,",
+    '  último - "frase de ejemplo entre comillas"',
+    "disable-model-invocation: false",
+    "---",
+    "",
+    "# wrapped-kw",
+  ].join("\n"),
+);
+
 const skills = loadSkills([fixtures]);
+
+describe("loadSkills — multi-line Keywords block (SK-01)", () => {
+  const wrapped = skills.find((s) => s.name === "wrapped-kw");
+  test("continuation-line keywords are parsed, next YAML key is not swallowed", () => {
+    expect(wrapped).toBeDefined();
+    expect(wrapped!.keywords).toContain("continuación");
+    expect(wrapped!.keywords).toContain("wrapped-match");
+    expect(wrapped!.keywords).toContain("frase de ejemplo entre comillas");
+    expect(wrapped!.keywords.some((k) => k.includes("disable-model-invocation"))).toBe(false);
+  });
+  test("a continuation-line keyword now matches a prompt", () => {
+    expect(matchSkills("necesito el wrapped-match aquí", skills)).toContain("wrapped-kw");
+  });
+});
 
 describe("matchSkills + buildInjection — prompt with match (T12.1)", () => {
   test("'valida este plan' injects explicit Skill(drillme) in ≤5 lines", () => {

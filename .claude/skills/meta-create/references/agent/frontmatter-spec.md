@@ -27,7 +27,7 @@ description: |
 | `tools` | string | **Yes** | Comma-separated tool whitelist. Plain names only (no scoped syntax like `Task(scout)`) |
 | `disallowedTools` | string/list | No | Tools blocked. **camelCase** (e.g., `Task`, `NotebookEdit`) — NOT snake_case |
 | `permissionMode` | string | No | `default`, `plan`, `acceptEdits`, `dontAsk`, `bypassPermissions` |
-| `effort` | string | No | Only if invariable. Options: `low`, `medium`, `high`, `max` (Opus 4.6 only) |
+| `effort` | string | No | Only if invariable. Options: `low`, `medium`, `high`, `xhigh` (xhigh on Opus 4.7+) |
 | `maxTurns` | number | No | Optional hard stop. **Caution**: when reached, no result is returned and work is lost. Default (no limit) is correct for well-scoped tasks. Only set if running in CI/production pipelines. |
 | `color` | string | No | Visual identifier: `red`, `blue`, `green`, `yellow`, `purple`, `orange`, `pink`, `cyan` |
 | `skills` | list | No | Skills auto-loaded when agent starts |

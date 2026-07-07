@@ -1,11 +1,13 @@
 ---
 description: "Syncs .claude/ from poneglyph to ~/.claude/ via symlinks/junctions (multi-OS)."
-argument-hint: "[--check|--status|--execute|--unlink] [--backup] [--method auto|symlink|junction|copy] [--force]"
+argument-hint: "[--check|--status|--execute|--unlink|--validate-hooks] [--backup] [--method auto|symlink|junction|copy] [--force]"
 ---
 
 # Sync Claude Config
 
 Creates symlinks (or junctions on Windows) in `~/.claude/` pointing to `poneglyph/.claude/`, allowing skills/agents/commands/rules to be used in any project.
+
+`--validate-hooks` checks that every hook registered in the generated `~/.claude/settings.json` resolves to a real file in the synced layer (run it after `--execute` when hooks changed).
 
 ## Multi-OS Compatibility
 

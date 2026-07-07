@@ -18,7 +18,7 @@ description: Signal→agent selection matrix, multi-agent patterns, anti-pattern
 
 ## Exploration Decision Matrix (Volume × Complexity)
 
-Before any exploration, decide HOW to read the codebase. **The exploration primitive is `Explore`** (built-in, Haiku, fast & cheap, empirical score 83). The custom `scout` agent was **cut in feature 008** — deeper single-unit synthesis runs inline (Lead `Read`/LSP); ≥4 independent exploration sweeps fan out via `Workflow`.
+Before any exploration, decide HOW to read the codebase. **The exploration primitive is `Explore`** (built-in; inherits the session model since CC 2.1.198; empirical score 83). The custom `scout` agent was **cut in feature 008** — deeper single-unit synthesis runs inline (Lead `Read`/LSP); ≥4 independent exploration sweeps fan out via `Workflow`.
 
 | | LOW complexity (direct read, no semantics) | HIGH complexity (relationships, LSP, architecture) |
 |---|---|---|
@@ -33,7 +33,7 @@ Plus: design-doc audits, cross-file consistency checks, and full-file reads → 
 |-------|-------|
 | The Lead reads 1-2 files inline | For bulk read-only exploration, use `Explore` (not a work-spawn). |
 | LOW Volume + LOW Complexity = direct Read | Cost of delegation > cost of direct Read. |
-| Exploration primitive = `Explore` (Haiku) | Empirical score 83; the custom `scout` was cut in feature 008. |
+| Exploration primitive = `Explore` (inherits session model) | Empirical score 83; the custom `scout` was cut in feature 008. |
 | Deeper synthesis past Explore's window | Runs inline (Lead `Read`/LSP); ≥4 independent sweeps → `Workflow`. |
 | Parallel axis: "change difficulty" | If after exploring you must implement a difficult change, invoke `tech-plan` skill (independent of the exploration axis). |
 
@@ -92,7 +92,7 @@ How the capabilities of the custom agents (cut in feature 008) map onto the curr
 |---|---|---|
 | implement (was `builder`) | `build` skill inline — ALL write work, any HU count | write fan-out ONLY with explicit user opt-in (ultracode) → `Workflow` + per-unit `isolation: 'worktree'` on file overlap |
 | validate (was `reviewer`) | `critic` skill inline | standard/full code review → **ONE fresh-context read-only reviewer** (correctness/requirements only — P1 exception, 018 W1 D1/D3); decision review → panel via `decision-stress-test` |
-| explore (was `scout`) | `Explore` (built-in, Haiku) | ≥4 independent exploration sweeps → `Workflow` (read-only) |
+| explore (was `scout`) | `Explore` (built-in) | ≥4 independent exploration sweeps → `Workflow` (read-only) |
 | generator→validator | `pipeline(items, find, verify)` inside one `Workflow` | intra-workflow Four-Eyes — NOT a new spawn decision (spawn-tree P7) |
 
 For CODE review the dispatch target is **ONE fresh-context read-only reviewer** (feature 019 — panels measured as the weak form for code: verifier gap, LLM-judge ensembles ~80% FP; 018 W1 D1/D3 + W2 D1). The author≠evaluator lesson (feature 002) is preserved via fresh context, not lens count. Panels (≥4 perspectives) remain the form for DECISION review (`decision-stress-test`) and read-only research fan-out — worked example: `.claude/workflows/ultracode-audit.js` (find→verify pipeline + cross-debate panel over a shared digest).

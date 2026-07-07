@@ -60,10 +60,14 @@ export function loadSkills(dirs: string[]): SkillEntry[] {
       if (byName.has(entry) || !existsSync(skillFile)) continue;
       try {
         const head = readFileSync(skillFile, "utf8").slice(0, HEAD_BYTES);
-        const kwLine = head.match(/Keywords\s*-\s*(.+)/i);
-        if (!kwLine) continue;
-        const keywords = kwLine[1]
-          .split(",")
+        // The Keywords block lives inside `description: |` and may wrap across
+        // indented continuation lines — capture until the next top-level YAML
+        // line (column 0), not just the first line (SK-01: 10/24 skills wrap).
+        const kwBlock = head.match(/Keywords\s*-\s*([\s\S]*?)(?=\n\S|$)/i);
+        if (!kwBlock) continue;
+        const keywords = kwBlock[1]
+          .split(/[,\n]/)
+          .flatMap((k) => k.split(/\s-\s/)) // inline `kw - "ejemplo"` tail
           .map((k) => k.trim().toLowerCase().replace(/['"]/g, ""))
           .filter((k) => k.length >= 3);
         if (keywords.length > 0) byName.set(entry, { name: entry, keywords });

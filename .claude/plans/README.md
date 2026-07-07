@@ -17,19 +17,19 @@
 | Mode | When | Artefacts created |
 |---|---|---|
 | **minimal** | Trivial task (<30 complexity, 1-2 files, known pattern) | No directory created. Only Phase 3 + Phase 4-light run. |
-| **standard** | Bounded task with some uncertainty (30-60 complexity) | `spec.md`, `tasks/` (index + US{N}.md), `tests.md` or `validations.md`, `review.md`, `retro.md` |
-| **full** | Architectural / multi-domain task (>60 complexity) | Same as standard + `state.json` |
+| **standard** | Bounded task with some uncertainty (30-60 complexity) | `spec.md`, `tasks/` (index + US{N}.md), `tests.md` or `validations.md`, `review.md`, `retro.md`, `state.json` |
+| **full** | Architectural / multi-domain task (>60 complexity) | Same as standard (state.json is created in both — only minimal skips it; see `commands/flow.md` Step 4) |
 
 ## Files by phase
 
 | Phase | File / Dir | Skill |
 |---|---|---|
-| 1 | `spec.md` | scope-definer |
-| 2 | `tasks/` directory containing `index.md` (DAG + summary) + one `US{N}.md` per story | tech-planner |
-| 2.5 | `tests.md` (code) **or** `validations.md` (markdown/skills/docs) — chosen per HU based on whether files are executable | tdd-designer |
-| 3 | Code changes; updates `state.json` (if full mode) | story-executor |
-| 4 | `review.md` | critic-reviewer |
-| 5 | `retro.md` | retro-learner |
+| 1 | `spec.md` | scope |
+| 2 | `tasks/` directory containing `index.md` (DAG + summary) + one `US{N}.md` per story | tech-plan |
+| 2.5 | `tests.md` (code) **or** `validations.md` (markdown/skills/docs) — chosen per HU based on whether files are executable | tdd-design |
+| 3 | Code changes; updates `state.json` (standard/full) | build |
+| 4 | `review.md` | critic |
+| 5 | `retro.md` | retro |
 
 > **`tasks/` is a directory, not a single `tasks.md` file.** This was a deliberate choice: one file per story keeps each HU under ~200 lines and parseable in isolation. The legacy monolithic `tasks.md` is not supported.
 

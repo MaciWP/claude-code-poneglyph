@@ -22,7 +22,7 @@ The Lead reads this `SKILL.md` when the user's prompt matches one of the activat
 2. Reads the relevant `references/<type>/` bundle for spec + gotchas + examples.
 3. Reads the template from `templates/<type>/` (for agent/skill) or `references/<type>/templates.md` (inline for hook/rule/mcp/plugin).
 4. Optionally fetches the official Claude Code doc URL (table below) to verify against drift.
-5. Writes the file(s) directly — **inline**, even for ≥5 files (the spawn tree forbids 1 agent; "isolation" is not a reason). Fans out via `Workflow` only for ≥4 independent extension units (`CLAUDE.md §When to delegate`).
+5. Writes the file(s) directly — **inline**, even for ≥5 files (the spawn tree forbids 1 agent; "isolation" is not a reason). Fans out via `Workflow` only for ≥4 independent extension units (`CLAUDE.md §Lead Orchestrator Mode / Delegation doctrine`).
 
 ## Extension Types
 
@@ -84,7 +84,7 @@ For hook/rule/mcp/plugin: templates are inline in `references/<type>/templates.m
 1. Read the chosen template.
 2. Replace `{{PLACEHOLDERS}}` with user-provided values.
 3. **For any single extension unit** (even ≥5 files): Lead writes inline (default-allow gate permits it for non-sensitive paths; the spawn tree forbids 1 agent).
-4. **For ≥4 independent extension units**: fan out via `Workflow` — same spawn rule as `CLAUDE.md §When to delegate` (Trigger A).
+4. **For ≥4 independent extension units**: fan out via `Workflow` — same spawn rule as `CLAUDE.md §Lead Orchestrator Mode / Delegation doctrine`.
 5. For hooks: also generate the `settings.json` entry.
 
 ### Step 5 — Validate
@@ -93,7 +93,7 @@ Apply the `references/<type>/gotchas.md` or `frontmatter-spec.md` checklist befo
 
 ## Critical Reminders (cross-type)
 
-1. **`description` 3-line format is load-bearing** — agents and skills MUST include `Use proactively when:` and `Keywords -` lines or auto-matching fails.
+1. **`description` 3-line format is load-bearing** — AGENTS include `Use proactively when:`; SKILLS use the es-ES `Úsala cuando:` (the live 24-skill convention, feature 023). Both MUST carry the `Keywords -` line or auto-matching fails.
    - **Skills (feature 023): `description` + `when_to_use` go in es-ES** (the activation surface, matched against Oriol's Spanish prompts). Technical identifiers stay original; `Keywords -` label stays literal; body stays English. Pattern: `references/skill/frontmatter-spec.md §Description Format`.
 2. **`disallowedTools` is camelCase** — never `disallowed_tools`.
 3. **Never use `#!/usr/bin/env bash`** in hooks on Windows — Claude Code's reduced PATH breaks `env`. Use `#!/bin/bash` (absolute) or prefer `.ts` with `#!/usr/bin/env bun`.

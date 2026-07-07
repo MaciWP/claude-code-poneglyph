@@ -43,7 +43,7 @@ Execute steps 1-5 IN ORDER before responding. No exceptions.
 | Clear (pragmatically obvious intent) | Continue |
 | Feature-scope task (multi-phase work) | Suggest `/flow <task>` to the user |
 
-For architectural/comparison decisions → `Skill('decide')` first.
+For architectural/comparison decisions → suggest `/decide` to the user first (`decide` is manual-only: `disable-model-invocation: true`, so the Lead cannot invoke it via `Skill()`); the inline alternative is `decision-stress-test`.
 
 > **Inside a `/goal` loop**: `/goal` is a persistence loop, not a router — it does NOT activate skills per turn. But the routing core (this skill's §1 triage + the skill-routing layer) is already **always-loaded in CLAUDE.md**, so the Lead routes regardless. Re-run the triage **every turn**, not just the first. For feature-shaped work, **wrap it in `/flow` rather than improvising** — deterministic phase→skill wiring beats best-effort matching (memory: skill-wiring-over-autotrigger). Inside `/flow`, each phase MUST run via its `Skill()` (scope/tech-plan/tdd-design/build/critic/retro) — invoking it loads the procedure; the work still runs inline (not delegation). For autonomous goals (no human-in-loop requested), route directly without pausing to "suggest"; the goal directive already authorizes proceeding. When unsure which skills apply, run `skill-advisor` (propose→ratify shortlist).
 
@@ -82,13 +82,13 @@ graph TD
 | **P1** | 1 agente = **PROHIBIDO** | Única excepción: el **fresh-context reviewer** de critic Phase 4 (read-only, correctness/requirements — su valor ES el contexto fresco; evidencia 018 W1 D1/D3, feature 019). Fuera de eso: no paraleliza; solo aísla contexto (que `/clear` limpia); encarece sin retorno. |
 | **P2** | "isolation" **no es excusa** | El main actúa y se ensucia antes que pagar 1 agente. **"≥5 files" NO es trigger de spawn → inline.** |
 | **P3** | Umbral **≥4** + **read-only** | 1-3 unidades → inline. ≥4 read-only → Workflow. ≥4 de ESCRITURA → inline secuencial salvo opt-in explícito del usuario. |
-| **P4** | research sí, code-review NO se delega en panel | Research delegada → ≥4 en paralelo (search barato `Explore`/haiku); si <4 → inline. Code review = checks mecánicos + **1 fresh-context reviewer** (P1-exception); panel ≥4 SOLO para decisiones (`decision-stress-test`) — evidencia 018 W1/W2 (feature 019). |
+| **P4** | research sí, code-review NO se delega en panel | Research delegada → ≥4 en paralelo (search barato `Explore`); si <4 → inline. Code review = checks mecánicos + **1 fresh-context reviewer** (P1-exception); panel ≥4 SOLO para decisiones (`decision-stress-test`) — evidencia 018 W1/W2 (feature 019). |
 | **P5** | Core en CLAUDE.md, detalle aquí | El núcleo operacional vive always-loaded en CLAUDE.md; este árbol es la referencia expandida. El resto enlaza aquí para el detalle, no redefine umbrales. |
 | **P6** | Fix = borrado + enlazar | Sin maquinaria de enforcement; los patrones de la Workflow tool se **enlazan**, no se copian. |
 | **P7** | spawn-decision ≠ intra-orchestration | ≥4 gobierna la DECISIÓN de spawnear. Agentes coordinándose **dentro** de un team/workflow ya spawneado (p.ej. Four-Eyes generator→validator) no son un nuevo spawn. |
 | **P8** | Escritura = inline-first | Build/write SIEMPRE inline por defecto; el fan-out de escritura degrada calidad (3 costes arriba) y solo se justifica con opt-in explícito. |
 
-**Exploración (lectura, NO spawn-de-trabajo)**: `Explore` (Haiku built-in del harness) es la primitiva de lectura — barata, read-only — para exploración masiva read-only que ensuciaría el contexto del Lead. **NO cuenta como "1 agente prohibido".** 1-2 files → Lead `Read` inline. Delegar TRABAJO sigue el árbol (≥4). Matriz completa: `references/04-agent-selection.md`.
+**Exploración (lectura, NO spawn-de-trabajo)**: `Explore` (built-in del harness; hereda el modelo de sesión desde CC 2.1.198) es la primitiva de lectura — barata, read-only — para exploración masiva read-only que ensuciaría el contexto del Lead. **NO cuenta como "1 agente prohibido".** 1-2 files → Lead `Read` inline. Delegar TRABAJO sigue el árbol (≥4). Matriz completa: `references/04-agent-selection.md`.
 
 **Ortogonal al árbol (no son spawn)**: sensitive paths (`.env`, `*.lock`, `package.json`, `.claude/settings.json`, `secrets/`, `credentials/`) → inline con `sensitive: <reason ≥8 chars>`. Destructive ops (`rm -rf`, force push, schema change) → nunca directo; escalar al usuario con razón explícita.
 
@@ -122,7 +122,7 @@ Full Arch H template with all blocks, propagation model, skill discovery: `refer
 | Tool | Usage |
 |---|---|
 | `Workflow` (≥4 independent **read-only** units) | Fan-out: research sweeps / exploration / decision-review panel in parallel (`agentType` `default`, or built-ins like `Explore`). Write fan-out: explicit user opt-in only (`isolation: 'worktree'` on file collision) |
-| `Explore` | Explore codebase (massive read-only — Haiku built-in; not a work-spawn) |
+| `Explore` | Explore codebase (massive read-only — built-in, inherits session model; not a work-spawn) |
 | `Skill('tech-plan')` | Plan complex tasks — Lead inline, no dedicated agent |
 | `Skill('diagnostic-patterns')` | Diagnose failures — Lead inline, no dedicated agent |
 | `Skill()` | Load context into the Lead's OWN session only |

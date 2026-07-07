@@ -9,6 +9,8 @@ import {
   closeFeature,
   flipUsFrontmatter,
   runCommand,
+  findOpenPlans,
+  summarizeState,
   type FlowState,
 } from "../flow-state";
 
@@ -70,11 +72,26 @@ describe("setVerdict / closeFeature", () => {
   });
 
   test("closeFeature flips terminal flags", () => {
-    const s = closeFeature({ ...baseState(), us_pending: [] }, { date: DATE });
+    const s = closeFeature(
+      { ...baseState(), us_pending: [], review_verdict: "APPROVED" },
+      { date: DATE },
+    );
     expect(s.feature_closed).toBe(true);
     expect(s.retro_status).toBe("approved");
     expect(s.current_phase).toBe("closed");
     expect(s.phases_completed).toContain(5);
+  });
+
+  test("closeFeature refuses without an approving verdict (Cmd IV guard)", () => {
+    expect(() => closeFeature({ ...baseState(), us_pending: [] }, { date: DATE })).toThrow(/review_verdict/);
+    expect(() =>
+      closeFeature({ ...baseState(), us_pending: [], review_verdict: "NEEDS_CHANGES" }, { date: DATE }),
+    ).toThrow(/APPROVED/);
+    const ok = closeFeature(
+      { ...baseState(), us_pending: [], review_verdict: "APPROVED_WITH_WARNINGS" },
+      { date: DATE },
+    );
+    expect(ok.feature_closed).toBe(true);
   });
 });
 
@@ -93,6 +110,68 @@ describe("flipUsFrontmatter", () => {
   });
 });
 
+describe("findOpenPlans (US1)", () => {
+  function plansRootWith(specs: Array<{ name: string; content: string | null }>): string {
+    const root = mkdtempSync(join(tmpdir(), "plans-root-"));
+    for (const s of specs) {
+      const dir = join(root, s.name);
+      mkdirSync(dir);
+      if (s.content !== null) writeFileSync(join(dir, "state.json"), s.content);
+    }
+    return root;
+  }
+
+  test("T1.1 lists only open plans (feature_closed:false), excludes closed", () => {
+    const open1 = JSON.stringify({ ...baseState(), spec_slug: "100-a", feature_closed: false });
+    const open2 = JSON.stringify({ ...baseState(), spec_slug: "101-b", feature_closed: false });
+    const closed = JSON.stringify({ ...baseState(), spec_slug: "102-c", feature_closed: true });
+    const root = plansRootWith([
+      { name: "100-a", content: open1 },
+      { name: "101-b", content: open2 },
+      { name: "102-c", content: closed },
+    ]);
+    const got = findOpenPlans(root);
+    expect(got.map((p) => p.slug).sort()).toEqual(["100-a", "101-b"]);
+    expect(got.every((p) => p.state !== null)).toBe(true);
+  });
+
+  test("T1.3 malformed state.json marked illegible, missing state.json skipped, no throw (AC2)", () => {
+    const valid = JSON.stringify({ ...baseState(), spec_slug: "200-ok", feature_closed: false });
+    const root = plansRootWith([
+      { name: "200-ok", content: valid },
+      { name: "201-bad", content: "{not json" },
+      { name: "202-nostate", content: null },
+    ]);
+    let got: ReturnType<typeof findOpenPlans> = [];
+    expect(() => { got = findOpenPlans(root); }).not.toThrow();
+    expect(got.find((p) => p.slug === "200-ok")?.state).not.toBeNull();
+    expect(got.find((p) => p.slug === "201-bad")?.state).toBeNull(); // illegible, surfaced
+    expect(got.find((p) => p.slug === "202-nostate")).toBeUndefined(); // not a flow plan
+  });
+
+  test("absent plans root → [] (best-effort, no throw)", () => {
+    expect(findOpenPlans(join(tmpdir(), "does-not-exist-xyz"))).toEqual([]);
+  });
+});
+
+describe("summarizeState (US1)", () => {
+  test("T1.2 includes slug, phase, gates and us counts (AC1)", () => {
+    const s: FlowState = {
+      ...baseState(),
+      spec_slug: "300-sum",
+      current_phase: 3,
+      gates_approved: { "1->2": true, "2->3": true },
+      us_completed: ["US1"],
+      us_pending: ["US2"],
+    };
+    const line = summarizeState(s);
+    expect(line).toContain("300-sum");
+    expect(line).toContain("3");
+    expect(line).toContain("US1");
+    expect(line).toContain("US2");
+  });
+});
+
 describe("runCommand (integration, tmpdir)", () => {
   test("close-us updates state.json and US frontmatter on disk", async () => {
     const plan = mkdtempSync(join(tmpdir(), "flow-state-"));
@@ -106,6 +185,16 @@ describe("runCommand (integration, tmpdir)", () => {
     expect(state.us_completed).toContain("US1");
     expect(state.updated_at).toBe(DATE);
     expect(readFileSync(join(plan, "tasks", "US1.md"), "utf8")).toContain("status: closed");
+  });
+
+  test("approve-gate refreshes updated_at on disk (RI-5)", async () => {
+    const plan = mkdtempSync(join(tmpdir(), "flow-state-gate-"));
+    writeFileSync(join(plan, "state.json"), JSON.stringify(baseState(), null, 2));
+    const LATER = "2026-07-02";
+    await runCommand("approve-gate", ["2-3"], { planDir: plan, date: LATER });
+    const state = JSON.parse(readFileSync(join(plan, "state.json"), "utf8"));
+    expect(state.gates_approved["2->3"]).toBe(true);
+    expect(state.updated_at).toBe(LATER);
   });
 
   test("malformed state.json fails loudly", async () => {

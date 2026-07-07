@@ -103,6 +103,7 @@ Write `.claude/plans/<slug>/state.json`:
   },
   "us_completed": [],
   "us_pending": [],
+  "us_history": [],
   "feature_closed": false,
   "review_verdict": null,
   "retro_status": null,
@@ -111,7 +112,10 @@ Write `.claude/plans/<slug>/state.json`:
 }
 ```
 
-This is the **canonical schema** for `state.json` (referenced by all 6 phase skills).
+This is the **canonical schema** for `state.json` (referenced by all 6 phase skills). Two fields written by `flow-state.ts` that the initial template leaves implicit:
+
+- **`current_phase`**: `number | "closed"`. Carries the active phase number (`1`, `2`, `2.5`, `3`, `4`, `5`) while in flight; `close-feature` sets the string `"closed"`.
+- **`us_history`**: optional array, appended by `close-us`. Each entry: `{ us, completed_at, tests_passed, files_touched, execution, askuserquestion_count }`. Empty/absent until the first HU closes.
 
 ### Step 5 — Resume (only if `--resume <slug>`)
 
@@ -246,7 +250,7 @@ Closed/abandoned plans move to `.claude/plans/_archive/` (gitignored, untracked 
 
 - **INVOKE the phase skill — do not improvise the phase work without it.** Each phase MUST run via its `Skill()` (`scope`/`tech-plan`/`tdd-design`/`build`/`critic`/`retro`), not by the Lead reproducing the phase from memory. The phase skill carries the procedure + gates; skipping it is the exact under-use this repo fights (feature 023). This does NOT contradict inline-first: invoking the phase skill loads the procedure; the build *work* still runs inline. If a phase skill does not auto-fire, invoke it explicitly (`Skill('<phase>')`) before doing the phase work.
 - Hard gates 1→2 and 2→3 are MANDATORY in standard/full modes — never skip via flag, never auto-approve.
-- `state.json` updates ON EVERY phase transition (Phase 1 complete → write; gate approved → write; HU completed → write). Use the typed helper instead of ad-hoc one-liners: `bun .claude/scripts/flow-state.ts close-us US{n} | approve-gate 1-2|2-3 | verdict <V> | close-feature`.
+- `state.json` updates ON EVERY phase transition (Phase 1 complete → write; gate approved → write; HU completed → write). Use the typed helper instead of ad-hoc one-liners: `bun .claude/scripts/flow-state.ts close-us US{n} | approve-gate 1-2|2-3 | verdict <V> | close-feature | status`. `close-feature` refuses unless `review_verdict` is APPROVED/APPROVED_WITH_WARNINGS (Cmd IV guard); `status` lists every open lifecycle under the plans root.
 - Triage is transparent — show the user the resolved mode + reason; user can override.
 - `--resume` reads state.json strictly; if corrupted, reconstruct from artefacts + warn (never silently guess).
 - In standard/full, the slug is generated ONCE at Phase 1 start; subsequent phases honor it.
@@ -266,7 +270,7 @@ Closed/abandoned plans move to `.claude/plans/_archive/` (gitignored, untracked 
 ## Edge cases
 
 - **Edge 1** — `/flow --resume <slug>` but `state.json` does not exist: fallback to `Glob .claude/plans/<slug>/*.md` and reconstruct `current_phase` from artefacts present (spec only → Phase 1 awaiting gate; spec+tasks → Phase 2 awaiting gate 2→3; etc.). Warn user.
-- **Edge 2** — Gate 1→2 rejected by user: re-invoke `scope` with refinement notes. Multiple iterations allowed; counter in `state.json.gate_iterations`.
+- **Edge 2** — Gate 1→2 rejected by user: re-invoke `scope` with refinement notes. Multiple iterations allowed (no counter is persisted — the canonical schema has no such field).
 - **Edge 3** — Phase 4 verdict NEEDS_CHANGES with specific HUs: re-enter Phase 3 ONLY for those HUs (don't rebuild the whole DAG).
 - **Edge 4** — User invokes `/flow` while another feature is mid-flight (active state.json elsewhere): `AskUserQuestion` "¿Reusar el slug actual o crear nuevo?" — never silently fork.
 - **Edge 5** — Mode `minimal` produces a result the user later wants to formalize: invoke `/flow --standard` retroactively, point Phase 1 (scope) at the existing code as "reverse-engineer spec".

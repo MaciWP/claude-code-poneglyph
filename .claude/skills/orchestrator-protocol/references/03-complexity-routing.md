@@ -129,7 +129,7 @@ Team mode is experimental and rarely used (4-gate + opt-in). The teammate prompt
 | Inline build/review (Lead session) — the default for ALL writes | any | session model (`effortLevel`) |
 | Workflow unit — read-only research/review lens | any | sonnet (default) |
 | Workflow unit — write (explicit opt-in only) | > 50 | opus |
-| Read-only exploration (`Explore`) | any | haiku (built-in) |
+| Read-only exploration (`Explore`) | any | inherits session model (built-in, capped at opus — CC 2.1.198) |
 
 ## Effort Routing (Frontmatter — static)
 
@@ -145,7 +145,7 @@ Effort scale: `low < medium < high < xhigh`
 
 ### xhigh
 
-`xhigh` is available with Opus 4.7. On Opus 4.6 it behaves identically to `high`. Reserve for:
+`xhigh` is available on Opus 4.7+ (incl. 4.8). On models without it, it behaves as `high`. Reserve for:
 
 | When | Condition |
 |------|-----------|

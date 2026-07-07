@@ -1,6 +1,6 @@
 # Auxiliary skills matrix (canon — referenced by each phase SKILL.md)
 
-> Source of truth for which auxiliary skills each phase skill invokes. Every phase SKILL.md (scope/tech-plan/tdd-design/build/critic/retro + drillme) carries an "Auxiliary skills invoked" block with the relevant row of this table (it does NOT duplicate the full table). Relocated here from `001-poneglyph-5phase-workflow/tasks/index.md` when that plan was archived (2026-06-24); the matrix is live canon, the plan is history.
+> Source of truth for which auxiliary skills each phase skill invokes. Phase SKILL.md files carry an "Auxiliary skills invoked" block with the relevant row of this table where it applies (scope/tech-plan/tdd-design/build/retro; critic wires its auxiliaries in its references, drillme's row is behavioral-only) — none duplicates the full table. Relocated here from `001-poneglyph-5phase-workflow/tasks/index.md` when that plan was archived (2026-06-24); the matrix is live canon, the plan is history.
 
 ## Catálogo de auxiliaries
 
