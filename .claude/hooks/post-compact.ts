@@ -23,7 +23,9 @@ export function openPlansReminder(plansRoot = ".claude/plans"): string | null {
       const st = JSON.parse(readFileSync(sp, "utf8")) as { feature_closed?: boolean; current_phase?: unknown };
       if (st.feature_closed === false) open.push(`- ${d.name} (phase ${st.current_phase ?? "?"})`);
     } catch {
-      /* illegible state.json — skip, best-effort */
+      // Illegible state.json SURFACES instead of hiding (027/US1, matching
+      // flow-state.ts `status` semantics) — a corrupt lifecycle is still open.
+      open.push(`- ${d.name} — ⚠️ unreadable state.json`);
     }
   }
   if (open.length === 0) return null;

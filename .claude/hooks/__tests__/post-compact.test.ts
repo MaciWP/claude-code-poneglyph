@@ -48,7 +48,9 @@ describe("openPlansReminder (US2)", () => {
     let out: string | null = null;
     expect(() => { out = openPlansReminder(root); }).not.toThrow();
     expect(out).toContain("032-open"); // valid open surfaced
-    expect(out).not.toContain("030-bad"); // illegible skipped
+    expect(out).toContain("030-bad"); // illegible SURFACES as unreadable (027/US1, matches flow-state status)
+    expect(out).toContain("unreadable");
+    expect(out).not.toContain("031-nostate"); // no state.json = not flow-managed, still skipped
   });
 
   test("buildOutput includes the reminder section when a plan is open", () => {

@@ -18,6 +18,10 @@ const LINK_FOLDERS = [
   "hooks",
   "workflows",
   "output-styles",
+  // scripts: synced since 027/US2 — synced components (flow.md, retro, post-compact
+  // reminder) instruct `bun .claude/scripts/flow-state.ts`, which only resolved with
+  // cwd=poneglyph (sync-trap class RI-1, audit 2026-07-02). evals/ stays NOT synced.
+  "scripts",
 ];
 
 // `rules` is NOT a whole-folder link (see LINK_FOLDERS): it is expanded per-entry so that

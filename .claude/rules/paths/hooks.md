@@ -28,6 +28,7 @@ Reliability matters because PreToolUse/PostToolUse may silently fail to fire (op
 | Stop | End of turn | Reliable | `security-gate.ts` + `learning-inbox.ts` — quality gate (security warn + learning capture) |
 | UserPromptSubmit | On prompt submit | Reliable as event (gap early-session/post-compaction, #17277) | `skill-activation.ts` — injects `Skill(<name>)` on keyword match; best-effort layer. Skips ALL slash commands (incl. `/goal` — it runs as the Lead, which has the always-loaded routing core and can invoke `Skill()` itself; no injected hint needed) |
 | InstructionsLoaded | On instruction load | Reliable as event | `instructions-loaded.ts` (async) — logs every CLAUDE.md/rules load (load-layer proof) |
+| SessionStart | On every session start (incl. resume/clear) | Reliable as event | `session-start-plans.ts` — open-plans reminder on EVERY session (027/US1; post-compact's copy only fires after a compaction). Silent when 0 open |
 | SubagentStop | End of subagent | Reliable as event | — (none registered) |
 | StopFailure | API error (rate limit, auth) | — | — |
 | PermissionRequest | Claude requests permission | — | auto-approve |

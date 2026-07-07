@@ -45,4 +45,4 @@ Quick-reference templates for Claude Code configurations.
 ## Related
 
 - `meta-create` skill: auto-activable skill that creates hooks, rules, MCP configs, plugins, agents and skills (templates + references under `.claude/skills/meta-create/`)
-- After any behavioral meta-config change (CLAUDE.md, output-style, permissions affecting behavior), run the golden-prompt regression: `bun .claude/evals/run.ts` (protocol: `.claude/evals/README.md`)
+- After any behavioral meta-config change (CLAUDE.md, output-style, permissions affecting behavior), run the golden-prompt regression: `bun .claude/evals/run.ts` (in the poneglyph repo — evals/ is deliberately not synced) (protocol: `.claude/evals/README.md`)

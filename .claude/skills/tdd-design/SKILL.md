@@ -112,6 +112,8 @@ Declare classification in output: per-HU one-liner like `US3: TDD-mode (creates 
 
 Each TDD-mode HU receives ≥1 happy path + ≥1 edge case. If HU has invariants (parsers, pure transforms), suggest property-based opt-in (T{N}.3 with `invariant` + `generator`) — evidence +23-37% effectiveness over plain TDD (arxiv 2506.18315).
 
+**Pinned-behavior sweep (027 retro)**: if the oracle changes the behavior of EXISTING shared code, grep the existing test suite for tests that pin the CURRENT behavior — surface the conflict here at 2.5 (list the tests to update as part of the HU), never let build discover it (lesson: 027/US1, oracle T1.3 contradicted `post-compact.test.ts` "illegible skipped").
+
 **Reuse project test infrastructure (from Step 1.7)**: the `Pre-condition`/setup of each test must reference EXISTING fixtures/factories/helpers by name (the discovered catalog), not imply new ad-hoc data. Only specify a new fixture when none covers the case — and say so explicitly (`new fixture needed: <name> — no existing fixture provides <X>`) so Phase 3 `build` adds it at the correct shared level (closest conftest / shared helper), not duplicated inline. This carries into `build`: the project's test-conventions skill governs how the test code is actually written.
 
 **validation-mode HU** — produce in `validations.md`:

@@ -123,6 +123,17 @@
         ]
       }
     ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun $HOME/.claude/hooks/session-start-plans.ts",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
     "PermissionRequest": [
       {
         "hooks": [

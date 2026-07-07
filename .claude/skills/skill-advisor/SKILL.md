@@ -42,8 +42,15 @@ disable-model-invocation: false
    - One option per candidate (label = skill name, description = why it applies + what it does).
    - multiSelect: true — the user picks which to activate.
    - If the shortlist is empty, say so plainly ("ninguna skill aplica claramente") — never invent.
-4. **Activate** — invoke `Skill(<name>)` only for the ratified candidates.
-5. **Multi-pass (optional)** — if the user wants to go deeper or the task shifts, re-run from step 1.
+4. **Model/effort recommendation (gated — 027/US4)** — check the task's nature against the
+   routing table in `.claude/docs/model-uplift-playbook.md §4` (Read on demand; do NOT copy the
+   table here — single owner). ONLY if the recommended model or effort **differs** from the
+   session's current state, append one option/line to the same AskUserQuestion: the recommendation
+   + the user action it requires (`/model <id>` or `/effort <level>`), citing §4. If it matches,
+   say NOTHING about model/effort (anti-ceremony). Always propose→ratify: the Lead cannot and
+   must not switch the session model/effort itself.
+5. **Activate** — invoke `Skill(<name>)` only for the ratified candidates.
+6. **Multi-pass (optional)** — if the user wants to go deeper or the task shifts, re-run from step 1.
 
 ## SIEMPRE rules
 
@@ -51,6 +58,9 @@ disable-model-invocation: false
 - Never re-implement the model's semantic matching; reason over the in-context listing + the disk shortlist.
 - Empty shortlist → say it; do not invent candidates.
 - Cheap: the per-turn surfacing is the hook's job; run this skill at decision points, not every turn.
+- Model/effort recommendation only when it DIFFERS from the current session state; source of
+  criterion is `docs/model-uplift-playbook.md §4` (referenced, never duplicated); user executes
+  the switch (`/model`, `/effort`) — never the Lead.
 
 ## Commandments cubiertos
 

@@ -10,7 +10,7 @@ The intended normal case is working in **another** project while poneglyph runs 
 bun .claude/commands/sync-claude.ts --execute --backup --force
 ```
 
-- Links `skills/commands/rules/docs/hooks/output-styles/workflows` into `~/.claude/` (rules link per-entry, with `test-policy.md` excluded from the global layer — 021 decision) (junctions on Windows — no admin; symlinks on macOS/Linux) and regenerates `~/.claude/settings.json` = `settings.json` (committed base) deep-merged with `settings.machine.json` (gitignored, per-machine).
+- Links `skills/commands/rules/docs/hooks/output-styles/workflows/scripts` into `~/.claude/` (authoritative folder list = `LINK_FOLDERS` in `commands/sync-claude.ts`; rules link per-entry, with `test-policy.md` excluded from the global layer — 021 decision; scripts synced since 027/US2) (junctions on Windows — no admin; symlinks on macOS/Linux) and regenerates `~/.claude/settings.json` = `settings.json` (committed base) deep-merged with `settings.machine.json` (gitignored, per-machine).
 - **macOS**: also create `.claude/settings.machine.json` carrying that machine's `env.PATH` — the GUI app launches with a minimal PATH, so linking alone leaves hooks/statusline broken; the PATH overlay fixes it (separate cause from linking).
 - **Duplicates only inside this repo**: the global (`~/.claude/skills`, link → repo) and the project (`./.claude/skills`, real) are the same files via two paths. Harmless for skills/commands (dedupe by name); but ALL registered hooks are declared in BOTH levels, so a maintenance session in this repo may **double-fire** any of them. Other projects never see this.
 - Settings load at session start → a fresh sync takes effect on the NEXT session.
@@ -125,10 +125,10 @@ Test: "does the agent need this in EVERY prompt?" — no → skill.
 | Component | Audit baseline (early 2026) | Post-cleanup (2026-05-28) | Current | Detail |
 |---|---|---|---|---|
 | Agents | 7 + 1 meta | 3 | **0 custom** | builder/reviewer/scout cut in feature 008; work runs inline (delegation doctrine), read-only fan-out via Workflow/`Explore`. The ONE sanctioned single-agent dispatch is critic's fresh-context reviewer (P1 exception, feature 019) — ad-hoc, no agent file |
-| Skills | 28 | 14 | **24** | 6 phase skills + `drillme` + `html-report` (003) + `best-of-n` (019, pilot); `planner-protocol` migrated-and-cut into `tech-plan/references/`; `skill-advisor` cut in 017, **restored in 023** as the ratifiable shortlist backstop and wired at /flow phase boundaries in 024 |
-| Hooks | 15+ | 6 | **7 registered** | `auto-approve`, `post-compact`, `security-gate`, `validators/code-validator`, `skill-activation`, `instructions-loaded`, `learning-inbox` (017/US11-12; self-match filter 019) |
-| Slash commands | 10 | 4 | **3** | `flow`, `sync-claude`, `role` (decide/explain-changes were thin command wrappers → pruned; they remain as skills) |
-| Rules | 7 | 2 + paths/ | **2 + paths/** | `error-recovery.md`, `test-policy.md` + `paths/{hooks,orchestration}.md` |
+| Skills | 28 | 14 | **count `ls .claude/skills`** (24 snapshot 2026-07-07) | 6 phase skills + `drillme` + `html-report` (003) + `best-of-n` (019, pilot); `planner-protocol` migrated-and-cut into `tech-plan/references/`; `skill-advisor` cut in 017, **restored in 023** as the ratifiable shortlist backstop and wired at /flow phase boundaries in 024 |
+| Hooks | 15+ | 6 | **the ones `settings.json.hooks` registers** (8 snapshot 2026-07-07) | authoritative list = settings.json; event table with per-hook detail: `rules/paths/hooks.md`. Newest: `session-start-plans` (027/US1) |
+| Slash commands | 10 | 4 | **count `ls .claude/commands/*.md`** (3 snapshot 2026-07-07) | `flow`, `sync-claude`, `role` (decide/explain-changes were thin command wrappers → pruned; they remain as skills) |
+| Rules | 7 | 2 + paths/ | **count `ls .claude/rules`** (3 + paths/ snapshot 2026-07-07) | `error-recovery.md`, `test-policy.md`, `model-uplift.md` (026) + `paths/{hooks,orchestration}.md` |
 | Output-styles | 1 (caveman) | 1 | **1 (poneglyph)** | es-ES natural register since feature 017/US3 |
 
 ## Security posture (personal setup — deliberate)
@@ -139,12 +139,12 @@ Test: "does the agent need this in EVERY prompt?" — no → skill.
 
 | Dir | Contents | Status |
 |---|---|---|
-| `skills/` (24), `commands/` (3 slash + sync script), `rules/`, `hooks/`, `output-styles/`, `plans/` | Core system | documented above |
+| `skills/`, `commands/`, `rules/`, `hooks/`, `output-styles/`, `plans/` | Core system (counts live in the component table above — snapshots + count commands, never trust stale numbers) | documented above |
 | `docs/` | This file + `research-rigor.md` + `auxiliary-skills-matrix.md` (relocated here 2026-06-24) (`arch-h-*` and `lead-mode-*` deleted 2026-06-11 — superseded by `orchestrator-protocol/references/06` and the `CLAUDE_LEAD_MODE` note above) | on-demand references |
 | `workflows/` | `ultracode-audit.js` — saved Workflow script (worked example of find→verify pipeline) | live |
 | `audits/` | Ad-hoc audit outputs (005, 009) | archive-like |
 | `evals/` | Golden-prompt regression harness (019): deterministic graders + runner + real-failure cases (19 as of 2026-07-02 — recount `cases.jsonl` rather than trusting this number). Tracked, NOT synced. Run per meta-config change | live |
-| `scripts/` | `flow-state.ts` — typed state.json/frontmatter mutations for /flow. Tracked, NOT synced | live |
+| `scripts/` | `flow-state.ts` — typed state.json/frontmatter mutations for /flow. Tracked, **synced since 027/US2** (RI-1 sync-trap class closed: synced components instruct `bun .claude/scripts/...`) | live |
 | `learned/` | Runtime per-machine (gitignored) EXCEPT `best-of-n-log.md` (versioned pilot evidence, 019) | runtime |
 | `ccstatusline/` | Statusline module wired via settings (synced to `~/.config/ccstatusline/`) | live |
 | `config/` | `cost-budget.json` — phantom config nothing read | **deleted 2026-06-11** |
