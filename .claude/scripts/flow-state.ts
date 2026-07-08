@@ -9,6 +9,7 @@
 //   bun .claude/scripts/flow-state.ts approve-gate 1-2|2-3            [--plan <dir>]
 //   bun .claude/scripts/flow-state.ts verdict APPROVED|APPROVED_WITH_WARNINGS|NEEDS_CHANGES|BLOCKED
 //   bun .claude/scripts/flow-state.ts close-feature                   [--plan <dir>]
+//   bun .claude/scripts/flow-state.ts complete-phase 1|2|2.5|3|4|5      [--plan <dir>]
 //   bun .claude/scripts/flow-state.ts status                          [--plan <plans-root>]
 // Without --plan, auto-detects the single open plan (feature_closed: false) under .claude/plans/.
 // `status` instead scans the whole plans root and lists every incomplete lifecycle.
@@ -73,6 +74,22 @@ export function closeUs(
     us_pending: state.us_pending.filter((u) => u !== usId),
     us_history: [...(state.us_history ?? []), entry],
     updated_at: opts.date,
+  };
+}
+
+// Marks a phase as completed mid-flight (028/US6-D6 — closes the resumability
+// gap when a session dies in 2.5: nothing else records phases between gates).
+const PHASES = [1, 2, 2.5, 3, 4, 5];
+
+export function completePhase(state: FlowState, phase: number): FlowState {
+  if (!PHASES.includes(phase)) {
+    throw new Error(`invalid phase "${phase}" — one of ${PHASES.join(" | ")} (e.g. 2.5)`);
+  }
+  const phases = new Set(state.phases_completed);
+  phases.add(phase);
+  return {
+    ...state,
+    phases_completed: [...phases].sort((a, b) => a - b),
   };
 }
 
@@ -201,8 +218,13 @@ export async function runCommand(
     case "close-feature":
       state = closeFeature(state, opts);
       break;
+    case "complete-phase":
+      state = completePhase(state, Number(args[0]));
+      break;
     default:
-      throw new Error(`unknown command "${command}" — close-us | approve-gate | verdict | close-feature`);
+      throw new Error(
+        `unknown command "${command}" — close-us | approve-gate | verdict | close-feature | complete-phase`,
+      );
   }
 
   // Every persisted mutation refreshes updated_at (flow.md: "state.json updates

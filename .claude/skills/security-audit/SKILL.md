@@ -1,5 +1,5 @@
 ---
-name: security-review
+name: security-audit
 description: |
   Revisión de seguridad de los cambios pendientes: secretos hardcodeados, validación de inputs en boundaries, vectores OWASP Top 10, superficie de amenaza.
   Úsala cuando: el cambio toca auth/pagos/secretos/credenciales/crypto/sesión, "revisa la seguridad", "esto es seguro", "vulnerabilidad", "auth", "jwt", "secrets".
@@ -126,7 +126,7 @@ For detailed patterns with detection methods and before/after examples, see `ref
 
 | Script | Input | Output | Usage |
 |--------|-------|--------|-------|
-| `scripts/scan-secrets.ts` | file/dir path | JSON `{ findings, total }` | `bun .claude/skills/security-review/scripts/scan-secrets.ts <path>` |
+| `scripts/scan-secrets.ts` | file/dir path | JSON `{ findings, total }` | `bun .claude/skills/security-audit/scripts/scan-secrets.ts <path>` |
 
 ## Secret Detection Patterns
 

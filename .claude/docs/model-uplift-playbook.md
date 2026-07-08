@@ -84,7 +84,7 @@ Watchpoints where smaller models historically relapse in this setup — each map
 
 **Task → model routing** (the criterion lives here, not in settings):
 
-- Deep review / architecture / security / escalation → **Opus 4.8 + `/effort xhigh`** (skills critic/decision-stress-test/escalate/security-review already pin xhigh via frontmatter — that wiring keeps working).
+- Deep review / architecture / security / escalation → **Opus 4.8 + `/effort xhigh`** (skills critic/decision-stress-test/escalate/security-audit already pin xhigh via frontmatter — that wiring keeps working).
 - Standard feature build → Opus 4.8 high (its default) — or Sonnet 5 when budget matters.
 - Bulk mechanical work (sweeps, renames, formatting, doc batches) → Opus 4.8 **fast mode** or Sonnet 5.
 - Massive-corpus analysis (multi-repo audits, huge logs, long-lived sessions) → **Sonnet 5** for the 1M window; prefer it over compacting Opus mid-task.

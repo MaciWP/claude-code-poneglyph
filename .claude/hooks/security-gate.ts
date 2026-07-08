@@ -83,6 +83,30 @@ export async function scanFile(filePath: string): Promise<string[]> {
   return hits;
 }
 
+// Builds the Stop response for a set of hits, or null when clean (028/US4).
+// Two channels on purpose: systemMessage reaches the USER; hookSpecificOutput
+// .additionalContext reaches the MODEL (CC ≥2.1.163) so it can verify/redact
+// in-turn instead of the warning dying on screen (CG-05). Still non-blocking.
+export function buildStopResponse(hits: string[]): {
+  systemMessage: string;
+  hookSpecificOutput: { hookEventName: "Stop"; additionalContext: string };
+} | null {
+  if (hits.length === 0) return null;
+  const list = hits.map((h) => `  - ${h}`).join("\n");
+  return {
+    systemMessage:
+      `[security-gate] Potential secret(s) in recently modified files:\n${list}\n` +
+      `Review, then remove and rotate/revoke before committing.`,
+    hookSpecificOutput: {
+      hookEventName: "Stop",
+      additionalContext:
+        `[security-gate] Suspected secret(s) at:\n${list}\n` +
+        `Before continuing: Read each locus, verify whether it is a real credential; ` +
+        `if real, redact it and tell the user to rotate/revoke it. If a false positive, say so explicitly.`,
+    },
+  };
+}
+
 async function main(): Promise<void> {
   try {
     const raw = await readHookStdin();
@@ -92,13 +116,9 @@ async function main(): Promise<void> {
     if (files.length === 0) process.exit(0); // early-out: nothing changed → no file scan
 
     const hits = (await Promise.all(files.map(scanFile))).flat();
-    if (hits.length > 0) {
-      const list = hits.map((h) => `  - ${h}`).join("\n");
-      const message =
-        `[security-gate] Potential secret(s) in recently modified files:\n${list}\n` +
-        `Review, then remove and rotate/revoke before committing.`;
-      // systemMessage is shown to the user; exit 0 keeps it non-blocking.
-      process.stdout.write(JSON.stringify({ systemMessage: message }) + "\n");
+    const response = buildStopResponse(hits);
+    if (response) {
+      process.stdout.write(JSON.stringify(response) + "\n");
     }
   } catch {
     // best-effort — never block

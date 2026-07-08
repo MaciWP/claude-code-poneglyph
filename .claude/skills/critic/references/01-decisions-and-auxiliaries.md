@@ -38,12 +38,12 @@ Extracted verbatim from `SKILL.md` (017/US9 — mechanical move, no content rede
 | `diagnostic-patterns` | When Step 4 base checks fail — 5-whys, stack-trace analysis, retry budget per error-recovery.md | Lead reads error output manually + applies retry policy |
 | `lsp-operations` | During Step 5 Correctness/Quality — `findReferences`/`callHierarchy` to verify blast radius of changed symbols | Lead uses Grep + Read manually as fallback |
 | `review-patterns` | Step 6 — MANDATORY catalog invocation in standard/full levels (quality or performance mode per diff content) | Lead Reads `references/01-mode-quality.md` or `02-mode-performance.md` manually |
-| `security-review` | Step 7 — MANDATORY dispatch when diff touches auth/payments/secrets/credentials/crypto (gate, not advisory; Cmd VI) | Lead invokes `/security-review` manually before declaring verdict if auto-fire missed |
+| `security-audit` | Step 7 — MANDATORY dispatch when diff touches auth/payments/secrets/credentials/crypto (gate, not advisory; Cmd VI) | Lead invokes `/security-audit` manually before declaring verdict if auto-fire missed |
 | `decision-stress-test` | ⚠️ Conditional — if Step 5 reveals an architectural decision that merits adversarial challenge (e.g., questionable abstraction or library choice) | Lead invokes `/decision-stress-test` manually if doubt warrants it |
 | `explain-changes` | ⚠️ Conditional — if a human needs a walkthrough of the diff for context | Lead invokes `/explain-changes` manually if requested |
 | `simplify` | ⚠️ Conditional — refactor opportunity surfaced but not mandatory | Lead may invoke `/simplify` post-review if findings warrant |
 
-> Skill-to-skill invocation is **probabilistic** per docs Anthropic + [issue #59968](https://github.com/anthropics/claude-code/issues/59968). Critical auxiliaries in Phase 4 are `review-patterns` (catalog) and `security-review` (gate — MANDATORY DISPATCH even if auto-fire succeeded). Other auxiliaries are best-effort; the fallback column documents manual recovery.
+> Skill-to-skill invocation is **probabilistic** per docs Anthropic + [issue #59968](https://github.com/anthropics/claude-code/issues/59968). Critical auxiliaries in Phase 4 are `review-patterns` (catalog) and `security-audit` (gate — MANDATORY DISPATCH even if auto-fire succeeded). Other auxiliaries are best-effort; the fallback column documents manual recovery.
 
 ## Verification (post-implementation of this skill)
 

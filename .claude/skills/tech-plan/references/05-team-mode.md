@@ -59,7 +59,7 @@ sequenceDiagram
 |------|-----------|-----------|
 | New architecture | `tech-plan` (Mode B) | `critic` |
 | Complex refactoring | `build` | `critic` |
-| Feature with security | `build` | `critic` (+ `security-review`) |
+| Feature with security | `build` | `critic` (+ `security-audit`) |
 | Critical tests | `build` | `critic` |
 
 ---
@@ -78,7 +78,7 @@ Select agents based on task analysis:
 | `build` (implementation) | Code implementation | ALWAYS |
 | `critic` (validation) | Quality validation | ALWAYS |
 | `tech-plan` (Mode B) | Complexity > 40 OR cross-domain interfaces — emits RFC + contracts inline | CONDITIONAL |
-| `security-review` | Keywords: auth, token, password, jwt, encryption | CONDITIONAL |
+| `security-audit` | Keywords: auth, token, password, jwt, encryption | CONDITIONAL |
 
 ### Domain Boundary Definition
 

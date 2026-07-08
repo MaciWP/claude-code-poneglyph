@@ -16,12 +16,12 @@
 | `explain-changes` | Educational walkthrough de cambios para entender / aprender | false |
 | `meta-create` | Crear extensiones Claude Code (skills/commands/hooks/rules/MCP/plugin) | false |
 | `meta-settings-cookbook` | Reference rápido para CLAUDE.md/settings.json/output styles/permissions | true (manual) |
-| `security-review` (plugin) | Security audit del branch pendiente | (plugin) |
+| `security-review` (native built-in — NOT our skill; ours is `security-audit`) | Security review del branch pendiente | (native) |
 | `simplify` (plugin) | Review code for reuse/quality/efficiency + fix | (plugin) |
 
 ## Cruce: qué phase skill invoca a qué auxiliary
 
-| Phase skill | anti-hallucination | drillme | decision-stress-test | diagnostic-patterns | lsp-operations | review-patterns | prompt-engineer | explain-changes | meta-create | meta-settings-cookbook | security-review | simplify |
+| Phase skill | anti-hallucination | drillme | decision-stress-test | diagnostic-patterns | lsp-operations | review-patterns | prompt-engineer | explain-changes | meta-create | meta-settings-cookbook | security-audit | simplify |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | **scope** (F1) | ✅ premisas factuales del brief | ✅ cierre fase | ⚠️ modo full (perspectives producto) | — | — | — | ✅ brief vago → refinar | — | — | — | — | — |
 | **tech-plan** (F2) | ✅ archivos/funciones/patrones del proyecto | ✅ cierre fase | ✅ modo full (2+ alternativas técnicas) | — | ✅ entender deps reales del código | — | ✅ review delegation prompts | — | ✅ si plan crea skills/hooks/rules | ✅ si plan toca CLAUDE.md/settings | — | — |

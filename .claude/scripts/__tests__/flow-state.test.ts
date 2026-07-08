@@ -203,3 +203,20 @@ describe("runCommand (integration, tmpdir)", () => {
     await expect(runCommand("close-us", ["US1"], { planDir: plan, date: DATE })).rejects.toThrow();
   });
 });
+
+describe("complete-phase (028/US6-D6)", () => {
+  test("T6.1 marks phase completed and refreshes updated_at", async () => {
+    const plan = mkdtempSync(join(tmpdir(), "flow-state-phase-"));
+    writeFileSync(join(plan, "state.json"), JSON.stringify({ ...baseState(), current_phase: 2 }, null, 2));
+    await runCommand("complete-phase", ["2.5"], { planDir: plan, date: "2026-07-08" });
+    const state = JSON.parse(readFileSync(join(plan, "state.json"), "utf8"));
+    expect(state.phases_completed).toContain(2.5);
+    expect(state.updated_at).toBe("2026-07-08");
+  });
+
+  test("T6.2 invalid phase → typed error listing valid phases", async () => {
+    const plan = mkdtempSync(join(tmpdir(), "flow-state-phase-bad-"));
+    writeFileSync(join(plan, "state.json"), JSON.stringify(baseState(), null, 2));
+    await expect(runCommand("complete-phase", ["7"], { planDir: plan, date: "2026-07-08" })).rejects.toThrow(/2\.5/);
+  });
+});

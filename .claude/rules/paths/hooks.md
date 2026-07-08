@@ -25,7 +25,7 @@ Reliability matters because PreToolUse/PostToolUse may silently fail to fire (op
 |-------|------|-------------|--------------------|
 | PreToolUse | Before tool | Unreliable (#6305) | — (none registered) — best-effort only |
 | PostToolUse | After tool | Unreliable (#6305) | `code-validator.ts` — best-effort only |
-| Stop | End of turn | Reliable | `security-gate.ts` + `learning-inbox.ts` — quality gate (security warn + learning capture) |
+| Stop | End of turn | Reliable | `security-gate.ts` + `learning-inbox.ts` — quality gate (security warn to user **+ additionalContext to the model since 028/US4** + learning capture) |
 | UserPromptSubmit | On prompt submit | Reliable as event (gap early-session/post-compaction, #17277) | `skill-activation.ts` — injects `Skill(<name>)` on keyword match; best-effort layer. Skips ALL slash commands (incl. `/goal` — it runs as the Lead, which has the always-loaded routing core and can invoke `Skill()` itself; no injected hint needed) |
 | InstructionsLoaded | On instruction load | Reliable as event | `instructions-loaded.ts` (async) — logs every CLAUDE.md/rules load (load-layer proof) |
 | SessionStart | On every session start (incl. resume/clear) | Reliable as event | `session-start-plans.ts` — open-plans reminder on EVERY session (027/US1; post-compact's copy only fires after a compaction). Silent when 0 open |
@@ -37,7 +37,7 @@ Reliability matters because PreToolUse/PostToolUse may silently fail to fire (op
 
 There is no automatic test-pass validator — the Lead verifies tests manually after each build step (Stop test-gate declined, 017/US4). Never rely solely on PostToolUse for security enforcement.
 
-> **Stop / SubagentStop feedback** (CC ≥2.1.163): both can return `hookSpecificOutput.additionalContext` to feed Claude and keep the turn going without being flagged a hook error — an alternative to the warn-only `systemMessage` the Stop gate uses today.
+> **Stop / SubagentStop feedback** (CC ≥2.1.163): both can return `hookSpecificOutput.additionalContext` to feed Claude and keep the turn going without being flagged a hook error. The security gate uses BOTH channels since 028/US4: `systemMessage` for the user + `additionalContext` instructing the model to verify/redact in-turn.
 
 ### `if` field for conditional filtering
 

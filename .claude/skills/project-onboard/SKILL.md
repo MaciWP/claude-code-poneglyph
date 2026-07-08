@@ -69,6 +69,7 @@ Map findings → component candidates using `references/01-analysis-and-menu.md`
 | MCP suggestions | External services detected (suggestion only — connectors configure outside the repo) |
 | Knowledge-graph tooling ([Graphify](https://github.com/safishamsi/graphify)) | ONLY for large, code-dominant, unfamiliar codebases where orientation cost dominates (hundreds of source files, navigation-by-grep). NOT for small repos or markdown/config-heavy ones — there the token savings ≈ 0 and the PreToolUse hook adds unreliable overhead. Suggestion only (installs per-repo outside poneglyph's global layer). Rationale: `references/graph-tooling-decision.md` |
 | `.claude/settings.json` (project) | Project-specific permissions/hooks genuinely needed |
+| `.gitignore` entry for `.claude/learned/` | **Always** — the global Stop/InstructionsLoaded hooks write transcript-derived content into `<cwd>/.claude/learned/` of EVERY project; without this entry the repo risks committing transcript snippets (RI-2, audit 2026-07-02; fixed 028/US3). Propose appending `.claude/learned/` (plus `.claude/settings.local.json` if absent) |
 
 The user ratifies the set BEFORE any generation. Components not ratified are not generated — no orphan files.
 

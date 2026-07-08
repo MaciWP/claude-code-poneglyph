@@ -25,7 +25,7 @@ spec / phase / review_level / verdict / spec_drift / findings_count / created
 - [ ] No hardcoded secrets
 - [ ] Inputs validated at boundaries
 - [ ] No OWASP Top 10 vectors introduced
-- [ ] security-review invoked if critical area
+- [ ] security-audit invoked if critical area
 
 ## 4. Performance
 - [ ] No O(n²) where O(n) reachable

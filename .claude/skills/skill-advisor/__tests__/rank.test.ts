@@ -3,7 +3,7 @@ import { rank, SHORTLIST_MAX, type SkillMeta } from "../lib/rank";
 
 const FIXTURES: SkillMeta[] = [
   { name: "review-patterns", description: "Code review: SOLID, performance, slow endpoint, N+1", keywords: ["performance", "slow", "endpoint", "refactor", "solid"] },
-  { name: "security-review", description: "Auth, jwt, password review", keywords: ["auth", "jwt", "security"] },
+  { name: "security-audit", description: "Auth, jwt, password review", keywords: ["auth", "jwt", "security"] },
   { name: "tdd-design", description: "Test design before implementation", keywords: ["tests", "tdd", "oracle"] },
   { name: "drillme", description: "Socratic check for plans", keywords: ["drill", "socratic", "valida"] },
   { name: "scope", description: "Define product scope", keywords: ["scope", "alcance", "idea"] },

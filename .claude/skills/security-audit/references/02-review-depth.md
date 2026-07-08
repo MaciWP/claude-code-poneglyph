@@ -1,5 +1,5 @@
 ---
-parent: security-review
+parent: security-audit
 name: review-depth
 description: Depth beyond the Top 10 quick-ref — ASVS rigor levels, Proactive Controls, auth/session/JWT/access-control specifics, secret-leak response. OWASP/GitHub primary-sourced.
 ---

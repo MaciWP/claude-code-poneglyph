@@ -28,7 +28,7 @@ Once a role is active, operate as a **senior {role}**:
 | `backend` | `tech-plan` + `build` + `review-patterns` | APIs, services, data flow; production-grade + scalable code |
 | `frontend` | `frontend-design` + `html-report` | components, states (loading/empty/error), a11y, responsive, reusability |
 | `devops` | *gap lens* + `diagnostic-patterns` | deploy, CI/CD, infra, observability, reliability, rollback, scaling |
-| `security` | `security-review` | vulns, authn/authz, injection, secrets exposure; severity + secure fixes |
+| `security` | `security-audit` | vulns, authn/authz, injection, secrets exposure; severity + secure fixes |
 | `performance` | `review-patterns` (perf) + `diagnostic-patterns` | bottlenecks, N+1, memory leaks, rendering; profile → optimize |
 | `debugging` | `diagnostic-patterns` | root cause (5-whys), repro, hidden edge cases, robust fix |
 | `architect` | `decision-stress-test` + `tech-plan` + `scope` | system design, tradeoffs, clean architecture, scalability |

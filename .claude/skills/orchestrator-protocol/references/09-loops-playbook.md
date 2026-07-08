@@ -90,7 +90,7 @@ On the FrontierCode *diamond* subset (hardest 50/150 — coding), Opus 4.8 is ro
 | **xhigh** | The only real score jump — reserve for the genuinely hard step |
 | **max** | *Worse* than xhigh here (overthinking). Avoid |
 
-Effort is **not changeable dynamically mid-session** (the user sets `/effort`; the Lead cannot self-switch). Project policy: skills carry NO `effort:` (they inherit the session = low) **except** the strong-judgment gates `critic`, `security-review`, `decision-stress-test` (xhigh) and the `escalate` stuck-buster (xhigh). For "low bulk / xhigh on the hard step", route the hard step through one of those skills, or a Workflow agent with per-agent `effort`. When a loop is stuck, `escalate` is the xhigh rung. Caveat: diamond subset exaggerates effort's value vs everyday tasks, where low suffices even more.
+Effort is **not changeable dynamically mid-session** (the user sets `/effort`; the Lead cannot self-switch). Project policy: skills carry NO `effort:` (they inherit the session = low) **except** the strong-judgment gates `critic`, `security-audit`, `decision-stress-test` (xhigh) and the `escalate` stuck-buster (xhigh). For "low bulk / xhigh on the hard step", route the hard step through one of those skills, or a Workflow agent with per-agent `effort`. When a loop is stuck, `escalate` is the xhigh rung. Caveat: diamond subset exaggerates effort's value vs everyday tasks, where low suffices even more.
 
 ## Guardrails (non-negotiable for any adopted loop)
 - **Hard gates are never crossed unattended.** A loop runs *after* a gate, or only on read-only work, or stops and reports when a gate is pending.

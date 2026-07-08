@@ -82,3 +82,22 @@ describe("hook stdin path end-to-end (readHookStdin)", () => {
     expect(await runWithStdin("not-json{{{")).toBe(0);
   });
 });
+
+// US4 (plan 028): the Stop response must reach the MODEL (additionalContext),
+// not only the user (systemMessage) — CG-05.
+import { buildStopResponse } from "../security-gate";
+
+describe("buildStopResponse (028/US4)", () => {
+  test("T4.1 hits → systemMessage AND hookSpecificOutput.additionalContext with locus + action", () => {
+    const res = buildStopResponse(["src/config.ts:12", ".env.example:3"]);
+    expect(res).not.toBeNull();
+    expect(res!.systemMessage).toContain("src/config.ts:12");
+    expect(res!.hookSpecificOutput.hookEventName).toBe("Stop");
+    expect(res!.hookSpecificOutput.additionalContext).toContain("src/config.ts:12");
+    expect(res!.hookSpecificOutput.additionalContext.toLowerCase()).toMatch(/verify|redact/);
+  });
+
+  test("T4.2 zero hits → null (clean silence, no additionalContext)", () => {
+    expect(buildStopResponse([])).toBeNull();
+  });
+});

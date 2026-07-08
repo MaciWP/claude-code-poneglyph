@@ -10,7 +10,7 @@ description: Keywords→skills table, task type detection, priority scoring, syn
 
 | Keywords in Prompt | Skill to Load |
 |--------------------|--------------|
-| auth, jwt, password, security, token, session | `security-review` |
+| auth, jwt, password, security, token, session | `security-audit` |
 | refactor, extract, SOLID, clean, simplify | `review-patterns` |
 | error, retry, circuit, fallback, recovery | `diagnostic-patterns` |
 | performance, memory, optimization, bottleneck, slow, n+1 | `review-patterns` |
@@ -31,7 +31,7 @@ When keywords don't match cleanly, detect by task type:
 | Task Type | Primary Skill |
 |-----------|--------------|
 | Performance investigation | `review-patterns` |
-| Auth/permissions change | `security-review` |
+| Auth/permissions change | `security-audit` |
 | Code cleanup/refactor | `review-patterns` |
 | Debugging unknown error | `diagnostic-patterns` |
 
@@ -54,7 +54,7 @@ Some skills reinforce each other — both receive +1 when paired:
 | Pair | Synergy |
 |------|---------|
 | `diagnostic-patterns` + `anti-hallucination` | Error tracing with verified claims |
-| `review-patterns` + `security-review` | Quality + threat surface in one pass |
+| `review-patterns` + `security-audit` | Quality + threat surface in one pass |
 
 ## Conflict Rules
 
@@ -62,7 +62,7 @@ If two skills compete for the same slot and one is more specific, discard the ge
 
 | Generic | Specific (wins) |
 |---------|----------------|
-| `review-patterns` | `security-review` (when security is the primary concern) |
+| `review-patterns` | `security-audit` (when security is the primary concern) |
 
 ## Skills Without Keywords (Preload via agentType frontmatter)
 

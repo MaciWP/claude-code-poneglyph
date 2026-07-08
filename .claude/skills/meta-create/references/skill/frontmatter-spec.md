@@ -15,10 +15,10 @@ Full spec for every field allowed in skill frontmatter. Read this when authoring
 | `name` | string | Yes | Unique kebab-case identifier |
 | `description` | string | Yes | Purpose + "Use when:" + "Keywords -" lines |
 | `type` | string | No | `knowledge-base` \| `encoded-preference` \| `workflow` \| `reference` \| `capability-uplift` — taxonomy label only; no consumer reads it and the live corpus omits it |
-| `paths` | list | No | YAML list of globs — the skill auto-applies when touched files match (used by `security-review`; see `rules/paths/orchestration.md`) |
+| `paths` | list | No | YAML list of globs — the skill auto-applies when touched files match (used by `security-audit`; see `rules/paths/orchestration.md`) |
 | `disable-model-invocation` | boolean | No | `true` = manual only (workflow), `false` = auto-trigger by keywords |
 | `argument-hint` | string | No | Args shown in autocomplete (e.g., `"[file-path or module]"`) |
-| `effort` | string | No | `low` (quick reference) \| `medium` (moderate analysis) \| `high` (deep audit) \| `xhigh` (deepest reasoning — review/decision/escalation skills). Project doctrine: low by default, pin a higher value ONLY when the skill genuinely needs it (critic/decision-stress-test/escalate/security-review pin `xhigh`); otherwise omit and inherit the session effort. Never pin a value BELOW what the skill needs. |
+| `effort` | string | No | `low` (quick reference) \| `medium` (moderate analysis) \| `high` (deep audit) \| `xhigh` (deepest reasoning — review/decision/escalation skills). Project doctrine: low by default, pin a higher value ONLY when the skill genuinely needs it (critic/decision-stress-test/escalate/security-audit pin `xhigh`); otherwise omit and inherit the session effort. Never pin a value BELOW what the skill needs. |
 | `activation.keywords` | list | No | YAML list of keywords for auto-matching |
 | `for_agents` | list | No | Agents that benefit most from this skill |
 | `version` | string | No | Semantic version (default "1.0") |

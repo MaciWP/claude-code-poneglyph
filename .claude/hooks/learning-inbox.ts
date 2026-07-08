@@ -9,10 +9,17 @@
  * which consumes and clears the inbox. Exits 0 always; silent when no signals.
  *
  * Heuristics are deterministic regex scans (no LLM calls inside the hook).
- * Confidence is fixed per signal type:
+ * Confidence is fixed per signal type, gated by MIN_CONFIDENCE (028/US3):
  *   - user-correction  0.7 — explicit human correction is the strongest signal
  *   - error-resolution 0.5 — error→fix co-occurrence may be coincidental
- *   - workaround       0.4 — keyword-only match, weakest signal
+ *   - workaround (0.4) RETIRED 028/US3 — below the floor; binora/cv retros
+ *     documented its captures as pure noise (keyword-only, raw-JSON contexts)
+ *
+ * Split with native auto-memory (CG-08 verdict KEEP, audit 2026-07-02):
+ *   auto-memory OWNS cross-session recall (facts Claude saves/reads itself);
+ *   this inbox OWNS retro-ratifiable promotion candidates — entries are
+ *   consumed at Phase 5 where the HUMAN decides what becomes skill/rule/memory.
+ *   Neither replaces the other: recall is automatic, promotion is gated.
  *
  * Inbox entry format (markdown, human-readable for retro):
  *   ## <ISO timestamp> — session <id>
@@ -52,8 +59,16 @@ const SIGNALS: SignalDef[] = [
     /\b(\w*error\w*|exception|failed|FAIL(?:ED)?)\b[\s\S]{0,400}?\b(fixed|resolved|solucionado|arreglado|green|passing|pasan? los tests)\b/i,
     0.5,
   ],
-  ["workaround", /\b(workaround|apaño|fallback aplicado)\b/i, 0.4],
+  // "workaround" (0.4) retired 028/US3 — see header.
 ];
+
+// Floor below which a signal is noise, not a learning (028/US3 — evidence:
+// binora/cv retro captures at 0.4-0.5 were truncated raw-JSON junk).
+export const MIN_CONFIDENCE = 0.5;
+
+// Raw transcript/JSON content is never a learning, whatever signal matched
+// inside it (028/US3): tool_result payloads pair "error"+"fixed" constantly.
+const RAW_TRANSCRIPT = /"(role|type|content|tool_use_id)"\s*:/;
 
 // Self-match guard (feature 019 retro): the assistant's own review/retro prose
 // legitimately pairs "error"+"fixed" words and polluted the inbox two features
@@ -69,11 +84,12 @@ const CONTEXT_MAX = 160;
 function snippet(text: string, index: number, matchLength: number): string {
   const start = Math.max(0, index - CONTEXT_RADIUS);
   const end = Math.min(text.length, index + matchLength + CONTEXT_RADIUS);
-  return text
-    .slice(start, end)
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, CONTEXT_MAX);
+  const flat = text.slice(start, end).replace(/\s+/g, " ").trim();
+  if (flat.length <= CONTEXT_MAX) return flat;
+  // Truncate on a word boundary — mid-word cuts read as junk at retro (028/US3).
+  const cut = flat.slice(0, CONTEXT_MAX);
+  const lastSpace = cut.lastIndexOf(" ");
+  return lastSpace > 0 ? cut.slice(0, lastSpace) : cut;
 }
 
 export function extractCandidates(payload: StopPayload): Candidate[] {
@@ -84,7 +100,9 @@ export function extractCandidates(payload: StopPayload): Candidate[] {
   for (const [type, pattern, confidence] of SIGNALS) {
     const m = text.match(pattern);
     if (m && m.index !== undefined) {
+      if (confidence < MIN_CONFIDENCE) continue; // below-floor = noise (028/US3)
       const context = snippet(text, m.index, m[0].length);
+      if (RAW_TRANSCRIPT.test(context)) continue; // raw JSON/transcript, any type (028/US3)
       if (type === "error-resolution" && REVIEW_PROSE.test(context)) continue;
       candidates.push({ type, confidence, context });
     }

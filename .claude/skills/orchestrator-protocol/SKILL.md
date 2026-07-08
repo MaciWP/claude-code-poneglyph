@@ -138,7 +138,7 @@ Direct action (the default for ALL write work): Read always permitted. Edit/Writ
 |---|---|
 | Single file, low complexity | Lead confirms tests passing inline |
 | Multi-file | `Skill('critic')` inline + **1 fresh-context read-only reviewer** (P1-exception, feature 019; `references/04-agent-selection.md` §Workflow wiring) |
-| Security-related | `security-review` skill (mandatory dispatch — Cmd VI) |
+| Security-related | `security-audit` skill (mandatory dispatch — Cmd VI) |
 | Cross-domain feature | `Skill('critic')` (Phase 4 of the 5-phase workflow) |
 
 **NEVER report "completed" without confirmation that tests pass.** Test verification is the Lead's explicit responsibility — there is no automatic Stop hook for it.
@@ -158,6 +158,7 @@ Retry budget, stuck detection, escalation rung → `error-recovery.md` rule (pro
 | Architecture levels, rules vs skills, full Arch H template, propagation model | `references/06-context-arch-h.md` |
 | Procedural error recovery (SendMessage, diagnosis steps, recovery template, worktree cleanup) | `references/07-error-recovery.md` |
 | `/goal` + `/loop` doctrine-safe usage, DAME→poneglyph map, recipes, video adopt/reject map | `references/09-loops-playbook.md` |
+| 021 loops analysis source — evidence basis for the playbook; read ONLY when questioning the playbook's adopt/reject decisions | `references/09-loops-analysis-source.md` |
 
 ### Removed references (simplified 2026-05-28 — US8 AC7 SIMPLIFICAR)
 

@@ -1,7 +1,7 @@
 ---
 name: critic
 description: |
-  Revisión end-to-end tras completar todas las HUs (Fase 4 del workflow de 5 fases). Valida que el problema original de spec.md se resolvió de verdad. Produce review.md con checklist de 5 secciones (Correctness/Quality/Security/Performance/Maintainability) + findings con severidad + veredicto (APPROVED/WITH_WARNINGS/NEEDS_CHANGES/BLOCKED). Despacha UN reviewer de contexto fresco (read-only) y dispara security-review en auth/pagos/credenciales.
+  Revisión end-to-end tras completar todas las HUs (Fase 4 del workflow de 5 fases). Valida que el problema original de spec.md se resolvió de verdad. Produce review.md con checklist de 5 secciones (Correctness/Quality/Security/Performance/Maintainability) + findings con severidad + veredicto (APPROVED/WITH_WARNINGS/NEEDS_CHANGES/BLOCKED). Despacha UN reviewer de contexto fresco (read-only) y dispara security-audit en auth/pagos/credenciales.
   Úsala cuando: feature completo, todas las HUs cerradas en state.json, revisión antes de retro, tras /build, "revisa", "critica", "valida", "audita", "veredicto".
   Keywords - critic, phase-4-review, valida, revisa, audita, e2e, happy-path, quality,
   regression, security, performance, verdict, blocker, finding, fase-4, phase-4
@@ -67,9 +67,9 @@ In parallel:
 
 | Signal | Level | Scope |
 |---|---|---|
-| Feature trivial (1-2 HUs, no security/perf concern, mode minimal) | **light** | Base checks (tests + typecheck) + drillme Q1 only; skip fresh reviewer + review-patterns + security-review |
+| Feature trivial (1-2 HUs, no security/perf concern, mode minimal) | **light** | Base checks (tests + typecheck) + drillme Q1 only; skip fresh reviewer + review-patterns + security-audit |
 | Feature standard (3-N HUs, no critical area) | **standard** | Full 5-section checklist; review-patterns quality mode; ONE fresh-context reviewer; drillme 4/4 |
-| Feature architectural / touches auth/payments/secrets / complexity >60 | **full** | Standard + security-review skill + review-patterns both modes (quality + performance); fresh reviewer prompt additionally carries the critical-area focus |
+| Feature architectural / touches auth/payments/secrets / complexity >60 | **full** | Standard + security-audit skill + review-patterns both modes (quality + performance); fresh reviewer prompt additionally carries the critical-area focus |
 
 CLI override: `/critic --light` / `--standard` / `--full`. Default = auto-detect from `spec.md.mode` + scanned content.
 
@@ -94,7 +94,7 @@ For each section, populate `review.md` with findings (file:line + severity + rec
 - Does the spec.md problem statement match what was delivered? (Read spec.md happy path → trace through code.)
 - Each AC in spec.md → trace to a closed HU in `tasks/`.
 - Tests pass on the assembled branch (Step 4 output).
-- Happy path E2E: simulate the user's actual flow — manual walkthrough or smoke test.
+- Happy path E2E: simulate the user's actual flow — for diffs with a runtime surface, invoke `Skill(verify)` (drive the affected flow end-to-end and observe behavior); manual walkthrough/smoke only where verify's anti-trigger applies (tests/docs/markdown-only — nothing to drive). (028/US5)
 - Known edge cases from `tests.md`/`validations.md` — are they covered?
 
 #### Quality
@@ -109,7 +109,7 @@ For each section, populate `review.md` with findings (file:line + severity + rec
 - No hardcoded secrets in diff (`Grep "password|secret|api_key|token" <changed-files>`).
 - Inputs validated at boundaries (auth, payments, user-facing endpoints).
 - No introduced OWASP Top 10 vectors (injection / XSS / IDOR / SSRF / etc.).
-- If touches `auth`/`payments`/`secrets`/`credentials` → invoke `security-review` skill (mandatory dispatch — auxiliary may fire, Lead also dispatches).
+- If touches `auth`/`payments`/`secrets`/`credentials` → invoke `security-audit` skill (mandatory dispatch — auxiliary may fire, Lead also dispatches).
 
 #### Performance
 
@@ -153,7 +153,7 @@ Trigger: every standard/full review on code (light skips it). The author≠evalu
 
 **Deliberative panels (≥4 perspectives)**: reserved for DECISION review — architecture choices, library selection, trade-off challenges — via `decision-stress-test` (its evidence niche per 018 W1: cheap-to-grade decision tasks, not code). The critic does NOT launch panels for code.
 
-**`security-review` skill**:
+**`security-audit` skill**:
 
 Invoke when diff touches: `auth/`, `payments/`, `secrets/`, `credentials/`, `*.env*`, `crypto/`, `session/`, `cookie/`, JWT-related code. Mandatory dispatch even if auto-fire fires — security is a gate not advisory (Cmd VI).
 
@@ -234,7 +234,7 @@ Report:
 - Findings: <blocker>/<major>/<minor>/<nit>
 - spec_drift: <none|legitimate|scope_creep|skipped_ac>
 - fresh reviewer invoked: <yes | no (inline + declared bias)>
-- security-review invoked: <yes|no>
+- security-audit invoked: <yes|no>
 
 Next:
   → /retro (if APPROVED or APPROVED_WITH_WARNINGS)
@@ -246,7 +246,7 @@ Next:
 
 - Honest findings — no softening (Commandment I). If a BLOCKER exists, the verdict is BLOCKED, no exceptions.
 - Trace each spec.md AC to a closed HU; flag any AC without a corresponding closed HU as a Correctness finding.
-- `security-review` mandatory dispatch when critical area touched — gate, not advisory.
+- `security-audit` mandatory dispatch when critical area touched — gate, not advisory.
 - Tests pass on the assembled branch BEFORE declaring APPROVED (Cmd IV).
 - Spec-drift is flagged + classified, never silently absorbed (Cmd IX — observability).
 - Findings cite `file:line` exactly; no vague "somewhere in the auth module".
@@ -257,9 +257,9 @@ Next:
 
 | Signal | Adaptation |
 |---|---|
-| Mode `light` (trivial feature, 1-2 HUs, no security/perf) | Base checks + drillme Q1 only; skip fresh reviewer + review-patterns + security-review |
+| Mode `light` (trivial feature, 1-2 HUs, no security/perf) | Base checks + drillme Q1 only; skip fresh reviewer + review-patterns + security-audit |
 | Mode `standard` (default, 3-N HUs, no critical area) | Full 5-section + review-patterns quality + drillme 4/4 |
-| Mode `full` (architectural / auth / payments / complexity >60) | Standard + security-review + review-patterns both modes; fresh reviewer carries critical-area focus |
+| Mode `full` (architectural / auth / payments / complexity >60) | Standard + security-audit + review-patterns both modes; fresh reviewer carries critical-area focus |
 | Doc-only feature (markdown changes, no code) | Quality + Maintainability sections only; skip Performance + Security; drillme Q1 |
 | Bug fix with reproducible test | Correctness section + drillme Q3 (edge case); skip Performance unless bug was performance-related |
 
@@ -289,7 +289,7 @@ Declare adaptation in `review.md` frontmatter (`review_level` + reason).
 | Vague findings | Finding without `file:line` reference | Reject; re-locate the issue precisely |
 | Severity inflation | All findings tagged BLOCKER | Re-classify by Cmd IV blocking criteria; BLOCKER = data loss/security/breaking change/hardcoded secret/fundamental design flaw |
 | Spec drift silently absorbed | `review.md` doesn't mention spec.md delta despite diff diverging | Add Spec-drift section with classification |
-| Skipping security on auth code | Diff touches auth but `security-review` not invoked | Re-run with security-review dispatched (mandatory gate) |
+| Skipping security on auth code | Diff touches auth but `security-audit` not invoked | Re-run with security-audit dispatched (mandatory gate) |
 | Panel launched for code review | Any ≥4-perspective Workflow fired from Phase 4 on a code diff | Replace with ONE fresh-context reviewer (correctness/requirements); panels = decisions only (`decision-stress-test`) |
 | Verdict APPROVED with failing tests | base checks (Step 4) red but verdict green | Re-verdict to NEEDS_CHANGES at minimum; tests-passing is a precondition |
 
@@ -297,10 +297,10 @@ Declare adaptation in `review.md` frontmatter (`review_level` + reason).
 
 | Topic | File | Contents |
 |---|---|---|
-| Decisions history + auxiliary skills matrix | `references/01-decisions-and-auxiliaries.md` | Review-model evolution (reviewer agent → panel ≥4 → ONE fresh-context reviewer, feature 019), the AC8 review-patterns KEEP rationale, the full auxiliary-skills invocation matrix with fallbacks, and post-implementation verification of this skill. Read when invoking auxiliaries beyond review-patterns/security-review, or when questioning the review model. |
+| Decisions history + auxiliary skills matrix | `references/01-decisions-and-auxiliaries.md` | Review-model evolution (reviewer agent → panel ≥4 → ONE fresh-context reviewer, feature 019), the AC8 review-patterns KEEP rationale, the full auxiliary-skills invocation matrix with fallbacks, and post-implementation verification of this skill. Read when invoking auxiliaries beyond review-patterns/security-audit, or when questioning the review model. |
 | Embedded fallback template | `references/02-embedded-fallback.md` | The full review.md checklist template. Read ONLY if `.claude/plans/templates/review.template.md` is missing (Step 2 fallback). |
 
-Critical invariants kept in this body: `review-patterns` is MANDATORY in standard/full (Step 6); `security-review` is a MANDATORY gate on critical areas (Step 7); skill-to-skill auto-fire is probabilistic — the Lead dispatches manually on miss.
+Critical invariants kept in this body: `review-patterns` is MANDATORY in standard/full (Step 6); `security-audit` is a MANDATORY gate on critical areas (Step 7); skill-to-skill auto-fire is probabilistic — the Lead dispatches manually on miss.
 
 ## Commandments cubiertos
 
@@ -311,7 +311,7 @@ Critical invariants kept in this body: `review-patterns` is MANDATORY in standar
 | III | Severity inflation anti-pattern blocked; simple by default |
 | IV | APPROVED only if tests pass on assembled branch (blocking gate) |
 | V | Read spec.md + tasks/ + tests/validations BEFORE producing review.md |
-| VI | `security-review` mandatory dispatch on auth/payments/secrets — gate, not advisory |
+| VI | `security-audit` mandatory dispatch on auth/payments/secrets — gate, not advisory |
 | VII | Base checks executed in parallel (Step 4); ONE fresh reviewer replaces the ≥4 panel — same independence, fraction of the cost (W1 D1/D3) |
 | VIII | Fresh-reviewer prompt is constrained (AC trace + correctness/requirements only + read-only role — Arch H) |
 | IX | Spec-drift detection + classification feeds living-spec loop in Phase 5 (observability) |
@@ -328,7 +328,7 @@ When this skill closes a review:
 - spec_drift: <none|legitimate|scope_creep|skipped_ac>
 - fresh reviewer: <invoked | inline + declared bias | n/a light> (<reason>)
 - review-patterns modes: [<quality?>, <performance?>]
-- security-review: <invoked|skipped|n/a>
+- security-audit: <invoked|skipped|n/a>
 - drillme: covered 3/4 canonical Socratic categories
 
 Next:

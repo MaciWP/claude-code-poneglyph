@@ -134,7 +134,7 @@ Prompt score <70 is a **signal of doubt**, not a hard stop: ask or refine with `
 
 ### Post-implementation verification (MANDATORY)
 
-After each build step the Lead runs the relevant test command (`bun test ./.claude/hooks/` in this repo) and inspects the result — there is no automatic test-pass hook today. Tests fail → `Skill('diagnostic-patterns')` → fix inline. **Never report "completed" without tests passing** (Commandment IV).
+After each build step the Lead runs the relevant test command (`bun test ./.claude/hooks/` in this repo) and inspects the result — there is no automatic test-pass hook today. Tests fail → `Skill('diagnostic-patterns')` → fix inline. For changes with a **runtime surface** (product code, hooks, CLIs — not tests/docs/markdown-only diffs), additionally run `Skill(verify)` before committing: drive the affected flow end-to-end and observe behavior, don't stop at green tests (028/US5). **Never report "completed" without tests passing** (Commandment IV).
 
 ---
 

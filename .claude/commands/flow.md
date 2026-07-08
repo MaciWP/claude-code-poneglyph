@@ -250,7 +250,7 @@ Closed/abandoned plans move to `.claude/plans/_archive/` (gitignored, untracked 
 
 - **INVOKE the phase skill — do not improvise the phase work without it.** Each phase MUST run via its `Skill()` (`scope`/`tech-plan`/`tdd-design`/`build`/`critic`/`retro`), not by the Lead reproducing the phase from memory. The phase skill carries the procedure + gates; skipping it is the exact under-use this repo fights (feature 023). This does NOT contradict inline-first: invoking the phase skill loads the procedure; the build *work* still runs inline. If a phase skill does not auto-fire, invoke it explicitly (`Skill('<phase>')`) before doing the phase work.
 - Hard gates 1→2 and 2→3 are MANDATORY in standard/full modes — never skip via flag, never auto-approve.
-- `state.json` updates ON EVERY phase transition (Phase 1 complete → write; gate approved → write; HU completed → write). Use the typed helper instead of ad-hoc one-liners: `bun .claude/scripts/flow-state.ts close-us US{n} | approve-gate 1-2|2-3 | verdict <V> | close-feature | status`. `close-feature` refuses unless `review_verdict` is APPROVED/APPROVED_WITH_WARNINGS (Cmd IV guard); `status` lists every open lifecycle under the plans root.
+- `state.json` updates ON EVERY phase transition (Phase 1 complete → write; gate approved → write; HU completed → write). Use the typed helper instead of ad-hoc one-liners: `bun .claude/scripts/flow-state.ts close-us US{n} | approve-gate 1-2|2-3 | verdict <V> | close-feature | complete-phase <n> | status`. `close-feature` refuses unless `review_verdict` is APPROVED/APPROVED_WITH_WARNINGS (Cmd IV guard); `status` lists every open lifecycle under the plans root.
 - Triage is transparent — show the user the resolved mode + reason; user can override.
 - `--resume` reads state.json strictly; if corrupted, reconstruct from artefacts + warn (never silently guess).
 - In standard/full, the slug is generated ONCE at Phase 1 start; subsequent phases honor it.
@@ -265,7 +265,7 @@ Closed/abandoned plans move to `.claude/plans/_archive/` (gitignored, untracked 
 |---|---|---|---|---|---|---|
 | minimal | skip | skip | skip | direct | light | skip or light |
 | standard | full | full | full | full | standard | standard |
-| full | full + 3 perspectives | full + decision-stress-test | full + property-based opt-in | full + inline build (Workflow if ≥4 HUs) | full + fresh-context reviewer (critical-area focus) + security-review | full + Commandments forensics if violation |
+| full | full + 3 perspectives | full + decision-stress-test | full + property-based opt-in | full + inline build (Workflow if ≥4 HUs) | full + fresh-context reviewer (critical-area focus) + security-audit | full + Commandments forensics if violation |
 
 ## Edge cases
 

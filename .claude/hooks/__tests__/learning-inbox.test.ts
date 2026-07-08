@@ -102,3 +102,32 @@ describe("appendToInbox — missing dir is created on first append (T11.3)", () 
     expect(content.match(/^## /gm)?.length).toBe(1);
   });
 });
+
+// 028/US3 — capture sanitation: noise classes documented in binora/cv retros.
+import { MIN_CONFIDENCE } from "../learning-inbox";
+
+describe("capture sanitation (028/US3)", () => {
+  test("T3.1 snippet never cuts mid-word when truncating", () => {
+    const filler = "palabracompleta ".repeat(30);
+    const payload = { transcript_tail: `te has equivocado ${filler}` };
+    const [c] = extractCandidates(payload);
+    expect(c).toBeDefined();
+    expect(c.context.length).toBeLessThanOrEqual(160);
+    // If truncated, it must end on a full word — never a partial fragment.
+    expect(c.context).toMatch(/(palabracompleta|equivocado)$/);
+  });
+
+  test("T3.2 below-floor signals do not enter (workaround retired at 0.4 < MIN_CONFIDENCE)", () => {
+    expect(MIN_CONFIDENCE).toBeGreaterThanOrEqual(0.5);
+    const payload = { transcript_tail: "aplicamos un workaround temporal para el deploy" };
+    expect(extractCandidates(payload)).toHaveLength(0);
+  });
+
+  test("T3.3 raw JSON/transcript content is discarded for every signal type", () => {
+    const payload = {
+      transcript_tail:
+        '{"type":"tool_result","role":"assistant","content":"Error: connection failed ... retried and fixed","tool_use_id":"t1"}',
+    };
+    expect(extractCandidates(payload)).toHaveLength(0);
+  });
+});

@@ -63,7 +63,7 @@ The "Suggested skills to Read (for delegation)" column lists `.claude/skills/<na
 | docs, sync, documentation | inline | (doc task) | — | — |
 | bug documentation, knowledge base | inline | diagnostic-patterns | diagnostic-patterns | — |
 | review, validate, check (generic) | `Skill('critic')` inline + ONE fresh-context read-only reviewer (P1 exception, 019) | standard mode | review-patterns | — |
-| security, audit, vulnerability, owasp | `Skill('critic')` + `Skill('security-review')` | security-review | security-review | — |
+| security, audit, vulnerability, owasp | `Skill('critic')` + `Skill('security-audit')` | security-audit | security-audit | — |
 | code quality, smells, SOLID, complexity | `Skill('critic')` / review-patterns (quality) | review-patterns (quality mode) | review-patterns | — |
 | performance, slow, bottleneck, N+1 | `Skill('critic')` / review-patterns (performance) | review-patterns (performance mode) | review-patterns | — |
 | plan, design, decompose, RFC, architecture, contract | Lead via `Skill('tech-plan')` | (no dedicated agent) | decision-stress-test (for design risk), review-patterns | — |
@@ -80,7 +80,7 @@ The "Suggested skills to Read (for delegation)" column lists `.claude/skills/<na
 | **Build then Review** | inline build → `Skill('critic')` | mandatory for multi-file changes |
 | **Diagnose then Fix** | Lead `Skill('diagnostic-patterns')` → fix inline | diagnosis before fix |
 | **Worktree Parallel** | ≥4 `Workflow` WRITE units with `isolation: 'worktree'` — explicit user opt-in only | user opted in (ultracode) AND files may overlap |
-| **Security Review** | `Skill('critic')` + `Skill('security-review')` | auth/security changes |
+| **Security Review** | `Skill('critic')` + `Skill('security-audit')` | auth/security changes |
 | **Tiered Build** | Lead `Skill('tech-plan')` Mode B contracts → inline sequential | complexity 45-60, 2-3 domains with shared interfaces |
 | **Team Parallel** | Team mode (experimental) | 3+ independent domains negotiating interfaces, complexity >60 |
 

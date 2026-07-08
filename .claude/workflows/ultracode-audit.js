@@ -172,7 +172,7 @@ const DEFAULT_DOMAINS = [
   },
   {
     key: 'rules-and-docs',
-    corpus: '.claude/rules/** + .claude/docs/** + .claude/agent-memory/**',
+    corpus: '.claude/rules/** + .claude/docs/**',
     skills: ['anti-hallucination'],
     focus:
       'Refs stale a otros proyectos (binora) en memorias de poneglyph. Memorias huerfanas de agentes cortados. ' +
@@ -406,10 +406,10 @@ phase('discover')
 // re-check; the writer/Lead can stamp the date post-run. Not deep-debugged.
 const stamp = (args && args.stampDate) || 'unknown-date'
 const domains = (args && args.domains) || DEFAULT_DOMAINS
-const decisionPlans = (args && args.decisionPlans) || ['008-agent-spawn-policy']
+const decisionPlans = (args && args.decisionPlans) || [] // no default plan — 008 archived (028/US6); pass live slugs via args
 const seed = (args && args.knownFindings) || []
 const renderHtml = !!(args && args.renderHtml)
-const auditSlug = (args && args.auditSlug) || '011-ultracode-audit'
+const auditSlug = (args && args.auditSlug) || 'ultracode-audit'
 log(`ultracode-audit: ${domains.length} dominios, ${decisionPlans.length} plan(es) en triage, stamp ${stamp}`)
 
 phase('find-and-verify')
