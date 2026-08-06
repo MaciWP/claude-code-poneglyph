@@ -276,6 +276,6 @@ Phase 2.5 closed for {NNN}-{slug}:
 - artefacts: .claude/plans/{NNN}-{slug}/{tests.md, validations.md}
 - drillme: covered 2/4 canonical Socratic categories (focused phase)
 
-⏸️ Hard gate 2->3 — pendiente tu aprobación de tasks/ + tests.md/validations.md
+⚪ Hard gate 2->3 — pendiente tu aprobación de tasks/ + tests.md/validations.md
    antes de Phase 3 (build). Responde: APPROVE | REFINE | BLOCK.
 ```

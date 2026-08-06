@@ -126,6 +126,7 @@ For each section, populate `review.md` with findings (file:line + severity + rec
 - No TODOs without an issue link (`Grep "TODO|FIXME" <changed-files>`).
 - New abstractions justified by ≥2 callers (avoid premature abstraction).
 - Naming consistent with project (Drillme intra-HU should have caught this; verify here).
+- **Lessons pass**: `Skill(lessons)` — cross-repo guards + the `references/<stack>` file matching the diff. A violated lesson is a finding, quoted with its rule; G6 forbids APPROVED while a merge gate is red.
 
 ### Step 6 — Invoke `review-patterns` skill catalog (AC8)
 
@@ -230,7 +231,7 @@ Body: 5 sections (Correctness / Quality / Security / Performance / Maintainabili
 Report:
 
 ```
-{✅|⚠️|❌|🚫} Critic verdict: <VERDICT>
+{🟢|🟡|🔴|⛔} Critic verdict: <VERDICT>
 - review.md: .claude/plans/{NNN}-{slug}/review.md
 - review_level: <light|standard|full>
 - Findings: <blocker>/<major>/<minor>/<nit>
@@ -323,7 +324,7 @@ Critical invariants kept in this body: `review-patterns` is MANDATORY in standar
 When this skill closes a review:
 
 ```
-{✅|⚠️|❌|🚫} Critic verdict for {NNN}-{slug}: <VERDICT>
+{🟢|🟡|🔴|⛔} Critic verdict for {NNN}-{slug}: <VERDICT>
 - review.md: .claude/plans/{NNN}-{slug}/review.md
 - review_level: <light|standard|full> (<reason>)
 - Findings: blocker=N major=N minor=N nit=N

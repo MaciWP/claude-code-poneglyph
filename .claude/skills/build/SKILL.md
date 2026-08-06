@@ -82,6 +82,8 @@ Before any Edit/Write:
 3. `Grep` referencias a las funciones/módulos/patrones que la HU usará (`anti-hallucination`).
 4. **When the HU writes tests**: Glob the existing test infrastructure (`**/conftest.py`, `**/factory*.py`, `**/fixtures/**`, shared test helpers) and load the project's test-conventions skill if present (e.g. `django-testing-patterns`). Reuse existing fixtures/factories by name — **never duplicate data an existing fixture provides**; add a new fixture only at the correct shared level (closest conftest / shared helper), per the oracle's "new fixture needed" flag from Phase 2.5.
 
+5. **Lessons pass**: `Skill(lessons)` — the cross-repo guards plus the `references/<stack>-*.md` matching the HU's stack (Django, React, …). Mandatory when the HU touches code recovered from a stash or an old branch (lesson G3).
+
 Anti-hallucination auxiliary fires here automatically; if it doesn't, the Lead runs Glob/Grep/LSP manually before claiming any path exists.
 
 ### Step 5 — Honor TDD-mode per HU

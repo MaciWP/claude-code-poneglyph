@@ -345,6 +345,6 @@ Phase 2 closed for {NNN}-{slug}:
 - Drillme: <covered N/4 Socratic categories>
 - tdd-design invoked: yes|no (if no, Lead invokes manually)
 
-⏸️ Hard gate 2->3 — pendiente tu aprobación de tasks/ + tests.md/validations.md
+⚪ Hard gate 2->3 — pendiente tu aprobación de tasks/ + tests.md/validations.md
    antes de Phase 3 (build). Responde: APPROVE | REFINE | BLOCK.
 ```

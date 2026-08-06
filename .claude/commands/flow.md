@@ -79,7 +79,7 @@ Read `state.json` strictly; missing/corrupt → reconstruct from artifacts (`Glo
 ### 5 — Report
 
 ```
-{✅|⏸️|❌} /flow {slug} — phases <list> · HUs <n>/<m> · verdict <v> ·
+{🟢|⚪|🔴} /flow {slug} — phases <list> · HUs <n>/<m> · verdict <v> ·
 retro <status> · closed <yes|no> · promotions pending <n> · skips justificados: <list|none>
 ```
 

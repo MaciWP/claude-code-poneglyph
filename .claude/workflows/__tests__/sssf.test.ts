@@ -207,6 +207,38 @@ describe("revision cycle", () => {
     expect(calls.some((c) => c.label.startsWith("re-baseline"))).toBe(true);
   });
 
+  test("re-baselines BEFORE the fixer runs, not after — otherwise it measures nothing", async () => {
+    const { calls } = await run({ task: "t" }, { review: REJECTED, "re-review": REJECTED });
+    const labels = calls.map((c) => c.label);
+    expect(labels.indexOf("re-baseline:1")).toBeLessThan(labels.indexOf("revise:1"));
+  });
+
+  test("the fixer is gated too — a revision is not a way in for unmeasured work", async () => {
+    const { calls } = await run({ task: "t" }, { review: REJECTED, "re-review": REJECTED });
+    const g = calls.find((c) => c.label === "gate:revise1");
+    expect(g).toBeDefined();
+    expect(g?.prompt).toContain("--baseline");
+  });
+
+  test("a red gate on the revision un-verifies the run", async () => {
+    let first = true;
+    const { result } = await run(
+      { task: "t" },
+      {
+        review: () => {
+          if (first) {
+            first = false;
+            return REJECTED;
+          }
+          return REVIEW_OK;
+        },
+        "gate:revise1": GATE_RED,
+      },
+    );
+    expect(result.verified).toBe(false);
+    expect(result.gate.revise.passed).toBe(false);
+  });
+
   test("re-runs the suite after a revision, because the previous green predates the change", async () => {
     let first = true;
     const { result, calls } = await run(
@@ -224,6 +256,36 @@ describe("revision cycle", () => {
     expect(calls.some((c) => c.label === "gate:retest")).toBe(true);
     expect(result.gate.retest).not.toBeNull();
     expect(result.verified).toBe(true);
+  });
+
+  // Regression: the retest used to pass --baseline, but its baseline is snapshotted
+  // AFTER the work, so the delta is empty and every claimed file lands in `missing` —
+  // a red gate on a run that actually succeeded. The retest asks "does it still run",
+  // which needs no diff cross-check.
+  test("the retest runs the suite WITHOUT a diff cross-check", async () => {
+    let first = true;
+    const { calls } = await run(
+      { task: "t" },
+      {
+        review: () => {
+          if (first) {
+            first = false;
+            return REJECTED;
+          }
+          return REVIEW_OK;
+        },
+      },
+    );
+    const retest = calls.find((c) => c.label === "gate:retest");
+    expect(retest?.prompt).not.toContain("--baseline");
+    expect(retest?.prompt).toContain("--check-command");
+  });
+
+  test("the build gate, by contrast, always cross-checks the diff", async () => {
+    const { calls } = await run({ task: "t" });
+    const buildGate = calls.find((c) => c.label === "gate:build");
+    expect(buildGate?.prompt).toContain("--baseline");
+    expect(buildGate?.prompt).toContain("--check-command");
   });
 
   test("a red retest un-verifies an approved review", async () => {

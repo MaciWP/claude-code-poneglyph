@@ -50,7 +50,10 @@ Apply `references/01-criteria-core.md` (Correctness / Tests / Security / Style /
 Scope-discipline) plus any project-specific criteria found in the repo's rules. Scoring
 default (binora model): Critical×10 / Major×5 / Minor×1; `Score = 100 − Σ`;
 verdict: APPROVE (0 critical, ≤2 major) / NEEDS_CHANGES (0 critical, >2 major) /
-BLOCK (≥1 critical).
+BLOCK (≥1 critical). Before scoring, run the **lessons pass**: `Skill(lessons)` — cross-repo
+guards (G6 forbids APPROVE while a merge gate is red) plus the `references/<stack>` file
+matching the diff (Django, React, …). A lesson violated in the diff is a finding like any
+other, quoted with its rule.
 
 ### 6. AC-trace (requisito 9.2 — the net-new piece)
 For EACH acceptance criterion from step 2: `✓` implemented (evidence: `file:line`) /

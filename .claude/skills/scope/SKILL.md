@@ -232,6 +232,6 @@ Phase 1 closed for {NNN}-{slug}:
 - voces externas: <N perspectives ran | skipped>
 - open questions: <N | none>
 
-⏸️ Hard gate 1->2 — pendiente tu aprobación antes de Phase 2 (tech-plan).
+⚪ Hard gate 1->2 — pendiente tu aprobación antes de Phase 2 (tech-plan).
    Responde: APPROVE para continuar | REFINE para iterar | BLOCK para detener.
 ```

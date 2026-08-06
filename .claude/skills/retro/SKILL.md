@@ -144,6 +144,7 @@ For each reusable pattern surfaced in Step 5/7 — plus each entry in `.claude/l
 | **global** (~/.claude/) | Pattern applies across multiple projects; reusable across stacks; meta-system improvement | `~/.claude/{skills,rules,hooks,agents,commands}/` |
 | **local** (project) | Pattern is project-specific (this codebase's conventions); useful here, ceremony elsewhere | `.claude/{skills,rules,hooks,agents,commands}/` |
 | **memory** (only) | Single fact / one-off learning; doesn't deserve a file | `MEMORY.md` entry via auto-memory |
+| **lessons** | A mistake with real evidence that would repeat in another repo (process, review hygiene, delivery) | Row appended to `~/.claude/skills/lessons/SKILL.md`; stack-specific → `lessons/references/<stack>-*.md` instead. Never a per-repo lessons layer |
 
 **Strict rules**:
 
@@ -343,9 +344,9 @@ Report using the block in §Output format reminder (end of this skill) — same 
 - drillme: covered 3/4 canonical Socratic categories
 
 Pending your approval:
-  ⏸️ Promotions to apply
-  ⏸️ Living-spec diff (if any)
-  ⏸️ Commandment violation actions
+  ⚪ Promotions to apply
+  ⚪ Living-spec diff (if any)
+  ⚪ Commandment violation actions
 
 When approved → reply ratifying which subset to apply.
 Feature lifecycle closure: <pending|done>.

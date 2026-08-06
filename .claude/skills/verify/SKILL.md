@@ -40,7 +40,9 @@ Run the project's check command — from the project CLAUDE.md §Commands/Verifi
 (this repo: `bun test ./.claude/`; binora-frontend: `tsc && vitest`;
 binora-backend: `pytest`). Types and lint included when the stack has them.
 Failure → `diagnostic-patterns`, fix the root cause, rerun. NEVER manipulate a
-check to make it pass (Cmd IV).
+check to make it pass (Cmd IV). Run the checks over the **whole** changed set, not
+only the files you remember touching, and never trust a delegated agent's "clean"
+report (`Skill(lessons)` G2/G6 — a merge gate red is never a nit).
 
 ### 2. Impact sweep
 

@@ -52,6 +52,7 @@ const run = await agent(
     `1) run_id: ${args?.runId ? `use EXACTLY "${args.runId}"` : 'run `date +%Y%m%dT%H%M%S` and append "-" plus `git rev-parse --short HEAD`'}.\n` +
     `2) session_dir: /tmp/sssf/<run_id> — create it with mkdir -p. It MUST live OUTSIDE the repo: envelopes written inside the repo would show up as untracked changes and poison the very gate that reads them.\n` +
     `3) check_command: the project's verification command. Look in package.json scripts.test, then the project CLAUDE.md verification section, then .claude/rules/test-policy.md.${args?.checkCommand ? ` The caller supplied "${args.checkCommand}" — prefer it.` : ''}\n` +
+    `   VERIFY it by running it: it must exit 0 AND report more than 0 tests. A command that finds no tests turns every gate in this run red — and that failure is silent unless you check now. (Concrete trap: bare \`bun test\` skips dot-directories, so in a repo whose tests live under .claude/ it finds zero; the real command names the path.)\n` +
     `4) baseline_path: <session_dir>/baseline.json — produce it by running: bun .claude/scripts/gate.ts baseline --out <session_dir>/baseline.json\n` +
     `5) head: \`git rev-parse --short HEAD\`.\n` +
     `6) completed_phases: names of phases whose envelope already exists in session_dir (plan.json, build.json, review.json). Empty array on a fresh run.\n` +
@@ -85,7 +86,11 @@ const GATE_SCHEMA = {
  */
 async function runGate(phaseName, envelope, opts = {}) {
   const file = `${run.session_dir}/${phaseName}.json`
-  const flags = [`--phase ${phaseName}`, `--envelope ${file}`, `--baseline ${opts.baseline || run.baseline_path}`, `--ignore ${run.session_dir}`]
+  const flags = [`--phase ${phaseName}`, `--envelope ${file}`, `--ignore ${run.session_dir}`]
+  // baseline: null = no diff cross-check. The retest asks "does it still run", not
+  // "did you touch what you claimed" — passing a baseline taken AFTER the work would
+  // yield an empty delta and mark every claimed file as never-touched.
+  if (opts.baseline !== null) flags.push(`--baseline ${opts.baseline || run.baseline_path}`)
   if (opts.withSuite) flags.push(`--check-command ${JSON.stringify(run.check_command)}`)
 
   const res = await agent(
@@ -261,6 +266,7 @@ const reviewPrompt =
 
 let review = null
 let revisions = 0
+let reviseGate = null
 let coherence = { ok: false, why: 'sin review' }
 
 for (let i = 1; i <= MAX_REVISION; i++) {
@@ -278,34 +284,50 @@ for (let i = 1; i <= MAX_REVISION; i++) {
   }
   if (review.approved || i === MAX_REVISION) break
 
+  // Re-baseline ANTES de revisar: así el delta que se le imputa al fixer contiene SOLO
+  // su trabajo. Con el baseline original, todo lo que hizo el builder — ya validado por
+  // su propio gate — contaría como cambio no declarado del fixer.
+  const rebase = await agent(
+    `Run: bun .claude/scripts/gate.ts baseline --out ${run.session_dir}/baseline-rev${i}.json — then return the path. Change nothing else.`,
+    { label: `re-baseline:${i}`, phase: 'Review', schema: { type: 'object', required: ['path'], properties: { path: { type: 'string' } } }, model: 'haiku', effort: 'low' },
+  )
+  if (rebase && rebase.path) run.baseline_path = rebase.path
+
   const revise = await agent(
     `You are the BUILDER. Close ONLY these blocking findings from the reviewer:\n` +
       (review.blocking || []).map((b) => `- ${b}`).join('\n') +
       `\n\nUnmet requirements:\n` +
       (review.findings || []).filter((f) => !f.met).map((f) => `- ${f.requirement} (${f.evidence})`).join('\n') +
-      `\n\nSmallest diff that closes them. Report every file you touch. Do NOT git commit. Do NOT touch the gate or this workflow.`,
+      `\n\nSmallest diff that closes them. Report every file you touch — the same deterministic gate cross-checks your list. Do NOT git commit. Do NOT touch the gate or this workflow.`,
     { label: `revise:${i}`, phase: 'Review', schema: BUILD_SCHEMA, model: 'sonnet' },
   )
   if (!revise) break
   revisions = i
   build = { ...build, files_touched: [...new Set([...(build.files_touched || []), ...(revise.files_touched || [])])] }
 
-  // Re-baseline: la revisión cambió el árbol después de la última medida, así que el
-  // baseline viejo contaría el trabajo del builder como cambios no declarados del fixer.
-  const rebase = await agent(
-    `Run: bun .claude/scripts/gate.ts baseline --out ${run.session_dir}/baseline-rev${i}.json — then return the path. Change nothing else.`,
-    { label: `re-baseline:${i}`, phase: 'Review', schema: { type: 'object', required: ['path'], properties: { path: { type: 'string' } } }, model: 'haiku', effort: 'low' },
-  )
-  if (rebase && rebase.path) run.baseline_path = rebase.path
+  // El fixer rinde las mismas cuentas que el builder: sin esto, el re-baseline no
+  // tendría consumidor y una revisión sería la vía por la que entra trabajo sin medir.
+  reviseGate = await runGate(`revise${i}`, { status: revise.status, files_touched: revise.files_touched }, { uiPhase: 'Review' })
+  if (!reviseGate.passed) {
+    log(`la revisión no pasó su gate: ${reviseGate.violations.join(' · ')}`)
+    break
+  }
 }
 
-// La suite corrió antes de la revisión, así que un verde previo está caducado.
+// La suite corrió antes de la revisión, así que un verde previo está caducado. Esto
+// pregunta SOLO "¿sigue corriendo?" — el diff ya lo verificó el gate de la revisión —,
+// de ahí baseline: null.
 let retest = null
 if (revisions > 0 && review && review.approved && coherence.ok) {
-  retest = await runGate('retest', { status: 'done', files_touched: build.files_touched }, { withSuite: true, uiPhase: 'Review' })
+  retest = await runGate('retest', { status: 'done', files_touched: build.files_touched }, { withSuite: true, baseline: null, uiPhase: 'Review' })
 }
 
-const verified = buildVerified && Boolean(review && review.approved) && coherence.ok && (retest === null || retest.passed)
+const verified =
+  buildVerified &&
+  Boolean(review && review.approved) &&
+  coherence.ok &&
+  (reviseGate === null || reviseGate.passed) &&
+  (retest === null || retest.passed)
 
 // ---------- Phase 5: Document (solo sobre trabajo verificado) ----------
 phase('Document')
@@ -345,6 +367,7 @@ return {
   build: build ? { status: build.status, summary: build.summary, files_touched: build.files_touched } : null,
   gate: {
     build: buildGate ? { passed: buildGate.passed, violations: buildGate.violations } : null,
+    revise: reviseGate ? { passed: reviseGate.passed, violations: reviseGate.violations } : null,
     retest: retest ? { passed: retest.passed, violations: retest.violations } : null,
     fix_attempts: fixAttempts,
     revisions,

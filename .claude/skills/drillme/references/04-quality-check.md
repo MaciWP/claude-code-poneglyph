@@ -118,9 +118,9 @@ In both cases: no gap is silently dropped or fake-closed with evasion. Open gaps
 
 | # | Original question | Answer class | Status |
 |---|---|---|---|
-| 1 | [approach] Why this over alt? | Concrete | ✅ Closed |
+| 1 | [approach] Why this over alt? | Concrete | 🟢 Closed |
 | 2 | [failure] What if X? | Evasive ("probably fine") | 🔄 Re-asking with specifics |
-| 3 | [context] Who depends? | Empty (honest unknown) | ⏸️ Marked [OPEN] — needs grep of consumers |
+| 3 | [context] Who depends? | Empty (honest unknown) | ⚪ Marked [OPEN] — needs grep of consumers |
 | 4 | [location] Right place? | Off-topic | 🔄 Re-asking original |
 
 ### Re-asks for round 2

@@ -129,7 +129,7 @@ Test: "does the agent need this in EVERY prompt?" — no → skill.
 | Hooks | 15+ | 6 | **the ones `settings.json.hooks` registers** (6 snapshot 2026-08-05 — `code-validator` + `learning-inbox` cut in 030) | authoritative list = settings.json; event table with per-hook detail: `rules/paths/hooks.md` |
 | Slash commands | 10 | 4 | **count `ls .claude/commands/*.md`** (3 snapshot 2026-07-07) | `flow`, `sync-claude`, `role` (decide/explain-changes were thin command wrappers → pruned; they remain as skills) |
 | Rules | 7 | 2 + paths/ | **count `ls .claude/rules`** (3 + paths/ snapshot 2026-08-05) | `error-recovery.md`, `test-policy.md`, `skill-routing.md` (030 — replaced `model-uplift.md`) + `paths/{hooks,orchestration}.md` |
-| Output-styles | 1 (caveman) | 1 | **1 (poneglyph)** | es-ES natural register since feature 017/US3 |
+| Output-styles | 1 (caveman) | 1 | **1 (poneglyph)** | SSOT: `output-styles/poneglyph.md`. Claude loads via `outputStyle: Poneglyph`. Grok has no output-style feature → always-on `~/.grok/rules/poneglyph-style.md` **symlink to the same file**. |
 
 ## Security posture (personal setup — deliberate)
 

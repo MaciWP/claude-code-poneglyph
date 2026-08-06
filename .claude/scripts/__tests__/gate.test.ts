@@ -1,6 +1,10 @@
 import { describe, test, expect } from "bun:test";
+import { mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import {
   verdictConsistent,
+  fileDigest,
   diffDelta,
   claimsVsDelta,
   derivePatterns,
@@ -71,23 +75,52 @@ describe("verdictConsistent", () => {
 });
 
 describe("diffDelta", () => {
-  const before: Snapshot = { "a.ts": " M", "b.ts": "??" };
+  const before: Snapshot = { "a.ts": " M:aaa", "b.ts": "??:bbb" };
 
   test("reports a newly changed file", () => {
-    expect(diffDelta(before, { ...before, "c.ts": "??" })).toEqual(["c.ts"]);
+    expect(diffDelta(before, { ...before, "c.ts": "??:ccc" })).toEqual(["c.ts"]);
   });
 
   test("reports a file whose status changed", () => {
-    expect(diffDelta(before, { ...before, "a.ts": "MM" })).toEqual(["a.ts"]);
+    expect(diffDelta(before, { ...before, "a.ts": "MM:aaa" })).toEqual(["a.ts"]);
   });
 
-  test("reports a file that left the porcelain list (reverted)", () => {
-    expect(diffDelta(before, { "a.ts": " M" })).toEqual(["b.ts"]);
+  // The dirty-tree failure the smoke run exposed: an already-untracked file edited
+  // further keeps the same "??" status code. Without the content digest the delta is
+  // empty and the gate calls a real change "never made".
+  test("reports a file whose CONTENT changed under an unchanged status code", () => {
+    expect(diffDelta(before, { ...before, "b.ts": "??:ZZZ" })).toEqual(["b.ts"]);
   });
 
   test("a tree at rest yields an empty delta — the dirty-repo case that absolute state would fail", () => {
-    const dirty: Snapshot = Object.fromEntries(Array.from({ length: 119 }, (_, i) => [`f${i}.ts`, " M"]));
+    const dirty: Snapshot = Object.fromEntries(Array.from({ length: 119 }, (_, i) => [`f${i}.ts`, ` M:h${i}`]));
     expect(diffDelta(dirty, dirty)).toEqual([]);
+  });
+
+  test("reports a file that left the porcelain list (reverted)", () => {
+    expect(diffDelta(before, { "a.ts": " M:aaa" })).toEqual(["b.ts"]);
+  });
+});
+
+describe("fileDigest", () => {
+  test("distinguishes two different contents", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "gate-"));
+    const a = join(dir, "a.txt");
+    writeFileSync(a, "one");
+    const first = await fileDigest(a);
+    writeFileSync(a, "two");
+    expect(await fileDigest(a)).not.toBe(first);
+  });
+
+  test("is stable for unchanged content", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "gate-"));
+    const a = join(dir, "a.txt");
+    writeFileSync(a, "same");
+    expect(await fileDigest(a)).toBe(await fileDigest(a));
+  });
+
+  test("reports a missing file as absent rather than throwing", async () => {
+    expect(await fileDigest("/definitely/not/here.txt")).toBe("absent");
   });
 });
 
@@ -239,5 +272,12 @@ describe("SELF_PATHS", () => {
   test("the gate protects its own source — a builder that edits its grader invalidates every gate", () => {
     expect(SELF_PATHS).toContain(".claude/scripts/gate.ts");
     expect(SELF_PATHS).toContain(".claude/workflows/sssf.js");
+  });
+
+  // Protecting only the graders leaves the obvious way around them open: gut the
+  // assertions and the suite goes green without either grader being touched.
+  test("it protects the graders' TESTS too, not just the graders", () => {
+    expect(SELF_PATHS).toContain(".claude/scripts/__tests__/gate.test.ts");
+    expect(SELF_PATHS).toContain(".claude/workflows/__tests__/sssf.test.ts");
   });
 });

@@ -62,7 +62,7 @@ export const bannedOpeners: Grader = (transcript) => {
   return { pass: true, detail: "no banned openers" };
 };
 
-// Translated-English calques from output-styles/poneglyph.md §Language (the spec's own
+// Translated-English calques from output-styles/poneglyph.md §Voice (the spec's own
 // counter-examples). Multi-word anchors → low false-positive rate; single words like
 // "déjame" alone are legitimate Spanish and are NOT listed. Failure origin: 017 retro
 // (translated-English style debt). Code/quotes are stripped first (literal-quote exempt).

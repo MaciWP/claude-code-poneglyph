@@ -52,11 +52,25 @@ export interface Envelope {
   tests_passed?: boolean;
 }
 
-/** path -> git porcelain status code, e.g. " M", "??", "A ". */
+/**
+ * path -> "<git porcelain status code>:<content digest>", e.g. " M:a3f1c2".
+ *
+ * The digest is load-bearing, not decoration. The status code alone describes STATE, not
+ * content: a file already listed as "??" that an agent edits further is still "??", so a
+ * code-only snapshot shows no delta and the gate reports the change as never made. That
+ * is precisely the dirty-tree case the baseline exists for.
+ */
 export type Snapshot = Record<string, string>;
 
 /** Files this repo's own machinery must survive; a build touching them is a red flag. */
-export const SELF_PATHS = [".claude/scripts/gate.ts", ".claude/workflows/sssf.js"];
+export const SELF_PATHS = [
+  ".claude/scripts/gate.ts",
+  ".claude/workflows/sssf.js",
+  // The tests belong here too: an agent that guts the assertions turns the suite green
+  // without touching the graders themselves — the same failure this check exists to stop.
+  ".claude/scripts/__tests__/gate.test.ts",
+  ".claude/workflows/__tests__/sssf.test.ts",
+];
 
 /**
  * Write allowlist per phase — the genuinely new contribution over sssf's roster-wide
@@ -238,18 +252,34 @@ export function report(phase: string, checks: Check[]): GateReport {
 // I/O — kept thin so the logic above stays testable.
 // ---------------------------------------------------------------------------
 
+/** Content fingerprint of one path. Absent/unreadable are distinct states, not errors. */
+export async function fileDigest(path: string): Promise<string> {
+  try {
+    const f = Bun.file(path);
+    if (!(await f.exists())) return "absent";
+    return Bun.hash(new Uint8Array(await f.arrayBuffer())).toString(16);
+  } catch {
+    return "unreadable";
+  }
+}
+
 export async function snapshot(): Promise<Snapshot> {
   const proc = Bun.spawn(["git", "status", "--porcelain=v1", "-uall"], { stdout: "pipe", stderr: "pipe" });
   const out = await new Response(proc.stdout).text();
   await proc.exited;
-  const snap: Snapshot = {};
+  const paths: Array<{ path: string; code: string }> = [];
   for (const line of out.split("\n")) {
     if (line.length < 4) continue;
     // Porcelain v1: two status chars, a space, then the path (renames use " -> ").
     const code = line.slice(0, 2);
-    const path = line.slice(3).trim().split(" -> ").pop() ?? "";
-    if (path) snap[path.replace(/^"|"$/g, "")] = code;
+    const path = (line.slice(3).trim().split(" -> ").pop() ?? "").replace(/^"|"$/g, "");
+    if (path) paths.push({ path, code });
   }
+  const digests = await Promise.all(paths.map((p) => fileDigest(p.path)));
+  const snap: Snapshot = {};
+  paths.forEach((p, i) => {
+    snap[p.path] = `${p.code}:${digests[i]}`;
+  });
   return snap;
 }
 
