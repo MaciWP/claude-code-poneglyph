@@ -44,6 +44,39 @@ describe("scanFile (exported in-situ)", () => {
   test("returns empty for a non-existent file (best-effort)", async () => {
     expect(await scanFile(join(tmpdir(), "sg-test-does-not-exist-xyz"))).toEqual([]);
   });
+
+  // Regression, not a unit test: this is the exact shape of binora-contract's
+  // openapi.yaml:95-110, the recurring false positive that motivated the fix.
+  test("an OpenAPI contract's example placeholder is not reported", async () => {
+    const spec = [
+      "openapi: 3.0.3",
+      "info:",
+      "  title: binOra API",
+      "paths:",
+      "  /token/verify/:",
+      "    post:",
+      "      requestBody:",
+      "        content:",
+      "          application/json:",
+      "            examples:",
+      "              valid:",
+      "                value:",
+      "                  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+      "",
+    ].join("\n");
+    const path = await tmpFile("contract.yaml", spec);
+    expect(await scanFile(path)).toEqual([]);
+  });
+
+  // The other half of the acceptance criterion: excluding specs must not blunt
+  // the gate on the files where a real secret actually lives.
+  test("a compose file with the same shape IS still reported", async () => {
+    const compose = `services:\n  db:\n    environment:\n      POSTGRES_PASSWORD: ${LONG}\n`;
+    const path = await tmpFile("compose.yaml", compose);
+    const hits = await scanFile(path);
+    expect(hits.length).toBeGreaterThan(0);
+    expect(hits[0]).toMatch(/:4$/);
+  });
 });
 
 describe("getModifiedFiles (exported in-situ)", () => {

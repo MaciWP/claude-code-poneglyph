@@ -40,6 +40,25 @@ export function isOrchestrationPath(filePath: string): boolean {
   return /(?:^|\/)\.claude\//.test(filePath);
 }
 
+// An OpenAPI/Swagger document is an API CONTRACT: its `examples:` blocks exist to
+// illustrate request/response shapes, so credential-shaped placeholders are the
+// point, not a leak. Measured case (binora-contract, 2026-08-06): the canonical
+// `token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` — a bare JWT *header*, no
+// payload, no signature — sits at openapi.yaml:103 and re-fired on every turn that
+// touched the contract. Same failure mode the .md exclusion above was written for:
+// a gate that cries wolf every turn trains the user to ignore it.
+// Scoped by CONTENT, not extension, on purpose: docker-compose.yaml, Helm values.yaml
+// and CI workflows are exactly where a real secret lives, and none of them declare
+// an `openapi:`/`swagger:` version — their detection is untouched.
+// Tradeoff (same shape as .md / .claude/): a real credential pasted into an
+// `example:` is not caught. Measured cost at write time: 0 — the only secret-shaped
+// lines in the whole contract repo were three copies of that placeholder.
+// Known limit: a conventional openapi.json (indented root key) is NOT recognised.
+// Left narrow on purpose — widen it when a real case shows up, not before.
+export function isApiSpecDocument(content: string): boolean {
+  return /^["']?(?:openapi|swagger)["']?:\s*['"]?\d/m.test(content.slice(0, 2048));
+}
+
 // Per-line secret check. Resets the stateful /g regex BEFORE testing — the
 // lastIndex gotcha would silently skip alternating lines otherwise.
 export function lineHasSecret(line: string): boolean {
@@ -71,6 +90,7 @@ export async function scanFile(filePath: string): Promise<string[]> {
     const file = Bun.file(filePath);
     if (!(await file.exists())) return hits;
     const content = await file.text();
+    if (isApiSpecDocument(content)) return hits; // contract examples, not credentials
     const lines = content.split("\n");
     for (let i = 0; i < lines.length; i++) {
       if (lineHasSecret(lines[i])) {

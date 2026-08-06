@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { lineHasSecret, hasTextExtension, isOrchestrationPath, extractTurnFromTranscript, buildGitDisciplineWarning, shouldSkipStopHook, readTranscriptTail } from "../security-gate";
+import { lineHasSecret, hasTextExtension, isOrchestrationPath, isApiSpecDocument, extractTurnFromTranscript, buildGitDisciplineWarning, shouldSkipStopHook, readTranscriptTail } from "../security-gate";
 
 // Fake values built at runtime so no literal secret lives in this file.
 const LONG = "x".repeat(20);
@@ -77,6 +77,37 @@ describe("isOrchestrationPath — exclude the .claude/ orchestration tree", () =
   test("does NOT exclude a 'claude' dir that isn't .claude", () => {
     expect(isOrchestrationPath("src/claude/client.ts")).toBe(false);
     expect(isOrchestrationPath("claude.ts")).toBe(false);
+  });
+});
+
+describe("isApiSpecDocument — API contracts are examples by nature", () => {
+  test("recognises an OpenAPI document (unquoted key and version)", () => {
+    expect(isApiSpecDocument("openapi: 3.0.3\ninfo:\n  title: binOra API\n")).toBe(true);
+  });
+  test("recognises a Swagger 2 document (quoted version)", () => {
+    expect(isApiSpecDocument('swagger: "2.0"\ninfo:\n  title: legacy\n')).toBe(true);
+  });
+  test("recognises a JSON-style quoted root key", () => {
+    expect(isApiSpecDocument('"openapi": "3.0.3"\n')).toBe(true);
+  });
+
+  test("does NOT recognise docker-compose — where a real secret lives", () => {
+    const compose = "services:\n  db:\n    environment:\n      POSTGRES_PASSWORD: hunter2verylongvalue\n";
+    expect(isApiSpecDocument(compose)).toBe(false);
+  });
+  test("does NOT recognise a Helm values.yaml", () => {
+    expect(isApiSpecDocument("replicaCount: 1\nimage:\n  tag: latest\n")).toBe(false);
+  });
+  test("does NOT recognise a tooling config pointing AT a spec (path, not version)", () => {
+    expect(isApiSpecDocument("openapi: ./contract/spec.yaml\n")).toBe(false);
+  });
+  test("does NOT recognise an indented key — the spec version is a root key", () => {
+    expect(isApiSpecDocument("apis:\n  main:\n    openapi: 3.0.3\n")).toBe(false);
+  });
+
+  test("scope changed, detector did NOT: the placeholder line still reads as a secret", () => {
+    // Guards the fix from degrading into "we weakened SECRET_PATTERN".
+    expect(lineHasSecret("                  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")).toBe(true);
   });
 });
 
