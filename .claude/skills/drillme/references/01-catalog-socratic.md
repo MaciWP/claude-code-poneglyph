@@ -57,7 +57,7 @@ Pattern reasoning. Surfaces assumptions about **why this pattern over alternativ
 | Template | When to use |
 |---|---|
 | "Why this approach over `<alternative>`? What did we reject?" | Decision between 2+ patterns |
-| "What's the simplest version that could possibly work?" | Anti-overengineering (Commandment III) |
+| "What's the simplest version that could possibly work?" | Anti-overengineering (Commandment V) |
 | "Are we solving the right problem?" | Symptom vs root cause |
 | "Why now and not later / not earlier?" | Timing of the decision |
 | "If we had to do this in 1 hour vs 1 week, what changes?" | Force scope calibration |
@@ -71,7 +71,7 @@ Pattern reasoning. Surfaces assumptions about **why this pattern over alternativ
 
 | Anti-pattern | Detection | Correction |
 |---|---|---|
-| Steel-man missing | Critique without representing the strongest case for the alternative | Steel-man before critique (anti-pattern #3 from decision-stress-test) |
+| Steel-man missing | Critique without representing the strongest case for the alternative | Steel-man before critique (anti-pattern #3 from decide (heavy tier)) |
 | Contrarian for its own sake | "Why not X?" without a reason X would be better | Disagree only with concrete reason |
 
 ## 3. `[context]` — Introduce context
@@ -113,7 +113,7 @@ Edge case robustness. Surfaces what breaks, what's worst-case, what we'd regret 
 |---|---|
 | "What happens if `<edge case>`?" | Always — edge cases are universal |
 | "What's the worst-case scenario?" | Severity calibration |
-| "It's 6 months later, this failed — why?" | Pre-mortem (from decision-stress-test) |
+| "It's 6 months later, this failed — why?" | Pre-mortem (from decide (heavy tier)) |
 | "What would guarantee the worst outcome?" | Inversion |
 | "If we deploy this Friday and break Saturday, what's the rollback?" | Operational failure modes |
 | "What's the silent failure mode?" | Errors that don't fail loudly |

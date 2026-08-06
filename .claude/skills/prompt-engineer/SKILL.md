@@ -81,7 +81,7 @@ When a prompt flows between agents (Lead → Workflow unit, or skill → skill, 
 | # | Cómo |
 |---|---|
 | II | Refinement surfaces unverified premises in a vague prompt before they propagate |
-| VII | Catching a weak delegation prompt early avoids 2-5K-token round-trips with subagents |
+| X | Catching a weak delegation prompt early avoids 2-5K-token round-trips with subagents |
 | VIII | The core skill — every agent prompt carries context, goal, constraints, deliverable, verification |
 
 ## Related

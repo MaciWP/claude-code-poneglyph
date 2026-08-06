@@ -17,7 +17,7 @@ Implements ONE HU at a time from an approved `tasks/` + Phase 2.5 oracle. Each H
 
 ## Underlying principle
 
-> "Each HU closes intra-fase before the next one. Smallest diff that satisfies the AC + drillme." (Commandment III — simple by default; Commandment IV — blocking gates per HU)
+> "Each HU closes intra-fase before the next one. Smallest diff that satisfies the AC + drillme." (Commandment V — simple by default; Commandment IV — blocking gates per HU)
 
 Phase 3 is the only phase that touches production code. Every other phase is design or verification. The discipline here is **atomicity + honest test/validation closure + inline execution** (a single HU is one unit of work → the main session does it; "context isolation" is not a reason to spawn — see the canonical spawn decision tree in `orchestrator-protocol`).
 
@@ -154,7 +154,7 @@ Coverage: 4/4 in the `[approach]` category — Phase 3 is implementation-focused
 
 ### Step 8 — Update state.json AND `tasks/US{N}.md` frontmatter
 
-Two updates per HU closure (both mandatory — Cmd IX observability + documental coherence). One command does both, schema-validated: `bun .claude/scripts/flow-state.ts close-us US{N} --files "a.md,b.ts"` — prefer it over hand-rolled JSON/sed edits.
+Two updates per HU closure (both mandatory — Cmd VII observability + documental coherence). One command does both, schema-validated: `bun .claude/scripts/flow-state.ts close-us US{N} --files "a.md,b.ts"` — prefer it over hand-rolled JSON/sed edits.
 
 **8a. Update `state.json`** after tests pass (or validations close):
 
@@ -249,7 +249,7 @@ If all HUs closed → flag `state.json.current_phase: 4` and report "Phase 3 com
 | `diagnostic-patterns` | When tests fail in Step 9 verification (5-whys, retry budget, stack-trace analysis) | Lead reads error output manually + applies error-recovery.md retry policy |
 | `lsp-operations` | During Step 4 ejemplos + Step 5 impl — `findReferences`/`hover`/`goToDefinition` for semantic navigation when blast radius matters | Lead uses Grep + Read manually as fallback (less precise but functional) |
 | `review-patterns` | ⚠️ Optional — during impl if quality concern emerges (SOLID violation suspected, performance bottleneck) | Lead invokes `/critic` review-patterns mode in Phase 4 anyway; intra-impl invocation is opportunistic |
-| `meta-create` | When HU's `files` field includes new `.claude/skills/`, `.claude/hooks/`, `.claude/rules/`, `.claude/plugins/`, `.mcp.json` | Lead reads `meta-create/SKILL.md` manually before designing the extension (Commandment X — meta-system maintainability) |
+| `meta-create` | When HU's `files` field includes new `.claude/skills/`, `.claude/hooks/`, `.claude/rules/`, `.claude/plugins/`, `.mcp.json` | Lead reads `meta-create/SKILL.md` manually before designing the extension (Commandment IX — meta-system maintainability) |
 | `meta-settings-cookbook` | When HU touches `CLAUDE.md`, `.claude/settings.json`, output styles, permissions, env vars | Lead reads `meta-settings-cookbook/SKILL.md` references manually |
 
 > Skill-to-skill invocation is **probabilistic** per docs Anthropic + [issue #59968](https://github.com/anthropics/claude-code/issues/59968). For Phase 3, the canonical auxiliaries (anti-hallucination, drillme, diagnostic-patterns) MUST fire on every HU — the fallback column documents the Lead's manual recovery if auto-fire misses. `review-patterns` is opportunistic (⚠️); `meta-create`/`meta-settings-cookbook` are conditional on HU content.
@@ -308,12 +308,12 @@ If all HUs closed → flag `state.json.current_phase: 4` and report "Phase 3 com
 | # | Cómo |
 |---|---|
 | II | `anti-hallucination` before every Edit/Write — no invented references |
-| III | Smallest diff that satisfies AC; over-engineering caught by drillme Q3 |
+| V | Smallest diff that satisfies AC; over-engineering caught by drillme Q3 |
 | IV | Tests pass before "completed"; no exceptions (blocking gate per HU) |
-| V | Read AC + tests/validations + ejemplos del proyecto BEFORE writing |
+| I | Read AC + tests/validations + ejemplos del proyecto BEFORE writing |
 | VI | Sensitive paths require inline declaration; destructive ops never run by this skill |
-| VII | Inline execution avoids wasteful 1-agent spawns; fan-out only at ≥4 independent HUs (P1/P3) |
-| X | Meta-extensions go through `meta-create` skill consultation (extensible meta-system) |
+| X | Inline execution avoids wasteful 1-agent spawns; fan-out only at ≥4 independent HUs (P1/P3) |
+| IX | Meta-extensions go through `meta-create` skill consultation (extensible meta-system) |
 
 ## Verification (post-implementation of this skill)
 

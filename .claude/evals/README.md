@@ -32,9 +32,9 @@ Exit code ≠ 0 on any case failure.
 
 `source` is non-negotiable: a case without a traceable real-failure origin is synthetic and gets cut (spec 019 out-of-scope).
 
-## Clusters (18 cases, 2026-06-10 harvest)
+## Clusters (21 cases: 18 from the 2026-06-10 harvest + calque-19 and devloop-20/21 added in 024-029)
 
-Declared count: **18, not 20** — the honest yield of documented real failures; no filler added.
+Declared count matches documented real failures only — no filler added (the original harvest was honestly 18, not a round 20).
 
 | Cluster | Cases | Grader | Failure origin |
 |---|---|---|---|

@@ -1,320 +1,123 @@
 ---
-description: Orchestrate the 5-phase workflow end-to-end for a feature (scope → tech-plan → tdd-design → build → critic → retro) with adaptive triage and human hard gates.
-argument-hint: "[--minimal|--standard|--full|--resume <slug>] <task or slug>"
+description: Orchestrate the full feature lifecycle (scope → tech-plan → tdd-design → build → critic → retro) with human hard gates and measurable boundary checklists.
+argument-hint: "<task> | --resume <slug>"
 allowed-tools: Read, Edit, Write, Bash, Glob, Grep, Skill, Agent, AskUserQuestion, TaskCreate, TaskUpdate, TaskList
 ---
 
-# /flow — 5-phase workflow orchestrator
+# /flow — feature lifecycle orchestrator
 
-End-to-end feature lifecycle: invokes the 6 phase skills (`scope`, `tech-plan`, `tdd-design`, `build`, `critic`, `retro`) in order with adaptive triage and human hard gates. Reads/writes `.claude/plans/{NNN}-{slug}/state.json` for resumability.
+Runs the 6 phase skills (`scope` → `tech-plan` → `tdd-design` → `build` → `critic` → `retro`) over `.claude/plans/{NNN}-{slug}/`, with `state.json` as the resumable source of truth. `/flow` orchestrates a FEATURE (multi-turn); the `orchestrator-protocol` skill orchestrates a Lead TURN — complementary, not redundant.
 
-> **Scope distinction**: `/flow` orchestrates a FEATURE lifecycle (multi-turn, artefacts in `plans/`). The `orchestrator-protocol` skill orchestrates a Lead TURN (Triage → Complexity → Context → Delegate → Validate). They are complementary, not redundant.
+## Doctrine — no modes (user decision 2026-08-05, 029/US12)
 
-## Arguments
+`/flow` always runs FULL. Legacy flags (`--minimal|--standard|--full`) parse but are ignored — warn the user. The adaptive lever is per-phase: a phase or artifact that genuinely doesn't apply is skipped by the Lead **with explicit justification, announced BEFORE skipping, and recorded** (retro: `retro-status "skipped — <justificación ≥10 chars>"`; `close-feature` refuses a null/pending retro).
 
-| Form | Meaning |
-|---|---|
-| `/flow <task>` | Auto-triage complexity → resolve mode (minimal/standard/full) → execute |
-| `/flow --minimal <task>` | Force minimal: Phase 3 direct (no spec/tasks/tests artefacts); Phase 4 light |
-| `/flow --standard <task>` | Force standard: all 5 phases with hard gates 1→2 and 2→3 |
-| `/flow --full <task>` | Force full: 5 phases with deep drillme + decision-stress-test in Phase 2 + fresh-context reviewer with critical-area focus in Phase 4 (panels = decision review only, feature 019) |
-| `/flow --resume <slug>` | Read `.claude/plans/<slug>/state.json` and continue from `current_phase` |
+## Boundary checklist (each phase boundary, ≤5 items, recorded)
 
-## Lead workflow (executed by this command)
+On entering every phase, tick — and record via `bun $HOME/.claude/scripts/flow-state.ts boundary-check <phase> "<item>"` — so compliance is measurable, not aspirational:
 
-```mermaid
-graph TD
-  A[Parse args] --> B{--resume?}
-  B -->|yes| RES[Read state.json, resume from current_phase]
-  B -->|no| C{mode flag?}
-  C -->|yes| MODE[Force declared mode]
-  C -->|no| TRIAGE[Estimate complexity + resolve mode]
-  TRIAGE --> MODE
-  MODE --> D{mode}
-  D -->|minimal| MIN[Phase 3 direct]
-  D -->|standard| STD1[Phase 1 scope]
-  D -->|full| STD1
-  MIN --> MINREV[Phase 4 light + close]
-  STD1 --> G1[Hard gate 1->2 AskUserQuestion]
-  G1 -->|APPROVE| STD2[Phase 2 tech-plan]
-  G1 -->|REFINE| STD1
-  STD2 --> STD25[Phase 2.5 tdd-design]
-  STD25 --> G2[Hard gate 2->3 AskUserQuestion]
-  G2 -->|APPROVE| STD3[Phase 3 build loop HUs]
-  G2 -->|REFINE| STD2
-  STD3 --> STD4[Phase 4 critic]
-  STD4 -->|NEEDS_CHANGES| STD3
-  STD4 -->|APPROVED| STD5[Phase 5 retro]
-  STD4 -->|BLOCKED| STOP[STOP escalate]
-  STD5 --> CLOSE[Close lifecycle]
-  RES --> D
-```
+1. Phase skill invoked (`Skill('<phase>')`) — or skip justified + announced.
+2. Previous phase's artifact exists (spec.md / tasks/+oracle / green diff / review.md / retro.md-or-justified-skip).
+3. `state.json` updated via the helper.
+4. Crossing 1→2 or 2→3 → human gate approved (AskUserQuestion — APPROVE / REFINE / BLOCK).
+5. Entering Phase 2 or 3 → `skill-advisor` shortlist proposed (propose→ratify; 0 proposals when nothing applies) and `drillme` gap-sweep before the gate (0 questions when unambiguous). These two checkpoints replace the old every-boundary mandate (measured compliance was ~2%).
 
-### Step 1 — Parse arguments
+## Steps
 
-Extract from `$ARGUMENTS`:
+### 1 — Parse
 
-| Pattern | Action |
-|---|---|
-| `--resume <slug>` | `mode = resume`, `slug = <slug>` — skip to Step 5 |
-| `--minimal\|--standard\|--full <task>` | `mode = <flag>`, `task = <task>` |
-| `<task>` (no flag) | `task = <task>`, mode resolved in Step 2 |
+`--resume <slug>` → Step 4. Otherwise `$ARGUMENTS` is the task (empty → ask). Legacy mode flags → warn + ignore.
 
-If `$ARGUMENTS` is empty → `AskUserQuestion`: "Qué feature quieres orquestar?"
+### 2 — Slug + state
 
-### Step 2 — Triage (auto-mode resolution)
-
-When no `--minimal|--standard|--full` flag was passed:
-
-| Heuristic | Mode resolved |
-|---|---|
-| Task description ≤ 1 sentence + suggests 1 file + no architectural language | `minimal` |
-| Task suggests 2-5 files OR involves a single domain | `standard` |
-| Task mentions architecture, decisions, multiple domains, security/auth/payments, refactor of >5 files | `full` |
-
-> **Research/audit feature** (deliverable = report/analysis, not code): even at `standard|full`, keep the upfront ceremony LIGHT — scope = problem + corpus + rubric, perspectives optional, produce substance (research) early and formalize incrementally. Heavy spec/tasks/perspectives before any finding is over-engineering (Commandment III; lesson from feature 002).
-
-**Show the user**: `Triage: mode = <resolved> (reason: <one line>)`. The user can override with `--<mode>` flag if disagrees.
-
-Declare mode in `state.json` (Step 4).
-
-### Step 3 — Slug generation (skip in minimal)
-
-For `standard|full`:
-
-1. `Glob .claude/plans/*-*/spec.md` — find highest `NNN` (existing prefix).
-2. `NNN = max + 1` (3 digits, zero-padded).
-3. `slug = <NNN>-<kebab-case-of-task-summary>` (≤30 chars).
-4. `Bash mkdir -p .claude/plans/<slug>/tasks` (creates plan dir).
-
-### Step 4 — Initialize state.json (skip in minimal)
-
-Write `.claude/plans/<slug>/state.json`:
+`NNN = max(plans) + 1` → `slug = NNN-<kebab-summary>` → `mkdir -p .claude/plans/<slug>/tasks` → write `state.json` (canonical schema, used by all 6 phase skills):
 
 ```json
 {
-  "spec_slug": "<NNN>-<slug>",
-  "mode": "<standard|full>",
-  "current_phase": 1,
-  "phases_completed": [],
-  "gates_approved": {
-    "1->2": false,
-    "2->3": false
-  },
-  "us_completed": [],
-  "us_pending": [],
-  "us_history": [],
-  "feature_closed": false,
-  "review_verdict": null,
-  "retro_status": null,
-  "started_at": "<YYYY-MM-DD>",
-  "updated_at": "<YYYY-MM-DD>"
+  "spec_slug": "<NNN>-<slug>", "mode": "full",
+  "current_phase": 1, "phases_completed": [],
+  "gates_approved": { "1->2": false, "2->3": false },
+  "us_completed": [], "us_pending": [], "us_history": [],
+  "boundary_checks": [],
+  "feature_closed": false, "review_verdict": null, "retro_status": null,
+  "started_at": "<YYYY-MM-DD>", "updated_at": "<YYYY-MM-DD>"
 }
 ```
 
-This is the **canonical schema** for `state.json` (referenced by all 6 phase skills). Two fields written by `flow-state.ts` that the initial template leaves implicit:
+`current_phase`: `1|2|2.5|3|4|5|"closed"`. `us_history` and `boundary_checks` are appended by the helper (`close-us`, `boundary-check`).
 
-- **`current_phase`**: `number | "closed"`. Carries the active phase number (`1`, `2`, `2.5`, `3`, `4`, `5`) while in flight; `close-feature` sets the string `"closed"`.
-- **`us_history`**: optional array, appended by `close-us`. Each entry: `{ us, completed_at, tests_passed, files_touched, execution, askuserquestion_count }`. Empty/absent until the first HU closes.
+### 3 — Phases
 
-### Step 5 — Resume (only if `--resume <slug>`)
+| Phase | Skill | Produces | Gate / exit |
+|---|---|---|---|
+| 1 Scope | `scope` | `spec.md` | Gate 1→2 (human) |
+| 2 Tech-plan | `tech-plan` | `tasks/index.md` + `US{N}.md` (each with a scored Execution prompt) | — |
+| 2.5 Oracle | `tdd-design` | `tests.md` / `validations.md` | Gate 2→3 (human) |
+| 3 Build | `build` per HU | green diff per HU | per-HU tests pass |
+| 4 Critic | `critic` | `review.md` + verdict | APPROVED/WITH_WARNINGS → 5 · NEEDS_CHANGES → re-enter 3 (only flagged HUs) · BLOCKED → STOP, escalate |
+| 5 Retro | `retro` | `retro.md` (promotions + living-spec deltas, both pending user approval) | `retro-status approved` (or justified skip) → `close-feature` |
 
-1. Read `.claude/plans/<slug>/state.json`.
-2. If file does not exist OR JSON malformed → fallback: `Glob .claude/plans/<slug>/{spec,tasks/index,tests,validations,review,retro}.md` to reconstruct phase from artefacts. Warn user.
-3. Determine resume point from `current_phase` + `gates_approved`:
-   - Phase 1 in progress → re-invoke `scope`
-   - Phase 1 completed, gate 1→2 not approved → re-issue gate prompt
-   - Phase 2 in progress → re-invoke `tech-plan`
-   - ... (analogous for 2.5 / 3 / 4 / 5)
+Phase 3 loop: iterate `us_pending` in DAG order; failure → `diagnostic-patterns` + retry per `error-recovery.md`. A single HU — even ≥5 files — runs inline; **≥4 independent HUs** in a wave may fan out via `Workflow` — explicit user opt-in only ("ultracode" or direct ask).
 
-### Step 6 — Execute mode
+**Parallel back-half (031, opt-in, ask-gated)**: with tasks/ approved + Phase 2.5 closed, the user may run the back half as a saved workflow — `Workflow({name: "<wf>", args: {slug: "<NNN-slug>"}})`. Both execute pending HUs by DAG wave (sonnet units; file collisions serialize instead of worktrees), return `blocked` + the exact question on an ambiguous AC (never improvised), and never touch `state.json` or git.
 
-#### Mode `minimal`
+| Workflow | Covers | Pick it when |
+|---|---|---|
+| `flow-build` | Build + full suite + ONE fresh reviewer (opus) → per-HU status | You only need the HUs executed and will run `/critic` yourself |
+| `flow-cycle` | Build with the `build`-skill protocol (style anchors, oracle red→green, intra-HU drillme, docs-sync, 1 retry with root-cause diagnosis) + Phase-4 review (base checks + fresh reviewer + `review-patterns` + conditional `security-audit` + spec-drift) → **writes `review.md`** with a PROPOSED verdict | You want the Phase-4 artifact too; ~2× flow-build. Extra args: `only: ["US3"]` (re-run flagged HUs after NEEDS_CHANGES), `level: "light\|standard\|full"` |
 
-```
-1. Skip Phases 1, 2, 2.5.
-2. Invoke `build` skill with task description as the AC.
-3. Invoke `critic` skill with --light flag.
-4. Skip Phase 5 OR run /retro --light if friction emerged.
-5. Report and exit.
-```
+The Lead then closes state (`flow-state close-us`), records the returned `boundary_checks`, resolves blocked/failed with the user, and ratifies the verdict (`flow-state verdict`) — a workflow never approves itself. Tradeoff: ~2-4× tokens on the build phase for wall-clock ÷ parallelism.
 
-No `state.json` or `plans/` artefacts in minimal mode. The user opted out of the full lifecycle.
+Phase 5 closure: approved promotions → Lead writes targets inline; approved living-spec diff → patch `spec.md` ("v2 — delta from retro <slug>"); then `close-feature` + frontmatter `status: closed` in spec/tasks.
 
-#### Mode `standard` or `full`
+### 4 — Resume + back-half re-engagement
 
-##### Phase 1 — scope
+Read `state.json` strictly; missing/corrupt → reconstruct from artifacts (`Glob <slug>/{spec,tasks/index,tests,validations,review,retro}.md`) + warn. Continue from `current_phase` + `gates_approved`.
 
-Invoke `Skill('scope')` with the task description as input. Produces `spec.md`.
+**Stuck back-half** (phase 4 with unprocessed verdict, or 5 with retro pending — where 10/14 measured lifecycles died): close it in ONE short session — process verdict → `retro` (or justified skip) → `close-feature`. This is the path the SessionStart open-plans offer points to; closing must be cheap.
 
-In mode `full`: scope auto-activates its 3-perspective product analysis (Outsider/User/Product) if its frontmatter conditions match.
-
-##### Hard gate 1→2
+### 5 — Report
 
 ```
-AskUserQuestion:
-  question: "¿Apruebas spec.md ({slug})?"
-  options:
-    - APPROVE: continúa Phase 2 (tech-plan)
-    - REFINE: vuelve a Phase 1 (scope refina + re-emite)
-    - BLOCK: detén la feature (escala motivo)
+{✅|⏸️|❌} /flow {slug} — phases <list> · HUs <n>/<m> · verdict <v> ·
+retro <status> · closed <yes|no> · promotions pending <n> · skips justificados: <list|none>
 ```
 
-On APPROVE → `state.json.gates_approved["1->2"] = true`, `current_phase = 2`. Persist.
-On REFINE → re-invoke `scope` with the user's refinement notes.
-On BLOCK → STOP; do not continue; leave state.json as snapshot.
+## Rules
 
-##### Phase 2 — tech-plan
-
-Invoke `Skill('tech-plan')`. Reads `spec.md` + executes obligatory research (Context7 + WebFetch + Grep) + produces `tasks/index.md` + `tasks/US{N}.md`. Every US carries a MANDATORY "Execution prompt (Phase 3 input)" block, scored against the prompt-engineer rubric before gate 2→3 (the US is the prompt the Lead executes inline — Commandment VIII).
-
-In mode `full`: tech-plan auto-loads its full reference set including `decision-stress-test` invocation for alternatives.
-
-##### Phase 2.5 — tdd-design
-
-Invoke `Skill('tdd-design')`. Reads `tasks/` + produces `tests.md` and/or `validations.md` per HU nature.
-
-##### Hard gate 2→3
-
-```
-AskUserQuestion:
-  question: "¿Apruebas tasks/ + tests.md/validations.md ({slug})?"
-  options:
-    - APPROVE: continúa Phase 3 (build loop HUs)
-    - REFINE: vuelve a Phase 2 (tech-plan refina + Phase 2.5 re-ejecuta)
-    - BLOCK: detén la feature
-```
-
-##### Phase 3 — build (loop HUs)
-
-Iterate `state.json.us_pending` in DAG order (respect `depends_on`):
-
-```
-for HU in DAG-ordered-pending:
-  invoke Skill('build') with US{id}
-  on success → us_completed += [US{id}], us_pending -= [US{id}]
-  on failure → diagnostic-patterns + retry per error-recovery.md
-  on STOP-escalate → break loop + report
-```
-
-Parallel HUs (independent leaves of the DAG) → may invoke multiple `build` calls in the same Lead message if their `files` are disjoint AND no shared state. Standard spawn rule applies: a single HU — even ≥5 files — runs **inline**; ≥4 independent HUs in a wave → `Workflow` (opt-in).
-
-> **Dynamic workflows engine (≥4 parallel HUs)** — when the DAG has **≥4 independent HUs** in a wave (the ≥4 agent-count rule), the **Workflow tool** (workflows introduced in CC v2.1.154 — source: CC changelog, verified in `plans/_research-skill-activation-2026-06-09.md` §nota colateral) can orchestrate the fan-out in the background, with `isolation: 'worktree'` per HU when files would collide, and `/workflows` to monitor. For 1-3 parallel HUs, the Lead runs `build` inline (spawning <4 agents is wasted cost). poneglyph first dogfooded this in feature 003. **Write-work fan-out is explicit user opt-in ONLY** (inline-first doctrine, 017/US1: all build/write work runs inline; agents exist for parallel read-only units). Opt-in means the keyword "ultracode" or a direct ask in the user's own words — the bare word "workflow" no longer triggers since CC v2.1.160 (source: CC changelog, same research file). Do NOT auto-launch it.
-
-##### Phase 4 — critic
-
-Invoke `Skill('critic')` once all HUs completed. Produces `review.md` with verdict.
-
-| Verdict | Next |
-|---|---|
-| APPROVED / APPROVED_WITH_WARNINGS | continue Phase 5 |
-| NEEDS_CHANGES | re-enter Phase 3 with the specific HUs flagged; loop until APPROVED or escalation |
-| BLOCKED | STOP escalate; do not enter Phase 5 |
-
-`state.json.review_verdict = <verdict>`.
-
-##### Phase 5 — retro
-
-Invoke `Skill('retro')`. Produces `retro.md`. Captures promotions (pending approval), living-spec deltas (pending approval), Commandments audit.
-
-After user reviews retro.md:
-
-- Approved promotions → Lead writes the target file inline (default-allow).
-- Approved living-spec diff → patch `spec.md` with note "v2 — delta from retro <slug>".
-- `state.json.retro_status = "approved"`, `feature_closed = true`.
-- `spec.md` + `tasks/index.md` frontmatter `status: closed`.
-
-### Step 7 — Final report
-
-```
-{✅|⏸️|❌} /flow {slug} — mode=<resolved>
-- Phases completed: <list>
-- Artefacts: spec.md, tasks/, tests.md|validations.md, review.md, retro.md (paths)
-- HUs: <N completed>/<N total>
-- Review verdict: <verdict>
-- Retro status: <pending|approved>
-- Feature closed: <yes|no>
-- Living-spec delta proposed: <yes|no>
-- Promotions pending approval: <N>
-
-Next:
-  → Approve promotions / living-spec diff (if pending)
-  → /flow <new-task> for the next feature
-```
-
-## Archive policy
-
-Closed/abandoned plans move to `.claude/plans/_archive/` (gitignored, untracked — preserved on disk, out of accidental read reach). Pure audits live under `.claude/audits/`. `plans/` holds only active features + `templates/` + files retained by live references (e.g. 001's canonical auxiliary matrix).
-
-## SIEMPRE rules
-
-- **INVOKE the phase skill — do not improvise the phase work without it.** Each phase MUST run via its `Skill()` (`scope`/`tech-plan`/`tdd-design`/`build`/`critic`/`retro`), not by the Lead reproducing the phase from memory. The phase skill carries the procedure + gates; skipping it is the exact under-use this repo fights (feature 023). This does NOT contradict inline-first: invoking the phase skill loads the procedure; the build *work* still runs inline. If a phase skill does not auto-fire, invoke it explicitly (`Skill('<phase>')`) before doing the phase work.
-- Hard gates 1→2 and 2→3 are MANDATORY in standard/full modes — never skip via flag, never auto-approve.
-- `state.json` updates ON EVERY phase transition (Phase 1 complete → write; gate approved → write; HU completed → write). Use the typed helper instead of ad-hoc one-liners: `bun .claude/scripts/flow-state.ts close-us US{n} | approve-gate 1-2|2-3 | verdict <V> | close-feature | complete-phase <n> | status`. `close-feature` refuses unless `review_verdict` is APPROVED/APPROVED_WITH_WARNINGS (Cmd IV guard); `status` lists every open lifecycle under the plans root.
-- Triage is transparent — show the user the resolved mode + reason; user can override.
-- `--resume` reads state.json strictly; if corrupted, reconstruct from artefacts + warn (never silently guess).
-- In standard/full, the slug is generated ONCE at Phase 1 start; subsequent phases honor it.
-- Phase 4 verdict BLOCKED stops `/flow`; user decides whether to reopen or abandon.
-- **Proactive multi-round questioning** (006): at hard gates + during scope/drillme, ask in rounds while genuine doubt remains — including lateral / improvement questions — instead of stopping at one round; converge and say so when no real doubt is left. Calibrated, anti-ceremony (Commandment III). Iteration mechanics via the `drillme` skill; principle in CLAUDE.md §Communication & Honesty Protocol.
-- **Drillme wiring (020)**: `/flow` invokes the exhaustive `drillme` at three points — (1) inside **Phase 1 scope** to close spec gaps, (2) before **hard gate 1→2**, and (3) before **hard gate 2→3** — so the user approves a gap-closed artefact. Drillme is gap-gated: it sweeps until saturation where gaps exist and yields **0 questions when the phase output is already unambiguous** (no ceremony). Skill→skill invocation is probabilistic; if it doesn't auto-fire, the Lead invokes `/drillme "<phase/gate context for NNN-slug>"` manually before the gate.
-- **Skill-advisor wiring (024)**: at **every phase boundary** (entering Phase 1/2/2.5/3/4/5 and at hard gates 1→2 and 2→3), in addition to `drillme`, the Lead invokes `skill-advisor` to propose→ratify the skill shortlist for the entering phase — native skill auto-activation is weakest exactly at these conceptual boundaries (research `_research-skill-activation-2026-06-09.md`). It **proposes, never auto-activates** (the human ratifies via AskUserQuestion — Commandment I); it yields **0 proposals when no skill applies** (no ceremony). Since 027/US4 its proposal may also include a **model/effort recommendation** from `docs/model-uplift-playbook.md §4` — only when the routing differs from the current session state (the user executes `/model`/`/effort`; the Lead never switches them itself). Skill→skill invocation is probabilistic; if it doesn't auto-fire, the Lead invokes `/skill-advisor "<entering-phase context for NNN-slug>"` manually before doing the phase work. This is the deterministic backstop to the under-use that `/flow` exists to prevent (feature 023); the phase skills themselves stay invoked per the rule above.
-
-## Adaptation per mode
-
-| Mode | Phase 1 | Phase 2 | Phase 2.5 | Phase 3 | Phase 4 | Phase 5 |
-|---|---|---|---|---|---|---|
-| minimal | skip | skip | skip | direct | light | skip or light |
-| standard | full | full | full | full | standard | standard |
-| full | full + 3 perspectives | full + decision-stress-test | full + property-based opt-in | full + inline build (Workflow if ≥4 HUs) | full + fresh-context reviewer (critical-area focus) + security-audit | full + Commandments forensics if violation |
+- Each phase runs via its `Skill()` — the Lead MUST NOT improvise phase work from memory (feature 023: under-use is the enemy). Invoke explicitly if auto-fire misses.
+- Hard gates are human-only — NEVER auto-approve.
+- `state.json` on every transition, via the helper: `close-us | approve-gate | verdict | retro-status | boundary-check | close-feature | complete-phase | status`.
+- BLOCKED verdict stops the lifecycle; the user decides reopen/abandon.
+- At gates: multi-round questioning while genuine doubt remains (`output-styles/poneglyph.md` §Honesty mechanics).
 
 ## Edge cases
 
-- **Edge 1** — `/flow --resume <slug>` but `state.json` does not exist: fallback to `Glob .claude/plans/<slug>/*.md` and reconstruct `current_phase` from artefacts present (spec only → Phase 1 awaiting gate; spec+tasks → Phase 2 awaiting gate 2→3; etc.). Warn user.
-- **Edge 2** — Gate 1→2 rejected by user: re-invoke `scope` with refinement notes. Multiple iterations allowed (no counter is persisted — the canonical schema has no such field).
-- **Edge 3** — Phase 4 verdict NEEDS_CHANGES with specific HUs: re-enter Phase 3 ONLY for those HUs (don't rebuild the whole DAG).
-- **Edge 4** — User invokes `/flow` while another feature is mid-flight (active state.json elsewhere): `AskUserQuestion` "¿Reusar el slug actual o crear nuevo?" — never silently fork.
-- **Edge 5** — Mode `minimal` produces a result the user later wants to formalize: invoke `/flow --standard` retroactively, point Phase 1 (scope) at the existing code as "reverse-engineer spec".
-- **Edge 6** — Phase 3 loop encounters an HU whose `depends_on` are not closed: STOP; surface the DAG violation; usually means `state.json` is out of sync — Phase 5 would catch this in retro.
+- Resume without state.json → reconstruct from artifacts + warn; never silently guess.
+- Another feature mid-flight when `/flow` is invoked → ask (reuse slug or new); never silently fork.
+- HU with unclosed `depends_on` in the loop → STOP, surface the DAG violation.
+- Slug is generated once at Phase 1; later phases honor it; unrelated feature → new NNN.
 
 ## Smell signals
 
-- ⚠️ Triage always resolves `full` → the heuristic is mis-calibrated; review Step 2 thresholds.
-- ⚠️ Gate 2→3 rejected in >50% runs → tech-plan is producing poorly-defined HUs; reopen tech-plan criteria.
-- ⚠️ Phase 4 verdict NEEDS_CHANGES in >3 iterations on the same feature → spec.md or DAG is wrong; reopen Phase 1/2.
-- ⚠️ `/flow` used <20% of feature work (vs auto-activation of individual skills) → the orchestrator's value-add is unclear; revisit.
-- ⚠️ `state.json` files accumulate without `feature_closed: true` → workflows are abandoned mid-flight; usability problem.
+- ⚠️ Gate 2→3 rejected in >50% of runs → tech-plan is producing weak HUs.
+- ⚠️ `state.json` accumulating without `feature_closed: true` → back-half is dying again; check the SessionStart offer + re-engagement path.
+- ⚠️ `boundary_checks` consistently empty in closed lifecycles → the checklist is being skipped silently.
 
-## Anti-patterns
+## Archive
 
-| Anti-pattern | Detection | Correction |
-|---|---|---|
-| Skip hard gate via auto-approve | `state.json.gates_approved["1->2"] = true` without an AskUserQuestion event | Reject — gates are human-only |
-| Reuse slug across unrelated features | Two specs with different problem statements under same `<slug>` | Generate new `NNN+1-<slug>` |
-| Hardcode mode in command body | `/flow` always resolves to `full` regardless of triage | Honor triage heuristic + flag override only |
-| Run Phase 5 on BLOCKED verdict | retro.md produced after review.md verdict = BLOCKED | Phase 5 only runs on APPROVED/APPROVED_WITH_WARNINGS |
-| Auto-edit spec.md from retro | spec.md mtime changes during /retro without user approval | Living-spec deltas are proposals; the Lead applies AFTER user approves |
-
-## Verification (post-implementation of this command)
-
-- Smoke `/flow "trivial typo fix"` → resolves minimal; no plans/ dir created.
-- Smoke `/flow --standard "add validation hook"` → 5 phases with 2 hard gates; produces all artefacts.
-- Smoke `/flow --resume 001-foo` → reads state.json + continues from `current_phase`.
-- `state.json` schema validates against `templates/state.template.json` (when US1 creates it).
-- `bun test ./.claude/hooks/` → green (this command is markdown — no hook test impact).
+Closed/abandoned plans → `.claude/plans/_archive/` (gitignored). Audits → `.claude/audits/`. `plans/` holds active features + `templates/` + live-referenced files.
 
 ## Commandments cubiertos
 
 | # | Cómo |
 |---|---|
-| I | Hard gates 1→2 and 2→3 are explicit human approval — colleague pattern, not bypass |
-| III | Triage adaptive — minimal mode avoids ceremony for trivial tasks |
-| IV | Gates 1→2 and 2→3 block until APPROVE; Phase 4 verdict blocks Phase 5 |
-| V | Phase 1 (scope) before any technical work — understand before acting |
-| VII | Parallel HU execution in Phase 3 when DAG allows; resumable workflows |
-| X | `state.json` schema is canonical (used by 6 phase skills); workflow state visible end-to-end |
+| I | Phase 1 scope before any technical work |
+| III | Hard gates = explicit human approval (colleague pattern) |
+| IV | Gates + verdict + retro guard block until resolved; skips solo justificados y registrados |
+| VII | `boundary_checks` + state.json = compliance observable end-to-end |
+| IX | Rewrite 029/US17: 2.850→~1.100 palabras, mandatos 24→8, modos legacy eliminados |
 
 ## Related
 
-- `orchestrator-protocol` skill — turn-level Lead protocol (Triage / Complexity / Context / Delegate / Validate per Lead turn). Complementary to `/flow` (feature-level orchestration).
-- 6 phase skills: `scope`, `tech-plan`, `tdd-design`, `build`, `critic`, `retro`.
-- `drillme` skill — transversal Socratic check (invoked by phase skills + on-demand).
+`orchestrator-protocol` (turn-level) · the 6 phase skills · `drillme` (gap sweeps at gates) · `skill-advisor` (checkpoints at Phase 2/3 entry).

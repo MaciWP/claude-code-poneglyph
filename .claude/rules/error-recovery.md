@@ -26,7 +26,7 @@ When a build step fails (inline, 1-3 units) or a `Workflow` unit fails (≥4 fan
 | 2+ diagnoses without a working fix | STOP → AskUserQuestion |
 | Same exact error 2 times | STOP → AskUserQuestion |
 
-> **Escalation rung**: before STOP→AskUserQuestion, invoke the `escalate` skill (`effort: xhigh`) for ONE deep change-of-technique pass — attack the *class* with a method not yet tried (`diagnostic-patterns`/`drillme`). If it still fails, then STOP→AskUserQuestion. Do not repeat the same attack louder.
+> **Escalation rung**: before STOP→AskUserQuestion, invoke the `unstuck` skill (`effort: xhigh`) for ONE deep change-of-technique pass — attack the *class* with a method not yet tried (`diagnostic-patterns`/`drillme`). If it still fails, then STOP→AskUserQuestion. Do not repeat the same attack louder.
 
 When blocked, ask: (1) missing context, (2) approach change, (3) task split.
 

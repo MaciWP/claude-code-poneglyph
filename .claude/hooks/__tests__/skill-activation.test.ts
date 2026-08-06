@@ -1,8 +1,16 @@
 import { describe, test, expect } from "bun:test";
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { loadSkills, matchSkills, buildInjection, processPayload } from "../skill-activation";
+import {
+  loadSkills,
+  matchSkills,
+  buildInjection,
+  processPayload,
+  detectFeatureShape,
+  analyzePayload,
+  appendHintLog,
+} from "../skill-activation";
 import { formatLogLine } from "../instructions-loaded";
 
 // Fixture: a minimal skills dir with one drillme-like skill (keywords on disk,
@@ -109,23 +117,27 @@ describe("processPayload — malformed payload is silent (T12.3)", () => {
   });
 });
 
-describe("processPayload — shortlist + skill-advisor (feature 023)", () => {
-  test("T2.1 non-trivial prompt → shortlist con motivo + skill-advisor", () => {
+describe("processPayload — silencioso por defecto (031)", () => {
+  test("T2.1 match real → shortlist con motivo, SIN línea advisor incondicional", () => {
     const out = processPayload(JSON.stringify({ prompt: "refactoriza el módulo de pagos aplicando SOLID" }), skills);
     expect(out).toContain("Skill(review-patterns)");
     expect(out).toContain("matched");
-    expect(out).toContain("Skill(skill-advisor)");
+    expect(out).not.toContain("Skill(skill-advisor)");
   });
 
-  test("T2.2 '/goal <task>' se procesa (no se salta)", () => {
-    const out = processPayload(JSON.stringify({ prompt: "/goal escribe tests para el parser" }), skills);
-    expect(out).toContain("Skill(skill-advisor)");
-    expect(out).not.toBe("");
+  test("T2.2 prompt no-trivial SIN match ni shape → silencio total", () => {
+    const out = processPayload(
+      JSON.stringify({ prompt: "explícame cómo funciona la autenticación del proyecto por dentro" }),
+      skills,
+    );
+    expect(out).toBe("");
   });
 
-  test("T2.2b '/goal' tarea de trabajo sin match → skill-advisor sí o sí", () => {
-    const out = processPayload(JSON.stringify({ prompt: "/goal añade un botón al formulario de login" }), skills);
-    expect(out).toContain("Skill(skill-advisor)");
+  test("T2.2b '/goal' se procesa: con match emite hint, sin match calla", () => {
+    const conMatch = processPayload(JSON.stringify({ prompt: "/goal valida este plan de migración" }), skills);
+    expect(conMatch).toContain("Skill(drillme)");
+    const sinMatch = processPayload(JSON.stringify({ prompt: "/goal añade un botón al formulario de login" }), skills);
+    expect(sinMatch).toBe("");
   });
 
   test("T2.3 '/flow' y '/role' siguen saltándose", () => {
@@ -137,10 +149,24 @@ describe("processPayload — shortlist + skill-advisor (feature 023)", () => {
     expect(processPayload(JSON.stringify({ prompt: "gracias" }), skills)).toBe("");
   });
 
-  test("T2.5 presupuesto de líneas respetado (≤6)", () => {
+  test("T2.5 presupuesto de líneas respetado (≤5, ya sin línea advisor)", () => {
     const out = processPayload(JSON.stringify({ prompt: "refactor solid performance slow endpoint tests tdd" }), skills);
-    expect(out.split("\n").length).toBeLessThanOrEqual(6);
-    expect(out).toContain("Skill(skill-advisor)");
+    expect(out.split("\n").length).toBeLessThanOrEqual(5);
+    expect(out).not.toContain("Skill(skill-advisor)");
+  });
+
+  test("T2.6 carga perezosa: los pre-gates no tocan disco (getter no invocado)", () => {
+    let calls = 0;
+    const getter = () => {
+      calls++;
+      return skills;
+    };
+    expect(analyzePayload(JSON.stringify({ prompt: "/flow valida" }), getter).injection).toBe("");
+    expect(analyzePayload("", getter).injection).toBe("");
+    expect(analyzePayload("{not json", getter).injection).toBe("");
+    expect(calls).toBe(0);
+    analyzePayload(JSON.stringify({ prompt: "valida este plan" }), getter);
+    expect(calls).toBe(1);
   });
 });
 
@@ -159,5 +185,81 @@ describe("instructions-loaded — formatLogLine", () => {
 
   test("payload without file_path returns null", () => {
     expect(formatLogLine({ session_id: "s1" })).toBeNull();
+  });
+});
+
+describe("feature-shape flow hint (029/US13)", () => {
+  test("detects feature-shaped prompts", () => {
+    expect(detectFeatureShape("quiero desarrollar una nueva funcionalidad de notificaciones")).toBe(true);
+    expect(detectFeatureShape("nueva feature de informes de proceso")).toBe(true);
+    expect(detectFeatureShape("hazlo de principio a fin con todas las fases")).toBe(true);
+  });
+
+  test("stays silent on non-feature prompts", () => {
+    expect(detectFeatureShape("corrige el typo del README")).toBe(false);
+    expect(detectFeatureShape("revisa este ticket y dime qué pide")).toBe(false);
+  });
+
+  test("analyzePayload adds the /flow line on feature shape, alongside matched skills", () => {
+    const raw = JSON.stringify({ prompt: "valida el plan de esta nueva funcionalidad de informes" });
+    const r = analyzePayload(raw, skills);
+    expect(r.flowHint).toBe(true);
+    expect(r.injection).toContain("/flow");
+    expect(r.injection).toContain("skill-activation-hint");
+  });
+
+  test("feature shape alone (no skill keyword match) still injects the /flow line", () => {
+    const raw = JSON.stringify({ prompt: "desarrolla una nueva funcionalidad de exportación a excel" });
+    const r = analyzePayload(raw, skills);
+    expect(r.flowHint).toBe(true);
+    expect(r.injection).toContain("/flow");
+  });
+
+  test("no feature shape → no /flow line (unchanged behavior)", () => {
+    const raw = JSON.stringify({ prompt: "valida este plan antes de cerrarlo" });
+    const r = analyzePayload(raw, skills);
+    expect(r.flowHint).toBe(false);
+    expect(r.injection).not.toContain("/flow");
+  });
+});
+
+describe("hint emission log (029/US13 — honor-rate measurement, emit side)", () => {
+  test("appends a JSON line under .claude/learned/skill-hints.log", () => {
+    const dir = mkdtempSync(join(tmpdir(), "hintlog-"));
+    const ok = appendHintLog(dir, { ts: "2026-08-05T00:00:00Z", skills: ["drillme"], flow: false });
+    expect(ok).toBe(true);
+    const written = readFileSync(join(dir, ".claude", "learned", "skill-hints.log"), "utf8");
+    const entry = JSON.parse(written.trim().split("\n").at(-1)!);
+    expect(entry.skills).toEqual(["drillme"]);
+    expect(entry.flow).toBe(false);
+  });
+
+  test("fail-silent on unwritable destination — never throws (hook contract)", () => {
+    let ok = true;
+    expect(() => { ok = appendHintLog("/dev/null/nope", { ts: "t", skills: [], flow: false }); }).not.toThrow();
+    expect(ok).toBe(false);
+  });
+});
+
+describe("model/effort routing hint (029/US7 — shape-only, playbook §4)", () => {
+  test("bulk/mechanical shape gets the routing line, marked shape-only", () => {
+    const raw = JSON.stringify({ prompt: "barre todos los ficheros del repo y renombra el import en masa" });
+    const r = analyzePayload(raw, skills);
+    expect(r.routingHint).toBe(true);
+    expect(r.injection).toContain("/model");
+    expect(r.injection.toLowerCase()).toContain("shape-only");
+  });
+
+  test("quick-lookup shape also routes cheap", () => {
+    const raw = JSON.stringify({ prompt: "pregunta rapida: que hace este flag de git?" });
+    const r = analyzePayload(raw, skills);
+    expect(r.routingHint).toBe(true);
+  });
+
+  test("normal prompts get zero routing mentions (anti-ceremonia, hereda AC4 de 027)", () => {
+    const raw = JSON.stringify({ prompt: "valida este plan antes de cerrarlo" });
+    const r = analyzePayload(raw, skills);
+    expect(r.routingHint).toBe(false);
+    expect(r.injection).not.toContain("/model");
   });
 });

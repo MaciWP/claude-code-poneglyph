@@ -13,7 +13,7 @@ export const meta = {
 }
 
 // ---------------------------------------------------------------------------
-// Taxonomias reutilizadas (Commandment X: no inventar) — severidad de `critic`,
+// Taxonomias reutilizadas (Commandment IX: no inventar) — severidad de `critic`,
 // confianza de `anti-hallucination`/decision-stress-test.
 // ---------------------------------------------------------------------------
 const SEVERITY = ['BLOCKER', 'MAJOR', 'MINOR', 'NIT']
@@ -280,7 +280,7 @@ function triagePrompt(plan, digest, index) {
     `Lee: .claude/plans/${plan}/state.json, .claude/plans/${plan}/tasks/index.md, y los tasks/US*.md de las HUs pendientes.`,
     ``,
     `Para cada HU pendiente/deferred decide recommendation: execute (vale la pena hacerla), close (cerrar won't-do con razon),`,
-    `obsolete (ya no aplica), o leave (dejar open). Criterio: coste vs valor (Commandment III simplicidad + X mantenibilidad).`,
+    `obsolete (ya no aplica), o leave (dejar open). Criterio: coste vs valor (Commandment V simplicidad + IX mantenibilidad).`,
     `Refs muertas a agentes cortados = trabajo barato de alto valor => normalmente execute o close, nunca leave indefinido.`,
     `Cruza con el DIGEST si hay hallazgos que solapan con el trabajo deferred:`,
     JSON.stringify(digest && digest.byDomain ? { byDomain: Object.keys(digest.byDomain), total: digest.total } : {}, null, 2),

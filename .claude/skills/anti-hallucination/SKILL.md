@@ -213,9 +213,9 @@ If Stage 2 returns multiple matches, ask user which one. If Stage 3 also fails, 
 
 | # | Cómo |
 |---|---|
-| I | Below the confidence threshold → ask, never assume (the whole skill is "ask when in doubt") |
+| III | Below the confidence threshold → ask, never assume (the whole skill is "ask when in doubt") |
 | II | Verify a file/function/import/endpoint exists (LSP > Grep > Glob) before asserting it does |
-| V | Forces context-gathering (Read before Edit) before acting on code |
+| I | Forces context-gathering (Read before Edit) before acting on code |
 | VI | Destructive-keyword triggers force verification regardless of confidence |
 
 ## Related

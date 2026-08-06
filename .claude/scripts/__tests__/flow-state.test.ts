@@ -6,6 +6,8 @@ import {
   closeUs,
   approveGate,
   setVerdict,
+  setRetroStatus,
+  addBoundaryCheck,
   closeFeature,
   flipUsFrontmatter,
   runCommand,
@@ -38,7 +40,24 @@ describe("closeUs", () => {
     const s = closeUs(baseState(), "US1", { date: DATE, files: ["a.md"] });
     expect(s.us_completed).toContain("US1");
     expect(s.us_pending).not.toContain("US1");
-    expect(s.us_history?.at(-1)).toMatchObject({ us: "US1", completed_at: DATE, tests_passed: true });
+    expect(s.us_history?.at(-1)).toMatchObject({ us: "US1", completed_at: DATE });
+  });
+
+  // This assertion used to expect tests_passed: true unconditionally — it certified a
+  // hardcode that no measurement backed. The three paths are now distinguishable.
+  test("records tests_passed as null when nobody measured it", () => {
+    const s = closeUs(baseState(), "US1", { date: DATE });
+    expect(s.us_history?.at(-1)?.tests_passed).toBeNull();
+  });
+
+  test("records a measured green suite", () => {
+    const s = closeUs(baseState(), "US1", { date: DATE, testsPassed: true });
+    expect(s.us_history?.at(-1)?.tests_passed).toBe(true);
+  });
+
+  test("records a measured red suite instead of silently claiming green", () => {
+    const s = closeUs(baseState(), "US1", { date: DATE, testsPassed: false });
+    expect(s.us_history?.at(-1)?.tests_passed).toBe(false);
   });
 
   test("throws on US not in pending", () => {
@@ -73,7 +92,7 @@ describe("setVerdict / closeFeature", () => {
 
   test("closeFeature flips terminal flags", () => {
     const s = closeFeature(
-      { ...baseState(), us_pending: [], review_verdict: "APPROVED" },
+      { ...baseState(), us_pending: [], review_verdict: "APPROVED", retro_status: "approved" },
       { date: DATE },
     );
     expect(s.feature_closed).toBe(true);
@@ -88,10 +107,54 @@ describe("setVerdict / closeFeature", () => {
       closeFeature({ ...baseState(), us_pending: [], review_verdict: "NEEDS_CHANGES" }, { date: DATE }),
     ).toThrow(/APPROVED/);
     const ok = closeFeature(
-      { ...baseState(), us_pending: [], review_verdict: "APPROVED_WITH_WARNINGS" },
+      { ...baseState(), us_pending: [], review_verdict: "APPROVED_WITH_WARNINGS", retro_status: "approved" },
       { date: DATE },
     );
     expect(ok.feature_closed).toBe(true);
+  });
+
+  test("closeFeature refuses with retro unresolved — no silent auto-approve (029/US12)", () => {
+    // retro_status null: closing would stamp a retro that never ran
+    expect(() =>
+      closeFeature(
+        { ...baseState(), us_pending: [], review_verdict: "APPROVED", retro_status: null },
+        { date: DATE },
+      ),
+    ).toThrow(/retro_status/);
+  });
+
+  test("closeFeature preserves a justified skip instead of overwriting to approved (029/US12)", () => {
+    const skipped = "skipped — feature trivial: 0 lecciones, 0 promotions, 0 drift";
+    const s = closeFeature(
+      { ...baseState(), us_pending: [], review_verdict: "APPROVED", retro_status: skipped },
+      { date: DATE },
+    );
+    expect(s.feature_closed).toBe(true);
+    expect(s.retro_status).toBe(skipped);
+  });
+});
+
+describe("setRetroStatus (029/US12 — skip requires justification)", () => {
+  test("accepts approved and pending", () => {
+    expect(setRetroStatus(baseState(), "approved").retro_status).toBe("approved");
+    expect(setRetroStatus(baseState(), "pending").retro_status).toBe("pending");
+  });
+
+  test("accepts a justified skip", () => {
+    const v = "skipped — lifecycle atascado desde junio, sin lecciones nuevas";
+    expect(setRetroStatus(baseState(), v).retro_status).toBe(v);
+  });
+
+  test("rejects bare skipped — justification is mandatory", () => {
+    expect(() => setRetroStatus(baseState(), "skipped")).toThrow(/justif/i);
+  });
+
+  test("rejects a too-short justification (>=10 chars)", () => {
+    expect(() => setRetroStatus(baseState(), "skipped — corto")).toThrow(/justif/i);
+  });
+
+  test("rejects arbitrary values", () => {
+    expect(() => setRetroStatus(baseState(), "maybe")).toThrow(/retro/i);
   });
 });
 
@@ -218,5 +281,26 @@ describe("complete-phase (028/US6-D6)", () => {
     const plan = mkdtempSync(join(tmpdir(), "flow-state-phase-bad-"));
     writeFileSync(join(plan, "state.json"), JSON.stringify(baseState(), null, 2));
     await expect(runCommand("complete-phase", ["7"], { planDir: plan, date: "2026-07-08" })).rejects.toThrow(/2\.5/);
+  });
+});
+
+describe("addBoundaryCheck (029/US17 — measurable boundary compliance)", () => {
+  test("appends a check entry for a valid phase", () => {
+    const s = addBoundaryCheck(baseState(), "3", "phase skill invoked (build)", { date: DATE });
+    expect(s.boundary_checks?.at(-1)).toMatchObject({ phase: "3", item: "phase skill invoked (build)", at: DATE });
+  });
+
+  test("accumulates entries across boundaries", () => {
+    let s = addBoundaryCheck(baseState(), "2", "artifact exists (tasks/)", { date: DATE });
+    s = addBoundaryCheck(s, "2.5", "oracle produced", { date: DATE });
+    expect(s.boundary_checks?.length).toBe(2);
+  });
+
+  test("rejects an invalid phase", () => {
+    expect(() => addBoundaryCheck(baseState(), "7", "x", { date: DATE })).toThrow(/phase/);
+  });
+
+  test("rejects an empty item", () => {
+    expect(() => addBoundaryCheck(baseState(), "3", "  ", { date: DATE })).toThrow(/item/);
   });
 });

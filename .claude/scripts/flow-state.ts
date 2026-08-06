@@ -5,9 +5,11 @@
 // /flow run re-invented (provenance: 2026-06-11 polish plan; 019 ran 6 of them).
 //
 // Usage:
-//   bun .claude/scripts/flow-state.ts close-us US3 [--files "a.md,b.ts"] [--note "..."] [--plan <dir>]
+//   bun .claude/scripts/flow-state.ts close-us US3 [--files "a.md,b.ts"] [--note "..."] [--tests-passed true|false] [--plan <dir>]
 //   bun .claude/scripts/flow-state.ts approve-gate 1-2|2-3            [--plan <dir>]
 //   bun .claude/scripts/flow-state.ts verdict APPROVED|APPROVED_WITH_WARNINGS|NEEDS_CHANGES|BLOCKED
+//   bun .claude/scripts/flow-state.ts retro-status "approved|pending|skipped — <justificación ≥10 chars>"
+//   bun .claude/scripts/flow-state.ts boundary-check 1|2|2.5|3|4|5 "<item>"  [--plan <dir>]
 //   bun .claude/scripts/flow-state.ts close-feature                   [--plan <dir>]
 //   bun .claude/scripts/flow-state.ts complete-phase 1|2|2.5|3|4|5      [--plan <dir>]
 //   bun .claude/scripts/flow-state.ts status                          [--plan <plans-root>]
@@ -20,7 +22,8 @@ import { join } from "node:path";
 export interface UsHistoryEntry {
   us: string;
   completed_at: string;
-  tests_passed: boolean;
+  /** true/false = MEASURED. null = nobody measured it — never assume green. */
+  tests_passed: boolean | null;
   files_touched?: string[];
   execution?: string;
   askuserquestion_count?: number;
@@ -35,11 +38,18 @@ export interface FlowState {
   us_completed: string[];
   us_pending: string[];
   us_history?: UsHistoryEntry[];
+  boundary_checks?: BoundaryCheck[];
   feature_closed: boolean;
   review_verdict: string | null;
   retro_status: string | null;
   started_at: string;
   updated_at: string;
+}
+
+export interface BoundaryCheck {
+  phase: string;
+  item: string;
+  at: string;
 }
 
 const VERDICTS = ["APPROVED", "APPROVED_WITH_WARNINGS", "NEEDS_CHANGES", "BLOCKED"];
@@ -55,7 +65,7 @@ function assertState(s: unknown): FlowState {
 export function closeUs(
   state: FlowState,
   usId: string,
-  opts: { date: string; files?: string[]; note?: string },
+  opts: { date: string; files?: string[]; note?: string; testsPassed?: boolean },
 ): FlowState {
   if (!state.us_pending.includes(usId)) {
     throw new Error(`${usId} is not pending (pending: [${state.us_pending.join(", ")}])`);
@@ -63,7 +73,11 @@ export function closeUs(
   const entry: UsHistoryEntry = {
     us: usId,
     completed_at: opts.date,
-    tests_passed: true, // the build gate forbids closing a US with red tests (Cmd IV)
+    // Was hardcoded to true with a comment claiming "the build gate forbids closing a
+    // US with red tests" — but nothing measured it, so the state asserted a green suite
+    // it had never seen. null now means "not measured"; pass --tests-passed to record
+    // a real result (gate.ts emits one).
+    tests_passed: opts.testsPassed ?? null,
     files_touched: opts.files ?? [],
     execution: opts.note ?? "inline",
     askuserquestion_count: 0,
@@ -115,6 +129,42 @@ export function setVerdict(state: FlowState, verdict: string): FlowState {
   };
 }
 
+// retro_status contract (029/US12, user decision 2026-08-05: no modes — always
+// full; a phase that doesn't apply is SKIPPED by the Lead WITH justification and
+// prior notice): "approved" | "pending" | "skipped — <justification ≥10 chars>".
+const RETRO_SKIP_RE = /^skipped — (.{10,})$/;
+
+export function setRetroStatus(state: FlowState, value: string): FlowState {
+  const valid = value === "approved" || value === "pending" || RETRO_SKIP_RE.test(value);
+  if (!valid) {
+    throw new Error(
+      `invalid retro_status ${JSON.stringify(value)} — "approved" | "pending" | ` +
+        `"skipped — <justificación ≥10 chars>" (skip without justification is the anti-pattern this guards against)`,
+    );
+  }
+  return { ...state, retro_status: value };
+}
+
+// Boundary checklist entry (029/US17): each phase boundary ticks its ≤5 items
+// into state — compliance becomes measurable instead of aspirational.
+const BOUNDARY_PHASES = ["1", "2", "2.5", "3", "4", "5"];
+
+export function addBoundaryCheck(
+  state: FlowState,
+  phase: string,
+  item: string,
+  opts: { date: string },
+): FlowState {
+  if (!BOUNDARY_PHASES.includes(phase)) {
+    throw new Error(`invalid phase "${phase}" — one of ${BOUNDARY_PHASES.join("|")}`);
+  }
+  if (!item.trim()) throw new Error("boundary-check item must be non-empty");
+  return {
+    ...state,
+    boundary_checks: [...(state.boundary_checks ?? []), { phase, item: item.trim(), at: opts.date }],
+  };
+}
+
 export function closeFeature(state: FlowState, opts: { date: string }): FlowState {
   if (state.us_pending.length > 0) {
     throw new Error(`cannot close feature with pending USs: [${state.us_pending.join(", ")}]`);
@@ -124,13 +174,20 @@ export function closeFeature(state: FlowState, opts: { date: string }): FlowStat
       `cannot close feature with review_verdict ${JSON.stringify(state.review_verdict)} — Phase 4 must end APPROVED or APPROVED_WITH_WARNINGS first (Cmd IV)`,
     );
   }
+  // 029/US12: never stamp a retro that didn't happen — retro must be approved
+  // or explicitly skipped-with-justification BEFORE closing.
+  if (state.retro_status !== "approved" && !RETRO_SKIP_RE.test(state.retro_status ?? "")) {
+    throw new Error(
+      `cannot close feature with retro_status ${JSON.stringify(state.retro_status)} — run retro (retro-status approved) ` +
+        `or record a justified skip (retro-status "skipped — <justificación>") first (029/US12)`,
+    );
+  }
   const phases = new Set(state.phases_completed);
   [1, 2, 2.5, 3, 4, 5].forEach((p) => phases.add(p));
   return {
     ...state,
     phases_completed: [...phases].sort((a, b) => a - b),
     current_phase: "closed",
-    retro_status: "approved",
     feature_closed: true,
     updated_at: opts.date,
   };
@@ -189,7 +246,7 @@ export function flipUsFrontmatter(content: string, date: string): string {
 export async function runCommand(
   command: string,
   args: string[],
-  opts: { planDir: string; date: string; files?: string[]; note?: string },
+  opts: { planDir: string; date: string; files?: string[]; note?: string; testsPassed?: boolean },
 ): Promise<void> {
   const statePath = join(opts.planDir, "state.json");
   const raw = await Bun.file(statePath).text();
@@ -215,6 +272,12 @@ export async function runCommand(
     case "verdict":
       state = setVerdict(state, args[0] ?? "");
       break;
+    case "retro-status":
+      state = setRetroStatus(state, args[0] ?? "");
+      break;
+    case "boundary-check":
+      state = addBoundaryCheck(state, args[0] ?? "", args[1] ?? "", opts);
+      break;
     case "close-feature":
       state = closeFeature(state, opts);
       break;
@@ -223,7 +286,7 @@ export async function runCommand(
       break;
     default:
       throw new Error(
-        `unknown command "${command}" — close-us | approve-gate | verdict | close-feature | complete-phase`,
+        `unknown command "${command}" — close-us | approve-gate | verdict | retro-status | boundary-check | close-feature | complete-phase | status`,
       );
   }
 
@@ -294,6 +357,8 @@ if (import.meta.main) {
       date: new Date().toISOString().slice(0, 10),
       files: flag("files")?.split(",").map((f) => f.trim()),
       note: flag("note"),
+      // Absent = not measured. Only an explicit value records a suite result.
+      testsPassed: flag("tests-passed") === undefined ? undefined : flag("tests-passed") !== "false",
     });
     console.log(`ok — ${command} applied to ${planDir}`);
   } catch (e) {

@@ -6,10 +6,12 @@
  * Block-list approach: approve everything by default, block only destructive operations.
  * When blocked, outputs nothing (exit 0) to pass through to normal permission flow.
  *
- * Relationship to settings.json `autoMode.hard_deny`: in defaultMode "auto" the
- * PRIMARY destructive-op guard is `autoMode.hard_deny` (rm -rf .claude, git push
- * --force, …). This hook is a SECONDARY block-list on the PermissionRequest event.
- * Treat `autoMode.hard_deny` as the source of truth for hard blocks; keep both in sync.
+ * Relationship to settings.json `autoMode.hard_deny`: the two lists are
+ * DELIBERATELY different in scope (030). `hard_deny` is the narrow hard-block
+ * source of truth (never runs, no prompt). A match HERE never blocks anything —
+ * it only declines to auto-approve, so the command falls through to the normal
+ * permission prompt for a human decision. Broader is safer on this side; do not
+ * mirror the lists.
  *
  * PermissionRequest hooks receive JSON via stdin with:
  *   - tool_name: string

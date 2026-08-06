@@ -255,8 +255,8 @@ Use `Glob` to discover project files before applying LSP operations. Each projec
 | # | Cómo |
 |---|---|
 | II | Semantic resolution (definition/references/types) beats text-grep guesses for factual claims about code |
-| V | Navigate and understand the call graph before acting on it |
-| VII | One LSP call replaces many speculative greps — fewer tokens, precise answers |
+| I | Navigate and understand the call graph before acting on it |
+| X | One LSP call replaces many speculative greps — fewer tokens, precise answers |
 
 ## Related
 

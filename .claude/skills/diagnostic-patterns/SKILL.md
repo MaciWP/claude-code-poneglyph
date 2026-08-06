@@ -174,13 +174,13 @@ Covers: Error Analysis, Root Cause Analysis, Logging, Debugging Techniques, Post
 | # | Cómo |
 |---|---|
 | II | Root cause from evidence (5 Whys, stack-trace classification) — not a guessed fix |
-| V | Understand the failure before changing code |
-| VII | Resilience patterns (retry/backoff/jitter, circuit breaker, saga) keep systems efficient under fault |
-| IX | Diagnosis is reactive ad-hoc observability — read the trace that answers the question |
+| I | Understand the failure before changing code |
+| X | Resilience patterns (retry/backoff/jitter, circuit breaker, saga) keep systems efficient under fault |
+| VII | Diagnosis is reactive ad-hoc observability — read the trace that answers the question |
 
 ## Related
 
-- `escalate` — orchestrates this skill at xhigh when the same error repeats.
+- `unstuck` — orchestrates this skill at xhigh when the same error repeats.
 - `anti-hallucination` — verify the failing symbol/path exists before diagnosing.
 - `.claude/rules/error-recovery.md` — retry budgets and stuck-detection thresholds.
 

@@ -65,7 +65,7 @@ Poll a CI run / background `Workflow` / remote queue and resume when state flips
 | State outside the chat (files/json/md) | **Already have** | `state.json` / `plans/` / `memory/` |
 | `/goal` (closed) and `/loop` (open) triggers | **Adopt natively** | `/goal` + `/loop` are built-in; no component to build |
 | Schedule/cron + event triggers | **Adopt where read-only** (R2) | cron via `schedule`/`/loop`; events via Channels — gated/read-only only |
-| Open-ended "improve forever" self-judged loop | **Reject** | Model judges itself → violates maker≠auditor AND Commandment I; unbounded |
+| Open-ended "improve forever" self-judged loop | **Reject** | Model judges itself → violates maker≠auditor AND Commandment III; unbounded |
 | Unattended overnight build/write, no gates | **Reject** | Bypasses hard gates 1→2/2→3; re-triggers the inline-first quality regression (017 evidence) |
 | Bespoke poneglyph "loops engine" / custom `/goal` command | **Reject** | Native primitives cover R1–R3; rows against `prune > add` (`feedback-polish-over-add`) |
 | 4 machines 24/7, ROI 16×, $1M tokens, paid "motor agéntico" | **Out of scope** | Marketing, not load-bearing for "can poneglyph use loops?" |
@@ -90,7 +90,7 @@ On the FrontierCode *diamond* subset (hardest 50/150 — coding), Opus 4.8 is ro
 | **xhigh** | The only real score jump — reserve for the genuinely hard step |
 | **max** | *Worse* than xhigh here (overthinking). Avoid |
 
-Effort is **not changeable dynamically mid-session** (the user sets `/effort`; the Lead cannot self-switch). Project policy: skills carry NO `effort:` (they inherit the session = low) **except** the strong-judgment gates `critic`, `security-audit`, `decision-stress-test` (xhigh) and the `escalate` stuck-buster (xhigh). For "low bulk / xhigh on the hard step", route the hard step through one of those skills, or a Workflow agent with per-agent `effort`. When a loop is stuck, `escalate` is the xhigh rung. Caveat: diamond subset exaggerates effort's value vs everyday tasks, where low suffices even more.
+Effort is **not changeable dynamically mid-session** (the user sets `/effort`; the Lead cannot self-switch). Project policy: skills carry NO `effort:` (they inherit the session = low) **except** the strong-judgment gates `critic`, `security-audit` (xhigh) and the `unstuck` stuck-buster (xhigh); `decide`'s heavy tier escalates effort per-invocation instead. For "low bulk / xhigh on the hard step", route the hard step through one of those skills, or a Workflow agent with per-agent `effort`. When a loop is stuck, `unstuck` is the xhigh rung. Caveat: diamond subset exaggerates effort's value vs everyday tasks, where low suffices even more.
 
 ## Guardrails (non-negotiable for any adopted loop)
 - **Hard gates are never crossed unattended.** A loop runs *after* a gate, or only on read-only work, or stops and reports when a gate is pending.
@@ -100,7 +100,7 @@ Effort is **not changeable dynamically mid-session** (the user sets `/effort`; t
 
 ## Related
 - `.claude/loop.md` — single generic doctrine-safe default for bare `/loop`, synced to `~/.claude/loop.md` (poneglyph is the global source, so one file serves project + global; other repos override locally)
-- `escalate` skill — xhigh stuck-buster for a loop that stops converging
+- `unstuck` skill — xhigh stuck-buster for a loop that stops converging
 - `references/09-loops-analysis-source.md` — the analysis this playbook operationalizes
 - `/flow` command — the gated lifecycle a goal-loop (R1) advances
 - `critic` skill — the external auditor / stop oracle

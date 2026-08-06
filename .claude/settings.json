@@ -33,6 +33,9 @@
       "SendMessage",
       "mcp__plugin_context7_context7__*"
     ],
+    "ask": [
+      "Workflow"
+    ],
     "deny": [
       "Bash(rm -rf /*)",
       "Bash(rm -rf /)",
@@ -57,7 +60,6 @@
       "Read(*credentials*)",
       "Read(*secret*)"
     ],
-    "ask": [],
     "defaultMode": "auto"
   },
   "hooks": {
@@ -84,17 +86,6 @@
         ]
       }
     ],
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bun $HOME/.claude/hooks/validators/code-validator.ts"
-          }
-        ]
-      }
-    ],
     "Stop": [
       {
         "matcher": "",
@@ -102,11 +93,6 @@
           {
             "type": "command",
             "command": "bun $HOME/.claude/hooks/security-gate.ts",
-            "timeout": 10
-          },
-          {
-            "type": "command",
-            "command": "bun $HOME/.claude/hooks/learning-inbox.ts",
             "timeout": 10
           }
         ]
@@ -165,6 +151,7 @@
     "frontend-design@claude-plugins-official": true,
     "context7@claude-plugins-official": true
   },
+  "outputStyle": "Poneglyph",
   "language": "spanish",
   "theme": "dark",
   "tui": "fullscreen",

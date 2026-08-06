@@ -107,18 +107,163 @@ export function buildStopResponse(hits: string[]): {
   };
 }
 
+// --- Git discipline (029/US4) -------------------------------------------------
+// Measured friction: 10 incidents of unasked git mutations (commits taken over,
+// unwanted authorship, pushes). The always-loaded rule is CLAUDE.md §Sensitive
+// paths; this is the best-effort mechanical backstop: at Stop, compare the
+// turn's git mutations against the user prompt's intent. Warn, never block.
+
+// Full mutating class (critic MAJOR 3, 029): the measured incidents were
+// commit/push, but the spec says "fix the input CLASS" — any state-mutating
+// git/gh op counts. Read-only ops (log/diff/status/branch --list) never match.
+export const GIT_MUTATION_RE =
+  /\bgit\s+(?:commit|push|merge|rebase|reset\s+--hard|branch\s+-D)\b|\bgh\s+pr\s+(?:create|merge)\b/;
+
+// A grep-shaped check must scan COMMANDS, not data (run-don't-predict corollary,
+// docs/model-uplift-playbook.md —
+// this gate's own test fixtures tripped it in production, 2026-08-05): strip
+// heredoc bodies and quoted spans before matching, so `cat << EOF ... "git
+// commit" ... EOF` and `echo "git push"` never count as mutations. Tradeoff:
+// a real mutation hidden inside quotes (`bash -c "git push"`) is missed —
+// acceptable for a best-effort warn.
+export function stripShellData(command: string): string {
+  let out = command;
+  // Heredoc: from <<WORD / <<'WORD' / <<-"WORD" up to the line holding WORD.
+  out = out.replace(/<<-?\s*['"]?(\w+)['"]?[\s\S]*?\n\s*\1(?:\n|$)/g, " ");
+  // Quoted spans (single and double) — data, not invocations.
+  out = out.replace(/'[^']*'/g, " ").replace(/"[^"]*"/g, " ");
+  return out;
+}
+// User intent covers his real phrasings (es/EN, typos included in class).
+export const COMMIT_INTENT_RE =
+  /\b(commit|comm?itea|push|sube|súbelo|subelo|mergea|merge|rebasea|rebase|versiona|guarda los cambios|crea la pr|abre la pr|borra la rama|resetea)\b/i;
+
+// Stop can re-fire when a stop hook's additionalContext keeps the turn going;
+// without this guard the gate is stateless and re-warns the same hits in a loop
+// (030). stop_hook_active=true marks that continuation — skip everything.
+export function shouldSkipStopHook(payload: unknown): boolean {
+  return (
+    typeof payload === "object" &&
+    payload !== null &&
+    (payload as { stop_hook_active?: unknown }).stop_hook_active === true
+  );
+}
+
+// Bounded tail read (030): transcripts grow to many MB; loading the whole file
+// on EVERY Stop is the heaviest I/O in the hook set. Byte-slice the end instead —
+// a cut first line is fine, extractTurnFromTranscript skips malformed lines.
+export async function readTranscriptTail(path: string, maxBytes = 256 * 1024): Promise<string> {
+  const file = Bun.file(path);
+  const size = file.size;
+  if (size <= maxBytes) return file.text();
+  return file.slice(size - maxBytes).text();
+}
+
+export interface TurnExtract {
+  userPrompt: string;
+  bashCommands: string[];
+}
+
+// Walks the transcript JSONL from the end: collects Bash tool_use commands seen
+// AFTER the last plain-string user message (the turn's prompt). Malformed lines
+// are skipped (best-effort by contract).
+export function extractTurnFromTranscript(jsonl: string): TurnExtract {
+  const lines = jsonl.split("\n");
+  let userPrompt = "";
+  const bashCommands: string[] = [];
+  for (let i = lines.length - 1; i >= 0; i--) {
+    let event: unknown;
+    try {
+      event = JSON.parse(lines[i]);
+    } catch {
+      continue;
+    }
+    const e = event as { type?: string; message?: { content?: unknown } };
+    if (e.type === "user" && typeof e.message?.content === "string") {
+      userPrompt = e.message.content;
+      break; // everything below this is a previous turn
+    }
+    if (e.type === "assistant" && Array.isArray(e.message?.content)) {
+      for (const block of e.message.content as Array<{ type?: string; name?: string; input?: { command?: string } }>) {
+        if (block.type === "tool_use" && block.name === "Bash" && typeof block.input?.command === "string") {
+          bashCommands.push(block.input.command);
+        }
+      }
+    }
+  }
+  return { userPrompt, bashCommands: bashCommands.reverse() };
+}
+
+export function buildGitDisciplineWarning(
+  userPrompt: string,
+  bashCommands: string[],
+): { systemMessage: string; hookSpecificOutput: { hookEventName: "Stop"; additionalContext: string } } | null {
+  const mutations = bashCommands.filter((c) => GIT_MUTATION_RE.test(stripShellData(c)));
+  if (mutations.length === 0) return null;
+  if (COMMIT_INTENT_RE.test(userPrompt)) return null; // the user asked — no friction
+  const list = mutations.map((m) => `  - ${m.slice(0, 120)}`).join("\n");
+  return {
+    systemMessage:
+      `[security-gate] Mutación git ejecutada sin petición aparente del usuario este turno:\n${list}\n` +
+      `Regla (CLAUDE.md §Sensitive paths — Git discipline): las mutaciones git son del usuario salvo petición explícita.`,
+    hookSpecificOutput: {
+      hookEventName: "Stop",
+      additionalContext:
+        `[security-gate] A git mutation ran this turn without apparent user request:\n${list}\n` +
+        `Verify against the user's message; if it was NOT requested, tell the user now, offer to undo ` +
+        `(e.g. soft reset), and check no AI authorship was added.`,
+    },
+  };
+}
+
 async function main(): Promise<void> {
   try {
     const raw = await readHookStdin();
     if (!raw.trim()) process.exit(0);
 
-    const files = await getModifiedFiles();
-    if (files.length === 0) process.exit(0); // early-out: nothing changed → no file scan
+    let payload: { transcript_path?: string } = {};
+    try {
+      payload = JSON.parse(raw) as { transcript_path?: string };
+    } catch {
+      // best-effort — unparseable payload → run with defaults
+    }
+    if (shouldSkipStopHook(payload)) process.exit(0); // re-entry guard (030)
 
-    const hits = (await Promise.all(files.map(scanFile))).flat();
-    const response = buildStopResponse(hits);
-    if (response) {
-      process.stdout.write(JSON.stringify(response) + "\n");
+    const files = await getModifiedFiles();
+    const hits = files.length > 0 ? (await Promise.all(files.map(scanFile))).flat() : [];
+    const secretResponse = buildStopResponse(hits);
+
+    // Git discipline check (029/US4) — reads the turn from the transcript tail.
+    let gitResponse: ReturnType<typeof buildGitDisciplineWarning> = null;
+    try {
+      if (payload.transcript_path) {
+        const text = await readTranscriptTail(payload.transcript_path);
+        const tail = text.split("\n").slice(-400).join("\n");
+        // Cheap prefilter (031): no Bash tool_use serialized in the tail → no git
+        // mutation possible this turn; skip the per-line JSONL parse entirely.
+        if (tail.includes('"name":"Bash"')) {
+          const turn = extractTurnFromTranscript(tail);
+          gitResponse = buildGitDisciplineWarning(turn.userPrompt, turn.bashCommands);
+        }
+      }
+    } catch {
+      // best-effort — transcript unavailable/unreadable → skip this check
+    }
+
+    if (secretResponse || gitResponse) {
+      const merged = {
+        systemMessage: [secretResponse?.systemMessage, gitResponse?.systemMessage].filter(Boolean).join("\n\n"),
+        hookSpecificOutput: {
+          hookEventName: "Stop" as const,
+          additionalContext: [
+            secretResponse?.hookSpecificOutput.additionalContext,
+            gitResponse?.hookSpecificOutput.additionalContext,
+          ]
+            .filter(Boolean)
+            .join("\n\n"),
+        },
+      };
+      process.stdout.write(JSON.stringify(merged) + "\n");
     }
   } catch {
     // best-effort — never block

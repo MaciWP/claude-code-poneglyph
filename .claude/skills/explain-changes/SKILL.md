@@ -171,10 +171,10 @@ Detail per pattern (focused Q&A, re-scope, cancel, reformulation): `${CLAUDE_SKI
 
 | # | Cómo |
 |---|---|
-| I | Honest about gaps — "no commit message available" instead of inventing one |
+| III | Honest about gaps — "no commit message available" instead of inventing one |
 | II | Verifies framework behavior against reputable sources (WebFetch) before explaining it |
-| V | Read-only by design — understands the change, never modifies code (that is `build`) |
-| IX | Teaching mode turns a diff into transferable understanding (onboarding, self-improvement) |
+| I | Read-only by design — understands the change, never modifies code (that is `build`) |
+| VII | Teaching mode turns a diff into transferable understanding (onboarding, self-improvement) |
 
 ## Related
 

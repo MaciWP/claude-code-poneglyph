@@ -6,6 +6,7 @@ import {
   labelPresence,
   skillTriggerParse,
   calqueDetect,
+  devLoopStages,
   graders,
 } from "../graders";
 import { runOffline } from "../run";
@@ -158,5 +159,44 @@ describe("runOffline (T3.10)", () => {
     expect(report.passed).toBe(1);
     expect(report.failed).toBe(1);
     expect(report.ok).toBe(false);
+  });
+});
+
+describe("devLoopStages (029 US-dev)", () => {
+  test("passes stages-visible when PLAN-stage signals are in prose", () => {
+    const r = devLoopStages(
+      "Objetivo: añadir paginación al listado. Asunciones: (1) el dataset cabe en memoria. Riesgos: los consumidores parsean stdout. Plan: tocar report.ts y sus tests.",
+      { expected: "stages-visible" },
+    );
+    expect(r.pass).toBe(true);
+  });
+
+  test("fails stages-visible when the reply jumps straight to code", () => {
+    const r = devLoopStages(
+      "Hecho — he añadido la función y actualizado el test.\n```ts\nconst plan = paginate(items);\n```",
+      { expected: "stages-visible" },
+    );
+    expect(r.pass).toBe(false);
+  });
+
+  test("passes no-ceremony on a proportional trivial reply", () => {
+    const r = devLoopStages("Corregido el typo en README.md línea 12.", { expected: "no-ceremony" });
+    expect(r.pass).toBe(true);
+  });
+
+  test("fails no-ceremony when a trivial task gets the full block", () => {
+    const r = devLoopStages(
+      "Objetivo: corregir el typo. Asunciones: ninguna. Riesgos: ninguno. Plan: editar README.",
+      { expected: "no-ceremony" },
+    );
+    expect(r.pass).toBe(false);
+  });
+
+  test("code fences never poison the signal count", () => {
+    const r = devLoopStages(
+      "Listo.\n```py\nrisk = plan.goal(assumption)\n```",
+      { expected: "no-ceremony" },
+    );
+    expect(r.pass).toBe(true);
   });
 });

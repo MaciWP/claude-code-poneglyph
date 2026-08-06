@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { rank, SHORTLIST_MAX, type SkillMeta } from "../lib/rank";
+import { rank, SHORTLIST_MAX, USAGE_TIER, type SkillMeta } from "../lib/rank";
 
 const FIXTURES: SkillMeta[] = [
   { name: "review-patterns", description: "Code review: SOLID, performance, slow endpoint, N+1", keywords: ["performance", "slow", "endpoint", "refactor", "solid"] },
@@ -44,5 +44,32 @@ describe("rank() — T1.4 property: ≤5 y sin duplicados", () => {
       const names = out.map((s) => s.name);
       expect(new Set(names).size).toBe(names.length);
     }
+  });
+});
+
+describe("usage tie-breaker (031 — census-derived)", () => {
+  test("equal lexical score → higher usage tier wins", () => {
+    const skills = [
+      { name: "zzz-never-used", description: "valida planes", keywords: ["valida"] },
+      { name: "drillme", description: "valida planes", keywords: ["valida"] },
+    ];
+    const out = rank("valida", skills);
+    expect(out[0].name).toBe("drillme"); // usage tier 2 beats tier 0 despite alphabetical order
+  });
+
+  test("lexical score still dominates over usage", () => {
+    const skills = [
+      { name: "drillme", description: "valida", keywords: ["valida"] },
+      { name: "unknown-skill", description: "valida planes de migración", keywords: ["valida", "planes", "migración"] },
+    ];
+    const out = rank("valida los planes de migración", skills);
+    expect(out[0].name).toBe("unknown-skill");
+  });
+
+  test("USAGE_TIER map exists with census anchors", () => {
+    expect(USAGE_TIER["tech-plan"]).toBe(2);
+    expect(USAGE_TIER["drillme"]).toBe(2);
+    expect(USAGE_TIER["consult"]).toBe(1);
+    expect(USAGE_TIER["explain-changes"] ?? 0).toBe(0);
   });
 });

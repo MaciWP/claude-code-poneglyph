@@ -7,18 +7,18 @@ description: |
   promover, promotion, promote, living-spec, delta, commandments, closure,
   fase-5, phase-5
 disable-model-invocation: false
-argument-hint: "[--light|--standard|--full]"
+argument-hint: ""
 when_to_use: |
   "retrospectiva", "qué hemos aprendido", "promueve aprendizajes", "retro", "lessons learned", "what to promote"
 ---
 
 # Retro (Phase 5)
 
-Last phase of the 5-phase workflow. Captures what worked, what didn't, proposes promotions, closes the living-spec loop. **Honesty is non-negotiable** (Commandment I) — a retro without friction or without a proposed lesson is review theater.
+Last phase of the 5-phase workflow. Captures what worked, what didn't, proposes promotions, closes the living-spec loop. **Honesty is non-negotiable** (Commandment III) — a retro without friction or without a proposed lesson is review theater.
 
 ## Underlying principle
 
-> "Without retro, every cycle starts from the same baseline." (Commandment IX — observability and self-improvement; Commandment X — meta-system maintainability)
+> "Without retro, every cycle starts from the same baseline." (Commandment VII — observability and self-improvement; Commandment IX — meta-system maintainability)
 
 Phase 4 (critic) measures the deliverable. Phase 5 measures the **process** that produced the deliverable, and turns it into structural improvements. Without this loop the system doesn't learn; with it, every feature potentially upgrades the meta-system itself.
 
@@ -38,6 +38,8 @@ Phase 4 (critic) measures the deliverable. Phase 5 measures the **process** that
 | Trivial mode (no `tasks/` directory) | Brief verbal recap to user — Phase 5 ceremony adds nothing |
 | Two consecutive retros on the same feature without code change between them | Diminishing returns; skip and proceed |
 
+> **Skip discipline (029/US12, user decision)**: skipping retro is the LEAD's call, taken only when there is genuinely nothing to learn (no lessons, no promotions, no spec drift) — announced BEFORE skipping, with explicit justification, and recorded: `bun $HOME/.claude/scripts/flow-state.ts retro-status "skipped — <justificación ≥10 chars>"`. `close-feature` refuses a null/pending retro, so a silent skip is mechanically impossible.
+
 ## Workflow
 
 ### Step 1 — Read inputs
@@ -51,7 +53,7 @@ In parallel:
 5. Read `review.md` — particularly `frontmatter.verdict` + `frontmatter.spec_drift` + findings count.
 6. Read `state.json` — confirm `current_phase: 4` complete.
 7. Read `.claude/plans/templates/retro.template.md` + `CLAUDE.md` §"The 10 Commandments" (for Step 9 audit).
-8. Read `.claude/learned/inbox.md` if present — auto-captured candidates (`learning-inbox` Stop hook), input for Step 8.
+8. Read `.claude/learned/inbox.md` if present — legacy auto-captured candidates (the `learning-inbox` Stop hook was cut 2026-08-05/030; the file no longer grows), input for Step 8.
 
 ### Step 2 — Confirm prerequisites
 
@@ -149,7 +151,7 @@ For each reusable pattern surfaced in Step 5/7 — plus each entry in `.claude/l
 - Each candidate MUST cite the concrete evidence from this feature that motivated it (a finding, a recurring drillme question, a lesson).
 - `anti-hallucination`: verify the proposed path does NOT collide with an existing file. If collision → propose rename or merge.
 - If `meta-create` auxiliary is invoked → the proposal sketch follows the official frontmatter spec for that extension type.
-- **Failure → eval case**: for each REAL documented failure surfaced in §Lessons ❌, also propose its golden-prompt case for `.claude/evals/cases.jsonl` (growth rule in `.claude/evals/README.md`: one new case per new real failure, deterministic grader, `source` cites this retro). The failure becomes a permanent regression check (Cmd IX).
+- **Failure → eval case**: for each REAL documented failure surfaced in §Lessons ❌, also propose its golden-prompt case for `.claude/evals/cases.jsonl` (growth rule in `.claude/evals/README.md`: one new case per new real failure, deterministic grader, `source` cites this retro). The failure becomes a permanent regression check (Cmd VII).
 
 If zero promotion candidates emerge → declare honestly: "Zero promotions this cycle. Reasons: <list>." If this happens in 3+ consecutive retros → smell signal (Step 12).
 
@@ -180,16 +182,16 @@ For each of the 10 Commandments, mark compliance during this feature:
 
 | # | Commandment | Cumplido? | Evidencia / Violación |
 |---|---|---|---|
-| I | Honest symbiosis | ✅/⚠️/❌ | <concrete evidence from the diff or process> |
-| II | Factual truth | ✅/⚠️/❌ | ... |
-| III | Code quality / simple by default | ✅/⚠️/❌ | ... |
-| IV | Blocking quality gates | ✅/⚠️/❌ | ... |
-| V | Understand before acting | ✅/⚠️/❌ | ... |
+| I | Understand before acting | ✅/⚠️/❌ | <concrete evidence from the diff or process> |
+| II | Factual truth — explicit data | ✅/⚠️/❌ | ... |
+| III | Radical honesty | ✅/⚠️/❌ | ... |
+| IV | Quality gates — real tests | ✅/⚠️/❌ | ... |
+| V | Delivered code quality — reuse first, simple & maintainable | ✅/⚠️/❌ | ... |
 | VI | Security without ambiguity | ✅/⚠️/❌ | ... |
-| VII | Performance and efficiency | ✅/⚠️/❌ | ... |
-| VIII | Optimal meta-prompting | ✅/⚠️/❌ | ... |
-| IX | Observability and self-improvement | ✅/⚠️/❌ | ... |
-| X | Poneglyph maintainability | ✅/⚠️/❌ | ... |
+| VII | Observability | ✅/⚠️/❌ | ... |
+| VIII | Internal prompting quality | ✅/⚠️/❌ | ... |
+| IX | Poneglyph maintainability | ✅/⚠️/❌ | ... |
+| X | Efficiency — right model, right worker | ✅/⚠️/❌ | ... |
 
 If ANY commandment is ⚠️ or ❌ → dedicated subsection "Commandment violations forensics" with:
 
@@ -284,7 +286,7 @@ Report using the block in §Output format reminder (end of this skill) — same 
 
 ## SIEMPRE rules
 
-- Radical honesty (Commandment I): never produce a retro with zero ❌ lessons unless genuinely zero friction occurred.
+- Radical honesty (Commandment III): never produce a retro with zero ❌ lessons unless genuinely zero friction occurred.
 - NEVER auto-edit `spec.md` — living-spec deltas are proposals for human approval only.
 - NEVER auto-apply promotions — produce candidates; user approves before any file is written.
 - Cite concrete evidence per lesson, per promotion, per commandment violation. No abstract claims.
@@ -313,14 +315,14 @@ Report using the block in §Output format reminder (end of this skill) — same 
 
 | # | Cómo |
 |---|---|
-| I | Honest about failures, friction, and commandment violations — no softening |
+| III | Honest about failures, friction, and commandment violations — no softening |
 | II | Each promotion cites concrete evidence; anti-hallucination verifies paths exist |
-| III | Promotions for genuinely reusable patterns only; no premature abstraction |
+| V | Promotions for genuinely reusable patterns only; no premature abstraction |
 | IV | retro.md is the closure gate; lifecycle closes only after retro produced |
-| V | Read ALL inputs (spec/tasks/tests/review/state) BEFORE producing retro |
+| I | Read ALL inputs (spec/tasks/tests/review/state) BEFORE producing retro |
 | VIII | Promotion candidates that involve extensions go through `meta-create` for spec-compliant scaffolding |
-| IX | Process audit + commandments audit feed self-improvement (the loop's whole purpose) |
-| X | Promotions to global ~/.claude/ keep poneglyph healthy; never duplicate or contradict existing |
+| VII | Process audit + commandments audit feed self-improvement (the loop's whole purpose) |
+| IX | Promotions to global ~/.claude/ keep poneglyph healthy; never duplicate or contradict existing |
 
 ## Output format reminder
 

@@ -20,7 +20,7 @@ Turns a poneglyph markdown artefact (or structured data) into one **self-contain
 
 ## Taste corpus & critique (references/ — load on demand)
 
-The design quality bar lives in `references/`, loaded only when needed (keeps this SKILL.md lean; finding A7 — post-compaction budget). These are the **canonical source** for taste rules and bans; this SKILL.md points to them rather than restating (Cmd X).
+The design quality bar lives in `references/`, loaded only when needed (keeps this SKILL.md lean; finding A7 — post-compaction budget). These are the **canonical source** for taste rules and bans; this SKILL.md points to them rather than restating (Cmd IX).
 
 | Reference | Load it when | Holds |
 |---|---|---|
@@ -47,7 +47,7 @@ The design quality bar lives in `references/`, loaded only when needed (keeps th
 | User wants a strategic DECISION memo (3 perspectives) | `decide` skill (already emits its own HTML memo) |
 | User wants the markdown CONTENT authored/edited, not rendered | the relevant phase skill (`critic`, `retro`, `scope`…) |
 | User wants a PDF | render HTML then print-to-PDF (the template's `@media print` is built for this) |
-| Trivial one-paragraph note | plain markdown — HTML scaffolding is over-engineering here (Commandment III) |
+| Trivial one-paragraph note | plain markdown — HTML scaffolding is over-engineering here (Commandment V) |
 | Needs live interactivity / data refresh | out of scope — this skill emits a static snapshot, by design (no JS) |
 | User wants to GENERATE arbitrary user-facing UI / a landing page | builtin `frontend-design` — this skill renders Claude Code's OWN outputs, not general UI |
 
@@ -84,7 +84,7 @@ graph TD
 When unsure, default to `report` (long-form loses no information; dashboard compresses).
 
 > **v2 layouts (feature 007)** — two more templates extend the system:
-> - **`glance.template.html`** — scan-at-a-glance dark report: KPI row (color=info) + immediate-action callout + CSS-only filterable/expandable cards + drawer + next-steps. Pick for "se lee de un vistazo". **Defines the canonical dark token block** (decision template inlines it verbatim — Cmd X).
+> - **`glance.template.html`** — scan-at-a-glance dark report: KPI row (color=info) + immediate-action callout + CSS-only filterable/expandable cards + drawer + next-steps. Pick for "se lee de un vistazo". **Defines the canonical dark token block** (decision template inlines it verbatim — Cmd IX).
 > - **`decision.template.html`** — decisions WITH comparable options (dev or non-dev: monitor/PC/shoes): recommendation hero + weighted options×criteria matrix + per-option pros/cons + criteria&weights. The `decide` skill reuses this as its base (single visual system).
 >
 > **Diagrams / charts — hybrid SVG-first**: compose inline SVG by hand for simple flows/comparisons/charts (self-contained, 0 JS, like the gauge/sevbar); `mermaid.js` runtime is an **opt-in declared exception** for complex graphs only (no `mmdc` in this env). Patterns + decision rule: `references/visuals-svg-first.md`.
@@ -139,7 +139,7 @@ When asked to **critique/audit** an HTML/CSS or a render: load `references/criti
 
 | Precedent | What it provides | How html-report extends it |
 |---|---|---|
-| `.claude/skills/decide/templates/memo.html` | Self-contained pattern: inline CSS, `prefers-color-scheme` flip, `@media print`, radius/shadow scale, `--color-*` naming | html-report's `tokens.css` is a **superset** of memo's token architecture (same naming, same flip mechanism). `/decide` and `/html-report` must read as ONE design family (Commandment X). |
+| `.claude/skills/decide/templates/memo.html` | Self-contained pattern: inline CSS, `prefers-color-scheme` flip, `@media print`, radius/shadow scale, `--color-*` naming | html-report's `tokens.css` is a **superset** of memo's token architecture (same naming, same flip mechanism). `/decide` and `/html-report` must read as ONE design family (Commandment IX). |
 | builtin `frontend-design` skill | Distinctive, production-grade frontend that avoids generic AI aesthetics | Invoked in Step 3 as the design-quality gate (AC5). |
 | `references/` taste corpus | Sourced hard rules + bans + pre-flight + critique mode | The measurable bar + the review side, layered above frontend-design. |
 
@@ -147,10 +147,10 @@ When asked to **critique/audit** an HTML/CSS or a render: load `references/criti
 
 | # | Commandment | How this skill honors it |
 |---|---|---|
-| **III** | Delivered code quality — simple by default, best practices, no over-engineering | One self-contained HTML, no JS framework, no build step, no CDN. Charts via plain SVG + CSS, not a charting library. System stack fonts, not embedded webfonts. Critique is markdown-mode, no helper unless justified. |
+| **V** | Delivered code quality — simple by default, best practices, no over-engineering | One self-contained HTML, no JS framework, no build step, no CDN. Charts via plain SVG + CSS, not a charting library. System stack fonts, not embedded webfonts. Critique is markdown-mode, no helper unless justified. |
 | **IV** | Blocking quality gates | The pre-flight checklist (Step 5a) gates the write; critique emits a verdict. |
 | **VIII** | Optimal output — invoke the right capability well | Explicitly leverages the builtin `frontend-design` skill + a sourced taste corpus instead of hand-rolling mediocre CSS; reuses the `decide/memo.html` precedent. Good output by composition, not improvisation. |
-| **X** | Poneglyph maintainability | `tokens.css` is the single source of truth for the report template (inlined byte-identical); the dashboard owns its dark-native palette by design; bans/tells live once in `references/anti-slop.md` (no dual source); `/decide` + `/html-report` share one design language. |
+| **IX** | Poneglyph maintainability | `tokens.css` is the single source of truth for the report template (inlined byte-identical); the dashboard owns its dark-native palette by design; bans/tells live once in `references/anti-slop.md` (no dual source); `/decide` + `/html-report` share one design language. |
 
 ## Verification (smoke test)
 

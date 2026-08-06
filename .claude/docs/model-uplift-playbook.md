@@ -54,7 +54,7 @@ Each pattern: when it applies → the discipline → evidence it happened → th
 
 ### 2.8 Verification is designed with the work, not appended after
 - **When**: decomposing any task (a plan's US, a workflow stage, a fix batch).
-- **Discipline**: every unit of work is written WITH its mechanical check (the command that proves it) before execution starts — a task without a check is not yet specified. (Running the check before reporting done is already doctrine — CLAUDE.md §Post-implementation verification; the delta is naming the check at design time.)
+- **Discipline**: every unit of work is written WITH its mechanical check (the command that proves it) before execution starts — a task without a check is not yet specified. (Running the check before reporting done is already doctrine — CLAUDE.md §The dev loop, REVIEW stage; the delta is naming the check at design time.)
 - **Evidence**: the audit workflow carried a refute stage per finding by design; P1 remediation ran the full suite after each edit block, not once at the end (173/173 green at each checkpoint).
 - **Prevents**: end-loaded verification discovering ten problems at once with no bisection.
 
@@ -84,7 +84,7 @@ Watchpoints where smaller models historically relapse in this setup — each map
 
 **Task → model routing** (the criterion lives here, not in settings):
 
-- Deep review / architecture / security / escalation → **Opus 4.8 + `/effort xhigh`** (skills critic/decision-stress-test/escalate/security-audit already pin xhigh via frontmatter — that wiring keeps working).
+- Deep review / architecture / security / escalation → **Opus 4.8 + `/effort xhigh`** (skills critic/security-audit/unstuck already pin xhigh via frontmatter — that wiring keeps working; `decide`'s heavy tier escalates effort per-invocation, 031).
 - Standard feature build → Opus 4.8 high (its default) — or Sonnet 5 when budget matters.
 - Bulk mechanical work (sweeps, renames, formatting, doc batches) → Opus 4.8 **fast mode** or Sonnet 5.
 - Massive-corpus analysis (multi-repo audits, huge logs, long-lived sessions) → **Sonnet 5** for the 1M window; prefer it over compacting Opus mid-task.

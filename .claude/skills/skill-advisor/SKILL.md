@@ -38,37 +38,48 @@ disable-model-invocation: false
    Then reason over the shortlist + the in-context skill listing (the descriptions are already
    in your context) to add any semantically-relevant skill the lexical pre-filter missed
    (e.g. Spanish/novel phrasing). Do NOT build a keyword index — keywords have ~0 measured effect.
-3. **Ratify** — present the shortlist to the human via `AskUserQuestion`:
-   - One option per candidate (label = skill name, description = why it applies + what it does).
+   The ranker breaks lexical ties with census-derived usage tiers (`USAGE_TIER` in `lib/rank.ts`,
+   refreshed at each census) — real usage beats alphabet, lexical score beats both.
+3. **Auto-invoke the obvious one (031)** — skip ratification and invoke `Skill(<name>)` directly,
+   SAYING SO ("auto-invoco X: <motivo>"), when either executable condition holds:
+   - exactly ONE candidate survives step 2 (lexical + semantic pass agree on a single skill), or
+   - the task matches a mandatory row of `rules/skill-routing.md` (that table already carries
+     the user's standing ratification).
+   Anything else → step 4. Never auto-invoke two-or-more "obvious" skills — plural = doubt.
+4. **Ratify** — present the shortlist to the human via `AskUserQuestion`:
+   - One option per candidate: label = skill name; description = **concrete reason it applies +
+     confidence (alta/media/baja)** — not a generic blurb.
    - multiSelect: true — the user picks which to activate.
+   - Below the options (in the accompanying text), list the near-miss candidates DISCARDED with a
+     one-line motive each ("descartada Y — matchea 'valida' pero es la fase 4 de /flow, no aplica").
    - If the shortlist is empty, say so plainly ("ninguna skill aplica claramente") — never invent.
-4. **Model/effort recommendation (gated — 027/US4)** — check the task's nature against the
-   routing table in `.claude/docs/model-uplift-playbook.md §4` (Read on demand; do NOT copy the
-   table here — single owner). ONLY if the recommended model or effort **differs** from the
-   session's current state, append one option/line to the same AskUserQuestion: the recommendation
-   + the user action it requires (`/model <id>` or `/effort <level>`), citing §4. If it matches,
-   say NOTHING about model/effort (anti-ceremony). Always propose→ratify: the Lead cannot and
-   must not switch the session model/effort itself.
-5. **Activate** — invoke `Skill(<name>)` only for the ratified candidates.
-6. **Multi-pass (optional)** — if the user wants to go deeper or the task shifts, re-run from step 1.
+5. **Model/effort recommendation (031: always one visible line)** — check the task's nature against
+   the routing table in `.claude/docs/model-uplift-playbook.md §4` (Read on demand; do NOT copy the
+   table here — single owner). ALWAYS emit exactly one line: if the recommendation **differs** from
+   the session state → the recommendation + the user action (`/model <id>` / `/effort <level>`),
+   citing §4; if it matches → "modelo/effort actuales ya encajan para esta tarea". Always
+   propose→ratify: the Lead cannot and must not switch the session model/effort itself.
+6. **Activate** — invoke `Skill(<name>)` for the ratified candidates.
+7. **Multi-pass (optional)** — if the user wants to go deeper or the task shifts, re-run from step 1.
 
 ## SIEMPRE rules
 
-- Propose, never auto-activate — the human ratifies (Commandment I, symbiosis).
+- Propose→ratify by default; auto-invoke ONLY under the two executable conditions of step 3
+  (single survivor, or mandatory skill-routing row) and always declaring it (Commandment III, symbiosis).
 - Never re-implement the model's semantic matching; reason over the in-context listing + the disk shortlist.
-- Empty shortlist → say it; do not invent candidates.
+- Empty shortlist → say it; do not invent candidates. Discarded near-misses get a one-line motive.
 - Cheap: the per-turn surfacing is the hook's job; run this skill at decision points, not every turn.
-- Model/effort recommendation only when it DIFFERS from the current session state; source of
-  criterion is `docs/model-uplift-playbook.md §4` (referenced, never duplicated); user executes
-  the switch (`/model`, `/effort`) — never the Lead.
+- Model/effort: exactly ONE line, always (recommendation with the `/model`//`/effort` action when it
+  differs; a match confirmation when it doesn't); source of criterion is
+  `docs/model-uplift-playbook.md §4` (referenced, never duplicated); user executes the switch — never the Lead.
 
 ## Commandments cubiertos
 
 | # | Cómo |
 |---|---|
-| I | Claude propone el volumen (shortlist), el humano decide qué activar |
-| III | Mínimo: una función pura + un workflow; sin índice ni infra nueva |
-| IX | Backstop explícito al undertrigger nativo (auto-mejora del sistema) |
+| III | Claude propone el volumen (shortlist), el humano decide qué activar |
+| V | Mínimo: una función pura + un workflow; sin índice ni infra nueva |
+| VII | Backstop explícito al undertrigger nativo (auto-mejora del sistema) |
 
 ## Verificación
 

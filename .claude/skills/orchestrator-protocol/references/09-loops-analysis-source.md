@@ -63,7 +63,7 @@ Marketing claims (4 machines 24/7, ROI 16×, $1M in tokens, the paid "motor agé
 
 The video's headline mode — *leave it running unattended overnight, improving forever, four machines 24/7* — collides head-on with poneglyph's spine:
 
-- **Commandment I (ask before assuming) + IV (blocking human hard gates 1→2, 2→3)**: a fully unattended write-loop bypasses the human gates that are the whole point of `/flow`.
+- **Commandment III (ask before assuming) + IV (blocking human hard gates 1→2, 2→3)**: a fully unattended write-loop bypasses the human gates that are the whole point of `/flow`.
 - **Inline-first doctrine (017/US1, evidence-based)**: unattended/delegated build work *empirically degraded quality* in poneglyph's own history (token multiplication, summary degradation at hand-back). An autonomous build-loop re-introduces exactly that failure mode.
 - **`prune > add`**: building a bespoke loop engine adds surface area the project has decided to stop adding.
 
@@ -77,7 +77,7 @@ The video's headline mode — *leave it running unattended overnight, improving 
 The bounded case. Stop condition is objective and external: `bun test ./.claude/hooks/` green **and** lint clean **and** `critic` verdict APPROVED. This is literally Commandment IV expressed as a loop.
 - **Mechanism (native, no build)**: `/loop` self-paced (no interval) over a single, well-scoped, *already-gate-approved* HU, stopping on the test/critic signal. Or `ScheduleWakeup` to wait on a background build.
 - **Why it's safe**: the human gate happened *before* the loop (spec/tasks approved); the loop only grinds an approved task to a green, machine-checkable bar. Maker (`build`) ≠ auditor (`critic`) is preserved.
-- **Note**: this is essentially the `best-of-n` skill's philosophy (test-selected attempts) in a sequential loop. Possibly already covered — check before adding anything.
+- **Note**: this is essentially the philosophy of the retired `best-of-n` pilot (test-selected attempts; archived 031, pattern preserved in `plans/_archive/031-skill-cuts/`) in a sequential loop. Possibly already covered — check before adding anything.
 
 ### ✅ 2 — Unattended read-only research/audit loops (MEDIUM-HIGH value, LOW risk)
 Re-run `ultracode-audit` or `deep-research` periodically. **Read-only ⇒ no destructive-mutation risk ⇒ no human gate needed** (the gate exists to guard writes). Output is a report the human reads when convenient — the video's own "leave it marked for the morning" use case, minus the write risk.

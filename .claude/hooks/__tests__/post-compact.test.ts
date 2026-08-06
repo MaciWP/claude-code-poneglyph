@@ -53,6 +53,29 @@ describe("openPlansReminder (US2)", () => {
     expect(out).not.toContain("031-nostate"); // no state.json = not flow-managed, still skipped
   });
 
+  test("T2.4 reminder uses the $HOME script path, executable from any repo (029/US11)", () => {
+    const root = plansRootWith([
+      { name: "050-open", content: JSON.stringify({ feature_closed: false, current_phase: 4 }) },
+    ]);
+    const out = openPlansReminder(root)!;
+    expect(out).toContain("$HOME/.claude/scripts/flow-state.ts");
+    // the old relative-only form must be gone (broken outside poneglyph):
+    expect(out).not.toContain("`bun .claude/scripts/flow-state.ts");
+  });
+
+  test("T2.5 reminder carries the first-turn action protocol, offered once (029/US11)", () => {
+    const root = plansRootWith([
+      { name: "051-open", content: JSON.stringify({ feature_closed: false, current_phase: 5 }) },
+    ]);
+    const out = openPlansReminder(root)!;
+    expect(out).toContain("primer turno");
+    expect(out).toContain("/flow --resume");
+    expect(out.toLowerCase()).toContain("una sola vez");
+    // scaffolding stays compact: fixed lines (non-plan bullets) <= 4
+    const fixed = out.split("\n").filter((l) => !l.startsWith("- "));
+    expect(fixed.length).toBeLessThanOrEqual(4);
+  });
+
   test("buildOutput includes the reminder section when a plan is open", () => {
     const root = plansRootWith([
       { name: "040-open", content: JSON.stringify({ feature_closed: false, current_phase: 4 }) },
@@ -62,6 +85,8 @@ describe("openPlansReminder (US2)", () => {
     expect(out).toContain("040-open");
     // existing sections still present (no regression)
     expect(out).toContain("Lead Orchestrator Mode");
-    expect(out).toContain("Anti-Hallucination");
+    // ANTI_HALLUCINATION block removed (030): instructions-loaded.log proved
+    // CLAUDE.md reloads at the same compaction instant — the checklist was a duplicate.
+    expect(out).not.toContain("Anti-Hallucination");
   });
 });

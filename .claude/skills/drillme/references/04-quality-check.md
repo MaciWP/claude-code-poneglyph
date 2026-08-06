@@ -100,7 +100,7 @@ In both cases: no gap is silently dropped or fake-closed with evasion. Open gaps
 | User answers all questions in <30 seconds, all Concrete | Either the context was trivial (calibration was off — should have skipped drillme) OR user is rubber-stamping | If first: skip drillme next time for similar context. If second: dig — re-drill with `[failure]` focus |
 | Same Evasive pattern across all answers ("depende"/"probably") | User is in low-engagement mode; drillme is producing ceremony | Stop. Ask: "¿Qué necesitas para responder con concreción?" |
 | User keeps moving the goalposts (answer changes between iterations) | Decision isn't ready; foundations shifting | Reopen Phase 1 (scope) — the underlying intent isn't stable |
-| Answers reveal disagreement with another stakeholder | Drillme reached its ceiling | Escalate to `decision-stress-test` or surface to the disagreeing stakeholder |
+| Answers reveal disagreement with another stakeholder | Drillme reached its ceiling | Escalate to `decide` (heavy tier) or surface to the disagreeing stakeholder |
 
 ## Anti-patterns in answer evaluation
 

@@ -6,7 +6,7 @@ description: |
   Keywords - critic, phase-4-review, valida, revisa, audita, e2e, happy-path, quality,
   regression, security, performance, verdict, blocker, finding, fase-4, phase-4
 disable-model-invocation: false
-argument-hint: "[--light|--standard|--full]"
+argument-hint: ""
 effort: xhigh
 when_to_use: |
   "revisa el feature", "audita esto", "valida end-to-end", "veredicto", "review the feature", "is this correct", "final review"
@@ -16,9 +16,11 @@ when_to_use: |
 
 Validates **end-to-end** that the spec.md problem was solved — not just that each HU's tests pass. Produces `review.md` with a 5-section checklist + findings with severity + verdict. The gate before retro (Phase 5).
 
+> Disambiguation (031): reviewing a PR/branch against its TICKET at any point in time is `pr-review` (diff-level, ticket-anchored); critic is feature-level and spec.md-anchored, after all HUs close.
+
 ## Underlying principle
 
-> "Tests passing per HU prove the parts; the critic proves the whole." (Commandment IV — blocking gates; Commandment IX — observability and self-improvement)
+> "Tests passing per HU prove the parts; the critic proves the whole." (Commandment IV — blocking gates; Commandment VII — observability and self-improvement)
 
 Phase 3 closes HUs atomically — each HU red→green or validation-closed. Phase 4 asks the question Phase 3 cannot: **does the assembled set of HUs solve the original problem in spec.md, including the happy path the user actually walks?** Unit tests can all pass and the feature still be broken at the seams. The critic is the seam-checker.
 
@@ -120,7 +122,7 @@ For each section, populate `review.md` with findings (file:line + severity + rec
 
 #### Maintainability
 
-- Comments only where "why" is non-obvious (Cmd III — no decorative comments).
+- Comments only where "why" is non-obvious (Cmd V — no decorative comments).
 - No TODOs without an issue link (`Grep "TODO|FIXME" <changed-files>`).
 - New abstractions justified by ≥2 callers (avoid premature abstraction).
 - Naming consistent with project (Drillme intra-HU should have caught this; verify here).
@@ -151,7 +153,7 @@ Trigger: every standard/full review on code (light skips it). The author≠evalu
 
 > If no agent can run (offline, budget), the critic performs the deeper review **inline** and declares residual author-bias honestly in `review.md` — never silently skips the independence concern.
 
-**Deliberative panels (≥4 perspectives)**: reserved for DECISION review — architecture choices, library selection, trade-off challenges — via `decision-stress-test` (its evidence niche per 018 W1: cheap-to-grade decision tasks, not code). The critic does NOT launch panels for code.
+**Deliberative panels (≥4 perspectives)**: reserved for DECISION review — architecture choices, library selection, trade-off challenges — via `decide` (heavy tier) (its evidence niche per 018 W1: cheap-to-grade decision tasks, not code). The critic does NOT launch panels for code.
 
 **`security-audit` skill**:
 
@@ -244,11 +246,11 @@ Next:
 
 ## SIEMPRE rules
 
-- Honest findings — no softening (Commandment I). If a BLOCKER exists, the verdict is BLOCKED, no exceptions.
+- Honest findings — no softening (Commandment III). If a BLOCKER exists, the verdict is BLOCKED, no exceptions.
 - Trace each spec.md AC to a closed HU; flag any AC without a corresponding closed HU as a Correctness finding.
 - `security-audit` mandatory dispatch when critical area touched — gate, not advisory.
 - Tests pass on the assembled branch BEFORE declaring APPROVED (Cmd IV).
-- Spec-drift is flagged + classified, never silently absorbed (Cmd IX — observability).
+- Spec-drift is flagged + classified, never silently absorbed (Cmd VII — observability).
 - Findings cite `file:line` exactly; no vague "somewhere in the auth module".
 - Independent review = ONE fresh-context read-only reviewer (correctness/requirements only — the explicit P1 exception, evidence W1 D1/D3) or inline-with-declared-bias fallback; never a deliberative panel for code (W2 D1: judge ensembles ~80% FP).
 - Research/evidence artefacts: numeric claims must be quote-anchored to their source or marked `[Probable]`/UNVERIFIED; citation sampling must target claims NOT already refuter-verified during build (independence). Method: `.claude/docs/research-rigor.md` (promoted from feature 018 — precision inflation was its only audit-failure class).
@@ -280,7 +282,7 @@ Declare adaptation in `review.md` frontmatter (`review_level` + reason).
 - ⚠️ NEEDS_CHANGES on >3 consecutive critic runs of the same feature → spec.md or HUs are poorly defined; reopen Phase 1/2.
 - ⚠️ Findings cite line numbers that don't exist in the file → anti-hallucination skipped; redo with verification.
 - ⚠️ `spec_drift: legitimate` proposed in >50% of reviews → planning is not capturing emergent requirements; review the planning process in Phase 5.
-- ⚠️ A ≥4 deliberative panel launched for code review → doctrine regression (019 demotion, W1 D1/D3); panels belong to decision review via `decision-stress-test` only.
+- ⚠️ A ≥4 deliberative panel launched for code review → doctrine regression (019 demotion, W1 D1/D3); panels belong to decision review via `decide` (heavy tier) only.
 
 ## Anti-patterns
 
@@ -290,7 +292,7 @@ Declare adaptation in `review.md` frontmatter (`review_level` + reason).
 | Severity inflation | All findings tagged BLOCKER | Re-classify by Cmd IV blocking criteria; BLOCKER = data loss/security/breaking change/hardcoded secret/fundamental design flaw |
 | Spec drift silently absorbed | `review.md` doesn't mention spec.md delta despite diff diverging | Add Spec-drift section with classification |
 | Skipping security on auth code | Diff touches auth but `security-audit` not invoked | Re-run with security-audit dispatched (mandatory gate) |
-| Panel launched for code review | Any ≥4-perspective Workflow fired from Phase 4 on a code diff | Replace with ONE fresh-context reviewer (correctness/requirements); panels = decisions only (`decision-stress-test`) |
+| Panel launched for code review | Any ≥4-perspective Workflow fired from Phase 4 on a code diff | Replace with ONE fresh-context reviewer (correctness/requirements); panels = decisions only (`decide` (heavy tier)) |
 | Verdict APPROVED with failing tests | base checks (Step 4) red but verdict green | Re-verdict to NEEDS_CHANGES at minimum; tests-passing is a precondition |
 
 ## Deep references (Read on demand)
@@ -306,15 +308,15 @@ Critical invariants kept in this body: `review-patterns` is MANDATORY in standar
 
 | # | Cómo |
 |---|---|
-| I | Honest findings sin softening; BLOCKED if BLOCKER exists; residual author-bias declared when no fresh reviewer ran |
+| III | Honest findings sin softening; BLOCKED if BLOCKER exists; residual author-bias declared when no fresh reviewer ran |
 | II | `anti-hallucination` before every finding — no invented file:line |
-| III | Severity inflation anti-pattern blocked; simple by default |
+| V | Severity inflation anti-pattern blocked; simple by default |
 | IV | APPROVED only if tests pass on assembled branch (blocking gate) |
-| V | Read spec.md + tasks/ + tests/validations BEFORE producing review.md |
+| I | Read spec.md + tasks/ + tests/validations BEFORE producing review.md |
 | VI | `security-audit` mandatory dispatch on auth/payments/secrets — gate, not advisory |
-| VII | Base checks executed in parallel (Step 4); ONE fresh reviewer replaces the ≥4 panel — same independence, fraction of the cost (W1 D1/D3) |
+| X | Base checks executed in parallel (Step 4); ONE fresh reviewer replaces the ≥4 panel — same independence, fraction of the cost (W1 D1/D3) |
 | VIII | Fresh-reviewer prompt is constrained (AC trace + correctness/requirements only + read-only role — Arch H) |
-| IX | Spec-drift detection + classification feeds living-spec loop in Phase 5 (observability) |
+| VII | Spec-drift detection + classification feeds living-spec loop in Phase 5 (observability) |
 
 ## Output format reminder
 

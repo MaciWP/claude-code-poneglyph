@@ -24,9 +24,9 @@ Reliability matters because PreToolUse/PostToolUse may silently fail to fire (op
 | Event | When | Reliability | Usage in Poneglyph |
 |-------|------|-------------|--------------------|
 | PreToolUse | Before tool | Unreliable (#6305) | — (none registered) — best-effort only |
-| PostToolUse | After tool | Unreliable (#6305) | `code-validator.ts` — best-effort only |
-| Stop | End of turn | Reliable | `security-gate.ts` + `learning-inbox.ts` — quality gate (security warn to user **+ additionalContext to the model since 028/US4** + learning capture) |
-| UserPromptSubmit | On prompt submit | Reliable as event (gap early-session/post-compaction, #17277) | `skill-activation.ts` — injects `Skill(<name>)` on keyword match; best-effort layer. Skips ALL slash commands (incl. `/goal` — it runs as the Lead, which has the always-loaded routing core and can invoke `Skill()` itself; no injected hint needed) |
+| PostToolUse | After tool | Unreliable (#6305) | — (none registered; `code-validator.ts` cut 2026-08-05/030: fail-closed on an unreliable event; secrets covered by Stop gate) |
+| Stop | End of turn | Reliable | `security-gate.ts` — quality gate (secret warn + **git-discipline warn on unasked git mutations, 029/US4** — both dual-channel: systemMessage to user + additionalContext to the model). `learning-inbox.ts` cut 2026-08-05/030 (4 entries/6 weeks, half noise) |
+| UserPromptSubmit | On prompt submit | Reliable as event (gap early-session/post-compaction, #17277) | `skill-activation.ts` — injects `Skill(<name>)` on keyword match + `/flow` line on feature-shaped prompts + shape-only model/effort hint, and logs every emitted hint to `<cwd>/.claude/learned/skill-hints.log` (honor-rate emit side, 029/US13); best-effort layer. Skips slash commands EXCEPT `/goal <task>` (its arg is real work — processed since 023, tests T2.2) |
 | InstructionsLoaded | On instruction load | Reliable as event | `instructions-loaded.ts` (async) — logs every CLAUDE.md/rules load (load-layer proof) |
 | SessionStart | On every session start (incl. resume/clear) | Reliable as event | `session-start-plans.ts` — open-plans reminder on EVERY session (027/US1; post-compact's copy only fires after a compaction). Silent when 0 open |
 | SubagentStop | End of subagent | Reliable as event | — (none registered) |

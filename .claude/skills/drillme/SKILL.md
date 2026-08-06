@@ -1,7 +1,7 @@
 ---
 name: drillme
 description: |
-  Interrogatorio socrático exhaustivo: barre una decisión/plan/output/duda en busca de gaps y pregunta lo que haga falta para cerrarlos, en rondas embudo, integrando las respuestas en el artefacto activo. Activación híbrida: corre donde hay un gap que cerrar y produce CERO preguntas donde nada es ambiguo (sin ceremonia). Para en saturación, nunca en un número fijo.
+  Interrogatorio socrático exhaustivo EN RONDAS: barre una decisión/plan/output/duda en busca de gaps y pregunta lo que haga falta para cerrarlos — con gaps reales son MÍNIMO DOS rondas embudo (abrir → sondear), nunca una tanda única — integrando las respuestas en el artefacto activo. Activación híbrida: produce CERO preguntas donde nada es ambiguo (sin ceremonia), y para en saturación, nunca en un número fijo.
   Úsala cuando: cualquier decisión/plan/output no trivial, un gap o duda bloquea, antes de cerrar una fase o gate, "drill", "drillme", "clarifica", "especificar mejor", "no dejar gaps", "pregúntame todo", "interrógame", "valida", "cuestiona".
   Keywords - drill, drillme, socratic, 5-whys, first-principles, clarify, clarificar,
   gaps, gap, especificar mejor, define requirements, ambiguity, ambigüedad, dudas,
@@ -21,14 +21,14 @@ A meta-skill any other skill (and the Lead) can invoke to **close every gap in a
 
 > "If everyone is thinking alike, then somebody isn't thinking." — Tenth Man Rule
 
-Most engineering pain comes from deciding with hidden gaps — assumptions nobody surfaced, edge cases nobody named, requirements left to chance. The doctrine (CLAUDE.md §Communication & Honesty Protocol) is explicit: *ask in rounds — including lateral/improvement questions — until no remaining question would change the decision.* Drillme is the catalog that operationalizes it. Exhaustive does **not** mean "many questions on everything" — it means **cover the whole space of ambiguity without redundancy**: every question must carry information gain (the anti-padding guard). Research backing: clarifying selectively (not always/never) and stopping at information-gain saturation reduces both errors and wasted questions ([Active Task Disambiguation, arXiv 2502.04485](https://arxiv.org/pdf/2502.04485); [SAGE-Agent EVPI, arXiv 2511.08798](https://arxiv.org/html/2511.08798v1)).
+Most engineering pain comes from deciding with hidden gaps — assumptions nobody surfaced, edge cases nobody named, requirements left to chance. The doctrine (`output-styles/poneglyph.md` §Honesty mechanics — Proactive multi-round questioning) is explicit: *ask in rounds — including lateral/improvement questions — until no remaining question would change the decision.* Drillme is the catalog that operationalizes it. Exhaustive does **not** mean "many questions on everything" — it means **cover the whole space of ambiguity without redundancy**: every question must carry information gain (the anti-padding guard). Research backing: clarifying selectively (not always/never) and stopping at information-gain saturation reduces both errors and wasted questions ([Active Task Disambiguation, arXiv 2502.04485](https://arxiv.org/pdf/2502.04485); [SAGE-Agent EVPI, arXiv 2511.08798](https://arxiv.org/html/2511.08798v1)).
 
 ## Hybrid activation (when it fires, when it stays silent)
 
 Drillme is **considered everywhere** but **gated by gaps**. There is no graduated calibration ("N questions for trivial, M for architectural"). The gate is binary and generation-executable:
 
 > **For the context in front of you, is there a gap, doubt, or under-specified point whose answer would change the decision?**
-> - **No** → produce **0 questions**. Say "No open gaps — nothing to drill" and close immediately. This is the trivial case (a rename, a typo, a fix with a clear repro). Zero ceremony — honours Commandment III.
+> - **No** → produce **0 questions**. Say "No open gaps — nothing to drill" and close immediately. This is the trivial case (a rename, a typo, a fix with a clear repro). Zero ceremony — honours Commandment V.
 > - **Yes** → run the recipe below and sweep until every such gap is closed.
 
 This is why "always active" and "no over-engineering" do not conflict: a typo surfaces no gaps, so drillme runs and closes with zero questions; an ambiguous feature surfaces many, so it asks until they are gone.
@@ -39,7 +39,7 @@ This is why "always active" and "no over-engineering" do not conflict: a typo su
 |---|---|
 | Decision already committed (code merged, PR closed) | Post-commitment drilling is rationalization, not analysis |
 | Genuinely no gap surfaces in Step 1 | Hybrid gate returns 0 questions — that IS drillme working, not skipping it |
-| High-stakes architectural commitment needing multiple independent voices | Escalate to `decision-stress-test` (5-12 perspectives debating); drillme asks the user, it does not simulate a panel |
+| High-stakes architectural commitment needing multiple independent voices | Escalate to `decide` (heavy tier) (5-12 perspectives debating); drillme asks the user, it does not simulate a panel |
 
 ## The recipe
 
@@ -72,6 +72,15 @@ Full category templates + adaptation in `references/01-catalog-socratic.md`.
 
 Deliver via `AskUserQuestion` in **thematic rounds**, not 40-at-once and not strictly one-at-a-time. Use the funnel order: **open** (broad framing) → **probing** (specifics) → **closing** (confirm / close doors). Group questions by category per round. For open-ended questions, offer 2-4 example options + the native "Other" so the user is oriented but free. Questions are direct — no hedging ("What happens if X?" not "Could there perhaps be a case where X?").
 
+**Rounds floor (031)**: when the gap gate returned Yes, the funnel is **minimum TWO
+AskUserQuestion rounds** — the answers to the open round are what GENERATE the probing
+round (the same proven pattern as ticket-writing's "never draft in the first reply —
+minimum TWO question turns"). Closing after a single round is allowed ONLY when that
+round's answers verifiably closed every open gap, and the closure must say so explicitly
+("cierro en 1 ronda: las respuestas cerraron todos los gaps"). Batching every category
+into one call and self-declaring saturation is under-rounding (anti-pattern below), not
+efficiency.
+
 ### Step 4 — Bake the answers
 
 Every answer is **written into the active artefact**, never left floating (pattern: `/speckit.clarify`):
@@ -88,7 +97,7 @@ Classify each answer (Concrete / Evasive / Empty / Off-topic / Contradictory —
 
 ### Step 6 — Close or escalate
 
-Close with one of: "zero open gaps" (+ the baked answers) or a list of `[OPEN]` items with what each needs to resolve. If the blocker is a genuine disagreement or the decision still won't crystallize after the sweep → **escalate to `decision-stress-test`** (multi-perspective debate) and say so.
+Close with one of: "zero open gaps" (+ the baked answers) or a list of `[OPEN]` items with what each needs to resolve. If the blocker is a genuine disagreement or the decision still won't crystallize after the sweep → **escalate to `decide` (heavy tier)** (multi-perspective debate) and say so.
 
 ## Worked example (battery on an ambiguous decision)
 
@@ -130,16 +139,16 @@ ROUND 5 — scope / closing
 
 Each answer is baked into the spec/decision. The sweep stops when these are closed and no new gap surfaces — or soft-stops with `[OPEN]` if answers degrade. On a trivial input (`"rename count to total in this file"`) the same gate yields **zero** of these questions.
 
-## Drillme vs decision-stress-test
+## Drillme vs decide (heavy tier)
 
-| Dimension | drillme | decision-stress-test |
+| Dimension | drillme | decide (heavy tier) |
 |---|---|---|
 | Shape | **One voice asking the user** N questions | **5-12 agents debating** one decision |
 | Input | Gaps in a decision/plan/output | A committed-to choice to stress |
 | Output | Closed gaps baked into the artefact (or `[OPEN]`) | Multi-perspective synthesis + vote |
 | When | Default for closing any non-trivial decision | High-stakes architectural commitment |
 
-Start with drillme; if it surfaces a genuine disagreement or won't crystallize after the sweep → escalate to `decision-stress-test`.
+Start with drillme; if it surfaces a genuine disagreement or won't crystallize after the sweep → escalate to `decide` (heavy tier).
 
 ## SIEMPRE rules
 
@@ -158,19 +167,20 @@ Start with drillme; if it surfaces a genuine disagreement or won't crystallize a
 | Synthetic coverage | Question invented to fill a `[category]` quota | Declare "N/A — reason"; coverage is gap-driven, not count-driven |
 | Padding to a number | "Always 20+ questions" because exhaustive | Anti-padding: the worked example is capability, not a quota |
 | Over-firing on trivial | Battery on a rename/typo | Gap gate returns 0 — that IS drillme working |
+| **Under-rounding** | Gaps exist but everything is batched into ONE round, or "saturation"/"user fatigue" is self-declared right after round 1 | Rounds floor: minimum TWO rounds (open → probing) when gaps exist; a 1-round close must state that every gap verifiably closed |
 | Machine-gunning | Re-asking an irreducible (aleatoric) gap | Mark `[OPEN]`; press only reducible (epistemic) gaps |
 | Floating answers | Asked, answered, never recorded | Bake into spec/tasks/decision (or inline table standalone) |
 | Softened questions | "Could perhaps... / Maybe consider..." | Direct: "What happens if X?" |
-| Confusion with stress-test | drillme used for a multi-voice architectural debate | Escalate to `decision-stress-test` |
+| Confusion with stress-test | drillme used for a multi-voice architectural debate | Escalate to `decide` (heavy tier) |
 
 ## Commandments cubiertos
 
 | # | Cómo |
 |---|---|
-| I | Honest about known vs unknown; irreducible gaps marked `[OPEN]`, no forced concretion |
+| III | Honest about known vs unknown; irreducible gaps marked `[OPEN]`, no forced concretion |
 | II | Premises that cite files/functions are verified (anti-hallucination) before treating an answer as Concrete |
-| III | Hybrid gate: 0 questions on trivial = zero ceremony; anti-padding keeps exhaustive ≠ bloated |
-| V | Exhaustive gap-closing IS understand-before-acting |
+| V | Hybrid gate: 0 questions on trivial = zero ceremony; anti-padding keeps exhaustive ≠ bloated |
+| I | Exhaustive gap-closing IS understand-before-acting |
 | VIII | The coverage checklist + funnel IS structured meta-prompting |
 
 ## Content map

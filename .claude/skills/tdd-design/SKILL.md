@@ -160,7 +160,7 @@ Run the 3 phase-specific questions before closing:
 3. `[approach]` **Property-based fit?** Does any HU have invariants (parsers, pure transforms) that property-based would cover better than examples?
 ```
 
-Coverage: 2/4 canonical Socratic categories. Acceptable — Phase 2.5 is focused on oracle design, not architecture; `[location]` and `[context]` were covered by `tech-plan` in Phase 2. NOT adding artificial questions to pad coverage (Commandment III).
+Coverage: 2/4 canonical Socratic categories. Acceptable — Phase 2.5 is focused on oracle design, not architecture; `[location]` and `[context]` were covered by `tech-plan` in Phase 2. NOT adding artificial questions to pad coverage (Commandment V).
 
 > Skill-to-skill invocation is probabilistic. If `drillme` does not auto-fire, the Lead invokes `/drillme "Phase 2.5 oracle design for <NNN-slug>"` manually before approving hard gate 2->3.
 
@@ -204,7 +204,7 @@ The skill does NOT proceed to Phase 3.
 | `drillme` | Before closing Phase 2.5 — applies 3 phase-specific questions + canonical Socratic catalog | Lead invokes `/drillme "Phase 2.5 oracle design for <NNN-slug>"` manually before approving hard gate 2->3 |
 | Project test-conventions skill (e.g. `django-testing-patterns`) | TDD-mode Step 1.7 — load it to inherit the project's fixture philosophy, factory usage, and anti-duplication rules; its specifics override this generic skill | Lead Globs `**/conftest.py`/`**/factory*.py` and reads the existing test suite manually to mirror its conventions |
 
-> Skill-to-skill invocation is **probabilistic** per docs Anthropic + [issue #59968](https://github.com/anthropics/claude-code/issues/59968). Phase 2.5 is the most focused phase — only 2 auxiliaries truly apply. Other auxiliaries (e.g., `decision-stress-test`) belong to other phases and would be ceremony here.
+> Skill-to-skill invocation is **probabilistic** per docs Anthropic + [issue #59968](https://github.com/anthropics/claude-code/issues/59968). Phase 2.5 is the most focused phase — only 2 auxiliaries truly apply. Other auxiliaries (e.g., `decide` (heavy tier)) belong to other phases and would be ceremony here.
 
 ## Adaptation intra-phase (Principio 2 — "no siempre más es más")
 
@@ -250,7 +250,7 @@ Declare adaptation in output frontmatter notes: "Mode auxiliary minimal — happ
 | # | Cómo |
 |---|---|
 | II | Tests/validations are verifiable executables (or Grep-checkable assertions) |
-| III | Honest classification — no TDD ceremony on docs; no validation ceremony on code |
+| V | Honest classification — no TDD ceremony on docs; no validation ceremony on code |
 | IV | TDD tests must fail before impl (red→green); validations must pass for HU to close — blocking gates |
 | VIII | Structured oracle templates (tests.template/validations.template); per-HU classification with rationale |
 

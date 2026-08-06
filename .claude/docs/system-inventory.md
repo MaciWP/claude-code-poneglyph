@@ -28,7 +28,7 @@ Poneglyph has ONE workflow (the 5 phases + Lead turn flow); what differs is how 
 | **`/role <name>`** | Persona-framing over existing skills | Composes skills for the role; Lead still triages | Hook skips it (role self-composes); Lead matches within the persona |
 
 **The honest answer to "siempre activar las skills":** activation is layered:
-1. **Routing core is always-loaded** (CLAUDE.md §Lead Orchestrator Mode + §Skill routing + §5-phase model). The Lead therefore triages and routes on EVERY turn — including every `/goal` loop turn — without any hook. This is the real "always-on" layer.
+1. **Routing core is always-loaded** (CLAUDE.md §Operating rules — Skill routing — + §Dev workflow incl. §Agents for cheap reads). The Lead therefore triages and routes on EVERY turn — including every `/goal` loop turn — without any hook. This is the real "always-on" layer.
 2. **`/flow` → deterministic phase→skill wiring** (each phase invokes its skill explicitly). The strongest guarantee, for feature-shaped work.
 3. **Keyword hook → on-demand skill acceleration** — best-effort, plain prompts only (skips slash commands); surfaces a specific skill (`security-audit`, `tdd-design`…) earlier than the Lead might. NOT a guarantee (Spanish/novel phrasings miss; and the Lead may ignore the hint).
 
@@ -84,7 +84,7 @@ Escalation: Quick → Standard on uncertainty → Full on multi-domain/architect
 |---|---|---|
 | `minimal` | Phase 3 direct + Phase 4 light | trivial task, 1-2 files, no design decisions |
 | `standard` (default) | All 5 phases, drillme normal | feature 2-5 files OR single domain |
-| `full` | All 5 phases + decision-stress-test in Phase 2 + fresh-context reviewer (critical-area focus; panels = decisions only, feature 019) in Phase 4 + Commandments forensics in Phase 5 | architectural / multi-domain / auth-payments-security |
+| `full` | All 5 phases + decide (heavy tier) in Phase 2 + fresh-context reviewer (critical-area focus; panels = decisions only, feature 019) in Phase 4 + Commandments forensics in Phase 5 | architectural / multi-domain / auth-payments-security |
 
 ## Skill loading into a Workflow agent (3 mechanisms)
 
@@ -125,15 +125,15 @@ Test: "does the agent need this in EVERY prompt?" — no → skill.
 | Component | Audit baseline (early 2026) | Post-cleanup (2026-05-28) | Current | Detail |
 |---|---|---|---|---|
 | Agents | 7 + 1 meta | 3 | **0 custom** | builder/reviewer/scout cut in feature 008; work runs inline (delegation doctrine), read-only fan-out via Workflow/`Explore`. The ONE sanctioned single-agent dispatch is critic's fresh-context reviewer (P1 exception, feature 019) — ad-hoc, no agent file |
-| Skills | 28 | 14 | **count `ls .claude/skills`** (24 snapshot 2026-07-07) | 6 phase skills + `drillme` + `html-report` (003) + `best-of-n` (019, pilot); `planner-protocol` migrated-and-cut into `tech-plan/references/`; `skill-advisor` cut in 017, **restored in 023** as the ratifiable shortlist backstop and wired at /flow phase boundaries in 024 |
-| Hooks | 15+ | 6 | **the ones `settings.json.hooks` registers** (8 snapshot 2026-07-07) | authoritative list = settings.json; event table with per-hook detail: `rules/paths/hooks.md`. Newest: `session-start-plans` (027/US1) |
+| Skills | 28 | 14 | **count `ls .claude/skills`** (30 snapshot 2026-08-06) | 6 phase skills + `drillme` + `html-report` (003); 031: `best-of-n` + `project-onboard` CUT, `decision-stress-test` MERGED into `decide` (heavy tier), `escalate`→`unstuck`, `codex-consult`→`consult` (multi-model), +`pr-review` (new); `skill-advisor` restored in 023, auto-invoke-the-obvious since 031 |
+| Hooks | 15+ | 6 | **the ones `settings.json.hooks` registers** (6 snapshot 2026-08-05 — `code-validator` + `learning-inbox` cut in 030) | authoritative list = settings.json; event table with per-hook detail: `rules/paths/hooks.md` |
 | Slash commands | 10 | 4 | **count `ls .claude/commands/*.md`** (3 snapshot 2026-07-07) | `flow`, `sync-claude`, `role` (decide/explain-changes were thin command wrappers → pruned; they remain as skills) |
-| Rules | 7 | 2 + paths/ | **count `ls .claude/rules`** (3 + paths/ snapshot 2026-07-07) | `error-recovery.md`, `test-policy.md`, `model-uplift.md` (026) + `paths/{hooks,orchestration}.md` |
+| Rules | 7 | 2 + paths/ | **count `ls .claude/rules`** (3 + paths/ snapshot 2026-08-05) | `error-recovery.md`, `test-policy.md`, `skill-routing.md` (030 — replaced `model-uplift.md`) + `paths/{hooks,orchestration}.md` |
 | Output-styles | 1 (caveman) | 1 | **1 (poneglyph)** | es-ES natural register since feature 017/US3 |
 
 ## Security posture (personal setup — deliberate)
 
-`defaultMode: auto` with `skipDangerousModePermissionPrompt` + `skipAutoPermissionPrompt: true` is a **deliberately relaxed** permission flow, appropriate for a single-user personal config (NOT a SaaS — CLAUDE.md §NOT). The safety net is layered: (1) `permissions.deny` (secrets, `rm -rf /`, `curl|bash`); (2) `autoMode.hard_deny` (`rm -rf .claude`, force push…); (3) the `auto-approve.ts` hook block-list (`rm`, `git push`/`reset --hard`/`clean`/`branch -D`/`rebase -i`); (4) CC 2.1.183 native blocking of destructive git/IaC in auto mode. `auto-approve.ts` and `autoMode.hard_deny` are kept in sync **manually** — edit one, update the other (the hook header documents this).
+`defaultMode: auto` with `skipDangerousModePermissionPrompt` + `skipAutoPermissionPrompt: true` is a **deliberately relaxed** permission flow, appropriate for a single-user personal config (not a SaaS, by design). The safety net is layered: (1) `permissions.deny` (secrets, `rm -rf /`, `curl|bash`); (2) `autoMode.hard_deny` (`rm -rf .claude`, force push…); (3) the `auto-approve.ts` hook block-list (`rm`, `git push`/`reset --hard`/`clean`/`branch -D`/`rebase -i`); (4) CC 2.1.183 native blocking of destructive git/IaC in auto mode. `auto-approve.ts` and `autoMode.hard_deny` are kept in sync **manually** — edit one, update the other (the hook header documents this).
 
 ## Directory map (.claude/)
 
@@ -141,15 +141,15 @@ Test: "does the agent need this in EVERY prompt?" — no → skill.
 |---|---|---|
 | `skills/`, `commands/`, `rules/`, `hooks/`, `output-styles/`, `plans/` | Core system (counts live in the component table above — snapshots + count commands, never trust stale numbers) | documented above |
 | `docs/` | This file + `research-rigor.md` + `auxiliary-skills-matrix.md` (relocated here 2026-06-24) (`arch-h-*` and `lead-mode-*` deleted 2026-06-11 — superseded by `orchestrator-protocol/references/06` and the `CLAUDE_LEAD_MODE` note above) | on-demand references |
-| `workflows/` | `ultracode-audit.js` — saved Workflow script (worked example of find→verify pipeline) | live |
+| `workflows/` | Saved Workflow scripts: `ultracode-audit.js` (find→verify pipeline over the meta-system) · `flow-build.js` (cheap /flow back-half: build by waves + suite + ONE fresh reviewer) · `flow-cycle.js` (full /flow back-half: build with the `build` skill discipline + Phase-4 review that writes `review.md`; 031) · `sssf.js` (autonomous one-shot factory: plan→build→review→document with DETERMINISTIC gates from `scripts/gate.ts` instead of human ones; never commits — returns `suggested_commits` as data). Lógica determinista cubierta por `workflows/__tests__/{flow-cycle,sssf}.test.ts` | live |
 | `audits/` | Ad-hoc audit outputs (005, 009) | archive-like |
 | `evals/` | Golden-prompt regression harness (019): deterministic graders + runner + real-failure cases (19 as of 2026-07-02 — recount `cases.jsonl` rather than trusting this number). Tracked, NOT synced. Run per meta-config change | live |
-| `scripts/` | `flow-state.ts` — typed state.json/frontmatter mutations for /flow. Tracked, **synced since 027/US2** (RI-1 sync-trap class closed: synced components instruct `bun .claude/scripts/...`) | live |
+| `scripts/` | `flow-state.ts` — typed state.json/frontmatter mutations for /flow · `gate.ts` — deterministic validation of what an agent CLAIMS it did (artifacts, delta-vs-baseline diff cross-check, verdict self-consistency, suite, protected paths, self-integrity); ported from disler's sssf `gates.py` with delta-not-absolute-state, patterns derived from `settings.json`, and a self-integrity check. Tracked, **synced since 027/US2** (RI-1 sync-trap class closed: synced components instruct `bun .claude/scripts/...`) | live |
 | `learned/` | Runtime per-machine (gitignored) EXCEPT `best-of-n-log.md` (versioned pilot evidence, 019) | runtime |
 | `ccstatusline/` | Statusline module wired via settings (synced to `~/.config/ccstatusline/`) | live |
 | `config/` | `cost-budget.json` — phantom config nothing read | **deleted 2026-06-11** |
 | `data/`, `agent-memory/` | Telemetry remnants / empty dir | **deleted 2026-06-10 (017/US5)** |
-| `plans/_archive/` | Closed/abandoned plans (gitignored, on disk only). 017 + 019 archived 2026-06-11; 020 + 023 archived 2026-06-23; **001 + 018 + 021 + 022 archived 2026-06-24** after relocating their last live-referenced files (MIGRAR-Y-CUT): 001 auxiliary matrix → `docs/auxiliary-skills-matrix.md`; 018 decision-memo-W1 → `skills/best-of-n/references/`; 021 decision-memo → `skills/orchestrator-protocol/references/09-loops-analysis-source.md`; 022 decision-memo → `skills/project-onboard/references/graph-tooling-decision.md`. `_archive/` now has **zero functional dependents** — only historical prose cites archived plans by name. Active `plans/` holds only in-flight features + `templates/` + the two `_research-*` files | archive since 017/US6 |
+| `plans/_archive/` | Closed/abandoned plans (gitignored, on disk only). 017 + 019 archived 2026-06-11; 020 + 023 archived 2026-06-23; **001 + 018 + 021 + 022 archived 2026-06-24** after relocating their last live-referenced files (MIGRAR-Y-CUT): 001 auxiliary matrix → `docs/auxiliary-skills-matrix.md`; 018 decision-memo-W1 → `docs/018-evidence-basis-W1.md` (re-relocated in 031 when best-of-n was cut); 021 decision-memo → `skills/orchestrator-protocol/references/09-loops-analysis-source.md`; 022 decision-memo → `docs/graph-tooling-decision.md` (re-relocated in 031 when project-onboard was cut). `_archive/` now has **zero functional dependents** — only historical prose cites archived plans by name. Active `plans/` holds only in-flight features + `templates/` + the two `_research-*` files | archive since 017/US6 |
 
 ## MCP servers (session-connected) — decision 2026-06-10 (017/US8)
 

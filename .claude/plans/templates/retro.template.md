@@ -51,16 +51,16 @@ Las 5 preguntas obligatorias, etiquetadas con las 4 categorías canónicas del S
 
 | # | Cumplido en esta tarea? | Notas |
 |---|---|---|
-| I | ✅ / ❌ / N/A | <observación honesta> |
-| II | ✅ / ❌ / N/A | <observación honesta> |
 | III | ✅ / ❌ / N/A | <observación honesta> |
-| IV | ✅ / ❌ / N/A | <observación honesta> |
+| II | ✅ / ❌ / N/A | <observación honesta> |
 | V | ✅ / ❌ / N/A | <observación honesta> |
+| IV | ✅ / ❌ / N/A | <observación honesta> |
+| I | ✅ / ❌ / N/A | <observación honesta> |
 | VI | ✅ / ❌ / N/A | <observación honesta> |
-| VII | ✅ / ❌ / N/A | <observación honesta> |
-| VIII | ✅ / ❌ / N/A | <observación honesta> |
-| IX | ✅ / ❌ / N/A | <observación honesta> |
 | X | ✅ / ❌ / N/A | <observación honesta> |
+| VIII | ✅ / ❌ / N/A | <observación honesta> |
+| VII | ✅ / ❌ / N/A | <observación honesta> |
+| IX | ✅ / ❌ / N/A | <observación honesta> |
 
 ## Action items
 

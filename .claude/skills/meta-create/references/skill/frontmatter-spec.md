@@ -18,7 +18,7 @@ Full spec for every field allowed in skill frontmatter. Read this when authoring
 | `paths` | list | No | YAML list of globs — the skill auto-applies when touched files match (used by `security-audit`; see `rules/paths/orchestration.md`) |
 | `disable-model-invocation` | boolean | No | `true` = manual only (workflow), `false` = auto-trigger by keywords |
 | `argument-hint` | string | No | Args shown in autocomplete (e.g., `"[file-path or module]"`) |
-| `effort` | string | No | `low` (quick reference) \| `medium` (moderate analysis) \| `high` (deep audit) \| `xhigh` (deepest reasoning — review/decision/escalation skills). Project doctrine: low by default, pin a higher value ONLY when the skill genuinely needs it (critic/decision-stress-test/escalate/security-audit pin `xhigh`); otherwise omit and inherit the session effort. Never pin a value BELOW what the skill needs. |
+| `effort` | string | No | `low` (quick reference) \| `medium` (moderate analysis) \| `high` (deep audit) \| `xhigh` (deepest reasoning — review/decision/escalation skills). Project doctrine: low by default, pin a higher value ONLY when the skill genuinely needs it (critic/security-audit/unstuck pin `xhigh`; `decide`'s heavy tier escalates effort per-invocation instead of pinning). Otherwise omit and inherit the session effort. Never pin a value BELOW what the skill needs. |
 | `activation.keywords` | list | No | YAML list of keywords for auto-matching |
 | `for_agents` | list | No | Agents that benefit most from this skill |
 | `version` | string | No | Semantic version (default "1.0") |
@@ -44,7 +44,7 @@ A builder working on Django can self-invoke a `django-patterns` skill. A reviewe
 
 ## Description Format
 
-> **Language (feature 023, ratified 2026-06-23)**: the `description` and `when_to_use` fields — the skill **activation surface** — are written in **es-ES** (they are matched against Oriol's Spanish prompts; personal Spanish-only config). Technical identifiers (skill names, `hook`, `TDD`, `commit`, paths) stay in their original form; the `Keywords -` label stays literal (the `skill-activation` hook parses it); keywords themselves may be ES+EN. The skill **body** stays English. See CLAUDE.md §Language exception 2.
+> **Language (feature 023, ratified 2026-06-23)**: the `description` and `when_to_use` fields — the skill **activation surface** — are written in **es-ES** (they are matched against Oriol's Spanish prompts; personal Spanish-only config). Technical identifiers (skill names, `hook`, `TDD`, `commit`, paths) stay in their original form; the `Keywords -` label stays literal (the `skill-activation` hook parses it); keywords themselves may be ES+EN. The skill **body** stays English. This paragraph is the canonical spec of the exception (CLAUDE.md carries only the general register rule under §Base behavior).
 
 The `description` field follows this pattern (es-ES prose, third person):
 

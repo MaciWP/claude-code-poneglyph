@@ -6,7 +6,7 @@ description: Protocol for propagating a canonical-decision change across every s
 
 # Doctrine sweep — when a canonical decision changes
 
-When a feature changes a CANONICAL decision (a default, a rule, a dispatch target, a threshold — anything other components cite as doctrine), editing the owning file is half the job. Every site that states the old doctrine becomes a lie the moment the change lands (Commandment X — the system doesn't rot). This protocol is the other half.
+When a feature changes a CANONICAL decision (a default, a rule, a dispatch target, a threshold — anything other components cite as doctrine), editing the owning file is half the job. Every site that states the old doctrine becomes a lie the moment the change lands (Commandment IX — the system doesn't rot). This protocol is the other half.
 
 **Provenance**: feature 017's only Phase 4 MAJORs were stale-doc debt ("component → its docs, same HU"); feature 019/US2 ran this exact protocol for the panel→fresh-reviewer demotion (11 sites, 4 files, zero stale at verify); the 2026-06-11 census found the one place 019 missed it — a dead `skill-advisor` section surviving in always-loaded CLAUDE.md.
 

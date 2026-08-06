@@ -13,13 +13,13 @@ rather than cited weakly (Commandment II). Use only what is below.
 
 ## 1. Classify first: reversibility × stakes (Bezos one-way / two-way doors)
 
-Before scanning options, classify the decision. This is what tells you whether `decide`
-(fast 3-perspective scan) is even the right tool, or whether to escalate to
-`decision-stress-test`.
+Before scanning options, classify the decision. This is what picks the tier inside
+`decide`: the quick 3-perspective scan, or the heavy adversarial stress-test
+(`references/heavy/00-heavy-protocol.md`).
 
 | Class | Door | Nature | Process the framework prescribes |
 |---|---|---|---|
-| **Type 1** | one-way | Consequential AND irreversible / nearly irreversible — you can't get back through the door | "Made methodically, carefully, slowly, with great deliberation and consultation" → **not** `decide`; use `decision-stress-test` |
+| **Type 1** | one-way | Consequential AND irreversible / nearly irreversible — you can't get back through the door | "Made methodically, carefully, slowly, with great deliberation and consultation" → the **heavy tier** (adversarial stress-test) |
 | **Type 2** | two-way | Changeable / reversible — you can reopen the door and walk back | "Can and should be made quickly by high-judgment individuals or small groups" → **exactly** `decide`'s niche |
 
 > Source: Amazon 2015 Shareholder Letter (Jeff Bezos), SEC-filed primary —
@@ -27,7 +27,7 @@ Before scanning options, classify the decision. This is what tells you whether `
 
 **The test (apply literally):** *If we choose this and it's wrong, can we undo it and
 re-enter the door at acceptable cost?* Yes → Type 2 → proceed with the 3-perspective scan.
-No → Type 1 → stop and recommend `decision-stress-test` instead.
+No → Type 1 → run the heavy tier (`references/heavy/00-heavy-protocol.md`), not the quick scan.
 
 **Match rigor to class — this is prescriptive, not optional.** "Type 2 decisions *can and
 should* be made quickly." A fast scan on a reversible call is the correct process, not a
@@ -75,6 +75,6 @@ flagging the easy reversal path, over gathering more certainty.
 
 ## How `decide` uses this file
 
-1. **Step 1 (Prepare brief):** classify reversibility × stakes (§1). If Type 1 → recommend `decision-stress-test`, do not run the scan.
+1. **Step 0 (Tier classifier):** classify reversibility × stakes (§1). Type 1 → heavy tier; Type 2 → quick scan.
 2. **Step 2 (3 perspectives):** unchanged — Pragmatist / Innovator / Critic.
 3. **Step 3 (Synthesize):** shape the recommendation as Status / Context / Decision / Consequences (§2); if Critic over-demands rigor on a reversible call, cite §3.

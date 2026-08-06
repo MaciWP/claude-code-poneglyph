@@ -6,7 +6,7 @@ import { join } from "node:path";
 // Open-plans reminder (US2, plan 025). Inline scan — deliberately does NOT import
 // .claude/scripts/flow-state.ts: this hook is symlinked into ~/.claude/ (synced)
 // but scripts/ is NOT synced, so the import would break there. ~8 duplicated lines
-// beat a cross-tier coupling (Commandment III). Best-effort: never throws.
+// beat a cross-tier coupling (Commandment V). Best-effort: never throws.
 export function openPlansReminder(plansRoot = ".claude/plans"): string | null {
   let entries: ReturnType<typeof readdirSync>;
   try {
@@ -31,25 +31,18 @@ export function openPlansReminder(plansRoot = ".claude/plans"): string | null {
   if (open.length === 0) return null;
   return [
     "## Planes /flow abiertos (recordatorio, no bloqueante)",
-    "Hay lifecycles a medias. Ciérralos (critic/retro) o revisa con `bun .claude/scripts/flow-state.ts status`:",
+    "Hay lifecycles a medias — estado: `bun $HOME/.claude/scripts/flow-state.ts status`:",
     ...open,
+    "Acción de primer turno: si la tarea del usuario no lo impide, ofrece en UNA línea cerrar el más antiguo (`/flow --resume <slug>` → critic/retro pendiente) o archivarlo. Ofrécelo una sola vez; si el usuario lo ignora, no insistas el resto de la sesión.",
   ].join("\n");
 }
 
 export const LEAD_REMINDER = [
   "## Lead Orchestrator Mode (re-injected after compaction)",
   "This session operates as Lead Orchestrator — orchestrator-first, but bounded work (1-3 units) runs inline; do not over-delegate.",
-  "Spawn decision tree (operational core always-loaded in CLAUDE.md; expanded in orchestrator-protocol): 1 agent is forbidden; 1-3 units → inline; ≥4 independent units → Workflow (opt-in); massive read-only exploration → Explore (Haiku built-in). No custom work-agents.",
+  "Spawn decision tree (canonical in orchestrator-protocol; agent usage: CLAUDE.md §Agents for cheap reads — sonnet max, haiku if basic): 1 agent is forbidden; 1-3 units → inline; ≥4 independent units → Workflow (opt-in); massive read-only exploration → Explore (inherits session model). No custom work-agents.",
   "Lead default-allow gate is on: Edit/Write/Bash work directly unless touching sensitive paths or destructive ops. A single unit of work — even ≥5 files — stays inline ('isolation' is not a reason to spawn).",
   "Planning lives in Skill('tech-plan'); error diagnosis in Skill('diagnostic-patterns') — both Lead-invoked. Use Skill() for context, AskUserQuestion() to clarify.",
-].join("\n");
-
-export const ANTI_HALLUCINATION = [
-  "## Anti-Hallucination Checklist",
-  "1. Glob before asserting file exists",
-  "2. Read before Edit",
-  "3. Grep/LSP before asserting function exists",
-  "4. Ask if confidence < 70%",
 ].join("\n");
 
 export function getSessionMode(): string | null {
@@ -61,7 +54,9 @@ export function getSessionMode(): string | null {
 }
 
 export function buildOutput(plansRoot = ".claude/plans"): string {
-  const sections: string[] = [LEAD_REMINDER, ANTI_HALLUCINATION];
+  // ANTI_HALLUCINATION block cut (030): CLAUDE.md reloads at the same compaction
+  // instant (proven via instructions-loaded.log) and already carries the checklist.
+  const sections: string[] = [LEAD_REMINDER];
 
   const modeSection = getSessionMode();
   if (modeSection) {

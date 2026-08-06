@@ -17,7 +17,7 @@ Defines the **product-level scope** before any technical decision. The deliverab
 
 ## Underlying principle
 
-> "Perfect code of the wrong thing is worthless." (Commandment V)
+> "Perfect code of the wrong thing is worthless." (Commandment I)
 
 Most engineering pain comes from skipping the what/why and jumping into the how. This skill enforces the discipline: until the root problem and out-of-scope are explicit, no technical work proceeds. The hard gate 1->2 is non-negotiable (Commandment IV).
 
@@ -91,13 +91,13 @@ Las 5 preguntas obligatorias **en orden** antes de cerrar la fase. Si alguna que
 
 ### Step 3 (optional, `full` mode only) — Product perspectives in parallel
 
-Activate when the Lead declares complexity >60 OR the user requests `--full`. Spawn 3 perspectives in **a single message, 3 parallel Agent calls**, using prompts derived from `.claude/skills/decision-stress-test/references/01-perspectives.md`:
+Activate when the Lead declares complexity >60 OR the user requests `--full`. Spawn 3 perspectives in **a single message, 3 parallel Agent calls**, using prompts derived from `.claude/skills/decide/references/heavy/01-perspectives.md`:
 
 | Perspective | Source | Adaptation for Phase 1 |
 |---|---|---|
-| **Outsider** | `.claude/skills/decision-stress-test/prompts/outsider-agent.md` | Naive questions about the *problem framing*, not a technical decision. "Why this at all? Why now? Who actually has this problem?" — Input only, no tools. |
-| **Product** | inline prompt from `.claude/skills/decision-stress-test/references/01-perspectives.md` §9 | Value vs cost: roadmap fit, what NOT built because of this, what unlocks measurably. Tools: Read (docs/, roadmap), WebSearch. |
-| **User** | inline prompt from `.claude/skills/decision-stress-test/references/01-perspectives.md` §12 | Public-surface DX/UX implications: predictability, error story, migration path for existing consumers. Tools: Read, Grep. |
+| **Outsider** | `.claude/skills/decide/prompts/outsider-agent.md` | Naive questions about the *problem framing*, not a technical decision. "Why this at all? Why now? Who actually has this problem?" — Input only, no tools. |
+| **Product** | inline prompt from `.claude/skills/decide/references/heavy/01-perspectives.md` §9 | Value vs cost: roadmap fit, what NOT built because of this, what unlocks measurably. Tools: Read (docs/, roadmap), WebSearch. |
+| **User** | inline prompt from `.claude/skills/decide/references/heavy/01-perspectives.md` §12 | Public-surface DX/UX implications: predictability, error story, migration path for existing consumers. Tools: Read, Grep. |
 
 Each emits the standard perspective format (Position / Confidence / Pros / Contras with severity / Context needed / Questions). Output goes into the `spec.md` as a dedicated section "Voces externas (modo full)" preserving attribution.
 
@@ -149,7 +149,7 @@ The skill does NOT proceed to Phase 2. Only the user approves.
 | Petición trivial (typo, rename, 1-2 archivos) | Skill probablemente NO se activa (triaje del Lead la salta a Phase 3 directa) |
 | Petición arquitectural multi-dominio | Cuestionario 6-8 preguntas + drillme completo + perspectives en `full` |
 | Brief contradictorio o cambiante mid-questionnaire | Reabrir secciones afectadas, no forzar cierre con inconsistencias |
-| Research/audit feature (deliverable = report/análisis, no código) | Scope LIGERO: problema + corpus + rúbrica. Perspectives opcionales. Producir sustancia (research) temprano, formalizar incremental. Evita over-engineering pre-sustancia (Commandment III). Lección feature 002. |
+| Research/audit feature (deliverable = report/análisis, no código) | Scope LIGERO: problema + corpus + rúbrica. Perspectives opcionales. Producir sustancia (research) temprano, formalizar incremental. Evita over-engineering pre-sustancia (Commandment V). Lección feature 002. |
 
 Adaptación se declara honestamente en el output (`# Open questions` section o nota): "Drillme reducido por contenido autoexplicativo". Nunca silente.
 
@@ -184,10 +184,10 @@ Adaptación se declara honestamente en el output (`# Open questions` section o n
 
 | # | Cómo |
 |---|---|
-| I | Pregunta si no sabe; honesta sobre brief vago; no inventa intent |
+| III | Pregunta si no sabe; honesta sobre brief vago; no inventa intent |
 | II | Verifica premisas factuales del usuario antes de incluirlas (Glob/Grep si menciona archivos) |
-| III | Drillme detecta over-scope; out-of-scope explícito fuerza minimalismo |
-| V | La fase entera es "entender antes de actuar" |
+| V | Drillme detecta over-scope; out-of-scope explícito fuerza minimalismo |
+| I | La fase entera es "entender antes de actuar" |
 | VIII | Cuestionarios estructurados; meta-prompting para perspectives en `full` |
 
 ## Auxiliary skills invoked
@@ -199,7 +199,7 @@ Adaptación se declara honestamente en el output (`# Open questions` section o n
 | `anti-hallucination` | Before asserting any premise the user mentions (file/function/path/library exists) | Lead applies Glob/Grep/LSP manually before including the premise in `spec.md` |
 | `drillme` | Before closing Phase 1 (hard gate 1->2) — applies 5 phase questions + canonical 4 Socratic categories | Lead invokes `/drillme "Phase 1 closing for <NNN-slug>"` manually before approving |
 | `prompt-engineer` | When the user's initial brief is too vague (multiple interpretations, missing success criteria) and refinement is warranted before the questionnaire | Lead applies the 5-criteria rubric inline; refines manually |
-| `decision-stress-test` | Mode `full` only — reuses Outsider/Product/User perspective templates from `references/01-perspectives.md` (NOT invoking the full stress-test pipeline, only the prompt catalog) | Lead spawns the 3 perspectives directly with `Agent(subagent_type=general-purpose, prompt=<adapted from catalog>)` |
+| `decide` (heavy-tier catalog) | Mode `full` only — reuses Outsider/Product/User perspective templates from `decide/references/heavy/01-perspectives.md` (NOT invoking the full stress-test pipeline, only the prompt catalog) | Lead spawns the 3 perspectives directly with `Agent(subagent_type=general-purpose, prompt=<adapted from catalog>)` |
 
 > Skill-to-skill invocation is **probabilistic** per docs Anthropic + [issue #59968](https://github.com/anthropics/claude-code/issues/59968). Each row's fallback documents the Lead's manual recovery path. The downstream `tech-plan` skill (Phase 2) is NOT invoked here — it waits on the human hard gate 1->2.
 

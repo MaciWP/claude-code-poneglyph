@@ -162,6 +162,33 @@ export const skillTriggerParse: Grader = (transcript, caseSpec) => {
   return { pass: false, detail: `expected Skill(${expected}) invocation not found in transcript` };
 };
 
+// Dev-loop stage signals (CLAUDE.md §The dev loop, 029 US-dev). Category-counted:
+// a stage is "visible" when its wording appears in prose (code stripped). Simple
+// heuristics by design — on fail, suspect the eval first (README protocol).
+const STAGE_SIGNALS: [string, RegExp][] = [
+  ["goal", /\b(objetivo|goal)\b/i],
+  ["assumptions", /asuncion|asunción|assumption/i],
+  ["risks", /\briesgo|\brisk\b/i],
+  ["plan", /\bplan\b|\bplan:/i],
+];
+
+/** expected "stages-visible": a non-trivial coding reply must show >=2 PLAN-stage
+ * signals (goal/assumptions/risks/plan). expected "no-ceremony": a trivial reply
+ * must show <=1 (proportionality — CLAUDE.md dev loop intro). */
+export const devLoopStages: Grader = (transcript, caseSpec) => {
+  const prose = stripCode(transcript);
+  const present = STAGE_SIGNALS.filter(([, re]) => re.test(prose)).map(([name]) => name);
+  const visible = present.length >= 2;
+  if (caseSpec?.expected === "no-ceremony") {
+    return visible
+      ? { pass: false, detail: `ceremony on trivial task: stages [${present.join(", ")}]` }
+      : { pass: true, detail: `proportional: ${present.length} stage signal(s)` };
+  }
+  return visible
+    ? { pass: true, detail: `stages visible: [${present.join(", ")}]` }
+    : { pass: false, detail: `dev-loop PLAN stage not visible (found: [${present.join(", ")}])` };
+};
+
 export const graders: Record<string, Grader> = {
   bannedOpeners,
   esEsDetect,
@@ -169,4 +196,5 @@ export const graders: Record<string, Grader> = {
   labelPresence,
   skillTriggerParse,
   calqueDetect,
+  devLoopStages,
 };

@@ -8,7 +8,7 @@ description: SVG-first diagram & chart patterns for self-contained reports + the
 
 How `html-report` embeds **diagrams** (flow, comparison) and **charts** (bars, score, decision matrix) while staying **self-contained**. The generator composes inline SVG by hand — same pattern already proven in the templates (gauge, severity-bar). No charting library, no JS by default.
 
-> **Environment fact (re-verified 2026-06-08 via `command -v`)**: `node` / `npx` / `bunx` / `bun` / `python3` / `pandoc` ARE present (`/opt/homebrew/bin`); `typst` / `weasyprint` / `chromium` are absent. (This corrects the prior "2026-06-03: node/npx absent" claim, which was stale.) Consequences: a **generation-time** step (e.g. running Observable Plot or `mmdc` via `npx` to emit SVG, then inlining it) IS now possible. **SVG-by-hand remains the default** — not because runtime is missing, but because it guarantees the artefact is **self-contained with zero generation-time dependencies** (Cmd III). Generation-time tooling is an opt-in that must degrade to the hand path if the package/network is unavailable.
+> **Environment fact (re-verified 2026-06-08 via `command -v`)**: `node` / `npx` / `bunx` / `bun` / `python3` / `pandoc` ARE present (`/opt/homebrew/bin`); `typst` / `weasyprint` / `chromium` are absent. (This corrects the prior "2026-06-03: node/npx absent" claim, which was stale.) Consequences: a **generation-time** step (e.g. running Observable Plot or `mmdc` via `npx` to emit SVG, then inlining it) IS now possible. **SVG-by-hand remains the default** — not because runtime is missing, but because it guarantees the artefact is **self-contained with zero generation-time dependencies** (Cmd V). Generation-time tooling is an opt-in that must degrade to the hand path if the package/network is unavailable.
 
 ## Decision rule — SVG-by-hand vs JS opt-in
 
@@ -18,7 +18,7 @@ How `html-report` embeds **diagrams** (flow, comparison) and **charts** (bars, s
 | Comparison / bars / score / decision matrix | **SVG + CSS by hand** | Data geometry is trivial; reuse gauge/sevbar pattern |
 | Dense graph (>~10 nodes, crossing edges, auto-layout needed) | **JS opt-in** (`mermaid.js`) | Hand layout not reasonable; declare the dependency |
 
-**JS opt-in is a declared exception, not a default.** When taken: inline `mermaid.js` OR a CDN `<script>` — note in the document header that it is no longer pure-offline (CDN = network dependency; inline bundle = +hundreds of KB). Prefer SVG-by-hand whenever the diagram is simple enough (Cmd III, spec AC2/AC4).
+**JS opt-in is a declared exception, not a default.** When taken: inline `mermaid.js` OR a CDN `<script>` — note in the document header that it is no longer pure-offline (CDN = network dependency; inline bundle = +hundreds of KB). Prefer SVG-by-hand whenever the diagram is simple enough (Cmd V, spec AC2/AC4).
 
 > Open question (calibrate in use): the exact node/edge count where hand-SVG stops being reasonable. Start conservative (~8 nodes) and revise.
 
@@ -65,7 +65,7 @@ Reuse the existing CSS bar pattern (no SVG needed): a track `<div>` + a fill `<d
 
 ### 4 — Decision matrix (consumed by decision.template — US3)
 
-A weighted options×criteria grid: an HTML `<table>` whose score cells carry a small inline bar (CSS width = score/max) colored by threshold, plus a weighted total column. Pure HTML+CSS, no SVG library. US3's `decision.template.html` embeds this as its core component; this section is its single source — do NOT re-author it elsewhere (Cmd X).
+A weighted options×criteria grid: an HTML `<table>` whose score cells carry a small inline bar (CSS width = score/max) colored by threshold, plus a weighted total column. Pure HTML+CSS, no SVG library. US3's `decision.template.html` embeds this as its core component; this section is its single source — do NOT re-author it elsewhere (Cmd IX).
 
 ```html
 <table class="dmatrix"><thead><tr><th>Opción</th><th>Precio (×3)</th><th>Panel (×2)</th><th>Total</th></tr></thead>

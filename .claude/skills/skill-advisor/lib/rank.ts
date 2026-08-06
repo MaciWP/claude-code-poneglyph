@@ -21,6 +21,21 @@ export interface RankedSkill extends SkillMeta {
 }
 
 export const SHORTLIST_MAX = 5;
+
+/**
+ * Census-derived usage tiers (031): 2 = high (≥5 launches), 1 = some use,
+ * 0 (absent) = zero recorded launches. Used ONLY as a tie-breaker — lexical
+ * score always dominates. Static by design (no I/O per invocation); refresh
+ * this map at each skills census (source: skills-census docs in plans/).
+ * Snapshot: 2026-08-05 census + 031 renames (codex-consult→consult, escalate→unstuck).
+ */
+export const USAGE_TIER: Record<string, number> = {
+  "tech-plan": 2, scope: 2, drillme: 2, "tdd-design": 2, "prompt-engineer": 2,
+  build: 2, critic: 2, retro: 2,
+  "html-report": 1, "skill-advisor": 1, "meta-settings-cookbook": 1,
+  "worktrees-bjumper": 1, "meta-create": 1, graphify: 1,
+  "diagnostic-patterns": 1, consult: 1, "anti-hallucination": 1,
+};
 const HEAD_BYTES = 2_500;
 const STOP = new Set([
   "the", "and", "for", "with", "que", "los", "las", "una", "del", "por", "con",
@@ -55,7 +70,12 @@ export function rank(task: string, skills: SkillMeta[]): RankedSkill[] {
   }
 
   return [...byName.values()]
-    .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name))
+    .sort(
+      (a, b) =>
+        b.score - a.score ||
+        (USAGE_TIER[b.name] ?? 0) - (USAGE_TIER[a.name] ?? 0) ||
+        a.name.localeCompare(b.name),
+    )
     .slice(0, SHORTLIST_MAX);
 }
 

@@ -8,7 +8,7 @@ The capability neither `html-report` nor the builtin `frontend-design` has: **re
 - Self-check after generating a report, before sharing.
 - Auditing an external/legacy page for AI-slop tells.
 
-## How (markdown-mode — no JS by default, Cmd III)
+## How (markdown-mode — no JS by default, Cmd V)
 
 The model performs the critique guided by the references; no framework required.
 
@@ -41,7 +41,7 @@ Verdict: FAIL — 1 BLOCKER, 2 MAJOR
 
 ## Optional deterministic helper
 
-Contrast-ratio math can be extracted to `scripts/contrast-check.ts` (with a paired test, red→green) IF deterministic checking is wanted. Default: the model estimates contrast guided by the WCAG rule. Keep markdown-mode unless precise automated contrast auditing is required (OQ3 / Cmd III).
+Contrast-ratio math can be extracted to `scripts/contrast-check.ts` (with a paired test, red→green) IF deterministic checking is wanted. Default: the model estimates contrast guided by the WCAG rule. Keep markdown-mode unless precise automated contrast auditing is required (OQ3 / Cmd V).
 
 ## Source
 Pattern from impeccable (deterministic + LLM critique layering) + critic skill (severity vocabulary). Provenance: `.claude/plans/_research-skill-evolution-2026-05-29.md` Part B.

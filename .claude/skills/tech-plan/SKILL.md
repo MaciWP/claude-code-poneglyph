@@ -6,7 +6,7 @@ description: |
   Keywords - tech-plan, tareas, roadmap, descomponer, HU, atomizar, DAG, dependencies,
   parallel waves, gap analysis, classification, planificar, plan-tecnico, phase-2, fase-2
 disable-model-invocation: false
-argument-hint: "[--quick|--standard|--full]"
+argument-hint: ""
 when_to_use: |
   "descompón en tareas", "haz el roadmap", "atomiza en HUs", "plan técnico", "break into tasks", "technical plan", "build the DAG"
 ---
@@ -37,7 +37,7 @@ Most planning pain comes from: (a) reinventing wheels that already exist in the 
 | No approved `spec.md` exists | Phase 1 first — invoke `scope` skill |
 | `spec.md` has `status: draft` (not approved) | Hard gate 1->2 not closed — escalate to user |
 | Trivial mechanical change (rename, typo, formatting) | Lead acts directly; tech-plan is overhead |
-| `spec.md` is approved but `mode: minimal` | Skip Phase 2; jump to Phase 3 directly |
+| ~~`mode: minimal`~~ (LEGACY — modes eliminated 029/US12; /flow is always full) | Unreachable; a phase that doesn't apply is skipped with justification instead |
 | Mid-implementation bug fix | Phase 3 `build` + `diagnostic-patterns` handle this |
 
 ## Initial detection
@@ -57,7 +57,7 @@ Declare on the first line of the resulting `tasks/index.md` resumen: `Level: Qui
 |---|---|---|---|
 | **Quick** | complexity <30 OR clear scope (1-2 files, no external research) OR `--quick` | ≤2 (`01-discovery` + `04-classification-waves`) | ~3-5 min |
 | **Standard** (default) | complexity 30-60 OR ambiguity about dependencies OR `--standard` | 3-5 (+ `02-research`, `03-gap-analysis`) | ~10 min |
-| **Full** | complexity >60 OR multi-domain OR architectural risk OR `--full` | 6 (all references) + decision-stress-test if 2+ alternatives | ~20-30 min |
+| **Full** | complexity >60 OR multi-domain OR architectural risk OR `--full` | 6 (all references) + decide (heavy tier) if 2+ alternatives | ~20-30 min |
 
 Escalation: start at Quick; escalate to Standard if Quick uncovers uncertainty; escalate to Full if Standard reveals multi-domain coupling or security-critical paths. Do not splice levels — restart at higher level.
 
@@ -139,7 +139,7 @@ Coverage: 4/4 canonical Socratic categories (location/approach/context/failure).
 
 ### Step 8 — Stress-test alternatives (Full mode only)
 
-If Full mode AND 2+ technically reasonable alternatives surfaced → invoke `decision-stress-test` skill with the alternatives. Wait for verdict before closing the plan. Skip in Quick/Standard.
+If Full mode AND 2+ technically reasonable alternatives surfaced → invoke `decide` (heavy tier) skill with the alternatives. Wait for verdict before closing the plan. Skip in Quick/Standard.
 
 ### Step 9 — Construct DAG
 
@@ -188,7 +188,7 @@ For Full level with complexity >60, optionally invoke cross-validation: a second
 
 Before reporting close: run the checklist in `references/06-quality-gates.md`. Key checks:
 - All HUs have role/action/benefit + AC + depends_on + files + tdd_mode.
-- **Execution-prompt rubric pass**: score each US's "Execution prompt (Phase 3 input)" block against `.claude/skills/prompt-engineer/scoring-criteria.md` (do not duplicate the rubric — Read it). A block scoring <70 gets refined BEFORE gate 2→3; the score is a doubt signal, not a hard stop (CLAUDE.md §Skill routing).
+- **Execution-prompt rubric pass**: score each US's "Execution prompt (Phase 3 input)" block against `.claude/skills/prompt-engineer/scoring-criteria.md` (do not duplicate the rubric — Read it). A block scoring <70 gets refined BEFORE gate 2→3; the score is a doubt signal, not a hard stop.
 - DAG has no cycles (cycle = smell, refactor).
 - Parallel Efficiency Score >=50%.
 - Anti-hallucination applied (every claim about existing code verified).
@@ -228,7 +228,7 @@ The skill does NOT proceed to Phase 3. Only the user approves.
 |---|---|---|
 | `anti-hallucination` | Before asserting any file/function/path/library exists in the project (Glob/Grep/LSP verify required for every claim in HUs) | Lead applies Glob/Grep/LSP manually before the HU is finalized |
 | `drillme` | Before closing Phase 2 (hard gate 2->3) — applies 6 phase questions + canonical 4 Socratic categories | Lead invokes `/drillme "Phase 2 plan closing for <NNN-slug>"` manually before approving |
-| `decision-stress-test` | Full mode + 2+ technically reasonable alternatives surfaced — stress-test before committing | Lead invokes `/decision-stress-test "<the choice>"` manually; downgrade plan confidence one tier if skipped |
+| `decide` (heavy tier) | Full mode + 2+ technically reasonable alternatives surfaced — stress-test before committing | Lead invokes `/decide "<the choice>"` manually (its classifier lands on the heavy tier); downgrade plan confidence one tier if skipped |
 | `lsp-operations` | When understanding real code dependencies (findReferences, hover, goToDefinition) before writing HUs | Fallback to Grep + Read; flag the precision gap in `tasks/index.md` Research |
 | `prompt-engineer` | When reviewing delegation prompts that the plan will hand off to `build` skill in Phase 3 (Arch H compliance) | Lead applies 5-criteria rubric inline to the delegation prompts |
 | `meta-create` | When any HU plans to create a Claude Code extension (skill/command/hook/rule/MCP/plugin/agent) | Lead reads `meta-create` references manually to validate canon before HU is finalized |
@@ -241,7 +241,7 @@ The skill does NOT proceed to Phase 3. Only the user approves.
 
 | Signal | Adaptation |
 |---|---|
-| `spec.md` complexity ≤30, 1-2 known files | Quick level; skip Context7/WebFetch; 1-3 simple HUs; skip decision-stress-test; minimal references loaded |
+| `spec.md` complexity ≤30, 1-2 known files | Quick level; skip Context7/WebFetch; 1-3 simple HUs; skip decide (heavy tier); minimal references loaded |
 | `spec.md` mentions non-trivial external APIs | Standard+ obligatory; Context7 mandatory; verify version + breaking changes |
 | `spec.md` is multi-domain | Build 2-3 sub-DAGs per domain; identify interfaces between domains; declare in Resumen |
 | `spec.md` is architectural (>60) | Full level; stress-test if alternatives; team mode cross-validation |
@@ -284,9 +284,9 @@ Declare adaptation in `tasks/index.md`: "Level X — modo Y por motivo Z. Saltad
 | # | Cómo |
 |---|---|
 | II | Context7/Grep/WebFetch + LSP before asserting any technical claim |
-| III | Drillme drills 1 + 3 detect over-engineering and non-atomicity |
-| V | Obligatory research = understand before planning |
-| VII | DAG identifies parallelism; Parallel Efficiency Score >=50% required |
+| V | Drillme drills 1 + 3 detect over-engineering and non-atomicity |
+| I | Obligatory research = understand before planning |
+| X | DAG identifies parallelism; Parallel Efficiency Score >=50% required |
 | VIII | Structured questionnaires + targeted research; delegation prompts reviewed by `prompt-engineer` |
 
 ## Legacy migration (planner-protocol)
@@ -307,7 +307,7 @@ This skill implements decision **MIGRAR-Y-CUT** on the legacy `planner-protocol`
 - Legacy `planner-protocol/SKILL.md` — entire skill cut (this replaces it)
 - Legacy `commands/planner.md` wrapper — cut (skills are invoked as `/<skill-name>` directly per docs Anthropic 2026)
 
-References updated across the repo (CLAUDE.md §When to delegate, orchestrator-protocol references, agents/builder|reviewer|scout, rules/error-recovery+test-policy, hooks/post-compact.ts) — see commit message.
+References updated across the repo (orchestrator-protocol §Delegation doctrine + references, agents/builder|reviewer|scout, rules/error-recovery+test-policy, hooks/post-compact.ts) — see commit message.
 
 ## Content map
 

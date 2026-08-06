@@ -39,7 +39,7 @@ The canonical 4 categories (`[location]` / `[approach]` / `[context]` / `[failur
 
 - Reaching a foundational fact (physics, business constraint, regulatory) → root found.
 - Answers loop ("why X? because Y. why Y? because X") → root is ambiguous; need external research.
-- 5 iterations without clarity → drillme can't resolve this alone; escalate to `decision-stress-test` or external investigation.
+- 5 iterations without clarity → drillme can't resolve this alone; escalate to `decide` (heavy tier) or external investigation.
 
 ### Anti-patterns
 
@@ -174,8 +174,8 @@ Cap: combining is for high-stakes decisions. For routine drillme, stick to one p
 
 If after applying 1-2 complementary patterns the decision still doesn't crystallize → drillme has reached its ceiling. Options:
 
-1. **`decision-stress-test`**: spawn 5-12 perspectives in parallel + cross-debate + synthesis + vote.
+1. **`decide` (heavy tier)**: spawn 5-12 perspectives in parallel + cross-debate + synthesis + vote.
 2. **External research**: maybe the decision needs Context7/WebFetch + data the user doesn't have.
 3. **Defer**: not all decisions need to be made now. Document open questions; revisit later.
 
-Drillme closes gaps by asking the user. When the blocker is a genuine disagreement or the decision still won't crystallize after a full sweep, that is honest signal to escalate to a multi-voice debate (`decision-stress-test`), not to keep re-asking.
+Drillme closes gaps by asking the user. When the blocker is a genuine disagreement or the decision still won't crystallize after a full sweep, that is honest signal to escalate to a multi-voice debate (`decide` (heavy tier)), not to keep re-asking.

@@ -8,7 +8,7 @@
 |---|---|---|
 | `anti-hallucination` | Verificar premisas factuales (Glob/Grep/LSP antes de afirmar) | false (auto) |
 | `drillme` | Socratic check (4 categorías canónicas + complementarios) | false (auto) |
-| `decision-stress-test` | 5-12 perspectives en paralelo + cross-debate + synthesis + vote | false |
+| `decide` (heavy tier) | 5-12 perspectives en paralelo + cross-debate + synthesis + vote | false |
 | `diagnostic-patterns` | Debug, retry, recovery, 5-whys, circuit breaker, saga | false |
 | `lsp-operations` | Semantic navigation: goToDefinition, findReferences, hover, call hierarchy | false |
 | `review-patterns` | Quality (SOLID/DRY/complexity) + Performance (N+1/leaks/async) modes | false |
@@ -21,7 +21,7 @@
 
 ## Cruce: qué phase skill invoca a qué auxiliary
 
-| Phase skill | anti-hallucination | drillme | decision-stress-test | diagnostic-patterns | lsp-operations | review-patterns | prompt-engineer | explain-changes | meta-create | meta-settings-cookbook | security-audit | simplify |
+| Phase skill | anti-hallucination | drillme | decide (heavy tier) | diagnostic-patterns | lsp-operations | review-patterns | prompt-engineer | explain-changes | meta-create | meta-settings-cookbook | security-audit | simplify |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | **scope** (F1) | ✅ premisas factuales del brief | ✅ cierre fase | ⚠️ modo full (perspectives producto) | — | — | — | ✅ brief vago → refinar | — | — | — | — | — |
 | **tech-plan** (F2) | ✅ archivos/funciones/patrones del proyecto | ✅ cierre fase | ✅ modo full (2+ alternativas técnicas) | — | ✅ entender deps reales del código | — | ✅ review delegation prompts | — | ✅ si plan crea skills/hooks/rules | ✅ si plan toca CLAUDE.md/settings | — | — |

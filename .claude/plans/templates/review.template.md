@@ -37,7 +37,7 @@ status: draft
 - [ ] Cobertura de tests respeta `test-policy.md`
 - [ ] Mismo estilo de programación que el resto del proyecto (referencias: <files>)
 - [ ] Sin duplicación introducida
-- [ ] No hay sobre-ingeniería (Commandment III)
+- [ ] No hay sobre-ingeniería (Commandment V)
 - [ ] Nombres consistentes y legibles
 
 ### Security

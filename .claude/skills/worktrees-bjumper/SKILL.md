@@ -6,8 +6,11 @@ description: >
   commands, parameters, pros/cons and precautions — does not prescribe a single
   workflow.
   Use when: devenv, worktree, sandbox Binora, entorno local, doctor, create env,
-  puertos, seed, JRV, full-stack local.
-  Keywords - devenv, worktree, bjumper, binora, sandbox, doctor, create, remove
+  puertos, seed, JRV, full-stack local — y para orientarse: en qué worktree estoy,
+  dónde está el repo principal, qué repos hermanos tiene este env, dónde viven los docs.
+  Keywords - devenv, worktree, bjumper, binora, sandbox, doctor, create, remove,
+  topologia, topología, workspace, en que worktree, en qué worktree, donde esta el repo,
+  dónde está el repo, repos hermanos, navega el workspace
 ---
 
 # worktrees-bjumper
@@ -199,6 +202,15 @@ You may combine commands any way the task needs. Illustrative only:
 
 Deeper notes: `references/cli-contract.md`, `references/troubleshooting.md`,  
 `references/usage-patterns.md`. Prompt snippets: `examples/prompts.md`.
+
+## Workspace topology (map + navigation)
+
+Where everything lives and how to navigate it organically — main repos, the
+`worktrees/<env>/<repo>` layout, env siblings, doc locations per repo, and the
+session-context caveat (uncommitted plan state does NOT travel between
+checkouts): `references/workspace-topology.md`. Discovery primitives:
+`git worktree list` · `ls "$(dirname "$(git rev-parse --show-toplevel)")"` ·
+`ls <root>/worktrees/`.
 
 ## Keep in sync
 

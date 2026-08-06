@@ -82,9 +82,9 @@ Both modes produce structured output. Quality mode uses `Code Quality Review: [C
 
 | # | Cómo |
 |---|---|
-| III | Drives toward simple-by-default code (SOLID/DRY, decompose complexity, kill premature abstraction) |
+| V | Drives toward simple-by-default code (SOLID/DRY, decompose complexity, kill premature abstraction) |
 | IV | Quality findings feed the `critic` gate — review is verification, not opinion |
-| VII | Performance mode targets real bottlenecks (N+1, memory leaks, blocking async) with evidence |
+| X | Performance mode targets real bottlenecks (N+1, memory leaks, blocking async) with evidence |
 
 ## Related
 

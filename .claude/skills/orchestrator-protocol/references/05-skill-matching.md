@@ -18,7 +18,7 @@ description: Keywords→skills table, task type detection, priority scoring, syn
 | code quality, code smells, SOLID, complexity, duplication | `review-patterns` |
 | validate, verify, check, exists, hallucination, confidence | `anti-hallucination` |
 | decide, decision, choose, evaluate, trade-off | `decide` |
-| stress-test, devil's advocate, challenge decision, pre-mortem | `decision-stress-test` |
+| stress-test, devil's advocate, challenge decision, pre-mortem | `decide` (heavy tier) |
 | explain, walkthrough, diff, learn, onboarding | `explain-changes` |
 | prompt, generar prompt, refine, vague, agent prompt, meta-prompting | `prompt-engineer` |
 | CLAUDE.md, settings.json, permissions, env vars | `meta-settings-cookbook` |

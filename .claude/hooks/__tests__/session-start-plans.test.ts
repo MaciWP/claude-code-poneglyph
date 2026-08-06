@@ -6,7 +6,7 @@ import { join } from "node:path";
 // (guard verified at post-compact.ts:87) — if the guard ever disappears, this
 // import would spray stdout into every test run.
 import { openPlansReminder } from "../post-compact";
-import { buildSessionStartOutput } from "../session-start-plans";
+import { buildSessionStartOutput, bjumperWorkspaceHint } from "../session-start-plans";
 
 function plansRootWith(specs: Array<{ name: string; content: string | null }>): string {
   const root = mkdtempSync(join(tmpdir(), "ssp-plans-"));
@@ -54,5 +54,21 @@ describe("session-start-plans (US1, plan 027)", () => {
     ]);
     // Same scan, same output — the hook is a thin main over the shared export.
     expect(buildSessionStartOutput(root)).toBe(openPlansReminder(root));
+  });
+});
+
+describe("bjumperWorkspaceHint (030 — worktrees-bjumper by location)", () => {
+  test("cwd inside the Bjumper workspace emits the skill hint", () => {
+    const hint = bjumperWorkspaceHint("/Users/oriol/Desktop/Bjumper/REPOSITORIOS/PYTHON/binora-backend");
+    expect(hint).toContain("worktrees-bjumper");
+  });
+
+  test("Windows-style separators also match", () => {
+    expect(bjumperWorkspaceHint("C:\\dev\\Bjumper\\REPOSITORIOS\\PYTHON\\binora-backend")).not.toBeNull();
+  });
+
+  test("outside the workspace (poneglyph, home, other repos) stays silent", () => {
+    expect(bjumperWorkspaceHint("/Users/oriol/Desktop/Bjumper/PERSONAL/REPO/claude-code-poneglyph")).toBeNull();
+    expect(bjumperWorkspaceHint("/Users/oriol")).toBeNull();
   });
 });

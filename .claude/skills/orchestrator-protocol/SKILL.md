@@ -43,11 +43,11 @@ Execute steps 1-5 IN ORDER before responding. No exceptions.
 | Clear (pragmatically obvious intent) | Continue |
 | Feature-scope task (multi-phase work) | Suggest `/flow <task>` to the user |
 
-For architectural/comparison decisions → suggest `/decide` to the user first (`decide` is manual-only: `disable-model-invocation: true`, so the Lead cannot invoke it via `Skill()`); the inline alternative is `decision-stress-test`.
+For architectural/comparison decisions → `Skill('decide')` (031: Lead-invocable, tiered — quick 3-lens scan for reversible calls, heavy 5-12 perspective stress-test for irreversible ones; the classifier picks).
 
 > **Inside a `/goal` loop**: `/goal` is a persistence loop, not a router — it does NOT activate skills per turn. But the routing core (this skill's §1 triage + the skill-routing layer) is already **always-loaded in CLAUDE.md**, so the Lead routes regardless. Re-run the triage **every turn**, not just the first. For feature-shaped work, **wrap it in `/flow` rather than improvising** — deterministic phase→skill wiring beats best-effort matching (memory: skill-wiring-over-autotrigger). Inside `/flow`, each phase MUST run via its `Skill()` (scope/tech-plan/tdd-design/build/critic/retro) — invoking it loads the procedure; the work still runs inline (not delegation). For autonomous goals (no human-in-loop requested), route directly without pausing to "suggest"; the goal directive already authorizes proceeding. When unsure which skills apply, run `skill-advisor` (propose→ratify shortlist).
 
-**Multi-round questioning** (006): when a prompt is ambiguous or a plan needs alignment, ask in rounds while genuine doubt remains — include lateral / improvement questions — rather than stopping at one round; converge and say so when no real doubt is left (calibrated, Commandment III). Use `drillme` for iteration mechanics. Principle: CLAUDE.md §Communication & Honesty Protocol.
+**Multi-round questioning** (006): when a prompt is ambiguous or a plan needs alignment, ask in rounds while genuine doubt remains — include lateral / improvement questions — rather than stopping at one round; converge and say so when no real doubt is left (calibrated, Commandment V). Use `drillme` for iteration mechanics. Principle: `output-styles/poneglyph.md` §Honesty mechanics (Commandment III).
 
 > Prompt quality refinement, "what is a good prompt" rubric, ambiguity detection → use the `prompt-engineer` skill (Keywords: prompt, generar prompt, refine prompt, vague prompt, ambiguous). This is the canonical source — do not re-implement scoring here.
 
@@ -61,9 +61,24 @@ For architectural/comparison decisions → suggest `/decide` to the user first (
 
 Write fan-out (≥4 independent WRITE units via Workflow) is **explicit user opt-in only** (keyword "ultracode" or a direct ask) — never auto-launched. This doctrine cites evidence, not fashion — revisable via retro if agent quality materially changes.
 
+#### Model routing for delegated units (029/US9 — canonical table)
+
+The always-loaded rule is CLAUDE.md Cmd X + §Agents for cheap reads ("cheapest capable model; sonnet max, haiku if very basic"). This is the full table — every `Agent()`/`agent()` call sets its model explicitly, never inheriting the Lead's:
+
+| Unit | Model |
+|---|---|
+| Exploration / read-only sweeps / summaries | **sonnet** (haiku when very basic) |
+| Bulk mechanical (grep/format/inventory) | **haiku** |
+| Web research | **sonnet** |
+| Delegated build unit (explicit opt-in only) | **sonnet** |
+| High-risk verify/judge | **opus**, with the reason stated |
+| Fable/Mythos-class in units | **NEVER** — Lead only |
+
+The `Workflow` tool sits behind `permissions.ask` (global settings) — every launch prompts the user; `Agent` stays auto-allowed but bound by this table.
+
 #### Spawn decision tree — expanded reference
 
-> **The operational core is always-loaded in `CLAUDE.md` §Lead Orchestrator Mode** (inline-first, 1-agent forbidden, ≥4 read-only → Workflow). This is the full diagram + principles; other skills link here for the detail, not for the always-on rule:
+> **The operational core is always-loaded in `CLAUDE.md`** (§Agents for cheap reads + Cmd X: inline-first for write work, agents for cheap reads). This is the full diagram + principles; other skills link here for the detail, not for the always-on rule:
 
 ```mermaid
 graph TD
@@ -82,7 +97,7 @@ graph TD
 | **P1** | 1 agente = **PROHIBIDO** | Única excepción: el **fresh-context reviewer** de critic Phase 4 (read-only, correctness/requirements — su valor ES el contexto fresco; evidencia 018 W1 D1/D3, feature 019). Fuera de eso: no paraleliza; solo aísla contexto (que `/clear` limpia); encarece sin retorno. |
 | **P2** | "isolation" **no es excusa** | El main actúa y se ensucia antes que pagar 1 agente. **"≥5 files" NO es trigger de spawn → inline.** |
 | **P3** | Umbral **≥4** + **read-only** | 1-3 unidades → inline. ≥4 read-only → Workflow. ≥4 de ESCRITURA → inline secuencial salvo opt-in explícito del usuario. |
-| **P4** | research sí, code-review NO se delega en panel | Research delegada → ≥4 en paralelo (search barato `Explore`); si <4 → inline. Code review = checks mecánicos + **1 fresh-context reviewer** (P1-exception); panel ≥4 SOLO para decisiones (`decision-stress-test`) — evidencia 018 W1/W2 (feature 019). |
+| **P4** | research sí, code-review NO se delega en panel | Research delegada → ≥4 en paralelo (search barato `Explore`); si <4 → inline. Code review = checks mecánicos + **1 fresh-context reviewer** (P1-exception); panel ≥4 SOLO para decisiones (`decide` (heavy tier)) — evidencia 018 W1/W2 (feature 019). |
 | **P5** | Core en CLAUDE.md, detalle aquí | El núcleo operacional vive always-loaded en CLAUDE.md; este árbol es la referencia expandida. El resto enlaza aquí para el detalle, no redefine umbrales. |
 | **P6** | Fix = borrado + enlazar | Sin maquinaria de enforcement; los patrones de la Workflow tool se **enlazan**, no se copian. |
 | **P7** | spawn-decision ≠ intra-orchestration | ≥4 gobierna la DECISIÓN de spawnear. Agentes coordinándose **dentro** de un team/workflow ya spawneado (p.ej. Four-Eyes generator→validator) no son un nuevo spawn. |

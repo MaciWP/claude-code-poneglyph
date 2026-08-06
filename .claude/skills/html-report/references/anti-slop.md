@@ -1,6 +1,6 @@
 # Anti-slop — bans + tells
 
-The single highest-leverage lever for non-generic output is a **negative vocabulary**: concrete bans + a catalog of "AI tells". This reference is the **canonical home** for those — `SKILL.md` points here instead of restating (Cmd X).
+The single highest-leverage lever for non-generic output is a **negative vocabulary**: concrete bans + a catalog of "AI tells". This reference is the **canonical home** for those — `SKILL.md` points here instead of restating (Cmd IX).
 
 ## Why AI design is generic (root cause)
 

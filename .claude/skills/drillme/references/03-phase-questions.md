@@ -128,7 +128,7 @@ Before closing the feature.
 
 ### Closing rule
 
-If question 5 surfaces a Commandment violation → MUST be reported in retro.md "Commandments check" section (Commandment I — radical honesty, no softening). The feature can still close, but the violation is documented for future sessions.
+If question 5 surfaces a Commandment violation → MUST be reported in retro.md "Commandments check" section (Commandment III — radical honesty, no softening). The feature can still close, but the violation is documented for future sessions.
 
 ## Loading rule for drillme
 

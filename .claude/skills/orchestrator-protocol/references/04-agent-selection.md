@@ -66,7 +66,7 @@ The "Suggested skills to Read (for delegation)" column lists `.claude/skills/<na
 | security, audit, vulnerability, owasp | `Skill('critic')` + `Skill('security-audit')` | security-audit | security-audit | — |
 | code quality, smells, SOLID, complexity | `Skill('critic')` / review-patterns (quality) | review-patterns (quality mode) | review-patterns | — |
 | performance, slow, bottleneck, N+1 | `Skill('critic')` / review-patterns (performance) | review-patterns (performance mode) | review-patterns | — |
-| plan, design, decompose, RFC, architecture, contract | Lead via `Skill('tech-plan')` | (no dedicated agent) | decision-stress-test (for design risk), review-patterns | — |
+| plan, design, decompose, RFC, architecture, contract | Lead via `Skill('tech-plan')` | (no dedicated agent) | decide (heavy tier) (for design risk), review-patterns | — |
 | >3 subtasks, breakdown, dependencies | Lead via `Skill('tech-plan')` | (decomposition in skill) | — | — |
 | find, explore, search codebase | `Explore` (built-in); ≥4 sweeps → `Workflow` | — | — | Lead `Read` inline |
 | error, failing, debug, diagnose | Lead via `Skill('diagnostic-patterns')` | (no dedicated agent) | diagnostic-patterns | fix inline (obvious fix) |
@@ -91,11 +91,11 @@ How the capabilities of the custom agents (cut in feature 008) map onto the curr
 | Capability (historical agent) | Now | Fan-out trigger |
 |---|---|---|
 | implement (was `builder`) | `build` skill inline — ALL write work, any HU count | write fan-out ONLY with explicit user opt-in (ultracode) → `Workflow` + per-unit `isolation: 'worktree'` on file overlap |
-| validate (was `reviewer`) | `critic` skill inline | standard/full code review → **ONE fresh-context read-only reviewer** (correctness/requirements only — P1 exception, 018 W1 D1/D3); decision review → panel via `decision-stress-test` |
+| validate (was `reviewer`) | `critic` skill inline | standard/full code review → **ONE fresh-context read-only reviewer** (correctness/requirements only — P1 exception, 018 W1 D1/D3); decision review → panel via `decide` (heavy tier) |
 | explore (was `scout`) | `Explore` (built-in) | ≥4 independent exploration sweeps → `Workflow` (read-only) |
 | generator→validator | `pipeline(items, find, verify)` inside one `Workflow` | intra-workflow Four-Eyes — NOT a new spawn decision (spawn-tree P7) |
 
-For CODE review the dispatch target is **ONE fresh-context read-only reviewer** (feature 019 — panels measured as the weak form for code: verifier gap, LLM-judge ensembles ~80% FP; 018 W1 D1/D3 + W2 D1). The author≠evaluator lesson (feature 002) is preserved via fresh context, not lens count. Panels (≥4 perspectives) remain the form for DECISION review (`decision-stress-test`) and read-only research fan-out — worked example: `.claude/workflows/ultracode-audit.js` (find→verify pipeline + cross-debate panel over a shared digest).
+For CODE review the dispatch target is **ONE fresh-context read-only reviewer** (feature 019 — panels measured as the weak form for code: verifier gap, LLM-judge ensembles ~80% FP; 018 W1 D1/D3 + W2 D1). The author≠evaluator lesson (feature 002) is preserved via fresh context, not lens count. Panels (≥4 perspectives) remain the form for DECISION review (`decide` (heavy tier)) and read-only research fan-out — worked example: `.claude/workflows/ultracode-audit.js` (find→verify pipeline + cross-debate panel over a shared digest).
 
 ## Parallelization & Batch Operations
 
@@ -159,5 +159,5 @@ Full LSP reference: skill `lsp-operations`.
 | Sequential agents with no dependency | Wasted parallelism | Spawn in one message |
 | Glob → Read → Grep when Glob+Grep would suffice | Round-trips add up | Glob + Grep in same message |
 | Edit without prior Read | risk of stale content | Read first, then Edit sequentially |
-| Spawning 1-3 subagents when the Lead could act inline | wasted cost+latency, no parallelism return | Main session for ≤3 units; spawn only at ≥4 (Commandment VII) |
+| Spawning 1-3 subagents when the Lead could act inline | wasted cost+latency, no parallelism return | Main session for ≤3 units; spawn only at ≥4 (Commandment X) |
 | ≥4 parallel agents run ad-hoc instead of a workflow | no orchestration, hard to track | At ≥4 independent units → workflow |

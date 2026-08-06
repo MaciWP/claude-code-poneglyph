@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { lineHasSecret, hasTextExtension, isOrchestrationPath } from "../security-gate";
+import { lineHasSecret, hasTextExtension, isOrchestrationPath, extractTurnFromTranscript, buildGitDisciplineWarning, shouldSkipStopHook, readTranscriptTail } from "../security-gate";
 
 // Fake values built at runtime so no literal secret lives in this file.
 const LONG = "x".repeat(20);
@@ -89,5 +89,124 @@ describe("clean code", () => {
     expect(lineHasSecret(line)).toBe(true);
     // Would be false on the 2nd call if lastIndex were not reset — guards the gotcha.
     expect(lineHasSecret(line)).toBe(true);
+  });
+});
+
+describe("git discipline warn (029/US4)", () => {
+  const turn = (prompt: string, commands: string[]) => {
+    const lines = [
+      JSON.stringify({ type: "user", message: { content: prompt } }),
+      ...commands.map((c) =>
+        JSON.stringify({
+          type: "assistant",
+          message: { content: [{ type: "tool_use", name: "Bash", input: { command: c } }] },
+        }),
+      ),
+    ];
+    return lines.join("\n");
+  };
+
+  test("warns when git commit ran and the user prompt did not ask for it", () => {
+    const t = extractTurnFromTranscript(turn("arregla el bug del parser", ["git add -A && git commit -m 'fix'"]));
+    const w = buildGitDisciplineWarning(t.userPrompt, t.bashCommands);
+    expect(w).not.toBeNull();
+    expect(w!.systemMessage).toContain("git");
+  });
+
+  test("stays silent when the user asked for the commit", () => {
+    const t = extractTurnFromTranscript(turn("haz commit de estos cambios", ["git commit -m 'JRV-1 fix'"]));
+    expect(buildGitDisciplineWarning(t.userPrompt, t.bashCommands)).toBeNull();
+  });
+
+  test("stays silent when no git mutation ran", () => {
+    const t = extractTurnFromTranscript(turn("arregla el bug", ["bun test ./x", "git status"]));
+    expect(buildGitDisciplineWarning(t.userPrompt, t.bashCommands)).toBeNull();
+  });
+
+  test("push without ask also warns", () => {
+    const t = extractTurnFromTranscript(turn("refactoriza el helper", ["git push origin dev"]));
+    expect(buildGitDisciplineWarning(t.userPrompt, t.bashCommands)).not.toBeNull();
+  });
+
+  test("malformed transcript lines are tolerated (best-effort)", () => {
+    const raw = "{not json\n" + turn("sube esto a la rama", ["git push origin feature/x"]);
+    expect(() => extractTurnFromTranscript(raw)).not.toThrow();
+    const t = extractTurnFromTranscript(raw);
+    expect(buildGitDisciplineWarning(t.userPrompt, t.bashCommands)).toBeNull(); // "sube" = intent
+  });
+});
+
+describe("git discipline — shell data is not a command (false-positive class, run-don't-predict corollary)", () => {
+  test("heredoc body containing 'git commit' literals does not warn (the gate's own fixtures tripped it in production)", () => {
+    const cmd = [
+      "cat >> some.test.ts << 'EOF'",
+      'const c = "git add -A && git commit -m \'fix\'";',
+      'const d = "git push origin dev";',
+      "EOF",
+    ].join("\n");
+    expect(buildGitDisciplineWarning("arregla el bug", [cmd])).toBeNull();
+  });
+
+  test("quoted git text in echo/printf does not warn", () => {
+    expect(buildGitDisciplineWarning("documenta esto", ['echo "usa git push con cuidado"'])).toBeNull();
+  });
+
+  test("a real git commit still warns after stripping", () => {
+    expect(buildGitDisciplineWarning("arregla el bug", ["git commit -m 'fix parser'"])).not.toBeNull();
+  });
+
+  test("a real chained mutation still warns", () => {
+    expect(buildGitDisciplineWarning("refactoriza", ["bun test && git push origin dev"])).not.toBeNull();
+  });
+});
+
+describe("git discipline — full mutating class (critic MAJOR 3, 029)", () => {
+  test("reset --hard, branch -D, merge and gh pr create warn when unasked", () => {
+    for (const cmd of ["git reset --hard HEAD~1", "git branch -D feature/x", "git merge dev", "gh pr create --fill"]) {
+      expect(buildGitDisciplineWarning("arregla el parser", [cmd])).not.toBeNull();
+    }
+  });
+
+  test("asked-for merge/rebase/pr stay silent", () => {
+    expect(buildGitDisciplineWarning("mergea dev en mi rama", ["git merge dev"])).toBeNull();
+    expect(buildGitDisciplineWarning("crea la pr de este ticket", ["gh pr create --fill"])).toBeNull();
+    expect(buildGitDisciplineWarning("rebasea sobre dev", ["git rebase dev"])).toBeNull();
+  });
+
+  test("read-only git stays silent", () => {
+    expect(buildGitDisciplineWarning("investiga", ["git log --oneline", "git branch --list", "git diff"])).toBeNull();
+  });
+});
+
+describe("stop_hook_active re-entry guard (030)", () => {
+  test("active stop-hook continuation is skipped", () => {
+    expect(shouldSkipStopHook({ stop_hook_active: true })).toBe(true);
+  });
+
+  test("normal Stop payloads are processed", () => {
+    expect(shouldSkipStopHook({ stop_hook_active: false })).toBe(false);
+    expect(shouldSkipStopHook({})).toBe(false);
+    expect(shouldSkipStopHook(null)).toBe(false);
+    expect(shouldSkipStopHook("not-an-object")).toBe(false);
+  });
+});
+
+describe("readTranscriptTail — bounded read, never the whole file (030)", () => {
+  const dir = "/private/tmp/claude-501/-Users-oriol-Desktop-Bjumper-PERSONAL-REPO-claude-code-poneglyph/9055d0e8-7c7d-4c92-89ad-f512f53d937a/scratchpad";
+
+  test("large file: returns at most maxBytes, keeping the end", async () => {
+    const path = `${dir}/sg-tail-large.jsonl`;
+    const filler = `${"x".repeat(99)}\n`.repeat(3000); // ~300KB
+    await Bun.write(path, filler + "LAST_LINE_MARKER\n");
+    const tail = await readTranscriptTail(path, 64 * 1024);
+    expect(tail.length).toBeLessThanOrEqual(64 * 1024);
+    expect(tail).toContain("LAST_LINE_MARKER");
+    expect(tail.length).toBeGreaterThan(63 * 1024); // actually read the window, not a sliver
+  });
+
+  test("small file: returns the whole content", async () => {
+    const path = `${dir}/sg-tail-small.jsonl`;
+    await Bun.write(path, "only line\n");
+    expect(await readTranscriptTail(path, 64 * 1024)).toBe("only line\n");
   });
 });

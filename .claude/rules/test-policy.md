@@ -19,7 +19,7 @@ Whether TDD-first decomposition applies when planning changes. Read explicitly b
 
 ## Project declaration
 
-This project's policy: **`auxiliary`** — poneglyph is orchestration config; tests cover security gates and validators (`.claude/hooks/__tests__/`), not business logic. Mandatory TDD would be ceremony without proportional value. (Mirrored as a one-liner in `CLAUDE.md` → "Test policy (this repo)".)
+This project's policy: **`auxiliary`** — poneglyph is orchestration config; tests cover security gates and validators (`.claude/hooks/__tests__/`), not business logic. Mandatory TDD would be ceremony without proportional value. This rule is the single source; the repo verification command is `bun test ./.claude/` (on failure → `Skill('diagnostic-patterns')`).
 
 ## Override in plan
 
