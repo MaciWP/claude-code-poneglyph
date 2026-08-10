@@ -114,18 +114,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun $HOME/.claude/hooks/session-start-plans.ts",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "PermissionRequest": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bun $HOME/.claude/hooks/auto-approve.ts",
+            "command": "bun $HOME/.claude/hooks/workspace-hint.ts",
             "timeout": 10
           }
         ]

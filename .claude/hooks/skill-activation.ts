@@ -9,18 +9,19 @@
  * UserPromptSubmit stdout is injected as context Claude can act on.
  * Community-proven: explicit tool-call instructions fire; vague hints don't.
  *
- * Conservative by design (injection noise costs more than a missed hint):
- *   - strong keyword (≥5 chars, or multi-word) → 1 hit qualifies the skill
- *   - weak keyword (3-4 chars) → needs ≥2 total hits
- *   - top 2 skills max; injection ≤5 lines; slash-command prompts skipped
- *   - SILENT by default (031): no match, no shape → zero output; the
- *     always-loaded rules/skill-routing.md covers general skill routing
+ * Precision-first by design (audit 2026-08-07: honor-rate 2/54 under the old
+ * length-based rule — injection noise costs more than a missed hint):
+ *   - a keyword qualifies a skill alone ONLY if it is multi-word ("revisa la pr")
+ *   - single-word keywords need ≥2 DISTINCT hits for the same skill, after
+ *     containment collapse ("prompt"+"prompts" from one physical word = 1 hit)
+ *   - non-human payloads (task notifications, system reminders) are skipped
+ *   - top 2 skills max; SILENT by default (031): no match, no shape → zero
+ *     output; the always-loaded rules/skill-routing.md covers general routing
  *
  * Slash commands are skipped (they self-route) EXCEPT `/goal <task>`: its
  * argument is real work, so it gets the same hint treatment as a plain prompt
  * (processed since 023, asserted by tests T2.2/T2.2b). The hint is a
  * best-effort accelerator for plain prompts, not a capability gate.
- * (Doc-vs-code mismatch fixed per critic MAJOR 1, 029.)
  *
  * Known caveat: UserPromptSubmit has a reliability gap early-session /
  * post-compaction (issue #17277) — best-effort layer, never a sole gate.
@@ -67,8 +68,13 @@ export function loadSkills(dirs: string[]): SkillEntry[] {
         // line (column 0), not just the first line (SK-01: 10/24 skills wrap).
         const kwBlock = head.match(/Keywords\s*-\s*([\s\S]*?)(?=\n\S|$)/i);
         if (!kwBlock) continue;
+        // Join wrapped lines BEFORE splitting on commas: a multi-word keyword
+        // that wraps without a trailing comma ("review\ncomment") is ONE
+        // keyword, not two single-words — the old `split(/[,\n]/)` produced
+        // the "review"→pr-conventional-comments false positive (audit 2026-08-07).
         const keywords = kwBlock[1]
-          .split(/[,\n]/)
+          .replace(/\s*\n\s*/g, " ")
+          .split(/\s*,\s*/)
           .flatMap((k) => k.split(/\s-\s/)) // inline `kw - "ejemplo"` tail
           .map((k) => k.trim().toLowerCase().replace(/['"]/g, ""))
           .filter((k) => k.length >= 3);
@@ -81,46 +87,31 @@ export function loadSkills(dirs: string[]): SkillEntry[] {
   return [...byName.values()];
 }
 
-const STRONG_KEYWORD_MIN = 5;
 const MAX_SKILLS = 2;
 
-export function matchSkills(prompt: string, skills: SkillEntry[]): string[] {
-  const p = prompt.toLowerCase();
-  if (!p.trim()) return [];
+// Payloads that reach UserPromptSubmit but are NOT typed by the human:
+// background-task notifications, system reminders, local-command caveats.
+// Matching their content produced hints about the system's own plumbing
+// (audit 2026-08-07: a task-notification triggered prompt-engineer/orchestrator).
+export const NON_PROMPT_PREFIXES = [
+  "[SYSTEM NOTIFICATION",
+  "<task-notification>",
+  "<system-reminder>",
+  "Caveat:",
+] as const;
 
-  const scored: { name: string; hits: number; strong: boolean }[] = [];
-  for (const skill of skills) {
-    let hits = 0;
-    let strong = false;
-    for (const kw of skill.keywords) {
-      if (p.includes(kw)) {
-        hits++;
-        if (kw.length >= STRONG_KEYWORD_MIN || kw.includes(" ")) strong = true;
-      }
-    }
-    if (strong || hits >= 2) scored.push({ name: skill.name, hits, strong });
-  }
-  return scored
-    .sort((a, b) => b.hits - a.hits)
-    .slice(0, MAX_SKILLS)
-    .map((s) => s.name);
+export function isNonHumanPayload(prompt: string): boolean {
+  const p = prompt.trimStart();
+  return NON_PROMPT_PREFIXES.some((prefix) => p.startsWith(prefix));
 }
 
-export function buildInjection(names: string[]): string {
-  if (names.length === 0) return "";
-  return [
-    "<skill-activation-hint>",
-    ...names.map((n) => `Invoke Skill(${n}) before answering — keyword match for this prompt.`),
-    "</skill-activation-hint>",
-  ].join("\n");
-}
-
-// 031: the hook is SILENT BY DEFAULT — it only speaks on a real keyword/shape
-// match. The old unconditional `Skill(skill-advisor)` line (feature 023) was
-// retired: the always-loaded `rules/skill-routing.md` dispatch table now covers
-// deterministic skill consideration at zero per-prompt cost.
-
-// Like matchSkills but carries the first matched keyword as a human-readable reason.
+// Precision rule (audit 2026-08-07 — replaces the length-≥5 "strong" tier that
+// caused "revisa"→critic, "prompt"→prompt-engineer, "agent"→orchestrator):
+//   strong  = a matched keyword containing a space (multi-word phrase)
+//   or else = ≥2 DISTINCT single-word hits for the same skill, where distinct
+//             means not a substring of another matched keyword of that skill
+//             ("prompt"+"prompts" collapse to one hit — one physical word).
+// Carries the first matched keyword as a human-readable reason.
 export function matchWithReasons(
   prompt: string,
   skills: SkillEntry[],
@@ -129,17 +120,19 @@ export function matchWithReasons(
   if (!p.trim()) return [];
   const scored: { name: string; hits: number; reason: string }[] = [];
   for (const skill of skills) {
-    let hits = 0;
-    let strong = false;
-    let reason = "";
-    for (const kw of skill.keywords) {
-      if (p.includes(kw)) {
-        hits++;
-        if (!reason) reason = kw;
-        if (kw.length >= STRONG_KEYWORD_MIN || kw.includes(" ")) strong = true;
-      }
+    const matched = [...new Set(skill.keywords)].filter((kw) => p.includes(kw));
+    if (matched.length === 0) continue;
+    const distinct = matched.filter(
+      (kw) => !matched.some((other) => other !== kw && other.includes(kw)),
+    );
+    const strong = distinct.some((kw) => kw.includes(" "));
+    if (strong || distinct.length >= 2) {
+      scored.push({
+        name: skill.name,
+        hits: distinct.length,
+        reason: distinct.find((kw) => kw.includes(" ")) ?? distinct[0],
+      });
     }
-    if (strong || hits >= 2) scored.push({ name: skill.name, hits, reason });
   }
   return scored
     .sort((a, b) => b.hits - a.hits)
@@ -197,6 +190,7 @@ const ROUTING_LINES: Record<"bulk" | "quick", string> = {
 export interface HintAnalysis {
   injection: string;
   skills: string[];
+  reasons: string[]; // same order/length as skills — honor-rate re-measurement
   flowHint: boolean;
   routingHint: boolean;
 }
@@ -205,12 +199,18 @@ export interface HintAnalysis {
 // honor-rate log). `/goal <task>` is processed (its arg is real work); other
 // slash commands are skipped (they self-route). SILENT unless a keyword or
 // shape matched (031). Accepts a lazy skills getter so the pre-gates
-// (empty/slash/malformed) never pay the skills-dir disk scan.
+// (empty/non-human/slash/malformed) never pay the skills-dir disk scan.
 export function analyzePayload(
   raw: string,
   skillsOrGetter: SkillEntry[] | (() => SkillEntry[]),
 ): HintAnalysis {
-  const none: HintAnalysis = { injection: "", skills: [], flowHint: false, routingHint: false };
+  const none: HintAnalysis = {
+    injection: "",
+    skills: [],
+    reasons: [],
+    flowHint: false,
+    routingHint: false,
+  };
   if (!raw.trim()) return none;
   let payload: PromptPayload;
   try {
@@ -220,6 +220,7 @@ export function analyzePayload(
   }
   const rawPrompt = typeof payload.prompt === "string" ? payload.prompt : "";
   if (!rawPrompt.trim()) return none;
+  if (isNonHumanPayload(rawPrompt)) return none;
   const goalMatch = rawPrompt.trimStart().match(/^\/goal\s+(.+)/is);
   const prompt = goalMatch ? goalMatch[1] : rawPrompt;
   if (!goalMatch && prompt.trimStart().startsWith("/")) return none;
@@ -238,21 +239,24 @@ export function analyzePayload(
       ? injection.replace("</skill-activation-hint>", `${extraLines.join("\n")}\n</skill-activation-hint>`)
       : ["<skill-activation-hint>", ...extraLines, "</skill-activation-hint>"].join("\n");
   }
-  return { injection, skills: matched.map((m) => m.name), flowHint, routingHint: routingShape !== null };
-}
-
-// Back-compat wrapper (string contract used by earlier tests/callers).
-export function processPayload(raw: string, skills: SkillEntry[]): string {
-  return analyzePayload(raw, skills).injection;
+  return {
+    injection,
+    skills: matched.map((m) => m.name),
+    reasons: matched.map((m) => m.reason),
+    flowHint,
+    routingHint: routingShape !== null,
+  };
 }
 
 // Emit-side log for honor-rate measurement (029/US13): one JSON line per
 // emitted hint under <cwd>/.claude/learned/skill-hints.log. The load side is
-// instructions-loaded.log — honor-rate = loads following emissions. Fail-silent
-// by contract: a logging failure must never block the prompt.
+// instructions-loaded.log — honor-rate = loads following emissions. `reasons`
+// (added post-audit 2026-08-07) records WHICH keyword fired, so precision can
+// be re-measured per keyword. Fail-silent by contract: a logging failure must
+// never block the prompt.
 export function appendHintLog(
   baseDir: string,
-  entry: { ts: string; skills: string[]; flow: boolean },
+  entry: { ts: string; skills: string[]; reasons: string[]; flow: boolean },
 ): boolean {
   try {
     const dir = join(baseDir, ".claude", "learned");
@@ -272,7 +276,7 @@ if (import.meta.main) {
       const parsed = JSON.parse(raw) as PromptPayload;
       if (typeof parsed.cwd === "string") cwd = parsed.cwd;
     } catch {
-      // fall through — processPayload handles malformed input
+      // fall through — analyzePayload handles malformed input
     }
     // Lazy: the skills-dir scan (~2 readdir + ~32 file reads) only runs when
     // the prompt survives the pre-gates (031) — slash/empty prompts cost 0 I/O.
@@ -281,7 +285,12 @@ if (import.meta.main) {
     );
     if (analysis.injection) {
       process.stdout.write(analysis.injection + "\n");
-      appendHintLog(cwd, { ts: new Date().toISOString(), skills: analysis.skills, flow: analysis.flowHint });
+      appendHintLog(cwd, {
+        ts: new Date().toISOString(),
+        skills: analysis.skills,
+        reasons: analysis.reasons,
+        flow: analysis.flowHint,
+      });
     }
   } catch {
     // best-effort — never block the prompt

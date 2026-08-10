@@ -55,7 +55,8 @@ ls /Users/oriol/Desktop/Bjumper/REPOSITORIOS/PYTHON/worktrees/
   edit made in one checkout exists only there until committed. Before trusting
   plan state inside a worktree: `git status .claude/plans`.
 - AI transcripts/history are keyed by cwd — a worktree session has its OWN
-  history, separate from the main checkout's. The SessionStart open-plans
-  reminder reads the CWD's `.claude/plans` (possibly stale in a worktree).
+  history, separate from the main checkout's. Check open plan state with
+  `bun $HOME/.claude/scripts/flow-state.ts status` (reads the CWD's
+  `.claude/plans` — possibly stale in a worktree).
 - Practical rule: run a ticket's `/flow` lifecycle inside ITS worktree and keep
   it there; don't split one lifecycle across main checkout and worktree.

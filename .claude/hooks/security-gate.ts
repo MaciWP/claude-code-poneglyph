@@ -4,6 +4,7 @@
 // to the user (stdout JSON). It NEVER blocks the turn (always exits 0) — it warns,
 // it does not gate. Registered WITHOUT `async` so the systemMessage is not discarded.
 
+import { resolve as resolvePathNative } from "node:path";
 import { readHookStdin } from "./lib/hook-stdin";
 
 export const SECRET_PATTERN =
@@ -136,8 +137,10 @@ export function buildStopResponse(hits: string[]): {
 // Full mutating class (critic MAJOR 3, 029): the measured incidents were
 // commit/push, but the spec says "fix the input CLASS" — any state-mutating
 // git/gh op counts. Read-only ops (log/diff/status/branch --list) never match.
+// Tolerates `git -C <path> <verb>` (audit 2026-08-07): without it, -C mutations
+// were invisible to the gate AND unexcludable by the cross-repo filter below.
 export const GIT_MUTATION_RE =
-  /\bgit\s+(?:commit|push|merge|rebase|reset\s+--hard|branch\s+-D)\b|\bgh\s+pr\s+(?:create|merge)\b/;
+  /\bgit\s+(?:-C\s+\S+\s+)?(?:commit|push|merge|rebase|reset\s+--hard|branch\s+-D)\b|\bgh\s+pr\s+(?:create|merge)\b/;
 
 // A grep-shaped check must scan COMMANDS, not data (run-don't-predict corollary,
 // docs/model-uplift-playbook.md —
@@ -150,6 +153,11 @@ export function stripShellData(command: string): string {
   let out = command;
   // Heredoc: from <<WORD / <<'WORD' / <<-"WORD" up to the line holding WORD.
   out = out.replace(/<<-?\s*['"]?(\w+)['"]?[\s\S]*?\n\s*\1(?:\n|$)/g, " ");
+  // Escaped quotes are CONTENT, not span delimiters — drop them first, or a
+  // double-quoted JSON payload (`printf "{\"cmd\":\"git commit\"}"`) breaks the
+  // span regex's parity and its fragments survive as fake mutations (the gate's
+  // own smoke test tripped this on 2026-08-07 — same class as the heredoc fix).
+  out = out.replace(/\\['"]/g, " ");
   // Quoted spans (single and double) — data, not invocations.
   out = out.replace(/'[^']*'/g, " ").replace(/"[^"]*"/g, " ");
   return out;
@@ -157,6 +165,76 @@ export function stripShellData(command: string): string {
 // User intent covers his real phrasings (es/EN, typos included in class).
 export const COMMIT_INTENT_RE =
   /\b(commit|comm?itea|push|sube|súbelo|subelo|mergea|merge|rebasea|rebase|versiona|guarda los cambios|crea la pr|abre la pr|borra la rama|resetea)\b/i;
+
+// --- Cross-repo exclusion (audit 2026-08-07) ----------------------------------
+// Measured: 3/3 git-discipline fires in a month were contextual false positives —
+// mutations in DISPOSABLE repos (test fixtures in /tmp, benchmark repos in the
+// scratchpad), never in the session's working repo. The fix targets the CLASS:
+// a mutation only counts if it lands under the session cwd. Best-effort warn →
+// unresolvable destinations fail OPEN (silence over noise, same reasoning as the
+// .md / OpenAPI exclusions in the secrets channel above).
+
+export type MutationLocation = "session" | "external" | "unknown";
+
+// Shell command → individual statements (chaining/pipes/newlines). Runs on the
+// stripShellData output, so quoted spans and heredocs are already gone.
+export function splitStatements(command: string): string[] {
+  return command
+    .split(/&&|\|\||;|\||\n/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+// Resolves $VAR / ${VAR} for variables ASSIGNED INLINE in the same command
+// (`SCRATCH=/tmp/x; cd $SCRATCH/y`). External vars stay unresolved on purpose —
+// they surface as "unknown" downstream. `X=$(cmd ...)` never registers (the
+// space inside breaks the \S+ anchor), which is the desired behavior for
+// dynamically generated scratch dirs (mktemp): unresolvable → skip.
+export function resolveInlineVars(statements: string[]): string[] {
+  const vars = new Map<string, string>();
+  const substitute = (s: string) =>
+    s.replace(/\$\{?(\w+)\}?/g, (m, name: string) => vars.get(name) ?? m);
+  return statements.map((stmt) => {
+    const cleaned = stmt.replace(/^export\s+/, "");
+    const assign = cleaned.match(/^([A-Za-z_]\w*)=(\S+)$/);
+    if (assign) {
+      vars.set(assign[1], substitute(assign[2]));
+      return stmt;
+    }
+    return substitute(stmt);
+  });
+}
+
+function resolveTarget(base: string | "unknown", target: string): string | "unknown" {
+  if (target.includes("$") || target.startsWith("~")) return "unknown";
+  if (target.startsWith("/")) return resolvePathNative(target);
+  if (base === "unknown") return "unknown";
+  return resolvePathNative(base, target);
+}
+
+// Where does the FIRST git mutation in this command land, relative to the
+// session cwd? Tracks `cd` statement by statement (starting AT the session cwd)
+// and honors `git -C <path>`. Mutations before a `cd` count as session-local.
+export function resolveMutationLocation(command: string, sessionCwd: string): MutationLocation {
+  const statements = resolveInlineVars(splitStatements(command));
+  let cwd: string | "unknown" = sessionCwd;
+  for (const stmt of statements) {
+    const cdMatch = stmt.match(/^cd\s+(\S+)/);
+    if (cdMatch) {
+      cwd = resolveTarget(cwd, cdMatch[1]);
+      continue;
+    }
+    if (GIT_MUTATION_RE.test(stmt)) {
+      const scoped = stmt.match(/\bgit\s+-C\s+(\S+)/);
+      const dir = scoped ? resolveTarget(cwd, scoped[1]) : cwd;
+      if (dir === "unknown") return "unknown";
+      const base = resolvePathNative(sessionCwd);
+      return dir === base || dir.startsWith(base + "/") ? "session" : "external";
+    }
+  }
+  // Callers only invoke this on commands already confirmed as mutations.
+  return "session";
+}
 
 // Stop can re-fire when a stop hook's additionalContext keeps the turn going;
 // without this guard the gate is stateless and re-warns the same hits in a loop
@@ -214,11 +292,20 @@ export function extractTurnFromTranscript(jsonl: string): TurnExtract {
   return { userPrompt, bashCommands: bashCommands.reverse() };
 }
 
+// sessionCwd (optional, audit 2026-08-07): when provided, mutations resolving
+// OUTSIDE it are excluded (disposable-repo false positives). Omitted → legacy
+// behavior, kept as a pure-test escape hatch; main() always passes a real cwd.
 export function buildGitDisciplineWarning(
   userPrompt: string,
   bashCommands: string[],
+  sessionCwd?: string,
 ): { systemMessage: string; hookSpecificOutput: { hookEventName: "Stop"; additionalContext: string } } | null {
-  const mutations = bashCommands.filter((c) => GIT_MUTATION_RE.test(stripShellData(c)));
+  const mutations = bashCommands.filter((c) => {
+    const stripped = stripShellData(c);
+    if (!GIT_MUTATION_RE.test(stripped)) return false;
+    if (!sessionCwd) return true;
+    return resolveMutationLocation(stripped, sessionCwd) === "session";
+  });
   if (mutations.length === 0) return null;
   if (COMMIT_INTENT_RE.test(userPrompt)) return null; // the user asked — no friction
   const list = mutations.map((m) => `  - ${m.slice(0, 120)}`).join("\n");
@@ -241,9 +328,9 @@ async function main(): Promise<void> {
     const raw = await readHookStdin();
     if (!raw.trim()) process.exit(0);
 
-    let payload: { transcript_path?: string } = {};
+    let payload: { transcript_path?: string; cwd?: string } = {};
     try {
-      payload = JSON.parse(raw) as { transcript_path?: string };
+      payload = JSON.parse(raw) as { transcript_path?: string; cwd?: string };
     } catch {
       // best-effort — unparseable payload → run with defaults
     }
@@ -259,11 +346,13 @@ async function main(): Promise<void> {
       if (payload.transcript_path) {
         const text = await readTranscriptTail(payload.transcript_path);
         const tail = text.split("\n").slice(-400).join("\n");
-        // Cheap prefilter (031): no Bash tool_use serialized in the tail → no git
-        // mutation possible this turn; skip the per-line JSONL parse entirely.
-        if (tail.includes('"name":"Bash"')) {
+        // Cheap prefilters (031 + audit 2026-08-07): no Bash tool_use, or no
+        // git/gh text at all, in the tail → no git mutation possible this turn;
+        // skip the per-line JSONL parse entirely.
+        if (tail.includes('"name":"Bash"') && (tail.includes("git") || tail.includes("gh pr"))) {
           const turn = extractTurnFromTranscript(tail);
-          gitResponse = buildGitDisciplineWarning(turn.userPrompt, turn.bashCommands);
+          const sessionCwd = typeof payload.cwd === "string" ? payload.cwd : process.cwd();
+          gitResponse = buildGitDisciplineWarning(turn.userPrompt, turn.bashCommands, sessionCwd);
         }
       }
     } catch {

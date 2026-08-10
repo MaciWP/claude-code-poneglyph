@@ -1,11 +1,9 @@
 #!/usr/bin/env bun
-// AC2 measurement (feature 023) — deterministic surfacing-rate, before vs after.
-// Measures the part that IS testable headless: does the hook SURFACE skill
-// consideration (shortlist / skill-advisor) on work prompts, and stay silent on
-// trivial ones? The behavioral half (does the model then INVOKE) is next-session.
-//
-// "before" = the pre-023 logic (skip every slash command; matchSkills→buildInjection,
-//             no skill-advisor). "after" = current processPayload.
+// Precision regression (post-audit 2026-08-07) — the hook's goal flipped from
+// "surface more" (023) to "surface less noise": measured honor-rate was 2/54
+// because single common words ("revisa", "prompt", "agent") qualified alone.
+// This eval pins the fix against the REAL skills on disk: the measured false
+// positives must stay silent; the precise multi-word matches must still fire.
 //
 // Also a listing-budget check substituting for the interactive `/doctor` (AC4).
 //
@@ -13,46 +11,39 @@
 
 import { readdirSync, readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
-import { loadSkills, matchSkills, buildInjection, processPayload } from "../hooks/skill-activation";
+import { loadSkills, analyzePayload } from "../hooks/skill-activation";
 
 const skills = loadSkills([".claude/skills"]);
 
-// "before": pre-023 behavior — slash always skipped, no skill-advisor surfacing.
-function beforeSurface(prompt: string): boolean {
-  if (!prompt.trim() || prompt.trimStart().startsWith("/")) return false;
-  return buildInjection(matchSkills(prompt, skills)).length > 0;
-}
-function afterSurface(prompt: string): boolean {
-  return processPayload(JSON.stringify({ prompt }), skills).length > 0;
+function surfaces(prompt: string): boolean {
+  return analyzePayload(JSON.stringify({ prompt }), skills).injection.length > 0;
 }
 
-// Work prompts the Lead SHOULD get skill consideration on (ES + EN, incl. /goal).
-const WORK = [
-  "/goal arregla el bug de autenticación con jwt",
-  "/goal añade un botón al formulario de login",
-  "/goal documenta la API nueva",
-  "optimiza el endpoint lento, hay un problema de performance",
-  "refactoriza el módulo de pagos aplicando SOLID",
-  "escribe tests para el parser",
-  "necesito planificar esta feature nueva",
-  "revisa la seguridad de este login",
-  "depura por qué se cae en producción",
-  "refactor this slow endpoint",
-  "review the security of this auth flow",
-  "/goal implement the new feature end to end",
+// Measured false positives (audit 2026-08-07) + non-human payloads: MUST stay silent.
+const MUST_STAY_SILENT = [
+  "revisa esto antes de continuar", // ex-FP: critic
+  "en este caso, antes de continuar, revisa los tests que ya existen", // fixture obligatoria
+  "dame un prompt para X", // ex-FP: prompt-engineer
+  "el agent hizo esto", // ex-FP: orchestrator-protocol
+  "[SYSTEM NOTIFICATION - NOT USER INPUT] revisa la pr y haz commit", // payload no-humano
+  "gracias",
+  "hola",
+  "/clear",
 ];
-// Trivial prompts that should stay SILENT (no noise).
-const TRIVIAL = ["gracias", "hola", "ok perfecto", "/clear"];
+// Precise matches that MUST keep firing (multi-word keyword or ≥2 distinct hits).
+const MUST_STILL_SURFACE = [
+  "revisa la pr antes de aprobarla", // pr-review, multi-word
+  "quiero refactorizar este código, tiene mucha complexity y duplication", // review-patterns, 2 hits
+];
 
-let beforeWork = 0, afterWork = 0;
-for (const p of WORK) { if (beforeSurface(p)) beforeWork++; if (afterSurface(p)) afterWork++; }
-let beforeNoise = 0, afterNoise = 0;
-for (const p of TRIVIAL) { if (beforeSurface(p)) beforeNoise++; if (afterSurface(p)) afterNoise++; }
+const falseFires = MUST_STAY_SILENT.filter(surfaces);
+const falseSilences = MUST_STILL_SURFACE.filter((p) => !surfaces(p));
 
-const pct = (n: number, d: number) => `${Math.round((100 * n) / d)}%`;
-console.log("# Skill-surfacing rate (deterministic half of AC2)");
-console.log(`work prompts (n=${WORK.length}):    before ${beforeWork}/${WORK.length} (${pct(beforeWork, WORK.length)})  →  after ${afterWork}/${WORK.length} (${pct(afterWork, WORK.length)})`);
-console.log(`trivial prompts (n=${TRIVIAL.length}): before ${beforeNoise}/${TRIVIAL.length} surfaced  →  after ${afterNoise}/${TRIVIAL.length} surfaced (lower=less noise)`);
+console.log("# Skill-hint precision regression (audit 2026-08-07)");
+console.log(`must-stay-silent (n=${MUST_STAY_SILENT.length}): ${MUST_STAY_SILENT.length - falseFires.length} silent, ${falseFires.length} fired`);
+for (const p of falseFires) console.log(`  FALSE FIRE: "${p}"`);
+console.log(`must-still-surface (n=${MUST_STILL_SURFACE.length}): ${MUST_STILL_SURFACE.length - falseSilences.length} fired, ${falseSilences.length} silent`);
+for (const p of falseSilences) console.log(`  FALSE SILENCE: "${p}"`);
 
 // Listing-budget proxy for /doctor (AC4): combined description+when_to_use per skill.
 console.log("\n# Listing-budget check (proxy for /doctor, AC4)");
@@ -73,6 +64,6 @@ for (const d of readdirSync(".claude/skills")) {
 }
 console.log(`skills: ${skills.length} | max combined: ${maxCombined} (cap ${CAP}) | over cap: ${over} | total listing chars: ${total}`);
 
-const ok = afterWork > beforeWork && afterNoise <= beforeNoise && over === 0;
-console.log(`\nRESULT: ${ok ? "PASS" : "REVIEW"} — after surfaces more work prompts, no added noise, no skill over cap.`);
+const ok = falseFires.length === 0 && falseSilences.length === 0 && over === 0;
+console.log(`\nRESULT: ${ok ? "PASS" : "REVIEW"} — measured FPs silent, precise matches intact, no skill over cap.`);
 process.exit(ok ? 0 : 1);

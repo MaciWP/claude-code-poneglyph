@@ -40,7 +40,7 @@ Once a role is active, operate as a **senior {role}**:
 | Role | Composes | Lens / deliverable |
 |------|----------|--------------------|
 | `advisor` | `decide` (heavy tier) + `drillme` | non-code decisions; structured tradeoffs + a recommendation |
-| `research` | `deep-research` + WebSearch/WebFetch | multi-source, fact-checked, cited investigation |
+| `research` | `deep-research` (session-first, ≤10 seeded agents) + WebSearch/WebFetch | multi-source, fact-checked, cited investigation |
 | `shopping` | `deep-research` + `decide` (heavy tier) | compare products/options by value; price/spec tradeoffs |
 | `pc-optimizer` | *gap lens* + `diagnostic-patterns` | hardware/OS tuning, performance, troubleshooting |
 

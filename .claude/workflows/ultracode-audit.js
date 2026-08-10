@@ -155,7 +155,7 @@ const DEFAULT_DOMAINS = [
   },
   {
     key: 'hooks-and-tests',
-    corpus: '.claude/hooks/**/*.ts (auto-approve, post-compact, security-gate, validators/code-validator) + __tests__/',
+    corpus: '.claude/hooks/**/*.ts (skill-activation, security-gate, post-compact, workspace-hint, instructions-loaded) + __tests__/',
     skills: ['anti-hallucination', 'review-patterns'],
     focus:
       'Shebang issues (rules/paths/hooks.md: env bash roto en Windows), bugs, TODO/FIXME, refs a hooks eliminados ' +

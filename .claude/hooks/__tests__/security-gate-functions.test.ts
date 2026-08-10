@@ -91,10 +91,12 @@ describe("getModifiedFiles (exported in-situ)", () => {
 });
 
 describe("hook stdin path end-to-end (readHookStdin)", () => {
-  const autoApprove = join(import.meta.dir, "..", "auto-approve.ts");
+  // Vehicle: instructions-loaded.ts (auto-approve.ts, the old vehicle, was cut
+  // 2026-08-07). Payload without file_path → no log write, pure stdin exercise.
+  const stdinHook = join(import.meta.dir, "..", "instructions-loaded.ts");
 
   async function runWithStdin(input: string): Promise<number> {
-    const proc = Bun.spawn(["bun", autoApprove], {
+    const proc = Bun.spawn(["bun", stdinHook], {
       stdin: new TextEncoder().encode(input),
       stdout: "pipe",
       stderr: "pipe",
@@ -102,8 +104,8 @@ describe("hook stdin path end-to-end (readHookStdin)", () => {
     return await proc.exited;
   }
 
-  test("valid JSON PermissionRequest exits 0 (does not hang)", async () => {
-    const code = await runWithStdin(JSON.stringify({ tool_name: "Read", tool_input: { file_path: "/x" } }));
+  test("valid JSON payload exits 0 (does not hang)", async () => {
+    const code = await runWithStdin(JSON.stringify({ session_id: "s1", memory_type: "User" }));
     expect(code).toBe(0);
   });
 

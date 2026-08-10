@@ -1,5 +1,18 @@
 import { describe, test, expect } from "bun:test";
-import { lineHasSecret, hasTextExtension, isOrchestrationPath, isApiSpecDocument, extractTurnFromTranscript, buildGitDisciplineWarning, shouldSkipStopHook, readTranscriptTail } from "../security-gate";
+import {
+  lineHasSecret,
+  hasTextExtension,
+  isOrchestrationPath,
+  isApiSpecDocument,
+  extractTurnFromTranscript,
+  buildGitDisciplineWarning,
+  shouldSkipStopHook,
+  readTranscriptTail,
+  GIT_MUTATION_RE,
+  splitStatements,
+  resolveInlineVars,
+  resolveMutationLocation,
+} from "../security-gate";
 
 // Fake values built at runtime so no literal secret lives in this file.
 const LONG = "x".repeat(20);
@@ -182,6 +195,21 @@ describe("git discipline — shell data is not a command (false-positive class, 
     expect(buildGitDisciplineWarning("documenta esto", ['echo "usa git push con cuidado"'])).toBeNull();
   });
 
+  test("ESCAPED quotes inside a double-quoted JSON payload do not break span parity (live FP 2026-08-07)", () => {
+    // The gate's own smoke test tripped it: printf writing a JSONL fixture whose
+    // escaped-quote content mentions git commit. Data, not an invocation.
+    const cmd =
+      'printf \'%s\\n\' "{\\"type\\":\\"assistant\\",\\"input\\":{\\"command\\":\\"cd $SCRATCH/fake-repo; git commit -qm init\\"}}" > /tmp/fixture.jsonl';
+    expect(buildGitDisciplineWarning("revisa los tests", [cmd], "/Users/oriol/proyectos/mi-repo")).toBeNull();
+    expect(buildGitDisciplineWarning("revisa los tests", [cmd])).toBeNull(); // legacy path too
+  });
+
+  test("a real mutation with escaped quotes in its message still warns", () => {
+    expect(
+      buildGitDisciplineWarning("arregla el bug", ['git commit -m "fix \\"quoted\\" thing"']),
+    ).not.toBeNull();
+  });
+
   test("a real git commit still warns after stripping", () => {
     expect(buildGitDisciplineWarning("arregla el bug", ["git commit -m 'fix parser'"])).not.toBeNull();
   });
@@ -239,5 +267,120 @@ describe("readTranscriptTail — bounded read, never the whole file (030)", () =
     const path = `${dir}/sg-tail-small.jsonl`;
     await Bun.write(path, "only line\n");
     expect(await readTranscriptTail(path, 64 * 1024)).toBe("only line\n");
+  });
+});
+
+// --- Cross-repo exclusion (audit 2026-08-07) ----------------------------------
+
+const SESSION_CWD = "/Users/oriol/proyectos/mi-repo";
+
+describe("splitStatements", () => {
+  test("splits on &&, ||, ;, | and newlines", () => {
+    expect(splitStatements("a && b || c; d | e\nf")).toEqual(["a", "b", "c", "d", "e", "f"]);
+  });
+  test("trims and drops empty segments", () => {
+    expect(splitStatements("  a  ;;  b  ")).toEqual(["a", "b"]);
+  });
+});
+
+describe("resolveInlineVars", () => {
+  test("resolves a variable assigned earlier in the same command", () => {
+    const out = resolveInlineVars(["SCRATCH=/tmp/x", "cd $SCRATCH/repo"]);
+    expect(out[1]).toBe("cd /tmp/x/repo");
+  });
+  test("supports the export prefix and ${VAR} syntax", () => {
+    const out = resolveInlineVars(["export DIR=/tmp/y", "cd ${DIR}/sub"]);
+    expect(out[1]).toBe("cd /tmp/y/sub");
+  });
+  test("leaves external (unassigned) variables untouched", () => {
+    const out = resolveInlineVars(["cd $CI_WORKDIR/build"]);
+    expect(out[0]).toBe("cd $CI_WORKDIR/build");
+  });
+});
+
+describe("resolveMutationLocation — pure directory resolution", () => {
+  test("cd to /tmp before the mutation → external", () => {
+    expect(resolveMutationLocation("cd /tmp/x && git commit -m x", SESSION_CWD)).toBe("external");
+  });
+  test("mutation BEFORE the cd → session (order matters)", () => {
+    expect(resolveMutationLocation("git commit -m x && cd /tmp", SESSION_CWD)).toBe("session");
+  });
+  test("inline variable resolved through cd → external", () => {
+    expect(
+      resolveMutationLocation("SCRATCH=/private/tmp/b; cd $SCRATCH/fake-repo; git commit -m x", SESSION_CWD),
+    ).toBe("external");
+  });
+  test("unresolvable external variable → unknown", () => {
+    expect(resolveMutationLocation("cd $CI_WORKDIR && git commit -m x", SESSION_CWD)).toBe("unknown");
+  });
+  test("relative cd inside the session tree → session", () => {
+    expect(resolveMutationLocation("cd src && git commit -m x", SESSION_CWD)).toBe("session");
+  });
+  test("git -C to an external path → external", () => {
+    expect(resolveMutationLocation("git -C /tmp/other commit -m x", SESSION_CWD)).toBe("external");
+  });
+  test("git -C pointing INTO the session repo → session (new alert class, deliberate)", () => {
+    expect(resolveMutationLocation(`git -C ${SESSION_CWD} commit -m x`, SESSION_CWD)).toBe("session");
+  });
+  test("no cd at all → session (base case)", () => {
+    expect(resolveMutationLocation("git commit -m x", SESSION_CWD)).toBe("session");
+  });
+  test("cd ~ is unresolvable → unknown (home is not under the session cwd)", () => {
+    expect(resolveMutationLocation("cd ~ && git commit -m x", SESSION_CWD)).toBe("unknown");
+  });
+});
+
+describe("GIT_MUTATION_RE — reconoce git -C (audit 2026-08-07)", () => {
+  test("git -C <path> commit matches", () => {
+    expect(GIT_MUTATION_RE.test("git -C /tmp/x commit -m y")).toBe(true);
+  });
+  test("git -C <path> status stays read-only (no match)", () => {
+    expect(GIT_MUTATION_RE.test("git -C /tmp/x status")).toBe(false);
+  });
+});
+
+describe("git discipline — cross-repo exclusion (audit 2026-08-07)", () => {
+  test("fixture de regresión real: benchmark git en scratchpad NO avisa", () => {
+    const cmd =
+      "SCRATCH=/private/tmp/bench-xyz; mkdir -p $SCRATCH/fake-repo && cd $SCRATCH/fake-repo; git init -q; git commit --allow-empty -qm init";
+    expect(buildGitDisciplineWarning("revisa los tests de la aplicacion", [cmd], SESSION_CWD)).toBeNull();
+  });
+
+  test("cd /tmp sin variable → no avisa", () => {
+    expect(buildGitDisciplineWarning("arregla el bug", ["cd /tmp/x && git commit -m wip"], SESSION_CWD)).toBeNull();
+  });
+
+  test("git -C externo → no avisa", () => {
+    expect(buildGitDisciplineWarning("arregla el bug", ["git -C /tmp/other commit -m wip"], SESSION_CWD)).toBeNull();
+  });
+
+  test("mutación antes del cd → avisa", () => {
+    expect(
+      buildGitDisciplineWarning("arregla el bug", ["git commit -m wip && cd /tmp"], SESSION_CWD),
+    ).not.toBeNull();
+  });
+
+  test("cd relativo dentro del árbol → avisa", () => {
+    expect(buildGitDisciplineWarning("arregla el bug", ["cd src && git commit -m wip"], SESSION_CWD)).not.toBeNull();
+  });
+
+  test("git -C al propio repo de sesión → avisa (clase de alerta nueva)", () => {
+    expect(
+      buildGitDisciplineWarning("arregla el bug", [`git -C ${SESSION_CWD} commit -m wip`], SESSION_CWD),
+    ).not.toBeNull();
+  });
+
+  test("variable externa no resoluble → no avisa (fail-open, warn-not-gate)", () => {
+    expect(
+      buildGitDisciplineWarning("arregla el bug", ["cd $CI_WORKDIR && git commit -m wip"], SESSION_CWD),
+    ).toBeNull();
+  });
+
+  test("sin cd → avisa (caso base sin cambios)", () => {
+    expect(buildGitDisciplineWarning("arregla el bug", ["git commit -m wip"], SESSION_CWD)).not.toBeNull();
+  });
+
+  test("sin sessionCwd → comportamiento legacy (escape hatch de tests puros)", () => {
+    expect(buildGitDisciplineWarning("arregla el bug", ["cd /tmp/x && git commit -m wip"])).not.toBeNull();
   });
 });

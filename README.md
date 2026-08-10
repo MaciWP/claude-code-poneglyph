@@ -134,10 +134,11 @@ placeholder (which *does* expand, unlike `$HOME`):
 
 | Event | Hook | Purpose |
 |-------|------|---------|
-| `PostToolUse` | `validators/code-validator.ts` | Validate edited code |
-| `Stop` | `security-gate.ts` (async) | Scan for leaked secrets |
+| `UserPromptSubmit` | `skill-activation.ts` | Precise `Skill()` hints on keyword match |
+| `Stop` | `security-gate.ts` | Secret warn + git-discipline warn (session repo only) |
+| `InstructionsLoaded` | `instructions-loaded.ts` | Log every instruction-layer load |
+| `SessionStart` | `workspace-hint.ts` | Bjumper-workspace skill hint |
 | `PostCompact` | `post-compact.ts` | Re-inject Lead reminder |
-| `PermissionRequest` | `auto-approve.ts` | Auto-approve safe calls |
 
 ---
 
@@ -167,7 +168,7 @@ this repo. To install globally:
 | `CLAUDE.md` | Project doctrine — 10 Commandments + orchestration rules |
 | `.claude/skills/` | 20 skills (6 phase skills + transversal + domain) |
 | `.claude/agents/` | builder, reviewer, scout |
-| `.claude/hooks/` | 4 hooks + tests (`__tests__/`) |
+| `.claude/hooks/` | 5 hooks + tests (`__tests__/`) |
 | `.claude/commands/` | `/flow`, `/decide`, `/explain-changes`, `/sync-claude` |
 | `.claude/plans/` | `/flow` feature lifecycles (`{NNN}-{slug}/`) |
 | `docs/` | Machine bootstrap records (git, statusline) |

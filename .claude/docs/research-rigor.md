@@ -1,6 +1,6 @@
 # Research Rigor Method (promoted from feature 018, ratified 2026-06-10)
 
-Reusable method for any evidence/research feature (and `/deep-research` runs). Proved across 5 dossiers + a 2-round adversarial audit in 018-evidence-roadmap.
+Reusable method for any evidence/research feature. **Runner:** skill `deep-research` (session-first; agents only on residual gaps, ≤10, prompts seeded with the session SEED pack). Proved across 5 dossiers + a 2-round adversarial audit in 018-evidence-roadmap.
 
 ## Evidence tiers
 

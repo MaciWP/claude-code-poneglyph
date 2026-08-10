@@ -74,7 +74,7 @@ Phase 5 closure: approved promotions → Lead writes targets inline; approved li
 
 Read `state.json` strictly; missing/corrupt → reconstruct from artifacts (`Glob <slug>/{spec,tasks/index,tests,validations,review,retro}.md`) + warn. Continue from `current_phase` + `gates_approved`.
 
-**Stuck back-half** (phase 4 with unprocessed verdict, or 5 with retro pending — where 10/14 measured lifecycles died): close it in ONE short session — process verdict → `retro` (or justified skip) → `close-feature`. This is the path the SessionStart open-plans offer points to; closing must be cheap.
+**Stuck back-half** (phase 4 with unprocessed verdict, or 5 with retro pending — where 10/14 measured lifecycles died): close it in ONE short session — process verdict → `retro` (or justified skip) → `close-feature`. Re-engagement is manual: `bun $HOME/.claude/scripts/flow-state.ts status` surfaces open lifecycles (the SessionStart open-plans offer was cut 2026-08-07 — followed 1/9 times); closing must be cheap.
 
 ### 5 — Report
 
@@ -101,7 +101,7 @@ retro <status> · closed <yes|no> · promotions pending <n> · skips justificado
 ## Smell signals
 
 - ⚠️ Gate 2→3 rejected in >50% of runs → tech-plan is producing weak HUs.
-- ⚠️ `state.json` accumulating without `feature_closed: true` → back-half is dying again; check the SessionStart offer + re-engagement path.
+- ⚠️ `state.json` accumulating without `feature_closed: true` → back-half is dying again; run `flow-state.ts status` periodically + re-engagement path.
 - ⚠️ `boundary_checks` consistently empty in closed lifecycles → the checklist is being skipped silently.
 
 ## Archive
