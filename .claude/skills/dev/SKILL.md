@@ -28,6 +28,14 @@ field manual. Adapted from ponytail (MIT, DietrichGebert/ponytail) and the
 contractor protocol (Oriol, 2026-08-05). `verify` owns stage 4's deep protocol;
 /flow wraps this same loop at feature scale — neither is duplicated here.
 
+**Full loop is non-negotiable.** Every coding task executes KNOW → PLAN → BUILD →
+REVIEW → LEARN with stages **visible in the response**. There is no "trivial =
+mental / just do it" escape. Judging a task "simple" or "not worth care" *before*
+KNOW is circular: you only know that after investigating. How much time the user
+wants to invest is their call, not a license to skip stages. Maximum quality is
+the default. What scales is **depth** (short real stages vs deep ones), never
+**omission**.
+
 ## Stage 1 — KNOW (learn / investigate / reuse)
 
 - Read the full problem statement and the surrounding code before forming an opinion.
@@ -97,6 +105,8 @@ correctness/security belong to `critic`/`review-patterns`.
 
 - Persist the non-obvious: surprises, emergent patterns, deferred cuts and their
   triggers — via memory (global) or the project's learning capture.
+- Nothing non-obvious → say so explicitly (`LEARN: nothing non-obvious`). Still a
+  completed stage — silence is not a skip.
 - **Debt harvest** (on request): `grep -rn "ponytail:"` over the repo → ledger of
   cuts with ceiling/trigger; flag any marker missing its upgrade trigger.
 
@@ -120,6 +130,9 @@ Never a louder retry of the same attack.
 
 Task: "add a `--json` flag to the report CLI".
 
+Even if this had looked like "one flag, five minutes", every stage still runs and
+shows up in the response — depth can be short; omission cannot.
+
 1. **KNOW** — read the CLI entry; Grep flags: an `--output` pattern exists in
    `export.ts` → reuse its parser. External research: not needed (internal pattern).
 2. **PLAN** — Goal: `--json` prints the same report as JSON; pretty output stays
@@ -137,21 +150,30 @@ Task: "add a `--json` flag to the report CLI".
 
 ## SIEMPRE rules
 
-- The loop is proportional: trivial = mental; non-trivial = visible stages.
+- **Full loop always, stages always visible.** No mental-only path. No "looks
+  simple → skip PLAN/REVIEW". You only learn complexity *by doing KNOW*.
+- **Depth scales; stages do not.** A rename still has restated goal, assumptions
+  (or "none"), risks (or "none real"), REVIEW, and LEARN (or "nothing non-obvious").
+  Short and professional beats long and padded — never skip, never invent filler.
 - Stage order is fixed; skipping KNOW to "save time" is the root cause of rework.
 - The floor is absolute — no rung of the ladder ever overrides it.
 - Loop-back over push-forward: a broken premise invalidates everything built on it.
+- Maximum quality is the default for every task — the user's care budget is not
+  inferred from how small the diff looks.
 
 ## Anti-patterns
 
 | Anti-pattern | Correction |
 |---|---|
+| "Looks simple / typo / <20 lines → mental + just do it" | Full loop, short stages, still visible |
+| Judging importance or care level before KNOW | Investigate first; never invent the user's time budget |
 | Ladder applied before understanding the problem | "Read fully, then be lazy" — comprehension first |
 | Simplifying away validation/errors to score fewer lines | Floor violation — restore it |
 | `ponytail:` comment without an upgrade trigger | Add the trigger or treat as a bug |
 | Asking the user something Grep answers | Stage 1 owes that research |
 | Improvising when an assumption breaks mid-task | Loop-back to PLAN and tell — always |
-| Risks section padded with invented dangers | Proportionality — real risks only, or none |
+| Risks section padded with invented dangers | Proportionality of *depth* — real risks only, or none |
+| Silent LEARN because "nothing to say" | Explicit `LEARN: nothing non-obvious` |
 
 ## Commandments cubiertos
 
