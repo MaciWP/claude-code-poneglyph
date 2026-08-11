@@ -72,5 +72,8 @@ Body: bullets `-`, cada uno un cambio lógico, imperativo, en inglés, máximo ~
 4. **NO uses `git add`**: respeta el estado del index.
 5. **Breve**: subject ≤ ~72 chars, sin relleno, sin "this commit".
 6. **Imperativo**: "Add", "Fix", "Remove" — no "Added".
-7. **Sin firma ni co-author** salvo petición explícita.
+7. **Sin autoría de IA** (default): no firma, no `Co-Authored-By`, no footer
+   `Generated with …` / `Made with …` / emoji robot, no mención de Claude, Codex,
+   Grok, Cursor u otra IA en subject ni body. Excepción solo si el usuario lo pide
+   **este turno**. Las dos variantes salen limpias, listas para copiar.
 8. **Output**: el bloque final directamente, listo para copiar.

@@ -77,6 +77,23 @@ describe("scanFile (exported in-situ)", () => {
     expect(hits.length).toBeGreaterThan(0);
     expect(hits[0]).toMatch(/:4$/);
   });
+
+  // types.gen.ts FP class: OpenAPI-generated property types must not fire; a
+  // real literal in the same file still must.
+  test("generated TS client type fields are not reported; real literals are", async () => {
+    const body = [
+      "export type TokenRequest = {",
+      "  password: string;",
+      "  old_password: string;",
+      "};",
+      `export const leaked = { API_KEY: "${LONG}" };`,
+      "",
+    ].join("\n");
+    const path = await tmpFile("types.gen.ts", body);
+    const hits = await scanFile(path);
+    expect(hits.length).toBe(1);
+    expect(hits[0]).toMatch(/:5$/); // only the API_KEY line
+  });
 });
 
 describe("getModifiedFiles (exported in-situ)", () => {

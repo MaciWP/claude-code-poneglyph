@@ -163,6 +163,10 @@ shows up in the response — depth can be short; omission cannot.
 - **No proactive git/PR** (CLAUDE.md §Git / PR): never `commit` / `push` / open PR
   unless the user asked THIS turn. "Done" is not permission. Tempted or ambiguous
   → `AskUserQuestion` / `drillme`, never silent mutation.
+- **No AI authorship in commits/PRs** (CLAUDE.md §Git / PR): never add
+  `Co-Authored-By`, "Generated with …" footers, robot emoji branding, or subject/body
+  credit to Claude/Codex/Grok/Cursor/any AI — unless the user asked THIS turn.
+  Author stays human git config.
 
 ## Anti-patterns
 
@@ -179,6 +183,7 @@ shows up in the response — depth can be short; omission cannot.
 | Silent LEARN because "nothing to say" | Explicit `LEARN: nothing non-obvious` |
 | End-of-task auto commit / push / `gh pr create` | Forbidden — wait for THIS-turn ask; if about to slip → drillme/AskUserQuestion |
 | Closing with unsolicited "¿hago commit/push/PR?" | Do not default-close with shipping offers; leave tree dirty until asked |
+| `Co-Authored-By` / "Generated with Claude" / AI credit in commit or PR | Forbidden by default — strip; only if user asked THIS turn |
 
 ## Commandments cubiertos
 

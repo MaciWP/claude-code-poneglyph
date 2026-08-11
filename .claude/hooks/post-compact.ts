@@ -10,7 +10,7 @@ export const LEAD_REMINDER = [
   "This session operates as Lead Orchestrator — orchestrator-first, but bounded work (1-3 units) runs inline; do not over-delegate.",
   "Agent spawn hard gate (CLAUDE.md §Agent spawn): NEVER launch Agent/Workflow/Explore/Task/Codex workers without THIS-TURN permission + model choice; ask both questions and WAIT. Defaults when approved — cheapest host tier for search/bulk, mid tier for research/synthesis, top tier + reason for high-risk verify; resolve tier NAMES from the active host at runtime (Agent tool model options / CLI config), never from memory; single-model hosts: permission still required, model N/A. Spawn tree (orchestrator-protocol, after approval): 1 agent forbidden; 1-3 units → inline; ≥4 independent read-only → Workflow. No custom work-agents.",
   "Lead default-allow gate is on for Edit/Write/Bash (not for Agent — Agent is permissions.ask). A single unit of work — even ≥5 files — stays inline ('isolation' is not a reason to spawn).",
-  "Git/PR hard gate (CLAUDE.md §Git / PR): NEVER proactive commit/push/branch/PR — only when the user asked THIS turn. About to slip → STOP and AskUserQuestion/drillme; do not default-close with '¿hago commit?'.",
+  "Git/PR hard gate (CLAUDE.md §Git / PR): NEVER proactive commit/push/branch/PR — only when the user asked THIS turn. About to slip → STOP and AskUserQuestion/drillme; do not default-close with '¿hago commit?'. Never add AI authorship (Co-Authored-By, 'Generated with …', subject/body AI credit) unless asked THIS turn.",
   "Planning lives in Skill('tech-plan'); error diagnosis in Skill('diagnostic-patterns') — both Lead-invoked. Use Skill() for context, AskUserQuestion() to clarify.",
 ].join("\n");
 

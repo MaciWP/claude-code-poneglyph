@@ -68,6 +68,37 @@ describe("SECRET_PATTERN_CI — lowercase credentials", () => {
   });
 });
 
+// Measured FP class (binora-frontend types.gen.ts, JRV-1077 and prior): SECRET_PATTERN_CI's
+// `.{8,}` treats `password: string;` as a credential because ` string;` is ≥8 chars.
+// Same shape appears in hand-written interfaces, Zod schemas, and Django field defs —
+// not only generated clients. Fix filters type/schema RHS; values stay flagged.
+describe("type/schema annotations are NOT secrets (types.gen.ts FP class)", () => {
+  test("TS property: password: string;", () => {
+    expect(lineHasSecret("    password: string;")).toBe(false);
+  });
+  test("TS property: old_password: string; (OpenAPI client shape)", () => {
+    expect(lineHasSecret("    old_password: string;")).toBe(false);
+  });
+  test("TS union: password: string | null;", () => {
+    expect(lineHasSecret("    password: string | null;")).toBe(false);
+  });
+  test("named type: access_token: AccessToken;", () => {
+    expect(lineHasSecret("    access_token: AccessToken;")).toBe(false);
+  });
+  test("Zod builder: password: z.string().min(8),", () => {
+    expect(lineHasSecret("    password: z.string().min(8),")).toBe(false);
+  });
+  test("Django field: password: models.CharField(max_length=128),", () => {
+    expect(lineHasSecret("    password: models.CharField(max_length=128),")).toBe(false);
+  });
+  test("quoted literal still flags (value, not type)", () => {
+    expect(lineHasSecret(`password = "${"y".repeat(12)}"`)).toBe(true);
+  });
+  test("bare long token still flags (compose / .env shape)", () => {
+    expect(lineHasSecret(`password = ${"y".repeat(12)}`)).toBe(true);
+  });
+});
+
 describe("isOrchestrationPath — exclude the .claude/ orchestration tree", () => {
   test("excludes hooks (the self-matching false-positive case)", () => {
     expect(isOrchestrationPath(".claude/hooks/security-gate.ts")).toBe(true);

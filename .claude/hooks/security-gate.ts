@@ -60,11 +60,94 @@ export function isApiSpecDocument(content: string): boolean {
   return /^["']?(?:openapi|swagger)["']?:\s*['"]?\d/m.test(content.slice(0, 2048));
 }
 
+// Keys aligned with SECRET_PATTERN + SECRET_PATTERN_CI. Longer tokens first so
+// `access_token` wins over a trailing `token` substring when extracting RHS.
+const SECRET_RHS_EXTRACT =
+  /(?:access_token|accesstoken|private_key|privatekey|api_key|apikey|password|passwd|secret|API_KEY|PRIVATE_KEY|PASSWORD|TOKEN|SECRET)\s*[=:]\s*(.*)$/i;
+
+const TYPE_KEYWORDS = new Set([
+  "string",
+  "number",
+  "boolean",
+  "null",
+  "undefined",
+  "unknown",
+  "any",
+  "object",
+  "bigint",
+  "symbol",
+  "void",
+  "never",
+  "str",
+  "int",
+  "float",
+  "bool",
+  "true",
+  "false",
+  "none",
+]);
+
+/** RHS after a secret-shaped key, or null when the line has no key match. */
+export function extractSecretRhs(line: string): string | null {
+  const m = line.match(SECRET_RHS_EXTRACT);
+  return m ? m[1] : null;
+}
+
+// Type/schema RHS is not a credential value. Measured FP class (binora-frontend
+// types.gen.ts on JRV-1077 and earlier turns): `password: string;` / `old_password:
+// string;` — OpenAPI-generated property types. SECRET_PATTERN_CI's `.{8,}` treats
+// ` string;` as a value because it is ≥8 chars, so every turn that touches the
+// generated client re-fires the Stop gate. Same cry-wolf failure mode as .md /
+// OpenAPI yaml exclusions above.
+// Hand-written interfaces, Zod (`z.string()`), and Django field defs share the
+// shape — path-excluding `types.gen.ts` would miss them. Filter by RHS class.
+// Tradeoff: `password = getSecret()` (call, no literal) is not flagged — the gate
+// hunts leaked VALUES, not dataflow.
+export function isCredentialTypeAnnotation(rhs: string): boolean {
+  let s = rhs.replace(/\/\/.*$/, "").replace(/\/\*[\s\S]*$/, "").trim();
+  s = s.replace(/[,;]\s*$/, "").trim();
+  if (!s) return false;
+
+  // Quoted / template literal → value territory (real or example secret).
+  if (/['"`]/.test(s)) return false;
+
+  // PascalCase single identifier (`AccessToken`, `PasswordInput`) is a type name,
+  // not a leaked value — must win over the continuous-token check below.
+  if (/^[A-Z][A-Za-z0-9]*$/.test(s) && /[a-z]/.test(s)) return true;
+
+  // Continuous secret-like token (JWT, base64, bare password) — not a type name,
+  // unless it is exactly a type keyword (`string`, `number`, …).
+  if (/^[A-Za-z0-9_\-+/=.]{8,}$/.test(s) && !TYPE_KEYWORDS.has(s.toLowerCase())) {
+    return false;
+  }
+
+  // Schema / ORM builders and call expressions without string literals.
+  if (/^(?:z|yup|joi|t|models|serializers)\./i.test(s)) return true;
+  if (/\(.*\)/.test(s)) return true;
+
+  // TS/Flow/Python type expressions: keywords, unions, arrays, generics, named types.
+  const body = s.replace(/^readonly\s+/, "");
+  if (
+    /^(?:[A-Za-z_$][\w$]*(?:\[\])?(?:<[^;]+>)?)(?:\s*\|\s*(?:[A-Za-z_$][\w$]*(?:\[\])?(?:<[^;]+>)?|null|undefined))*$/.test(
+      body,
+    )
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
 // Per-line secret check. Resets the stateful /g regex BEFORE testing — the
 // lastIndex gotcha would silently skip alternating lines otherwise.
+// Type/schema annotations that only LOOK secret-shaped are filtered out (see
+// isCredentialTypeAnnotation) so the gate stays loud on real leaks only.
 export function lineHasSecret(line: string): boolean {
   SECRET_PATTERN.lastIndex = 0;
-  return SECRET_PATTERN.test(line) || SECRET_PATTERN_CI.test(line);
+  if (!(SECRET_PATTERN.test(line) || SECRET_PATTERN_CI.test(line))) return false;
+  const rhs = extractSecretRhs(line);
+  if (rhs !== null && isCredentialTypeAnnotation(rhs)) return false;
+  return true;
 }
 
 export async function getModifiedFiles(): Promise<string[]> {

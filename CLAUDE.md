@@ -83,7 +83,17 @@ No automated gate enforces this — the Lead is responsible. **Sensitive paths**
 
 **If about to slip** (temptation, "finishing the loop", ambiguous "guarda", end-of-task habit): **STOP** → ask with `AskUserQuestion` or `Skill(drillme)` — never silently mutate. Do **not** proactively offer "¿hago commit/push/PR?" as a default closing; wait for the user to request it.
 
-Also: no AI authorship (`Co-Authored-By`) in work repos unless requested; no unprompted full test-suite runs in shared work repos (collisions). Mechanical backstop: Stop gate warns on unasked git mutations (does not block — Lead must still obey).
+**No AI authorship in commits / PRs (default).** When drafting or executing a commit message (or PR body), never attribute the work to an AI — any host, any path (`git commit`, HEREDOC, `/commit-message`, PR text):
+
+| Banned unless user asked THIS turn | Examples |
+|---|---|
+| Co-author trailers | `Co-Authored-By: Claude …`, `Co-Authored-By: Cursor …`, any AI `noreply@…` |
+| Generator footers | `Generated with Claude Code`, `Made with Cursor`, `🤖 …` |
+| Subject/body credit | "authored by Claude", "via Codex/Grok", "AI-assisted commit" |
+
+Author/committer identity stays the human `git` config; do not invent AI co-authors. Exception only on explicit THIS-turn request.
+
+Also: no unprompted full test-suite runs in shared work repos (collisions). Mechanical backstop: Stop gate warns on unasked git mutations (does not block — Lead must still obey).
 
 ### Skill routing
 
