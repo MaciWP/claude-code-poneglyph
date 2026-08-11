@@ -127,8 +127,8 @@ Team mode is experimental and rarely used (4-gate + opt-in). The teammate prompt
 | Work category | Complexity | Model |
 |----------------|------------|-------|
 | Inline build/review (Lead session) — the default for ALL writes | any | session model (`effortLevel`) |
-| Workflow unit — read-only research/review lens | any | sonnet (default) |
-| Workflow unit — write (explicit opt-in only) | > 50 | opus |
+| Workflow unit — read-only research/review lens | any | mid tier of the host (default) |
+| Workflow unit — write (explicit opt-in only) | > 50 | top tier of the host |
 | Read-only exploration (`Explore`) | any | inherits session model (built-in, capped at opus — CC 2.1.198) |
 
 ## Effort Routing (Frontmatter — static)

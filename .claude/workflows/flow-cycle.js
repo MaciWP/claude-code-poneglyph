@@ -49,7 +49,7 @@ const PLAN = `.claude/plans/${slug}`
 const NO_WRITE = // prohibiciones comunes a todos los agentes que tocan el repo
   `NEVER touch ${PLAN}/state.json or the frontmatter of ${PLAN}/tasks/US*.md (the Lead closes state with the user). ` +
   `NEVER run git commit/push/checkout/reset. ` +
-  `NEVER edit sensitive paths (.env, *.lock, package.json, .claude/settings.json, secrets/, credentials/): if the work requires one, stop and report it as blocked with the reason.`
+  `NEVER edit sensitive paths (.env, *.lock, package.json, .claude/settings*.json, secrets/, credentials/): if the work requires one, stop and report it as blocked with the reason.`
 
 // ---------------------------------------------------------------------------
 // Fase 1 — Preflight: un solo lector barato resuelve TODO el contexto que el

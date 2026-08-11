@@ -7,6 +7,11 @@ argument-hint: "[--check|--status|--execute|--unlink|--validate-hooks] [--backup
 
 Creates symlinks (or junctions on Windows) in `~/.claude/` pointing to `poneglyph/.claude/`, allowing skills/agents/commands/rules to be used in any project.
 
+The generated user profile comes from `.claude/settings.global.json` plus the
+ignored `.claude/settings.machine.json` overlay. The repository's
+`.claude/settings.json` is intentionally project-scoped and contains no global
+hooks, preventing duplicate hook registration while developing Poneglyph.
+
 `--validate-hooks` checks that every hook registered in the generated `~/.claude/settings.json` resolves to a real file in the synced layer (run it after `--execute` when hooks changed).
 
 ## Multi-OS Compatibility

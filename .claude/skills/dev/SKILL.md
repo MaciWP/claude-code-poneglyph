@@ -160,6 +160,9 @@ shows up in the response — depth can be short; omission cannot.
 - Loop-back over push-forward: a broken premise invalidates everything built on it.
 - Maximum quality is the default for every task — the user's care budget is not
   inferred from how small the diff looks.
+- **No proactive git/PR** (CLAUDE.md §Git / PR): never `commit` / `push` / open PR
+  unless the user asked THIS turn. "Done" is not permission. Tempted or ambiguous
+  → `AskUserQuestion` / `drillme`, never silent mutation.
 
 ## Anti-patterns
 
@@ -174,6 +177,8 @@ shows up in the response — depth can be short; omission cannot.
 | Improvising when an assumption breaks mid-task | Loop-back to PLAN and tell — always |
 | Risks section padded with invented dangers | Proportionality of *depth* — real risks only, or none |
 | Silent LEARN because "nothing to say" | Explicit `LEARN: nothing non-obvious` |
+| End-of-task auto commit / push / `gh pr create` | Forbidden — wait for THIS-turn ask; if about to slip → drillme/AskUserQuestion |
+| Closing with unsolicited "¿hago commit/push/PR?" | Do not default-close with shipping offers; leave tree dirty until asked |
 
 ## Commandments cubiertos
 

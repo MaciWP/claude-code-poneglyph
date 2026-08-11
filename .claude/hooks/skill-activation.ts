@@ -183,7 +183,7 @@ export function detectRoutingShape(prompt: string): "bulk" | "quick" | null {
 }
 
 const ROUTING_LINES: Record<"bulk" | "quick", string> = {
-  bulk: "Bulk/mechanical shape → consider `/model sonnet` + `/effort low` (shape-only suggestion, session state unknown — playbook §4).",
+  bulk: "Bulk/mechanical shape → consider a cheaper tier via `/model` + `/effort low` (shape-only suggestion, session state unknown — playbook §4).",
   quick: "Quick-lookup shape → consider `/effort low` (shape-only suggestion, session state unknown — playbook §4).",
 };
 

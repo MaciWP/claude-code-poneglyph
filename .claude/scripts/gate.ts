@@ -8,8 +8,9 @@
 //      agent never touched it, and files touched but NOT declared are invisible to it.
 //      This repo carries ~119 modified + ~24 untracked files at rest — absolute state
 //      would be permanently red, and a permanently red gate gets ignored.
-//   2. protected_files is DERIVED from .claude/settings.json (permissions.deny +
-//      autoMode.soft_deny) instead of being a fourth hand-maintained list.
+//   2. protected_files is DERIVED from the effective user/project settings
+//      (permissions.deny + autoMode.soft_deny) instead of being a fourth
+//      hand-maintained list.
 //   3. self_integrity: an agent that can edit its own grader invalidates every other
 //      gate, so a build phase that touches this file fails immediately.
 //
@@ -25,6 +26,8 @@
 // decides from the exit code and never has to interpret prose.
 
 import { existsSync, statSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
 
 export interface Check {
   name: string;
@@ -174,19 +177,22 @@ export function claimsVsDelta(
 }
 
 /**
- * Turn settings.json deny lists into path patterns. Reads permissions.deny and
+ * Turn one or more settings deny lists into path patterns. Reads permissions.deny and
  * autoMode.soft_deny so the protected set tracks the config instead of drifting
  * from a copy (system-inventory already flags hand-synced lists as known friction).
  */
-export function derivePatterns(settings: unknown): string[] {
-  const s = settings as { permissions?: { deny?: string[] }; autoMode?: { soft_deny?: string[]; hard_deny?: string[] } };
-  const entries = [...(s?.permissions?.deny ?? []), ...(s?.autoMode?.soft_deny ?? []), ...(s?.autoMode?.hard_deny ?? [])];
+export function derivePatterns(settings: unknown | unknown[]): string[] {
+  const sources = Array.isArray(settings) ? settings : [settings];
   const patterns = new Set<string>();
-  for (const entry of entries) {
-    // Only write-shaped rules bound what an agent may leave behind; Bash(...) and
-    // Read(...) rules are about running and reading, not about mutating the tree.
-    const m = /^(?:Edit|Write)\((.+)\)$/.exec(entry.trim());
-    if (m) patterns.add(m[1].replace(/^\.\//, ""));
+  for (const source of sources) {
+    const s = source as { permissions?: { deny?: string[] }; autoMode?: { soft_deny?: string[]; hard_deny?: string[] } };
+    const entries = [...(s?.permissions?.deny ?? []), ...(s?.autoMode?.soft_deny ?? []), ...(s?.autoMode?.hard_deny ?? [])];
+    for (const entry of entries) {
+      // Only write-shaped rules bound what an agent may leave behind; Bash(...) and
+      // Read(...) rules are about running and reading, not about mutating the tree.
+      const m = /^(?:Edit|Write)\((.+)\)$/.exec(entry.trim());
+      if (m) patterns.add(m[1].replace(/^\.\//, ""));
+    }
   }
   return [...patterns].sort();
 }
@@ -387,7 +393,14 @@ if (import.meta.main) {
       if (!envelopePath) throw new Error("check requires --envelope <path>");
       const envelope: Envelope = await Bun.file(envelopePath).json();
       const baselinePath = flag("baseline");
-      const settingsPath = flag("settings") ?? ".claude/settings.json";
+      const explicitSettings = flag("settings");
+      const settingsPaths = explicitSettings
+        ? [explicitSettings]
+        : [
+            join(homedir(), ".claude", "settings.json"),
+            ".claude/settings.global.json",
+            ".claude/settings.json",
+          ];
       const result = await check({
         phase: flag("phase") ?? "build",
         envelope,
@@ -396,7 +409,11 @@ if (import.meta.main) {
         // The run's own session directory must never count as agent work, or the
         // gate poisons itself: every envelope it writes would be an undeclared change.
         ignore: (flag("ignore") ?? "").split(",").map((s) => s.trim()).filter(Boolean),
-        settings: existsSync(settingsPath) ? await Bun.file(settingsPath).json() : {},
+        settings: await Promise.all(
+          settingsPaths
+            .filter((settingsPath) => existsSync(settingsPath))
+            .map((settingsPath) => Bun.file(settingsPath).json()),
+        ),
       });
       console.log(JSON.stringify(result));
       process.exit(result.passed ? 0 : 1);

@@ -67,7 +67,7 @@ The HU is implemented **inline in the main session**. Per the canonical spawn de
 | HU characteristic | Mode | Reason |
 |---|---|---|
 | Any single HU (1..N files, bounded change) | **Inline** (Lead in skill) | Default-allow gate covers it; spawning 1 agent for isolation is forbidden (P1/P2) |
-| HU touches sensitive paths (`.env`, `*.lock`, `package.json`, `.claude/settings.json`, `secrets/`) | **Inline** + declare `sensitive: <reason ≥8 chars>` | CLAUDE.md sensitive-paths rule |
+| HU touches sensitive paths (`.env`, `*.lock`, `package.json`, `.claude/settings*.json`, `secrets/`) | **Inline** + declare `sensitive: <reason ≥8 chars>` | CLAUDE.md sensitive-paths rule |
 | HU is "create extension" (new skill/hook/rule/MCP/plugin) | Lead invokes `meta-create` first; then inline | Meta-context requires `meta-create` consultation |
 | The wave has **≥4 independent HUs** with disjoint files and no shared state | **Workflow** fan-out (opt-in) | Only at ≥4 parallel units does delegation pay off (P3); `isolation: 'worktree'` per unit on collision |
 

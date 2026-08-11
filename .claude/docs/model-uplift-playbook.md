@@ -88,7 +88,7 @@ Watchpoints where smaller models historically relapse in this setup — each map
 - Standard feature build → Opus 4.8 high (its default) — or Sonnet 5 when budget matters.
 - Bulk mechanical work (sweeps, renames, formatting, doc batches) → Opus 4.8 **fast mode** or Sonnet 5.
 - Massive-corpus analysis (multi-repo audits, huge logs, long-lived sessions) → **Sonnet 5** for the 1M window; prefer it over compacting Opus mid-task.
-- Degradation cascade on overload: `settings.json.fallbackModel` (kept current by feature 026/US3).
+- Degradation cascade on overload: `settings.global.json.fallbackModel` (kept current by feature 026/US3).
 - One-turn deep reasoning boost: the `ultrathink` keyword instead of switching effort for the whole session.
 
 ## 5. Load & verify

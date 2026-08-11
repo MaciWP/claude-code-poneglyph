@@ -63,22 +63,22 @@ Write fan-out (≥4 independent WRITE units via Workflow) is **explicit user opt
 
 #### Model routing for delegated units (029/US9 — canonical table)
 
-The always-loaded rule is CLAUDE.md Cmd X + §Agents for cheap reads ("cheapest capable model; sonnet max, haiku if very basic"). This is the full table — every `Agent()`/`agent()` call sets its model explicitly, never inheriting the Lead's:
+The always-loaded rule is CLAUDE.md §Agent spawn + Cmd X: **no spawn without this-turn permission + model choice**, then the cheapest capable tier for the unit. Defaults the Lead proposes when asking — every `Agent()`/`agent()`/Codex worker call sets its model **explicitly** after approval, never inheriting the Lead's:
 
-| Unit | Model |
+| Unit class | Default to propose |
 |---|---|
-| Exploration / read-only sweeps / summaries | **sonnet** (haiku when very basic) |
-| Bulk mechanical (grep/format/inventory) | **haiku** |
-| Web research | **sonnet** |
-| Delegated build unit (explicit opt-in only) | **sonnet** |
-| High-risk verify/judge | **opus**, with the reason stated |
-| Fable/Mythos-class in units | **NEVER** — Lead only |
+| Bulk mechanical (grep/format/inventory) / read-only sweeps / summaries | **cheapest tier** the host exposes (one step up if the unit needs synthesis) |
+| Web research / delegated build unit (explicit opt-in only) | **mid tier** |
+| High-risk verify/judge | **top tier** + reason stated |
+| Lead-class (session model) in units | **NEVER** for routine units — Lead only |
 
-The `Workflow` tool sits behind `permissions.ask` (global settings) — every launch prompts the user; `Agent` stays auto-allowed but bound by this table.
+Tier names are host capabilities, not doctrine — resolve them at runtime: Claude Code lists its live tiers in the `Agent` tool's model options; Codex uses its CLI-configured model (`-m` only for a user-named tier); single-model hosts have no model question. Never infer or memorize a tier the active host does not expose; use inline Lead tools instead.
+
+**Hard gate (CLAUDE.md §Agent spawn)**: before any `Agent()` / Workflow fan-out / Explore-class agent / Task agent / Codex multi-agent / external `codex exec` fan-out, ask permission **and** model, then WAIT. No spawn in the same message as the questions. On Claude Code, `Agent`+`Workflow` sit behind `permissions.ask`; the Lead must still ask both questions in chat (model is not covered by the harness prompt).
 
 #### Spawn decision tree — expanded reference
 
-> **The operational core is always-loaded in `CLAUDE.md`** (§Agents for cheap reads + Cmd X: inline-first for write work, agents for cheap reads). This is the full diagram + principles; other skills link here for the detail, not for the always-on rule:
+> **The operational core is always-loaded in `CLAUDE.md`** (§Agent spawn hard gate + Cmd X: permission + model before any spawn; inline-first for write work). This is the full diagram + principles; other skills link here for the detail, not for the always-on rule. The tree below only applies **after** the user approved spawn and model:
 
 ```mermaid
 graph TD
@@ -103,9 +103,9 @@ graph TD
 | **P7** | spawn-decision ≠ intra-orchestration | ≥4 gobierna la DECISIÓN de spawnear. Agentes coordinándose **dentro** de un team/workflow ya spawneado (p.ej. Four-Eyes generator→validator) no son un nuevo spawn. |
 | **P8** | Escritura = inline-first | Build/write SIEMPRE inline por defecto; el fan-out de escritura degrada calidad (3 costes arriba) y solo se justifica con opt-in explícito. |
 
-**Exploración (lectura, NO spawn-de-trabajo)**: `Explore` (built-in del harness; hereda el modelo de sesión desde CC 2.1.198) es la primitiva de lectura — barata, read-only — para exploración masiva read-only que ensuciaría el contexto del Lead. **NO cuenta como "1 agente prohibido".** 1-2 files → Lead `Read` inline. Delegar TRABAJO sigue el árbol (≥4). Matriz completa: `references/04-agent-selection.md`.
+**Exploración**: default = Lead `Read`/`Grep` inline. `Explore` (built-in; hereda modelo de sesión desde CC 2.1.198) es read-only y **no** es "1 agente de trabajo" bajo P1 — **pero sigue bajo el hard gate de CLAUDE.md §Agent spawn** (permission + model antes de lanzarlo; en Claude, preferir el tier barato del host vía Agent/subagent con model explícito en lugar de Explore que hereda el Lead). 1-2 files → siempre inline. Matriz: `references/04-agent-selection.md`.
 
-**Ortogonal al árbol (no son spawn)**: sensitive paths (`.env`, `*.lock`, `package.json`, `.claude/settings.json`, `secrets/`, `credentials/`) → inline con `sensitive: <reason ≥8 chars>`. Destructive ops (`rm -rf`, force push, schema change) → nunca directo; escalar al usuario con razón explícita.
+**Ortogonal al árbol (no son spawn)**: sensitive paths (`.env`, `*.lock`, `package.json`, `.claude/settings*.json`, `secrets/`, `credentials/`) → inline con `sensitive: <reason ≥8 chars>`. Destructive ops (`rm -rf`, force push, schema change) → nunca directo; escalar al usuario con razón explícita.
 
 **Cuándo Workflow vs Team** (eje-2) + dispatch del fresh-context reviewer: `references/04-agent-selection.md` §Workflow wiring.
 

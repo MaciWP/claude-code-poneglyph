@@ -128,11 +128,13 @@ export function buildStopResponse(hits: string[]): {
   };
 }
 
-// --- Git discipline (029/US4) -------------------------------------------------
+// --- Git discipline (029/US4; hard gate expanded CLAUDE.md §Git / PR) ---------
 // Measured friction: 10 incidents of unasked git mutations (commits taken over,
-// unwanted authorship, pushes). The always-loaded rule is CLAUDE.md §Sensitive
-// paths; this is the best-effort mechanical backstop: at Stop, compare the
-// turn's git mutations against the user prompt's intent. Warn, never block.
+// unwanted authorship, pushes). Always-loaded rule: CLAUDE.md §Git / PR —
+// hard gate (no proactive commit/push/PR; THIS-turn ask only; if about to
+// slip → AskUserQuestion/drillme). This is the best-effort mechanical
+// backstop: at Stop, compare the turn's git mutations against the user
+// prompt's intent. Warn, never block.
 
 // Full mutating class (critic MAJOR 3, 029): the measured incidents were
 // commit/push, but the spec says "fix the input CLASS" — any state-mutating
@@ -312,13 +314,13 @@ export function buildGitDisciplineWarning(
   return {
     systemMessage:
       `[security-gate] Mutación git ejecutada sin petición aparente del usuario este turno:\n${list}\n` +
-      `Regla (CLAUDE.md §Sensitive paths — Git discipline): las mutaciones git son del usuario salvo petición explícita.`,
+      `Regla (CLAUDE.md §Git / PR — hard gate): commit/push/PR proactivos PROHIBIDOS; solo con petición explícita ESTE turno. Si dudabas, debías AskUserQuestion/drillme, no mutar.`,
     hookSpecificOutput: {
       hookEventName: "Stop",
       additionalContext:
         `[security-gate] A git mutation ran this turn without apparent user request:\n${list}\n` +
-        `Verify against the user's message; if it was NOT requested, tell the user now, offer to undo ` +
-        `(e.g. soft reset), and check no AI authorship was added.`,
+        `Hard gate (CLAUDE.md §Git / PR): no proactive commit/push/PR. If it was NOT requested, tell the user now, ` +
+        `offer to undo (e.g. soft reset), check no AI authorship was added, and next time STOP → AskUserQuestion/drillme.`,
     },
   };
 }

@@ -56,7 +56,11 @@ const LINK_FILES = [
 // shared keys (regenerated each sync → no drift); the overlay carries only machine
 // paths. Replaces the previous symlink added 2026-05-30.
 const MERGED_SETTINGS = {
-  base: ".claude/settings.json", // committed, shared, cross-OS
+  // This is deliberately distinct from .claude/settings.json. Claude Code loads
+  // both project and user settings in this repository; registering global hooks in
+  // both scopes makes every hook fire twice. The sync source therefore owns the
+  // user profile, while settings.json stays project-scoped and hook-free.
+  base: ".claude/settings.global.json", // committed, global, cross-OS
   overlay: ".claude/settings.machine.json", // gitignored, per-machine, optional
   dest: "settings.json", // → ~/.claude/settings.json (real file)
 };
@@ -443,23 +447,6 @@ function generateSettings(
       ? "merged base + machine overlay → ~/.claude/settings.json"
       : "copied base → ~/.claude/settings.json (no machine overlay)",
   };
-}
-
-// === AGENTS.md MIRROR (029/US18) ===
-
-// AGENTS.md (the cross-tool doctrine mirror for Codex/Cursor/Gemini) is a git
-// symlink to CLAUDE.md. On checkouts without symlink support (Windows without
-// developer mode), git materializes it as a TEXT FILE containing "CLAUDE.md" —
-// a broken mirror. This repairs it by copying the real doctrine over it.
-export function materializeAgentsMd(repoRoot: string): "ok" | "materialized" | "skipped" {
-  const agentsPath = path.join(repoRoot, "AGENTS.md");
-  const claudePath = path.join(repoRoot, "CLAUDE.md");
-  if (!fs.existsSync(agentsPath) || !fs.existsSync(claudePath)) return "skipped";
-  if (fs.lstatSync(agentsPath).isSymbolicLink()) return "ok"; // healthy link (macOS/Linux)
-  const content = fs.readFileSync(agentsPath, "utf-8");
-  if (content.trim() !== "CLAUDE.md") return "ok"; // already a real mirror
-  fs.copyFileSync(claudePath, agentsPath);
-  return "materialized";
 }
 
 // === LINK DETECTION ===
@@ -1278,17 +1265,6 @@ Requirements per OS:
         ? "❌"
         : "📄";
   console.log(`${sIcon} settings.json: ${settingsResult.message}`);
-
-  // AGENTS.md mirror repair (029/US18) — no-op on healthy symlinks (macOS/Linux),
-  // materializes the doctrine on Windows checkouts where the git symlink broke.
-  try {
-    const agentsStatus = materializeAgentsMd(projectRoot);
-    if (agentsStatus === "materialized") {
-      console.log("📄 AGENTS.md: broken text-symlink repaired (copied from CLAUDE.md)");
-    }
-  } catch {
-    console.log("⚠️ AGENTS.md: repair check failed (non-fatal)");
-  }
 
   console.log("\n✅ Sync completed");
 

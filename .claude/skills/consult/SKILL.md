@@ -22,7 +22,7 @@ writes to the repo, and its output is a hypothesis to verify, never a source of 
 | | Codex (OpenAI) | Grok (xAI) |
 |---|---|---|
 | Binary | `~/.local/bin/codex` (0.146.0, orca-managed runtime) | `~/.local/bin/grok` (0.2.118, official xAI CLI) |
-| Headless call | `codex exec --sandbox read-only --ephemeral --skip-git-repo-check "<prompt>"` | `grok -p "<prompt>" --sandbox read-only --output-format plain` |
+| Headless call | `codex exec --sandbox read-only --ephemeral --skip-git-repo-check "<prompt>"` (CLI-configured default model; add `-m <tier>` only when the user named one) | `grok -p "<prompt>" --sandbox read-only --output-format plain` |
 | Write guardrail | `--sandbox read-only` (OS-enforced) — NEVER `workspace-write`/`danger-full-access` | `--sandbox read-only` (OS-enforced: FS write solo `~/.grok/`, red de hijos bloqueada) |
 | Auth | ChatGPT session (`codex login status`) | Browser login / `XAI_API_KEY` |
 | Output contract | stderr = progress, stdout = final message | stdout plano con `--output-format plain` |
@@ -36,11 +36,15 @@ disabled; the CLI's own `--sandbox read-only` IS the guardrail.
 
 ## Model choice
 
-- **Default: codex** (established baseline, evidence history in this repo).
+Hard gate: CLAUDE.md §Agent spawn applies to **every** external call — ask **permission + model**, WAIT, then invoke. Do not fire `codex exec` / `grok` without this-turn approval (user naming "pregúntale a codex" counts as permission for a **single** consult; still confirm **which** Codex tier if multi-model).
+
+Tier names are host capabilities, not doctrine — never memorize them from docs. Codex: the CLI's configured model is the baseline (run without `-m`); pass `-m <tier>` only when the user names one this turn (e.g. a top tier for a high-stakes refute), and never a tier the host does not expose. Grok: single model — the model question is N/A (state it).
+
+- **Default provider: codex** (established baseline, evidence history in this repo).
 - **Grok**: when the user names it, or when codex is unavailable.
 - **Double contrast**: for high-stakes second opinions, fire BOTH on the same prompt in
   parallel and report agreement/disagreement — two independent external hypotheses beat
-  one (still hypotheses, still verified before integrating).
+  one (still hypotheses, still verified before integrating). Confirm both launches first.
 
 ## Modes
 
@@ -71,6 +75,7 @@ No zsh word-splitting loops over unquoted vars (`[[feedback-zsh-no-wordsplit]]`)
 
 ```bash
 OUT=<scratchpad-dir>
+# CLI-configured default model; add -m <tier> only when the user named one
 ~/.local/bin/codex exec --sandbox read-only --ephemeral --skip-git-repo-check "<q1>" > "$OUT/c1.out" 2>/dev/null &
 ~/.local/bin/grok -p "<q2>" --sandbox read-only --output-format plain > "$OUT/g1.out" 2>/dev/null &
 wait

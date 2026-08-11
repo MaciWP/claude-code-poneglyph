@@ -1,7 +1,8 @@
-# Claude Code Poneglyph
+# Poneglyph
 
-Multi-agent orchestration system for Claude Code — a personal meta-configuration
-(skills, agents, hooks, the 5-phase `/flow` workflow) for **Oriol Macias**.
+Personal orchestration layer for Claude Code, Codex and Grok Build. Claude Code
+has the full adapter; Codex receives the portable doctrine and a small verified
+skill set; Grok receives the shared output style.
 
 > **This file is the single source of truth for installation.**
 > Deep per-tool detail lives in [`docs/`](./docs); the steps below are the
@@ -87,7 +88,8 @@ and on Windows it **replaces** the process PATH with the literal `env.PATH`
 string. A Unix-style value (`${HOME}/.bun/bin:...`) therefore wipes `bun`, `git`
 and everything else from PATH → hooks and `bun test` fail.
 
-This repo's `.claude/settings.json` ships an **explicit Windows `env.PATH`**
+This repo's `.claude/settings.global.json` ships the global profile. Its ignored
+machine overlay supplies the **explicit Windows `env.PATH`**
 (absolute dirs, `;`-separated, `bun\bin` first). If your username or tool
 locations differ, regenerate it:
 
@@ -95,7 +97,7 @@ locations differ, regenerate it:
 $bun  = "$env:USERPROFILE\.bun\bin"
 $git  = "$env:LOCALAPPDATA\Programs\PortableGit\cmd"
 $real = "$bun;$git;" + [Environment]::GetEnvironmentVariable("PATH","Machine") + ";" + [Environment]::GetEnvironmentVariable("PATH","User")
-# Put $real (backslashes escaped as \\) into .claude/settings.json -> env.PATH
+# Put $real (backslashes escaped as \\) into .claude/settings.machine.json -> env.PATH
 ```
 
 > **Restart Claude Code after editing `settings.json`** — `env` is injected at
@@ -115,7 +117,7 @@ Then add the `statusLine` block + widget config — full steps in
 ```powershell
 bun --version            # 1.3.6
 git --version            # 2.51.2
-bun test ./.claude/hooks/   # -> 81 pass, 0 fail
+bun test ./.claude/hooks/   # -> 0 fail
 ```
 
 If `bun` is "not found" inside Claude Code's Bash tool: you skipped the
@@ -123,14 +125,19 @@ If `bun` is "not found" inside Claude Code's Bash tool: you skipped the
 
 ---
 
-## How hooks resolve
+## How global hooks resolve
 
-Hooks run from the **project** copy via the documented `${CLAUDE_PROJECT_DIR}`
-placeholder (which *does* expand, unlike `$HOME`):
+Hooks run from the synced **user** layer through `$HOME/.claude/hooks/`. This
+keeps them available in every project and gives `sync-claude.ts --validate-hooks`
+one deterministic target to verify:
 
 ```json
-"command": "bun ${CLAUDE_PROJECT_DIR}/.claude/hooks/security-gate.ts"
+"command": "bun $HOME/.claude/hooks/security-gate.ts"
 ```
+
+The Poneglyph repository itself intentionally declares no hooks in its project
+`settings.json`; Claude loads user and project settings together, so duplicating
+the registrations there would execute each hook twice.
 
 | Event | Hook | Purpose |
 |-------|------|---------|
@@ -142,22 +149,25 @@ placeholder (which *does* expand, unlike `$HOME`):
 
 ---
 
-## Global install (optional, not done by default)
+## Global installation
 
-By design poneglyph is meant to apply to **all** projects via `~/.claude/`.
-**Current state on this machine: NOT installed globally** — `~/.claude/` has no
-`hooks/`, `skills/`, `agents/` or `commands/`; the orchestration lives only in
-this repo. To install globally:
+Poneglyph applies across projects through `~/.claude/` and `~/.codex/`. The
+Claude synchronizer owns links plus the generated user settings profile; it does
+not copy those hooks into the project scope.
 
+```bash
+bun .claude/commands/sync-claude.ts --execute --backup --force
+bun .claude/scripts/sync-codex.ts --execute --backup --force
 ```
-/sync-claude
-```
 
-> `/sync-claude` syncs **folders + `CLAUDE.md`** via symlinks/junctions but
-> **not `settings.json`** — copy the `statusLine` (and, if you want global hooks,
-> the `hooks` + `env` blocks) into `~/.claude/settings.json` by hand. When global
-> hooks point at `~/.claude/hooks/`, switch their command paths from
-> `${CLAUDE_PROJECT_DIR}` to the absolute `~/.claude/hooks/` location.
+`sync-claude.ts` generates `~/.claude/settings.json` from
+`.claude/settings.global.json` plus `.claude/settings.machine.json`. The tracked
+`.claude/settings.json` remains deliberately hook-free to prevent duplicate hook
+execution in this repository. Codex installs only the doctrine and the portable
+skills; Claude hooks are not a compatible Codex implementation.
+
+The current bridge topology and verification commands live in
+[`.claude/docs/harness-adapters.md`](./.claude/docs/harness-adapters.md).
 
 ---
 
@@ -165,11 +175,13 @@ this repo. To install globally:
 
 | Path | What |
 |------|------|
-| `CLAUDE.md` | Project doctrine — 10 Commandments + orchestration rules |
-| `.claude/skills/` | 20 skills (6 phase skills + transversal + domain) |
-| `.claude/agents/` | builder, reviewer, scout |
+| `CLAUDE.md` | Global doctrine, linked into Claude and Codex user layers |
+| `AGENTS.md` | Codex repository addendum; avoids repeating the global doctrine |
+| `.claude/settings.global.json` | Claude user profile source, including global hooks |
+| `.claude/settings.json` | Hook-free project profile |
+| `.claude/skills/` | Claude adapter; Codex installs only three portable skills |
 | `.claude/hooks/` | 5 hooks + tests (`__tests__/`) |
-| `.claude/commands/` | `/flow`, `/decide`, `/explain-changes`, `/sync-claude` |
+| `.claude/commands/` | `/flow`, `/role`, `/sync-claude`, `/commit-message`, `/pr-description` |
 | `.claude/plans/` | `/flow` feature lifecycles (`{NNN}-{slug}/`) |
 | `docs/` | Machine bootstrap records (git, statusline) |
 
@@ -181,5 +193,6 @@ this repo. To install globally:
 |---------|-------|-----|
 | `bun: command not found` in Bash tool | `env.PATH` wrong, or no restart | Fix Step 4 + restart Claude Code |
 | `git` widget shows `Processing…` | git not on PATH | Step 2 (PortableGit on User PATH) |
-| Hooks never fire | path pointed at non-existent `~/.claude/hooks` | Use `${CLAUDE_PROJECT_DIR}` (already fixed) |
+| Claude hook fires twice in Poneglyph | hook registered in both user and project settings | Keep hooks only in `settings.global.json`; rerun sync |
+| Codex lacks Poneglyph behavior | Codex adapter not installed | Run `sync-codex.ts --execute --backup --force` |
 | `bun test` fails to find files | wrong cwd | run from repo root |

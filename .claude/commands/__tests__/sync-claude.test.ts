@@ -78,38 +78,3 @@ describe("expandRulesLinks", () => {
     expect(out.every((l) => !l.dest.endsWith("test-policy.md"))).toBe(true);
   });
 });
-
-import { mkdtempSync, writeFileSync, symlinkSync, readFileSync } from "fs";
-import { tmpdir } from "os";
-import { materializeAgentsMd } from "../sync-claude.ts";
-
-describe("materializeAgentsMd (029/US18 — Windows broken-symlink repair)", () => {
-  const repoWith = (agentsContent: string | "symlink" | null): string => {
-    const dir = mkdtempSync(path.join(tmpdir(), "agents-fix-"));
-    writeFileSync(path.join(dir, "CLAUDE.md"), "# Poneglyph\n\ndoctrine body\n");
-    if (agentsContent === "symlink") symlinkSync("CLAUDE.md", path.join(dir, "AGENTS.md"));
-    else if (agentsContent !== null) writeFileSync(path.join(dir, "AGENTS.md"), agentsContent);
-    return dir;
-  };
-
-  it("replaces a broken text-symlink (content 'CLAUDE.md') with the real doctrine", () => {
-    const dir = repoWith("CLAUDE.md");
-    expect(materializeAgentsMd(dir)).toBe("materialized");
-    expect(readFileSync(path.join(dir, "AGENTS.md"), "utf8")).toContain("doctrine body");
-  });
-
-  it("leaves a healthy symlink untouched", () => {
-    const dir = repoWith("symlink");
-    expect(materializeAgentsMd(dir)).toBe("ok");
-  });
-
-  it("leaves an already-materialized real file untouched", () => {
-    const dir = repoWith("# Poneglyph\n\ndoctrine body\n");
-    expect(materializeAgentsMd(dir)).toBe("ok");
-  });
-
-  it("absent AGENTS.md → skipped (repos without the mirror)", () => {
-    const dir = repoWith(null);
-    expect(materializeAgentsMd(dir)).toBe("skipped");
-  });
-});

@@ -25,10 +25,9 @@ session cost, 5h-block reset timer, and session/weekly usage. Reference:
 | Statusline shim | `%USERPROFILE%\.bun\bin\ccstatusline.exe` |
 | Widget config | `%USERPROFILE%\.config\ccstatusline\settings.json` |
 | PATH | `…\.bun\bin` added to the **user** PATH (persistent) |
-| Project settings | `E:\PYTHON\claude-code-poneglyph\.claude\settings.json` → `statusLine` |
-| Global settings | `~/.claude/settings.json` → `statusLine` (added manually) |
+| Settings source | `.claude/settings.global.json` → `statusLine` (sync-claude regenerates `~/.claude/settings.json` from it) |
 
-### `statusLine` block (both project + global settings.json)
+### `statusLine` block (`.claude/settings.global.json`)
 
 ```json
 "statusLine": {
@@ -120,13 +119,12 @@ cost+reset layout used here:
 }
 ```
 
-### Step 5 — Point settings.json at it
+### Step 5 — Point settings at it
 
-Add the `statusLine` block (section 1) to **both** the project
-`.claude/settings.json` and the global `~/.claude/settings.json`.
-
-> `/sync-claude` does **not** sync `settings.json` (only folders + `CLAUDE.md`),
-> so the global `statusLine` must be added by hand for cross-project coverage.
+Add the `statusLine` block (section 1) to `.claude/settings.global.json`, then
+re-run `bun .claude/commands/sync-claude.ts --execute` — it regenerates the
+global `~/.claude/settings.json` from that source. The project
+`.claude/settings.json` stays hook- and statusline-free (scope separation).
 
 ### Step 6 — Verify
 

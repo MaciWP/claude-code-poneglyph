@@ -12,7 +12,7 @@ paths:
 | Shebang | Works | Alternative |
 |---------|-------|-------------|
 | `#!/usr/bin/env bash` | NO | `#!/bin/bash` (absolute path) |
-| `#!/usr/bin/env bun` | YES | Poneglyph includes bun in PATH via settings.json |
+| `#!/usr/bin/env bun` | YES | Poneglyph includes bun in PATH via the generated user settings (`settings.global.json` + machine overlay) |
 | `#!/bin/bash` | YES | Absolute path, does not depend on env |
 
 **Prefer `.ts` with bun** over `.sh`. If `.sh` is needed, use `#!/bin/bash`.

@@ -173,6 +173,15 @@ describe("derivePatterns", () => {
     const p = derivePatterns({ permissions: { deny: ["Edit(.env)"] }, autoMode: { soft_deny: ["Edit(.env)"] } });
     expect(p.filter((x) => x === ".env")).toHaveLength(1);
   });
+
+  test("unions user and project protection sources", () => {
+    expect(
+      derivePatterns([
+        { autoMode: { soft_deny: ["Edit(.claude/settings.global.json)"] } },
+        { permissions: { deny: ["Write(.env)"] } },
+      ]),
+    ).toEqual([".claude/settings.global.json", ".env"]);
+  });
 });
 
 describe("matchPattern", () => {
