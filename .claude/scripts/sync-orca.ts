@@ -1,21 +1,18 @@
 #!/usr/bin/env bun
-// sync-orca — verifies that Orca launches its Claude agent with the poneglyph
-// system prompt appended (plan: indexed-nebula, Fase 3).
-//
-// Orca's installed-agents config (Comando/Argumentos per agent) is UI-only: the
-// orca CLI exposes worktrees/terminals/automations/browser but NOT app settings
-// (verified against `orca skills get orca-cli`, 2026-08-18). So this script can
-// not APPLY the change — it VERIFIES it and prints the exact string to paste
-// once in the UI when missing. Idempotent: run it any time.
+// sync-orca — verifies Orca does NOT append poneglyph-sp.md (plan: indexed-nebula).
+// Decision 2026-08-18: spawned Claude already inherits outputStyle Poneglyph;
+// append is a measured-useless double-load. This script cannot write the UI;
+// it only reports live profile files (orca-data.json). Backups and hook
+// telemetry do not vote.
 //
 //   bun .claude/scripts/sync-orca.ts             # verify
-//   bun .claude/scripts/sync-orca.ts --verbose   # also list matched files
+//   bun .claude/scripts/sync-orca.ts --verbose   # also list ignored noise hits
 //
-// Exit codes: 0 = configured · 1 = missing/mismatch · 2 = environment problem.
+// Exit codes: 0 = ran (🟢 clean or 🟡 live append still set) · 2 = environment.
 
 import { existsSync, readdirSync, statSync, readFileSync } from "node:fs";
 import { homedir, platform } from "node:os";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 
 const SP_FILE = join(import.meta.dir, "..", "system-prompts", "poneglyph-sp.md");
 const FLAG = "--append-system-prompt-file";
@@ -40,6 +37,17 @@ const EXCLUDE_DIRS = new Set([
   "cookie-import-staging",
 ]);
 const MAX_FILE_BYTES = 20 * 1024 * 1024;
+
+/** Backups and hook telemetry — they echo old Argumentos; they are not the UI. */
+export function isOrcaScanNoise(name: string): boolean {
+  if (name === "last-status.json") return true;
+  return /\.bak(?:\.|$)/i.test(name);
+}
+
+/** Live profile payload. Other matches (logs, status) do not decide the semaphore. */
+export function isLiveOrcaVerdictFile(filePath: string): boolean {
+  return basename(filePath) === "orca-data.json";
+}
 
 export function orcaConfigDirs(plat: string = platform(), home: string = homedir(), appData?: string): string[] {
   const dirs: string[] = [];
@@ -67,7 +75,7 @@ export function scanDir(root: string, expected: string, flag: string): ScanHit[]
       return;
     }
     for (const name of entries) {
-      if (EXCLUDE_DIRS.has(name)) continue;
+      if (EXCLUDE_DIRS.has(name) || isOrcaScanNoise(name)) continue;
       const full = join(dir, name);
       let st;
       try {
@@ -107,23 +115,26 @@ if (import.meta.main) {
     process.exit(2);
   }
 
-  const hits = dirs.flatMap((d) => scanDir(d, EXPECTED, FLAG));
+  const scanned = dirs.flatMap((d) => scanDir(d, EXPECTED, FLAG));
+  const hits = scanned.filter((h) => isLiveOrcaVerdictFile(h.file));
+  const noise = scanned.filter((h) => !isLiveOrcaVerdictFile(h.file));
 
-  // Decision 2026-08-18 (evidence dossier, plan indexed-nebula): Orca-spawned
-  // claude sessions already load the Poneglyph outputStyle via ~/.claude/settings.json,
-  // and style adherence >= append (maintainer ranking + probe battery 4/4 both sides;
-  // dupe battery: double-load innocuous but useless, ~10K extra input/session).
-  // Expected state is therefore NO append in Orca's agent Argumentos.
+  // Decision 2026-08-18: expected state is NO append in live Argumentos.
   if (hits.length === 0) {
-    console.log("🟢 Orca: correcto — sin append configurado. Las sesiones heredan el outputStyle vía settings.");
-    console.log("   (Cinturón opcional si algún día el style falla: añade a Argumentos del agente Claude:");
-    console.log(`    ${EXPECTED})`);
+    console.log("🟢 Orca: correcto — sin append en orca-data.json. Las sesiones heredan el outputStyle vía settings.");
+    if (verbose && noise.length > 0) {
+      console.log("   (ignorados — bak/status, no votan)");
+      for (const h of noise) console.log(`   ~ ${h.file}`);
+    }
     process.exit(0);
   }
 
-  console.log("🟡 Orca: hay un --append-system-prompt configurado en la app — doble carga con el outputStyle.");
-  console.log("   Medido 2026-08-18: inocua pero inútil (~10K input extra por sesión). Recomendado: quitarlo.");
+  console.log("🟡 Orca: hay un --append-system-prompt en la config viva — doble carga con el outputStyle.");
+  console.log("   Medido 2026-08-18: inocua pero inútil (~10K extra/sesión). Quítalo de Argumentos.");
   for (const h of hits) console.log(`   ${h.exact ? "(SP poneglyph)" : "(otra ruta)"} ${h.file}`);
-  if (verbose) console.log(`\nRuta del SP: ${SP_FILE}`);
+  if (verbose && noise.length > 0) {
+    console.log("   (ignorados — bak/status, no votan)");
+    for (const h of noise) console.log(`   ~ ${h.file}`);
+  }
   process.exit(0);
 }
