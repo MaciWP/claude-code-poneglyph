@@ -1,11 +1,14 @@
 {
   "spec_slug": "029-workflow-uplift",
   "mode": "standard",
-  "current_phase": 5,
+  "current_phase": "closed",
   "phases_completed": [
+    1,
     2,
+    2.5,
     3,
-    4
+    4,
+    5
   ],
   "gates_approved": {
     "1->2": true,
@@ -219,11 +222,11 @@
       "askuserquestion_count": 0
     }
   ],
-  "feature_closed": false,
+  "feature_closed": true,
   "review_verdict": "APPROVED_WITH_WARNINGS",
-  "retro_status": null,
+  "retro_status": "approved",
   "started_at": "2026-08-05",
-  "updated_at": "2026-08-05",
+  "updated_at": "2026-08-18",
   "boundary_checks": [
     {
       "phase": "4",
@@ -239,6 +242,11 @@
       "phase": "5",
       "item": "verdict emitido sobre estado corregido; review.md final con 13/13 findings fixed",
       "at": "2026-08-05"
+    },
+    {
+      "phase": "5",
+      "item": "retro.md produced; awaiting human ratification",
+      "at": "2026-08-18"
     }
   ]
 }

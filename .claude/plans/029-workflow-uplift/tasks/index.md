@@ -1,10 +1,11 @@
 ---
 spec: 029-workflow-uplift (sin spec.md — fase 1 saltada por decisión explícita del usuario; mini-spec embebida abajo)
 created: 2026-08-05
-updated: 2026-08-05 (v2 — refinado con directrices del usuario + verificación Fable 5)
+updated: 2026-08-18
 mode: standard
-status: draft
-phase: 2
+status: closed
+closed: 2026-08-18
+phase: 5
 total_us: 18
 dag_complete: true
 ---
