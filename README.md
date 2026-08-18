@@ -2,7 +2,7 @@
 
 Personal orchestration layer for Claude Code, Codex and Grok Build. Claude Code
 has the full adapter; Codex receives the portable doctrine and a small verified
-skill set; Grok receives the shared output style.
+skill set; Grok receives `~/.grok/rules/poneglyph-sp.md` (generated twin of the style SSOT).
 
 > **This file is the single source of truth for installation.**
 > Deep per-tool detail lives in [`docs/`](./docs); the steps below are the

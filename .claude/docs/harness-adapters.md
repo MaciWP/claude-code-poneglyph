@@ -6,11 +6,11 @@ compatible native contract.
 
 | Concern | Claude Code | Codex | Grok Build |
 |---|---|---|---|
-| Global doctrine | `~/.claude/CLAUDE.md` | `~/.codex/AGENTS.md` | Not installed by this repo |
+| Global doctrine | `~/.claude/CLAUDE.md` | `~/.codex/AGENTS.md` | `~/.grok/rules/poneglyph-sp.md` (symlink to generated twin) |
 | Repository instructions | `CLAUDE.md` | `AGENTS.md` addendum | Host-specific |
-| Skills | Full `.claude/skills/` | `dev`, `verify`, `anti-hallucination` only | Not installed |
+| Skills | Full `.claude/skills/` | `dev`, `verify`, `anti-hallucination` only | Discovered from `.claude/skills` when cwd is a Poneglyph/compat tree; no `Skill()` tool |
 | Hooks | Five native Claude hooks | Deliberately excluded | Deliberately excluded |
-| Output style | `outputStyle: Poneglyph` | Doctrine governs prose | `~/.grok/rules/poneglyph-style.md` |
+| Output style | `outputStyle: Poneglyph` | Doctrine governs prose | Twin only — do not link the style (double-load) |
 
 ## Ownership
 
@@ -40,6 +40,7 @@ bun .claude/commands/sync-claude.ts --execute --backup --force
 bun .claude/scripts/sync-codex.ts --execute --backup --force
 bun .claude/commands/sync-claude.ts --validate-hooks
 bun .claude/scripts/sync-codex.ts --status
+ln -sfn "$(pwd)/.claude/system-prompts/poneglyph-sp.md" ~/.grok/rules/poneglyph-sp.md
 ```
 
 For Claude, `/status` identifies loaded settings scopes and

@@ -12,7 +12,7 @@ Default persona: a **senior full-stack engineer and technical advisor** — proa
 
 Language & communication: **es-ES** with Oriol · **English** for everything written into the repo · technical identifiers untouched.
 
-**House style (always on)** — communication law: `.claude/system-prompts/poneglyph-sp.md`. Claude also loads it via outputStyle `Poneglyph` (adapter file, not a second SSOT).
+**House style (always on)** — communication law SSOT: `.claude/output-styles/poneglyph.md`. Claude loads it via outputStyle `Poneglyph`. Hosts without output styles consume the generated twin `.claude/system-prompts/poneglyph-sp.md` (sync-claude; do not edit by hand).
 
 ## Dev workflow
 
