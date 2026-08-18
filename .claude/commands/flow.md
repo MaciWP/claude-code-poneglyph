@@ -8,6 +8,21 @@ allowed-tools: Read, Edit, Write, Bash, Glob, Grep, Skill, Agent, AskUserQuestio
 
 Runs the 6 phase skills (`scope` → `tech-plan` → `tdd-design` → `build` → `critic` → `retro`) over `.claude/plans/{NNN}-{slug}/`, with `state.json` as the resumable source of truth. `/flow` orchestrates a FEATURE (multi-turn); the `orchestrator-protocol` skill orchestrates a Lead TURN — complementary, not redundant.
 
+## Host contract
+
+The steps below keep Claude tool names (`Skill()`, `Agent()`, `AskUserQuestion`, `Workflow()`). Hosts that expose those tools use them as written. Hosts that do not (Grok Build today) map — they do not invent a second pipeline:
+
+| Verb | If the tool exists | If it does not (Grok) |
+|---|---|---|
+| `Skill('x')` | Call `Skill` | `Read .claude/skills/x/SKILL.md` and run that phase as Lead. Never improvise a phase from memory. |
+| `AskUserQuestion` | Native | Host ask widget (`ask_user_question`). Hard gates stay human-only. |
+| `Agent()` / fresh reviewer | Native | `spawn_subagent` only with **this-turn** permission + model (CLAUDE.md). Otherwise critic runs **inline**. |
+| `Workflow(flow-build\|flow-cycle)` | Claude Workflow JS | **Do not call.** Grok `workflow` is Rhai — a different contract. Back-half stays **inline**. |
+| `TaskCreate` / `Update` / `List` | Native | Optional tasks MCP; `state.json` + `flow-state.ts` are enough. |
+| `flow-state.ts` | `bun $HOME/.claude/scripts/flow-state.ts` | Same path (synced scripts / repo). |
+
+`allowed-tools` in the frontmatter is Claude-only. Do not add a `flow-grok.md`.
+
 ## Doctrine — no modes (user decision 2026-08-05, 029/US12)
 
 `/flow` always runs FULL. Legacy flags (`--minimal|--standard|--full`) parse but are ignored — warn the user. The adaptive lever is per-phase: a phase or artifact that genuinely doesn't apply is skipped by the Lead **with explicit justification, announced BEFORE skipping, and recorded** (retro: `retro-status "skipped — <justificación ≥10 chars>"`; `close-feature` refuses a null/pending retro).

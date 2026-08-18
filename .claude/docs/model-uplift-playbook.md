@@ -1,6 +1,6 @@
 # Model-uplift playbook — post-Fable era (Opus 4.8 / Sonnet 5)
 
-> Written 2026-07-07 by Fable 5 itself, on its last day in this harness, distilling first-hand what it does natively that the poneglyph doctrine does not spell out. Consumed on demand; the always-loaded core is `.claude/rules/model-uplift.md`. Scope: ONLY deltas — everything CLAUDE.md / the output style / skills already demand is deliberately absent here.
+> Written 2026-07-07 by Fable 5 itself, on its last day in this harness, distilling first-hand what it does natively that the poneglyph doctrine does not spell out. Consumed on demand; the always-loaded routing core is `.claude/rules/skill-routing.md` (this playbook is **not** always-loaded). Scope: ONLY deltas — everything CLAUDE.md / the output style / skills already demand is deliberately absent here.
 
 ## 1. Honest expectations
 
@@ -93,6 +93,6 @@ Watchpoints where smaller models historically relapse in this setup — each map
 
 ## 5. Load & verify
 
-- The always-loaded core is `.claude/rules/model-uplift.md` (synced per-entry to `~/.claude/rules/`). Verify it loads: `grep model-uplift .claude/learned/instructions-loaded.log` in any session (memoria `feedback-verify-load-layer`).
+- The always-loaded routing core is `.claude/rules/skill-routing.md` (synced per-entry to `~/.claude/rules/`). This playbook stays on-demand. Verify routing loads: `grep skill-routing .claude/learned/instructions-loaded.log` in any session (memoria `feedback-verify-load-layer`).
 - Behavioral validation happens in the first real Opus 4.8 session (spec 026 AC5, deliberately deferred): judge against §2 — is it refuting itself, running before claiming, keeping status bookkeeping? Refine via `/retro`.
 - Lifecycle: when the model era changes again, update §4 first (it decays fastest), re-verify §2 still reads as deltas, and prune what the new model does natively.

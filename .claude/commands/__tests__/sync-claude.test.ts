@@ -1,6 +1,10 @@
 import { describe, it, expect } from "bun:test";
 import * as path from "path";
-import { expandRulesLinks } from "../sync-claude.ts";
+import {
+  classifyGrokTwin,
+  expandRulesLinks,
+  formatGrokTwinLine,
+} from "../sync-claude.ts";
 
 const SRC = path.join("/repo", ".claude", "rules");
 const DEST = path.join("/home", ".claude", "rules");
@@ -76,5 +80,63 @@ describe("expandRulesLinks", () => {
     ]);
     expect(out.find((l) => l.dest.endsWith("paths"))!.type).toBe("directory");
     expect(out.every((l) => !l.dest.endsWith("test-policy.md"))).toBe(true);
+  });
+});
+
+describe("classifyGrokTwin (check, not install)", () => {
+  const expected = "/repo/.claude/system-prompts/poneglyph-sp.md";
+
+  it("ok when the symlink resolves to the generated twin", () => {
+    expect(
+      classifyGrokTwin({
+        exists: true,
+        isSymlink: true,
+        resolvedTarget: expected,
+        expected,
+      }),
+    ).toBe("ok");
+  });
+
+  it("missing when the dest is absent", () => {
+    expect(
+      classifyGrokTwin({
+        exists: false,
+        isSymlink: false,
+        resolvedTarget: null,
+        expected,
+      }),
+    ).toBe("missing");
+  });
+
+  it("not-symlink when a regular file occupies the path", () => {
+    expect(
+      classifyGrokTwin({
+        exists: true,
+        isSymlink: false,
+        resolvedTarget: null,
+        expected,
+      }),
+    ).toBe("not-symlink");
+  });
+
+  it("wrong-target when the symlink points elsewhere", () => {
+    expect(
+      classifyGrokTwin({
+        exists: true,
+        isSymlink: true,
+        resolvedTarget: "/other/poneglyph-style.md",
+        expected,
+      }),
+    ).toBe("wrong-target");
+  });
+
+  it("status copy never claims to install", () => {
+    for (const kind of ["ok", "missing", "not-symlink", "wrong-target"] as const) {
+      if (kind === "ok") {
+        expect(formatGrokTwinLine(kind)).toContain("check, not install");
+      } else {
+        expect(formatGrokTwinLine(kind, "/x")).toMatch(/ln -sfn|check, not install/);
+      }
+    }
   });
 });

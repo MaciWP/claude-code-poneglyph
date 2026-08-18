@@ -82,6 +82,39 @@ export function stripFrontmatter(content: string): string {
   return (m ? content.slice(m[0].length) : content).trimEnd() + "\n";
 }
 
+/** Read-only check of ~/.grok/rules/poneglyph-sp.md — never installs. */
+export type GrokTwinKind = "ok" | "missing" | "wrong-target" | "not-symlink";
+
+export function classifyGrokTwin(input: {
+  exists: boolean;
+  isSymlink: boolean;
+  resolvedTarget: string | null;
+  expected: string;
+}): GrokTwinKind {
+  if (!input.exists) return "missing";
+  if (!input.isSymlink) return "not-symlink";
+  if (
+    !input.resolvedTarget ||
+    normalizePath(input.resolvedTarget) !== normalizePath(input.expected)
+  ) {
+    return "wrong-target";
+  }
+  return "ok";
+}
+
+export function formatGrokTwinLine(kind: GrokTwinKind, detail?: string): string {
+  switch (kind) {
+    case "ok":
+      return "🟢 grok twin: ✓ ~/.grok/rules/poneglyph-sp.md → generated twin (check, not install)";
+    case "missing":
+      return "⚪ grok twin: missing ~/.grok/rules/poneglyph-sp.md (ln -sfn <repo>/.claude/system-prompts/poneglyph-sp.md ~/.grok/rules/poneglyph-sp.md)";
+    case "not-symlink":
+      return "🟡 grok twin: exists but is not a symlink (check, not install)";
+    case "wrong-target":
+      return `🟡 grok twin: symlink → ${detail ?? "elsewhere"} (expected generated twin; check, not install)`;
+  }
+}
+
 function generateSpTwin(
   projectRoot: string,
   execute: boolean,
@@ -943,6 +976,31 @@ function printStatus(links: LinkInfo[]): void {
       `🟢 settings.json: generated real file ${fs.existsSync(overlayPath) ? "(base + machine overlay)" : "(base only — no machine overlay)"}`,
     );
   }
+
+  console.log(inspectGrokTwinLine(getProjectRoot(), homeDir));
+}
+
+function inspectGrokTwinLine(projectRoot: string, homeDir: string): string {
+  const dest = path.join(homeDir, ".grok", "rules", "poneglyph-sp.md");
+  const expected = path.join(
+    projectRoot,
+    ".claude",
+    "system-prompts",
+    "poneglyph-sp.md",
+  );
+  const exists = fs.existsSync(dest) || isSymlink(dest);
+  const linked = isSymlink(dest);
+  const raw = linked ? getSymlinkTarget(dest) : null;
+  const resolved = raw ? path.resolve(path.dirname(dest), raw) : null;
+  return formatGrokTwinLine(
+    classifyGrokTwin({
+      exists,
+      isSymlink: linked,
+      resolvedTarget: resolved,
+      expected,
+    }),
+    raw ?? undefined,
+  );
 }
 
 // === VALIDATE HOOKS ===
@@ -1266,6 +1324,7 @@ Requirements per OS:
 
   const twinPreview = generateSpTwin(projectRoot, false);
   console.log(`🎨 system-prompt twin: ${twinPreview.message}`);
+  console.log(inspectGrokTwinLine(projectRoot, homeDir));
 
   if (!config.execute) {
     console.log("\n💡 Use --execute to create the symlinks");

@@ -11,6 +11,7 @@ compatible native contract.
 | Skills | Full `.claude/skills/` | `dev`, `verify`, `anti-hallucination` only | Discovered from `.claude/skills` when cwd is a Poneglyph/compat tree; no `Skill()` tool |
 | Hooks | Five native Claude hooks | Deliberately excluded | Deliberately excluded |
 | Output style | `outputStyle: Poneglyph` | Doctrine governs prose | Twin only — do not link the style (double-load) |
+| `/flow` | `Skill()` / `Agent()` / Claude `Workflow` as written | Not installed | Same `flow.md`. `Skill(x)` → Read `.claude/skills/x/SKILL.md`. No Claude `Workflow` (Grok `workflow` is Rhai). |
 
 ## Ownership
 
@@ -28,10 +29,11 @@ compatible native contract.
 The portable skills are written against Claude Code tool names. On other hosts,
 read them as capabilities, not APIs: `Glob`/`Grep`/`LSP` → the host's own file
 search and code inspection; `AskUserQuestion` → ask the user in chat;
-`Skill(x)` → read `~/.codex/skills/x/SKILL.md` when installed. A reference to a
-skill that is not installed under `~/.codex/skills/` (`drillme`, `skill-advisor`,
-`critic`, `lessons`, ...) means apply the intent inline — ask the clarifying
-questions, do the verification, skip the dispatch — never invent the tool.
+`Skill(x)` → read `.claude/skills/x/SKILL.md` (Grok) or `~/.codex/skills/x/SKILL.md`
+when installed (Codex). A reference to a skill that is not installed
+(`drillme`, `skill-advisor`, `critic`, `lessons`, ... on Codex) means apply the
+intent inline — ask the clarifying questions, do the verification, skip the
+dispatch — never invent the tool.
 
 ## Installation and Verification
 

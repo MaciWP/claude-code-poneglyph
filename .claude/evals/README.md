@@ -20,7 +20,10 @@ Deterministic regression harness for poneglyph's OWN named behaviors. Every cons
 bun .claude/evals/run.ts                                  # live: claude -p per case + grade
 bun .claude/evals/run.ts cases.jsonl --offline <dir>      # re-grade stored transcripts (<dir>/<case-id>.txt|.jsonl)
 bun test ./.claude/evals/                                  # grader unit suite (pure, offline)
+bun .claude/evals/compare.ts "<prompt>" [--preset sp|stock|style-vs-sp|dupe]
 ```
+
+`run.ts` is the regression **gate**. `compare.ts` is an exploration A/B (eyeball + markers), not a pass/fail suite — run it outside a sandboxed session.
 
 Exit code ≠ 0 on any case failure.
 
