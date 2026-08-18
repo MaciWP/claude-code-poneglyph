@@ -5,7 +5,13 @@ import * as os from "node:os";
 import * as path from "node:path";
 import { parseArgs } from "node:util";
 
-export const PORTABLE_SKILLS = ["dev", "verify", "anti-hallucination"] as const;
+export const PORTABLE_SKILLS = [
+  "dev",
+  "verify",
+  "anti-hallucination",
+  "drillme",
+  "lessons",
+] as const;
 
 export interface CodexLink {
   source: string;
@@ -185,7 +191,7 @@ Installs:
                            Codex has no append-style include, so this is a real
                            file on every OS - re-run the sync after editing
                            CLAUDE.md or poneglyph-sp.md.
-  ~/.codex/skills/{dev,verify,anti-hallucination}
+  ~/.codex/skills/{dev,verify,anti-hallucination,drillme,lessons}
 
 Codex hooks are intentionally not installed. Claude hooks depend on Claude event
 payloads and cannot be treated as a compatible Codex implementation.

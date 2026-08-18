@@ -9,5 +9,6 @@ doctrine is not injected twice when developing Poneglyph itself.
 - Run `bun test ./.claude/` after behavioral configuration changes.
 - Use `bun .claude/commands/sync-claude.ts --status` to inspect the Claude layer
   and `bun .claude/scripts/sync-codex.ts --status` to inspect the Codex layer.
-- Codex adapters deliberately expose only portable skills. Do not copy Claude
-  hooks, slash commands, or permissions into Codex without a native contract.
+- Codex adapters expose five portable skills (`dev`, `verify`,
+  `anti-hallucination`, `drillme`, `lessons`). Do not copy Claude hooks, slash
+  commands, or permissions into Codex without a native contract.

@@ -21,7 +21,7 @@ writes to the repo, and its output is a hypothesis to verify, never a source of 
 
 | | Codex (OpenAI) | Grok (xAI) |
 |---|---|---|
-| Binary | `~/.local/bin/codex` (0.146.0, orca-managed runtime) | `~/.local/bin/grok` (0.2.118, official xAI CLI) |
+| Binary | `~/.local/bin/codex` (0.146.0, orca-managed runtime) | `~/.local/bin/grok` (1.0.5, official xAI CLI) |
 | Headless call | `codex exec --sandbox read-only --ephemeral --skip-git-repo-check "<prompt>"` (CLI-configured default model; add `-m <tier>` only when the user named one) | `grok -p "<prompt>" --sandbox read-only --output-format plain` |
 | Write guardrail | `--sandbox read-only` (OS-enforced) — NEVER `workspace-write`/`danger-full-access` | `--sandbox read-only` (OS-enforced: FS write solo `~/.grok/`, red de hijos bloqueada) |
 | Auth | ChatGPT session (`codex login status`) | Browser login / `XAI_API_KEY` |

@@ -1,6 +1,6 @@
 # System inventory & operational detail (evicted from CLAUDE.md — feature 017)
 
-On-demand reference. CLAUDE.md keeps only always-needed behavior; everything here is data, history or detail recoverable with a Read. Last full update: 2026-06-11 (polish & prune pass — dead-weight deletions, plans archive executed, evals/scripts added).
+On-demand reference. CLAUDE.md keeps only always-needed behavior; everything here is data, history or detail recoverable with a Read. Last full update: 2026-06-11. Last pass: 2026-08-18 (SSOT twin + host adapters; do not treat the June date as current).
 
 ## Sync working model (full detail)
 

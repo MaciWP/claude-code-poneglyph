@@ -33,7 +33,13 @@ describe("Codex adapter topology", () => {
   });
 
   it("keeps Claude-only hooks and commands out of the Codex adapter", () => {
-    expect(PORTABLE_SKILLS).toEqual(["dev", "verify", "anti-hallucination"]);
+    expect(PORTABLE_SKILLS).toEqual([
+      "dev",
+      "verify",
+      "anti-hallucination",
+      "drillme",
+      "lessons",
+    ]);
   });
 });
 

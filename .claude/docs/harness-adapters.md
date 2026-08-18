@@ -8,9 +8,9 @@ compatible native contract.
 |---|---|---|---|
 | Global doctrine | `~/.claude/CLAUDE.md` | `~/.codex/AGENTS.md` | `~/.grok/rules/poneglyph-sp.md` (symlink to generated twin) |
 | Repository instructions | `CLAUDE.md` | `AGENTS.md` addendum | Host-specific |
-| Skills | Full `.claude/skills/` | `dev`, `verify`, `anti-hallucination` only | Discovered from `.claude/skills` when cwd is a Poneglyph/compat tree; no `Skill()` tool |
+| Skills | Full `.claude/skills/` | `dev`, `verify`, `anti-hallucination`, `drillme`, `lessons` | Discovered from `.claude/skills` when cwd is a Poneglyph/compat tree; no `Skill()` tool |
 | Hooks | Five native Claude hooks | Deliberately excluded | Deliberately excluded |
-| Output style | `outputStyle: Poneglyph` | Doctrine governs prose | Twin only — do not link the style (double-load) |
+| Output style | `outputStyle: Poneglyph` | Doctrine governs prose | Twin only — do not link the style (double-load). If the host system prompt conflicts with the house style, **Poneglyph wins** when talking to Oriol. |
 | `/flow` | `Skill()` / `Agent()` / Claude `Workflow` as written | Not installed | Same `flow.md`. `Skill(x)` → Read `.claude/skills/x/SKILL.md`. No Claude `Workflow` (Grok `workflow` is Rhai). |
 
 ## Ownership
@@ -30,10 +30,9 @@ The portable skills are written against Claude Code tool names. On other hosts,
 read them as capabilities, not APIs: `Glob`/`Grep`/`LSP` → the host's own file
 search and code inspection; `AskUserQuestion` → ask the user in chat;
 `Skill(x)` → read `.claude/skills/x/SKILL.md` (Grok) or `~/.codex/skills/x/SKILL.md`
-when installed (Codex). A reference to a skill that is not installed
-(`drillme`, `skill-advisor`, `critic`, `lessons`, ... on Codex) means apply the
-intent inline — ask the clarifying questions, do the verification, skip the
-dispatch — never invent the tool.
+when installed (Codex). A reference to a skill that is not in the Codex
+allowlist (`skill-advisor`, `critic`, `scope`, …) means apply the intent
+inline — never invent the tool.
 
 ## Installation and Verification
 
@@ -43,12 +42,16 @@ bun .claude/scripts/sync-codex.ts --execute --backup --force
 bun .claude/commands/sync-claude.ts --validate-hooks
 bun .claude/scripts/sync-codex.ts --status
 ln -sfn "$(pwd)/.claude/system-prompts/poneglyph-sp.md" ~/.grok/rules/poneglyph-sp.md
+bun .claude/scripts/flow-state.ts status
 ```
 
 For Claude, `/status` identifies loaded settings scopes and
 `.claude/learned/instructions-loaded.log` records instruction files. Codex has no
 equivalent Poneglyph hook: inspect `~/.codex/AGENTS.md` and `~/.codex/skills/`
-instead.
+instead. Open `/flow` lifecycles: `flow-state.ts status` (do not rely on a
+SessionStart hook — that reminder was cut). Grok MCP auth (Binora/GitHub) is
+machine/env, not this adapter. There is no Codex eval harness (Claude
+`evals/run.ts` only).
 
 ## Model Routing
 

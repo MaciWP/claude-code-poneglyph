@@ -47,6 +47,23 @@
 
 Directories with `status: draft` and no updates for **>30 days** may be purged manually. There is no auto-purge. Before deleting: verify no other feature depends on this one via `Grep` in `.claude/plans/`.
 
+## Closed (still in this directory)
+
+`_archive/` is gitignored — moving a closed plan there drops it from git.
+Closed numbered features stay here and are listed so `plans/` is not mistaken
+for in-flight work.
+
+| Dir | Closed | Verdict |
+|---|---|---|
+| `024-poneglyph-style-review` | 2026-06-23 | APPROVED |
+| `025-flow-backhalf-gate` | 2026-06-30 | APPROVED |
+| `026-opus48-fable-uplift` | 2026-07-07 | APPROVED_WITH_WARNINGS |
+| `027-roi-fixes-model-advisor` | 2026-07-07 | APPROVED |
+| `028-p2-backlog-closeout` | 2026-07-08 | APPROVED_WITH_WARNINGS |
+| `029-workflow-uplift` | 2026-08-18 | APPROVED_WITH_WARNINGS (retro ratified) |
+
+In-flight = `state.json` with `feature_closed: false`. Check with `bun .claude/scripts/flow-state.ts status`.
+
 ## Archived plans (`_archive/`) — reading rule
 
 Closed features with no live references move to `_archive/` (gitignored — preserved on disk, out of git and out of fresh clones). As of 2026-06-24 `_archive/` has **zero functional dependents**: nothing in `.claude/` reads a file from it. (The one real dependency — html-report's smoke-test input — was relocated to `skills/html-report/examples/sample-audit-report.md`; the rest were already-dead pointers, now fixed. Only historical prose in retros/decision-notes cites archived plans *by name*, which degrades-not-breaks.)
