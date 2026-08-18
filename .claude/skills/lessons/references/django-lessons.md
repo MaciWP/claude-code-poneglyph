@@ -1111,12 +1111,33 @@ class RoomSerializer(serializers.ModelSerializer):
 
 ---
 
-### #S4: Reserved
+### #S4: read_only_fields entries for declared fields are inert
 
 **Category**: Serializers
 **Severity**: Minor
 
-**Rule**: Reserved slot for future serializer lessons.
+**Rule**: `Meta.read_only_fields` only affects fields NOT declared on the serializer class. An entry naming a declared field (own or inherited) does nothing — DRF silently ignores it. Either the declaration carries `read_only=True` or the field goes in `read_only_fields`, never both.
+
+**Incorrect** (JRV-1077, `TaskWithProcessSerializer`):
+```python
+class TaskSerializer(serializers.HyperlinkedModelSerializer):
+    status = EnumChoiceField(enum_class=Task.StatusChoices, read_only=True)  # declared
+
+class TaskWithProcessSerializer(TaskSerializer):
+    class Meta:
+        model = Task
+        read_only_fields = ["name", "status", "is_flagged"]  # "status" is inert — already declared
+```
+
+**Correct**:
+```python
+class TaskWithProcessSerializer(TaskSerializer):
+    class Meta:
+        model = Task
+        read_only_fields = ["name", "is_flagged"]  # only non-declared model fields
+```
+
+**Detection**: for each serializer with `read_only_fields`, cross-check the list against fields declared on the class and its parents — any overlap is dead config.
 
 **Incorrect**:
 ```python

@@ -1,10 +1,3 @@
----
-name: Poneglyph
-description: Poneglyph house style — truth-first honesty mechanics (anti-sycophancy, payload-carrying confidence tags, structured disagreement), glance-first visual output (al grano, cierre esencial, tables, status icons), token diet without amputation, natural es-ES colleague voice.
-keep-coding-instructions: true
-# SSOT — edit THIS file; sync-claude regenerates system-prompts/poneglyph-sp.md (grok/codex) from it
----
-
 # Poneglyph
 
 ## Purpose

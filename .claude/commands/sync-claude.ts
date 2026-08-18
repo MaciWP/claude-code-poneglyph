@@ -65,6 +65,44 @@ const MERGED_SETTINGS = {
   dest: "settings.json", // → ~/.claude/settings.json (real file)
 };
 
+// The output style IS the SSOT: Oriol edits .claude/output-styles/poneglyph.md
+// (his primary document; Claude Code reads it live through the folder symlink).
+// The body-only twin .claude/system-prompts/poneglyph-sp.md is GENERATED here by
+// stripping the frontmatter, for the hosts that inject raw system-prompt text:
+// the ~/.grok/rules symlink, sync-codex's AGENTS.md concat, and compare.ts.
+// No provenance marker inside the twin — its body must stay 100% clean for those
+// hosts; provenance is documented in docs/system-inventory.md.
+const SP_TWIN = {
+  source: path.join(".claude", "output-styles", "poneglyph.md"),
+  dest: path.join(".claude", "system-prompts", "poneglyph-sp.md"),
+};
+
+export function stripFrontmatter(content: string): string {
+  const m = content.match(/^---\n[\s\S]*?\n---\n+/);
+  return (m ? content.slice(m[0].length) : content).trimEnd() + "\n";
+}
+
+function generateSpTwin(
+  projectRoot: string,
+  execute: boolean,
+): { status: "written" | "up-to-date" | "preview" | "error"; message: string } {
+  const sourcePath = path.join(projectRoot, SP_TWIN.source);
+  const destPath = path.join(projectRoot, SP_TWIN.dest);
+  if (!fs.existsSync(sourcePath)) {
+    return { status: "error", message: `style SSOT not found: ${sourcePath}` };
+  }
+  const content = stripFrontmatter(fs.readFileSync(sourcePath, "utf-8"));
+  const current = fs.existsSync(destPath) ? fs.readFileSync(destPath, "utf-8") : null;
+  if (current === content) {
+    return { status: "up-to-date", message: "system-prompts twin already matches the style body" };
+  }
+  if (!execute) {
+    return { status: "preview", message: "would regenerate system-prompts/poneglyph-sp.md from the style SSOT" };
+  }
+  fs.writeFileSync(destPath, content);
+  return { status: "written", message: "regenerated system-prompts/poneglyph-sp.md from the style SSOT" };
+}
+
 // External links: src is relative to projectRoot/.claude/, dest is an absolute path outside ~/.claude/
 const LINK_EXTERNAL_DIRS = [
   {
@@ -1226,6 +1264,9 @@ Requirements per OS:
     `\n⚙️  settings.json (generated real file, not linked): ${settingsPreview.message}`,
   );
 
+  const twinPreview = generateSpTwin(projectRoot, false);
+  console.log(`🎨 system-prompt twin: ${twinPreview.message}`);
+
   if (!config.execute) {
     console.log("\n💡 Use --execute to create the symlinks");
     console.log("   Use --backup to save existing content");
@@ -1255,6 +1296,12 @@ Requirements per OS:
   } else {
     console.log("\n✅ All symlinks already linked correctly");
   }
+
+  // Regenerate the body-only twin from the style SSOT (grok/codex/compare consume it).
+  const twinResult = generateSpTwin(projectRoot, true);
+  console.log(
+    `${twinResult.status === "error" ? "❌" : "🎨"} system-prompt twin: ${twinResult.message}`,
+  );
 
   // Always (re)generate the merged settings.json — per-machine, never symlinked.
   const settingsResult = generateSettings(projectRoot, homeDir, config);
