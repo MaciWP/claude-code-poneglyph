@@ -83,16 +83,29 @@ export function stripFrontmatter(content: string): string {
 }
 
 /** Read-only check of ~/.grok/rules/poneglyph-sp.md — never installs. */
-export type GrokTwinKind = "ok" | "missing" | "wrong-target" | "not-symlink";
+export type GrokTwinKind =
+  | "ok"
+  | "ok-copy"
+  | "stale-copy"
+  | "missing"
+  | "wrong-target"
+  | "not-symlink";
 
 export function classifyGrokTwin(input: {
   exists: boolean;
   isSymlink: boolean;
   resolvedTarget: string | null;
   expected: string;
+  /** Regular-file installs (the documented Windows path is a copy, not a symlink):
+   * true = content-equal to the generated twin, false = diverged, null = unreadable. */
+  contentMatches?: boolean | null;
 }): GrokTwinKind {
   if (!input.exists) return "missing";
-  if (!input.isSymlink) return "not-symlink";
+  if (!input.isSymlink) {
+    if (input.contentMatches === true) return "ok-copy";
+    if (input.contentMatches === false) return "stale-copy";
+    return "not-symlink";
+  }
   if (
     !input.resolvedTarget ||
     normalizePath(input.resolvedTarget) !== normalizePath(input.expected)
@@ -106,6 +119,10 @@ export function formatGrokTwinLine(kind: GrokTwinKind, detail?: string): string 
   switch (kind) {
     case "ok":
       return "🟢 grok twin: ✓ ~/.grok/rules/poneglyph-sp.md → generated twin (check, not install)";
+    case "ok-copy":
+      return "🟢 grok twin: ✓ content-equal copy of the generated twin (Windows install; check, not install)";
+    case "stale-copy":
+      return "🟡 grok twin: copy diverges from the generated twin — recopy .claude/system-prompts/poneglyph-sp.md over it (check, not install)";
     case "missing":
       return "⚪ grok twin: missing ~/.grok/rules/poneglyph-sp.md (ln -sfn <repo>/.claude/system-prompts/poneglyph-sp.md ~/.grok/rules/poneglyph-sp.md)";
     case "not-symlink":
@@ -115,10 +132,26 @@ export function formatGrokTwinLine(kind: GrokTwinKind, detail?: string): string 
   }
 }
 
-function generateSpTwin(
+export type SpTwinStatus = "written" | "up-to-date" | "preview" | "error";
+
+/** One line per status so --status / preview / execute all report the twin truthfully. */
+export function formatSpTwinStatusLine(status: SpTwinStatus, message: string): string {
+  switch (status) {
+    case "up-to-date":
+      return "🟢 sp twin: system-prompts/poneglyph-sp.md matches the style SSOT";
+    case "preview":
+      return "🟡 sp twin: STALE — the style SSOT changed; run --execute to regenerate";
+    case "written":
+      return "🎨 sp twin: regenerated from the style SSOT";
+    case "error":
+      return `🔴 sp twin: ${message}`;
+  }
+}
+
+export function generateSpTwin(
   projectRoot: string,
   execute: boolean,
-): { status: "written" | "up-to-date" | "preview" | "error"; message: string } {
+): { status: SpTwinStatus; message: string } {
   const sourcePath = path.join(projectRoot, SP_TWIN.source);
   const destPath = path.join(projectRoot, SP_TWIN.dest);
   if (!fs.existsSync(sourcePath)) {
@@ -977,6 +1010,8 @@ function printStatus(links: LinkInfo[]): void {
     );
   }
 
+  const twin = generateSpTwin(getProjectRoot(), false);
+  console.log(formatSpTwinStatusLine(twin.status, twin.message));
   console.log(inspectGrokTwinLine(getProjectRoot(), homeDir));
 }
 
@@ -992,12 +1027,21 @@ function inspectGrokTwinLine(projectRoot: string, homeDir: string): string {
   const linked = isSymlink(dest);
   const raw = linked ? getSymlinkTarget(dest) : null;
   const resolved = raw ? path.resolve(path.dirname(dest), raw) : null;
+  let contentMatches: boolean | null = null;
+  if (exists && !linked) {
+    try {
+      contentMatches = fs.readFileSync(dest, "utf-8") === fs.readFileSync(expected, "utf-8");
+    } catch {
+      contentMatches = null;
+    }
+  }
   return formatGrokTwinLine(
     classifyGrokTwin({
       exists,
       isSymlink: linked,
       resolvedTarget: resolved,
       expected,
+      contentMatches,
     }),
     raw ?? undefined,
   );
@@ -1323,7 +1367,7 @@ Requirements per OS:
   );
 
   const twinPreview = generateSpTwin(projectRoot, false);
-  console.log(`🎨 system-prompt twin: ${twinPreview.message}`);
+  console.log(formatSpTwinStatusLine(twinPreview.status, twinPreview.message));
   console.log(inspectGrokTwinLine(projectRoot, homeDir));
 
   if (!config.execute) {
@@ -1358,9 +1402,7 @@ Requirements per OS:
 
   // Regenerate the body-only twin from the style SSOT (grok/codex/compare consume it).
   const twinResult = generateSpTwin(projectRoot, true);
-  console.log(
-    `${twinResult.status === "error" ? "❌" : "🎨"} system-prompt twin: ${twinResult.message}`,
-  );
+  console.log(formatSpTwinStatusLine(twinResult.status, twinResult.message));
 
   // Always (re)generate the merged settings.json — per-machine, never symlinked.
   const settingsResult = generateSettings(projectRoot, homeDir, config);

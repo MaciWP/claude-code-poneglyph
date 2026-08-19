@@ -1,9 +1,13 @@
 import { describe, it, expect } from "bun:test";
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import * as path from "path";
 import {
   classifyGrokTwin,
   expandRulesLinks,
   formatGrokTwinLine,
+  formatSpTwinStatusLine,
+  generateSpTwin,
 } from "../sync-claude.ts";
 
 const SRC = path.join("/repo", ".claude", "rules");
@@ -130,13 +134,99 @@ describe("classifyGrokTwin (check, not install)", () => {
     ).toBe("wrong-target");
   });
 
+  it("ok-copy when a regular file is content-equal to the twin (Windows install)", () => {
+    expect(
+      classifyGrokTwin({
+        exists: true,
+        isSymlink: false,
+        resolvedTarget: null,
+        expected,
+        contentMatches: true,
+      }),
+    ).toBe("ok-copy");
+  });
+
+  it("stale-copy when a regular file diverges from the twin", () => {
+    expect(
+      classifyGrokTwin({
+        exists: true,
+        isSymlink: false,
+        resolvedTarget: null,
+        expected,
+        contentMatches: false,
+      }),
+    ).toBe("stale-copy");
+  });
+
   it("status copy never claims to install", () => {
-    for (const kind of ["ok", "missing", "not-symlink", "wrong-target"] as const) {
+    const kinds = ["ok", "ok-copy", "stale-copy", "missing", "not-symlink", "wrong-target"] as const;
+    for (const kind of kinds) {
       if (kind === "ok") {
         expect(formatGrokTwinLine(kind)).toContain("check, not install");
       } else {
         expect(formatGrokTwinLine(kind, "/x")).toMatch(/ln -sfn|check, not install/);
       }
     }
+  });
+});
+
+describe("generateSpTwin (style SSOT → body-only twin)", () => {
+  const style = [
+    "---",
+    "name: Poneglyph",
+    "description: test",
+    "keep-coding-instructions: true",
+    "---",
+    "",
+    "# Poneglyph",
+    "",
+    "Law body here.",
+    "",
+  ].join("\n");
+
+  function makeRoot(): string {
+    const root = mkdtempSync(path.join(tmpdir(), "sp-twin-"));
+    mkdirSync(path.join(root, ".claude", "output-styles"), { recursive: true });
+    mkdirSync(path.join(root, ".claude", "system-prompts"), { recursive: true });
+    writeFileSync(path.join(root, ".claude", "output-styles", "poneglyph.md"), style);
+    return root;
+  }
+
+  it("previews when the twin is missing, writes on execute, then reports up-to-date", () => {
+    const root = makeRoot();
+    expect(generateSpTwin(root, false).status).toBe("preview");
+    expect(generateSpTwin(root, true).status).toBe("written");
+    const twin = readFileSync(
+      path.join(root, ".claude", "system-prompts", "poneglyph-sp.md"),
+      "utf-8",
+    );
+    expect(twin).toStartWith("# Poneglyph");
+    expect(twin).not.toContain("keep-coding-instructions");
+    expect(generateSpTwin(root, false).status).toBe("up-to-date");
+  });
+
+  it("read-only status flags a stale twin after the style SSOT changes (never writes)", () => {
+    const root = makeRoot();
+    generateSpTwin(root, true);
+    writeFileSync(
+      path.join(root, ".claude", "output-styles", "poneglyph.md"),
+      style.replace("Law body here.", "Law body v2."),
+    );
+    const twinPath = path.join(root, ".claude", "system-prompts", "poneglyph-sp.md");
+    const before = readFileSync(twinPath, "utf-8");
+    expect(generateSpTwin(root, false).status).toBe("preview");
+    expect(readFileSync(twinPath, "utf-8")).toBe(before);
+  });
+
+  it("errors when the style SSOT is missing", () => {
+    const root = mkdtempSync(path.join(tmpdir(), "sp-twin-"));
+    expect(generateSpTwin(root, false).status).toBe("error");
+  });
+
+  it("status lines: stale names STALE + --execute, up-to-date is green, error carries the message", () => {
+    expect(formatSpTwinStatusLine("preview", "")).toContain("STALE");
+    expect(formatSpTwinStatusLine("preview", "")).toContain("--execute");
+    expect(formatSpTwinStatusLine("up-to-date", "")).toStartWith("🟢");
+    expect(formatSpTwinStatusLine("error", "boom")).toContain("boom");
   });
 });

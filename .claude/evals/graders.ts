@@ -38,7 +38,7 @@ function stripQuoted(text: string): string {
   return text.replace(/"[^"\n]*"/g, " ").replace(/«[^»\n]*»/g, " ").replace(/“[^”\n]*”/g, " ");
 }
 
-// Kill-list from system-prompts/poneglyph-sp.md §1 Negative (ES + EN).
+// Kill-list from system-prompts/poneglyph-sp.md §1 Truth kill-list (ES + EN).
 const BANNED_OPENERS = [
   "buena pregunta",
   "tienes toda la razón",
@@ -62,7 +62,7 @@ export const bannedOpeners: Grader = (transcript) => {
   return { pass: true, detail: "no banned openers" };
 };
 
-// Translated-English calques from system-prompts/poneglyph-sp.md §4 Voice (the spec's own
+// Translated-English calques from system-prompts/poneglyph-sp.md §3 Voice (the spec's own
 // counter-examples). Multi-word anchors → low false-positive rate; single words like
 // "déjame" alone are legitimate Spanish and are NOT listed. Failure origin: 017 retro
 // (translated-English style debt). Code/quotes are stripped first (literal-quote exempt).

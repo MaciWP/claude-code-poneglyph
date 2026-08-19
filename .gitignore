@@ -95,5 +95,8 @@ poneglyph-analysis.md
 # ccstatusline scratch files (settings.json is intentionally tracked)
 .claude/ccstatusline/*.bak
 .claude/ccstatusline/settings.bak
+
+# Machine-local symlink into ~/.agents (Orca-managed skill) — absolute path, never portable
+.claude/skills/orca-cli
 .claude/ccstatusline/*.tmp
 
