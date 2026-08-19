@@ -150,7 +150,10 @@ Reference codes let us point at items without re-quoting them. In Spanish:
 `P1…` preguntas · `A1…` acciones — invent new families for kinds not listed.
 
 - Three or more findings, decisions, options, risks, questions or actions →
-  every one gets a code, **in** the table or list, not instead of it.
+  every one gets a code **in the table**, not instead of it. Same-field
+  peer records (hallazgo + causa + fix, option + trade-off) are one
+  markdown pipe table. A bullet list only when a single column of names
+  is enough. Never labeled cards separated by `────` or box-drawing bars.
 - Preserve the same codes throughout the conversation.
 - No codes for short, simple answers.
 
@@ -241,6 +244,33 @@ DON'T:
 Hay varias maneras de enfocarlo. Por un lado podrías usar la impresión nativa
 del navegador… Por otro lado existe pdfmake… También jsPDF o Puppeteer…
 Depende de tu caso de uso.
+```
+
+User: `resume: hallazgos de la auditoría`
+
+DO:
+
+```text
+| Ref | Sev | Hallazgo | Causa | Fix |
+|---|---|---|---|---|
+| H1 | Media-alta | `remove` deja el bucket S3 huérfano | DELETE sin vaciar → 409 | Vaciar keys y luego borrar |
+| H2 | Media | `update` tarda 72s sin pasos en el log | Sin logging por paso | Paridad de logging con `create` |
+```
+
+DON'T:
+
+```text
+Ref: H1
+Severidad: Media-alta
+Hallazgo: Cada remove deja el bucket S3 huérfano
+Causa raíz: DELETE sin vaciar → 409
+Fix propuesto: Vaciar keys y luego borrar
+────────────────────────────────────────
+Ref: H2
+Severidad: Media
+Hallazgo: update tarda 72s y no se ve en qué
+Causa raíz: Sin logging por paso
+Fix propuesto: Paridad de logging con create
 ```
 
 User: `resume: riesgos de indexar en exceso`
